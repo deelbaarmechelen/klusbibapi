@@ -5,15 +5,33 @@ $dotenv->load();
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Container\Container;
+use \AD7six\Dsn\Dsn;
 
+$url = getenv('DATABASE_URL');
+if (isset($url) && !empty($url)) {
+	$dsn = Dsn::parse($url);
+	$host = $dsn->host;
+	$database = substr($dsn->path, 1);
+	$user = $dsn->user;
+	$pass = $dsn->pass;
+	$port = $dsn->port;
+	
+}
+else {
+	$host = getenv('DB_HOST');
+	$database = getenv('DB_NAME');
+	$user = getenv('DB_USER');
+	$pass = getenv('DB_PASS');
+	$port = getenv('DB_PORT');
+}
 $capsule = new Capsule;
 
 $capsule->addConnection([
 			'driver'    => 'mysql',
-			'host' => getenv('DB_HOST'),
-			'database' => getenv('DB_NAME'),
-			'username' => getenv('DB_USER'),
-			'password' => getenv('DB_PASS'),
+			'host' => $host, //getenv('DB_HOST'),
+			'database' => $database, //getenv('DB_NAME'),
+			'username' => $user, //getenv('DB_USER'),
+			'password' => $pass, //getenv('DB_PASS'),
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',
@@ -40,18 +58,18 @@ return [
 
         // Monolog settings
         'logger' => [
-            'name' => 'klusbib-api',
+            'name' => 'klusbibapi',
             'path' => __DIR__ . '/../logs/app.log',
             'level' => \Monolog\Logger::DEBUG,
         ],
     
     	// Database settings
     	'db' => [
-    		'host' => getenv('DB_HOST'),
-    		'user' => getenv('DB_USER'),
-    		'pass' => getenv('DB_PASS'),
-    		'dbname' => getenv('DB_NAME'),
-    		'port' => getenv('DB_PORT')
+    		'host' => $host,
+    		'user' => $user,
+    		'pass' => $pass,
+    		'dbname' => $database,
+    		'port' => $port
     	],
     ],
 ];
