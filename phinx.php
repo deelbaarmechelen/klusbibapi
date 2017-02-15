@@ -1,6 +1,18 @@
 <?php
+use \AD7six\Dsn\Dsn;
+
 $dotenv = new Dotenv\Dotenv(__DIR__);
 $dotenv->load();
+
+$url = getenv('DATABASE_URL');
+if (isset($url) && !empty($url)) {
+	$dsn = Dsn::parse($url);
+	$host = $dsn->host;
+	$database = substr($dsn->path, 1);
+	$user = $dsn->user;
+	$pass = $dsn->pass;
+	$port = $dsn->port;
+}
 return array(
 		"paths" => array(
 				"migrations" => "%%PHINX_CONFIG_DIR%%/db/migrations",
@@ -20,6 +32,14 @@ return array(
 						"user" => getenv('DB_USER'),
 						"pass" => getenv('DB_PASS'),
 						"port" => getenv('DB_PORT')
+				),
+				"dokku" => array(
+						"adapter" => "mysql",
+						"host" => $dsn->host,
+						"name" => $database,
+						"user" => $dsn->user,
+						"pass" => $dsn->pass,
+						"port" => $dsn->port
 				)
 		)
 );
