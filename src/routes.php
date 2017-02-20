@@ -3,6 +3,10 @@
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 // Routes
+$app->options('/{routes:.+}', function ($request, $response, $args) {
+	return $response;
+});
+
 $app->get('/', function ($request, $response, $args) {
 	// Sample log message
 	$this->logger->info("Slim-Skeleton '/' route");
