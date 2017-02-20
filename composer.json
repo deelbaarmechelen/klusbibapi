@@ -15,7 +15,6 @@
 	],
 	"require" : {
 		"php" : ">=5.5.0",
-		"heroku/heroku-buildpack-php": "*",
 		"slim/slim" : "^3.1",
 		"slim/php-view" : "^2.0",
 		"monolog/monolog" : "^1.17",
@@ -29,6 +28,7 @@
 		"ad7six/dsn" : "0.4.*"
 	},
 	"require-dev" : {
+		"heroku/heroku-buildpack-php": "*",
 		"phpunit/phpunit" : ">=4.8 < 6.0",
 		"fzaninotto/faker" : "~1.4"
 	},
