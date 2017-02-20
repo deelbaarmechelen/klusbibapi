@@ -108,6 +108,24 @@ $app->get('/tools/{toolid}', function ($request, $response, $args) {
 	
 	return $response->withJson($data);
 });
+$app->put('/tools/{toolid}', function ($request, $response, $args) {
+	$this->logger->info("Klusbib put '/tools/id' route");
+	$tool = \Api\Model\Tool::find($args['toolid']);
+// 	$tools = Capsule::table('tools')->where('tool_id', $args['toolid'])->get();
+// 	if (null == $tools || count($tools) == 0) {
+// 		return $response->withStatus(404);
+// 	}
+// 	$tool = $tools[0];
+// 	$flight = App\Flight::find(1);
+	
+// 	$flight->name = 'New Flight Name';
+	if (null == $tool) {
+		return $response->withStatus(404);
+	}
+	$tool->description = 'new description';
+	$tool->save();
+	return $response->withJson($data);
+});
 
 function getSampleReservations() {
 	$reservations = array();
