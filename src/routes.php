@@ -111,18 +111,22 @@ $app->get('/tools/{toolid}', function ($request, $response, $args) {
 $app->put('/tools/{toolid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib put '/tools/id' route");
 	$tool = \Api\Model\Tool::find($args['toolid']);
-// 	$tools = Capsule::table('tools')->where('tool_id', $args['toolid'])->get();
-// 	if (null == $tools || count($tools) == 0) {
-// 		return $response->withStatus(404);
-// 	}
-// 	$tool = $tools[0];
-// 	$flight = App\Flight::find(1);
-	
-// 	$flight->name = 'New Flight Name';
 	if (null == $tool) {
 		return $response->withStatus(404);
 	}
-	$tool->description = 'new description';
+	$parsedBody = $request->getParsedBody();
+	if (isset($parsedBody["name"])) {
+		$tool->name = $parsedBody["name"];
+	}
+	if (isset($parsedBody["description"])) {
+		$tool->description = $parsedBody["description"];
+	}
+	if (isset($parsedBody["category"])) {
+		$tool->category = $parsedBody["category"];
+	}
+	if (isset($parsedBody["link"])) {
+		$tool->link = $parsedBody["link"];
+	}
 	$tool->save();
 	return $response->withJson($data);
 });
