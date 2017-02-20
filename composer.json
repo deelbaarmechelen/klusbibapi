@@ -28,8 +28,8 @@
 		"ad7six/dsn" : "0.4.*"
 	},
 	"require-dev" : {
+		"heroku/heroku-buildpack-php": "*",
 		"phpunit/phpunit" : ">=4.8 < 6.0",
-		"phing/phing": "2.*",
 		"fzaninotto/faker" : "~1.4"
 	},
 	"autoload" : {
