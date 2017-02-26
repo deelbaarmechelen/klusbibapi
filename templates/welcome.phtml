@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script>
+	    var token = "";
+	    var getApiUrl = function (url, token) {
+	        $.ajax({
+	            url: url,
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            beforeSend: function(xhr) {
+	                xhr.setRequestHeader("Authorization", "Bearer " + token)
+	            },
+	            success: function (data) {
+	                console.log('success');
+	                $("#queryresult").text(JSON.stringify(data));
+	            }, error: function(xhr) {
+	                alert("An error occured: " + xhr.status + " " + xhr.statusText);
+
+	                document.getElementById("queryresult").innerHTML = xhr.responseText.replace(/\n/g,"<br>");
+// 	                $("#queryresult").text(JSON.stringify(xhr.responseText, null, 2));
+	            }
+	        });
+	    };
+		$(document).ready(function(){
+		    $("button").click(function(){
+		            var user = $("#login").val();
+		            var password = $("#password").val();
+		            $.ajax({
+		                type: 'POST',
+		                url: '/token',
+		                headers: {
+		                    "Authorization": "Basic " + btoa(user + ":" + password)
+		                },
+		                data: '["tools.all"]',
+		                contentType: 'application/json; charset=utf-8',
+		                dataType: 'json',
+		                success: function (data) {
+		                    token = data.token;
+		                    console.log(token);
+			                $("#queryresult").text(JSON.stringify(data));
+		                }, error: function(xhr) {
+		                    alert("An error occured: " + xhr.status + " " + xhr.statusText);
+			                document.getElementById("queryresult").innerHTML = xhr.responseText.replace(/\n/g,"<br>");
+// 			                $("#queryresult").text(JSON.stringify(xhr, null, 2));
+		                }
+		            });
+		    });
+		    $("#users").on("click", function(){
+		        getApiUrl('/users', token);
+		    });
+		    $("#user1").on("click", function(){
+		        getApiUrl('/users/1', token);
+		    });
+		    $("#user2").on("click", function(){
+		        getApiUrl('/users/2', token);
+		    });
+		    $("#tools").on("click", function(){
+		        getApiUrl('/tools', token);
+		    });
+		    $("#tools1").on("click", function(){
+		        getApiUrl('/tools/1', token);
+		    });
+		    $("#dump").on("click", function(){
+		        getApiUrl('/dump', token);
+		    });
+		});
+		</script>
+		<title>Klusbib API</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>Welcome to Klusbib API</div>
+        <div>Available routes:
+            <ul>
+                <li>Hello + name : e.g. <a href="hello/world">hello world</a></li>
+                <li>Dump token: <a id="dump" href="javascript:void(0)">dump</a></li>
+                <li>Users : <a id="users" href="javascript:void(0)">users</a> (requires prior login)</li>
+                <li>Users + userId: <a id="user1" href="javascript:void(0)">users/1</a> (requires prior login)</li>
+                <li>Users + userId: <a id="user2" href="javascript:void(0)">users/2</a> (requires prior login)</li>
+                <li>Tools : <a id="tools" href="javascript:void(0)">tools<a></li>
+                <li>Tools + toolId: <a id="tools1" href="javascript:void(0)">tools/1<a></li>
+            </ul>
+        </div>
+        <div>
+            User: <input type='text' id='login' size='30'><br>
+            Paswoord: <input type='password' id='password' size='30'><br>
+            <button>Login</button>
+        </div>
+        <div id="queryresult">
+        </div>
+    </body>
+</html>

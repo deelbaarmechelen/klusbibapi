@@ -27,11 +27,11 @@ return array(
 				"default_database" => "dev",
 				"dev" => array(
 						"adapter" => "mysql",
-						"host" => getenv('DB_HOST'),
-						"name" => getenv('DB_NAME'),
-						"user" => getenv('DB_USER'),
-						"pass" => getenv('DB_PASS'),
-						"port" => getenv('DB_PORT')
+						"host" => $dsn->host,
+						"name" => $database,
+						"user" => $dsn->user,
+						"pass" => $dsn->pass,
+						"port" => $dsn->port
 				),
 				"dokku" => array(
 						"adapter" => "mysql",

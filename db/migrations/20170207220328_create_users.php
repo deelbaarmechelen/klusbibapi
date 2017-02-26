@@ -30,6 +30,8 @@ class CreateUsers extends AbstractMigration
 			$table->string('firstname', 50)->nullable()->default(null);
 			$table->string('lastname', 50)->nullable()->default(null);
 			$table->string('role', 20)->nullable()->default(null); // admin, member, ...
+			$table->string('email', 50)->nullable()->default(null); // also used as login
+			$table->string('hash', 255)->nullable()->default(null); // password hash
 			$table->date('membership_start_date')->nullable()->default(null);
 			$table->date('membership_end_date')->nullable()->default(null);
 				

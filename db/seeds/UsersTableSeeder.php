@@ -24,8 +24,10 @@ class UsersTableSeeder extends AbstractSeed
     			'firstname' => 'admin',
     			'lastname' => 'admin',
     			'role' => 'admin', 
+    			'email' => 'admin@klusbib.be',
+    			'hash' => password_hash("test", PASSWORD_DEFAULT), 
     			'membership_start_date' => $startdate,
     			'membership_end_date' => $enddate
     	]);
-    	}
+    }
 }
