@@ -1,7 +1,6 @@
 <?php
 
-use Firebase\JWT\JWT;
-use Tuupola\Base62;
+use Api\Token;
 
 $app->post("/token", function ($request, $response, $arguments) {
 	$requested_scopes = $request->getParsedBody();
@@ -11,29 +10,23 @@ $app->post("/token", function ($request, $response, $arguments) {
 			"tools.update",
 			"tools.delete",
 			"tools.list",
-			"tools.all"
+			"tools.all",
+			"users.create",
+			"users.read",
+			"users.update",
+			"users.delete",
+			"users.list",
+			"users.all"
 	];
 
 	$scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
 		return in_array($needle, $valid_scopes);
 	});
 		
-	$now = new DateTime();
-	$future = new DateTime("now +2 hours");
 	$server = $request->getServerParams();
-
-	$jti = Base62::encode(random_bytes(16));
-
-	$payload = [
-			"iat" => $now->getTimeStamp(), 		// issued at
-			"exp" => $future->getTimeStamp(),	// expiration
-			"jti" => $jti,						// JWT ID
-			"sub" => $server["PHP_AUTH_USER"],	
-			"scope" => $scopes
-	];
-
-	$secret = getenv("JWT_SECRET");
-	$token = JWT::encode($payload, $secret, "HS256");
+	$sub = $server["PHP_AUTH_USER"];
+	
+	$token = Token::generateToken($scopes, $sub); 
 	$data["status"] = "ok";
 	$data["token"] = $token;
 

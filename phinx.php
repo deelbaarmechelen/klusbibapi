@@ -13,6 +13,15 @@ if (isset($url) && !empty($url)) {
 	$pass = $dsn->pass;
 	$port = $dsn->port;
 }
+$urltst = getenv('TEST_DATABASE_URL');
+if (isset($urltst) && !empty($urltst)) {
+	$dsntst = Dsn::parse($urltst);
+	$hosttst = $dsntst->host;
+	$databasetst = substr($dsntst->path, 1);
+	$usertst = $dsntst->user;
+	$passtst = $dsntst->pass;
+	$porttst = $dsntst->port;
+}
 return array(
 		"paths" => array(
 				"migrations" => "%%PHINX_CONFIG_DIR%%/db/migrations",
@@ -32,6 +41,19 @@ return array(
 						"user" => $dsn->user,
 						"pass" => $dsn->pass,
 						"port" => $dsn->port
+				),
+				"ut" => array(
+						"adapter" => "sqlite",
+						"memory" => true,
+						"name" => ":memory:"
+				),
+				"test" => array(
+						"adapter" => "mysql",
+						"host" => $dsntst->host,
+						"name" => $databasetst,
+						"user" => $dsntst->user,
+						"pass" => $dsntst->pass,
+						"port" => $dsntst->port
 				),
 				"dokku" => array(
 						"adapter" => "mysql",

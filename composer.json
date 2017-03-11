@@ -33,6 +33,7 @@
 	"require-dev" : {
 		"heroku/heroku-buildpack-php": "*",
 		"phpunit/phpunit" : ">=4.8 < 6.0",
+		"there4/slim-test-helpers": "v2.1.1",
 		"fzaninotto/faker" : "~1.4"
 	},
 	"autoload" : {
@@ -44,5 +45,8 @@
 		"psr-4" : {
 			"Tests\\" : "tests/"
 		}
-	}
+	},
+    "scripts": {
+        "test": "vendor/bin/phpunit --verbose --bootstrap tests/bootstrap.php --coverage-text"
+    }
 }

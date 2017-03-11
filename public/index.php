@@ -14,6 +14,7 @@ require __DIR__ . '/../vendor/autoload.php';
 session_start();
 
 // Instantiate the app
+require __DIR__ . '/../src/env.php';
 $settings = require __DIR__ . '/../src/settings.php';
 $app = new \Slim\App($settings);
 

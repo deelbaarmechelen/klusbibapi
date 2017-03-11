@@ -1,0 +1,563 @@
+[2017-03-11 01:21:30] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"6deacfa"}
+[2017-03-11 01:21:30] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"d98be13"}
+[2017-03-11 01:21:30] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"7af70f3"}
+[2017-03-11 01:21:30] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"58e4900"}
+[2017-03-11 01:22:06] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"11bfb32"}
+[2017-03-11 01:22:06] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"e7bfb14"}
+[2017-03-11 01:22:06] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"f0c28c3"}
+[2017-03-11 01:22:06] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"3156447"}
+[2017-03-11 01:22:27] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"6137f62"}
+[2017-03-11 01:22:27] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"1e0586e"}
+[2017-03-11 01:22:27] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"0f3f9a7"}
+[2017-03-11 01:22:27] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"1c5a177"}
+[2017-03-11 01:22:51] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"239436c"}
+[2017-03-11 01:22:51] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"a729b09"}
+[2017-03-11 01:22:51] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"ec9ef65"}
+[2017-03-11 01:22:51] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"bd385cc"}
+[2017-03-11 01:23:25] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"94791b3"}
+[2017-03-11 01:23:25] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"036d446"}
+[2017-03-11 01:23:25] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"b6f45c6"}
+[2017-03-11 01:23:25] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"d99d880"}
+[2017-03-11 01:24:32] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"d733dc4"}
+[2017-03-11 01:24:32] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"583cd3f"}
+[2017-03-11 01:24:32] klusbibapi.INFO: {"scope":["tools.all","tools.create"]} [] {"uid":"583cd3f"}
+[2017-03-11 01:24:32] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"bdb94f4"}
+[2017-03-11 01:24:32] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"fba61b1"}
+[2017-03-11 01:25:02] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"0ad95a0"}
+[2017-03-11 01:25:02] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"446ccd4"}
+[2017-03-11 01:25:02] klusbibapi.INFO: {"iat":1489195502,"exp":1489202702,"jti":"6p02Pj5R75LKWozOSUcHCk","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]} [] {"uid":"446ccd4"}
+[2017-03-11 01:25:02] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"793aa42"}
+[2017-03-11 01:25:02] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"b9fe762"}
+[2017-03-11 01:26:49] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"5d64607"}
+[2017-03-11 01:26:49] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"8e2c82f"}
+[2017-03-11 01:26:49] klusbibapi.INFO: {"decoded":{"iat":1489195609,"exp":1489202809,"jti":"1BqW79CccLMQwuSedXO6BR","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}} [] {"uid":"8e2c82f"}
+[2017-03-11 01:26:49] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"337d866"}
+[2017-03-11 01:26:49] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"0a0bcb5"}
+[2017-03-11 01:27:58] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"d16a0cd"}
+[2017-03-11 01:27:58] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"d17fe1f"}
+[2017-03-11 01:27:58] klusbibapi.INFO: {"decoded":{"iat":1489195678,"exp":1489202878,"jti":"2VE8XkZQVLVbaObYXopKHH","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}} [] {"uid":"d17fe1f"}
+[2017-03-11 01:27:58] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"aea1e34"}
+[2017-03-11 01:27:58] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"fde0e59"}
+[2017-03-11 01:28:41] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"7a8b4c4"}
+[2017-03-11 01:28:41] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"fec7ae6"}
+[2017-03-11 01:28:41] klusbibapi.INFO: {"decoded":{"iat":1489195721,"exp":1489202921,"jti":"3QQxiRiaMfiouGirvXBLd9","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}} [] {"uid":"fec7ae6"}
+[2017-03-11 01:28:41] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"a714e6b"}
+[2017-03-11 01:28:41] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"728e238"}
+[2017-03-11 01:28:57] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"7e69f80"}
+[2017-03-11 01:28:57] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"62c9306"}
+[2017-03-11 01:28:57] klusbibapi.INFO: {"decoded":{"iat":1489195737,"exp":1489202937,"jti":"6pC603Y59td5PJAokazE5h","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}} [] {"uid":"62c9306"}
+[2017-03-11 01:28:57] klusbibapi.INFO: {"iat":1489195737,"exp":1489202937,"jti":"6pC603Y59td5PJAokazE5h","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]} [] {"uid":"62c9306"}
+[2017-03-11 01:28:57] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"aa4ca54"}
+[2017-03-11 01:28:57] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"07fbe70"}
+[2017-03-11 01:30:10] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"2b875d4"}
+[2017-03-11 01:30:10] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"42bd7df"}
+[2017-03-11 01:30:10] klusbibapi.INFO: {"decoded":{"iat":1489195810,"exp":1489203010,"jti":"3wcfvy12o6vM9M2Vr9AZ9U","sub":"test","scope":"tools.all"}} [] {"uid":"42bd7df"}
+[2017-03-11 01:30:10] klusbibapi.INFO: {"iat":1489195810,"exp":1489203010,"jti":"3wcfvy12o6vM9M2Vr9AZ9U","sub":"test","scope":"tools.all"} [] {"uid":"42bd7df"}
+[2017-03-11 01:30:10] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"89c9443"}
+[2017-03-11 01:30:10] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"aaec83a"}
+[2017-03-11 01:34:24] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"217de1a"}
+[2017-03-11 01:34:24] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"f5c2f5c"}
+[2017-03-11 01:34:24] klusbibapi.INFO: {"decoded":{"iat":1489196064,"exp":1489203264,"jti":"4Wi0B2x8k1frcNf1t8g3AW","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}} [] {"uid":"f5c2f5c"}
+[2017-03-11 01:34:24] klusbibapi.INFO: {"iat":1489196064,"exp":1489203264,"jti":"4Wi0B2x8k1frcNf1t8g3AW","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]} [] {"uid":"f5c2f5c"}
+[2017-03-11 01:34:24] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"cd527fa"}
+[2017-03-11 01:34:24] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"8558b20"}
+[2017-03-11 01:35:52] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"d5f3d39"}
+[2017-03-11 01:35:52] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"f6c377d"}
+[2017-03-11 01:35:52] klusbibapi.INFO: {"decoded":{"iat":1489196152,"exp":1489203352,"jti":"34tViX9UTPsdCiAGYThOuZ","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}} [] {"uid":"f6c377d"}
+[2017-03-11 01:35:52] klusbibapi.INFO: {"iat":1489196152,"exp":1489203352,"jti":"34tViX9UTPsdCiAGYThOuZ","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]} [] {"uid":"f6c377d"}
+[2017-03-11 01:35:52] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"f14ecc9"}
+[2017-03-11 01:35:52] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"cd5a4ea"}
+[2017-03-11 01:36:10] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"857ff0d"}
+[2017-03-11 01:36:10] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"11815ba"}
+[2017-03-11 01:36:10] klusbibapi.INFO: {"decoded":{"iat":1489196170,"exp":1489203370,"jti":"180YEM323wYJor6Omm0mzy","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}} [] {"uid":"11815ba"}
+[2017-03-11 01:36:10] klusbibapi.INFO: {"iat":1489196170,"exp":1489203370,"jti":"180YEM323wYJor6Omm0mzy","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]} [] {"uid":"11815ba"}
+[2017-03-11 01:36:10] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"6ce68f4"}
+[2017-03-11 01:36:10] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"e27d736"}
+[2017-03-11 01:41:16] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"267d1a7"}
+[2017-03-11 01:41:16] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"8cace92"}
+[2017-03-11 01:41:16] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"58828ff"}
+[2017-03-11 01:41:16] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"0ea462e"}
+[2017-03-11 01:43:52] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"6cb1280"}
+[2017-03-11 01:43:52] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"f1384e8"}
+[2017-03-11 01:43:52] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"58203bd"}
+[2017-03-11 01:43:52] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"1078c85"}
+[2017-03-11 01:46:32] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"8551df6"}
+[2017-03-11 01:46:32] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"e084d01"}
+[2017-03-11 01:46:32] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"1057152"}
+[2017-03-11 01:46:32] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"fa0aeb8"}
+[2017-03-11 01:46:58] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"f95e301"}
+[2017-03-11 01:46:58] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"2189093"}
+[2017-03-11 01:46:58] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"f786c19"}
+[2017-03-11 01:46:58] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"96c5d52"}
+[2017-03-11 01:48:06] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"56d7438"}
+[2017-03-11 01:48:06] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"3853144"}
+[2017-03-11 01:48:06] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"f40709d"}
+[2017-03-11 01:48:06] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"b862d8b"}
+[2017-03-11 01:48:47] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"dabdb00"}
+[2017-03-11 01:48:47] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"fa4256d"}
+[2017-03-11 01:48:47] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"8f76959"}
+[2017-03-11 01:48:47] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"42d858c"}
+[2017-03-11 01:49:20] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"1953af9"}
+[2017-03-11 01:49:20] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"f63fa40"}
+[2017-03-11 01:49:20] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"c7ca833"}
+[2017-03-11 01:49:20] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"b9110a0"}
+[2017-03-11 01:49:40] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"9c1881d"}
+[2017-03-11 01:49:40] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"aa4d183"}
+[2017-03-11 01:49:40] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"1aaa5b2"}
+[2017-03-11 01:49:40] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"219b97b"}
+[2017-03-11 01:49:40] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"8a2c3fe"}
+[2017-03-11 08:54:28] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"ea8748e"}
+[2017-03-11 08:54:28] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"259aef4"}
+[2017-03-11 08:54:28] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"bd8ffdf"}
+[2017-03-11 08:54:28] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"6e1597f"}
+[2017-03-11 08:54:29] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"10b8222"}
+[2017-03-11 08:54:52] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"02079ed"}
+[2017-03-11 08:54:52] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"b7da073"}
+[2017-03-11 08:54:52] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"934b8ff"}
+[2017-03-11 08:54:52] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"93eca7d"}
+[2017-03-11 08:54:52] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"71b412c"}
+[2017-03-11 10:19:44] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"ad2a9ce"}
+[2017-03-11 10:21:46] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"09ce245"}
+[2017-03-11 10:21:46] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"541dcc5"}
+[2017-03-11 10:21:46] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"aaf1d8c"}
+[2017-03-11 10:21:46] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"0fad624"}
+[2017-03-11 10:21:46] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"dbd791f"}
+[2017-03-11 11:42:46] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"094c8b8"}
+[2017-03-11 11:42:58] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"8de9670"}
+[2017-03-11 11:42:58] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"69040d8"}
+[2017-03-11 11:42:58] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"ed22d58"}
+[2017-03-11 11:42:58] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"7adf756"}
+[2017-03-11 11:42:58] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"6a8a137"}
+[2017-03-11 11:48:03] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"2ea1646"}
+[2017-03-11 11:48:03] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"010ab59"}
+[2017-03-11 11:48:03] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"dc68e8c"}
+[2017-03-11 11:48:03] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"99d5593"}
+[2017-03-11 11:48:03] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"d4c2af4"}
+[2017-03-11 11:49:34] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"3c4acb5"}
+[2017-03-11 11:49:34] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"347d3e6"}
+[2017-03-11 11:49:34] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"02205f8"}
+[2017-03-11 11:49:34] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"6ceb80d"}
+[2017-03-11 11:49:34] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"27a469a"}
+[2017-03-11 12:00:19] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"42b8965"}
+[2017-03-11 12:00:19] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"7de0e41"}
+[2017-03-11 12:00:19] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"c1905d4"}
+[2017-03-11 12:00:19] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"10cf31a"}
+[2017-03-11 12:00:19] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"3064189"}
+[2017-03-11 12:06:08] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"b39e18b"}
+[2017-03-11 12:06:09] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"f007a77"}
+[2017-03-11 12:06:09] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"be8e786"}
+[2017-03-11 12:06:09] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"826f8bd"}
+[2017-03-11 12:06:09] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"f7d9595"}
+[2017-03-11 12:51:07] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"67c212f"}
+[2017-03-11 12:51:07] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"a9c7559"}
+[2017-03-11 12:51:08] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"fabd772"}
+[2017-03-11 12:51:08] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"cb50a2c"}
+[2017-03-11 12:51:09] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"edb85fb"}
+[2017-03-11 12:53:22] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"a5df9b9"}
+[2017-03-11 12:53:22] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"9fb3651"}
+[2017-03-11 12:53:23] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"28a5469"}
+[2017-03-11 12:53:23] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"4699d25"}
+[2017-03-11 12:53:23] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"cdc771d"}
+[2017-03-11 12:54:31] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"26c7853"}
+[2017-03-11 12:54:31] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"be6134b"}
+[2017-03-11 12:54:32] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"1d1212c"}
+[2017-03-11 12:54:32] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"8a82f70"}
+[2017-03-11 12:54:32] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"aa2978f"}
+[2017-03-11 12:55:12] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"b6c4488"}
+[2017-03-11 12:55:12] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"16b5369"}
+[2017-03-11 12:55:12] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"e432026"}
+[2017-03-11 12:55:13] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"b07e400"}
+[2017-03-11 12:55:13] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"891314a"}
+[2017-03-11 12:58:10] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"dbf1513"}
+[2017-03-11 12:58:10] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"2bab678"}
+[2017-03-11 12:58:11] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"d70591c"}
+[2017-03-11 12:58:11] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"2d6fe70"}
+[2017-03-11 12:58:11] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"4e8868b"}
+[2017-03-11 12:59:07] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"178eb50"}
+[2017-03-11 12:59:07] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"8d5b230"}
+[2017-03-11 12:59:07] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"9037dde"}
+[2017-03-11 12:59:07] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"acc625f"}
+[2017-03-11 12:59:08] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"284371d"}
+[2017-03-11 12:59:46] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"74bff02"}
+[2017-03-11 12:59:46] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"e09a2e6"}
+[2017-03-11 12:59:47] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"5a141df"}
+[2017-03-11 12:59:47] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"068d658"}
+[2017-03-11 12:59:47] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"cc12364"}
+[2017-03-11 13:16:29] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"37d3502"}
+[2017-03-11 13:16:29] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"3928209"}
+[2017-03-11 13:16:29] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"02d1369"}
+[2017-03-11 13:16:30] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"4d56b79"}
+[2017-03-11 13:16:30] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"0a13a50"}
+[2017-03-11 13:16:45] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"bd9bf9a"}
+[2017-03-11 13:16:46] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"42d590d"}
+[2017-03-11 13:16:46] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"6e644a4"}
+[2017-03-11 13:16:46] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"b689953"}
+[2017-03-11 13:16:47] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"767fbb7"}
+[2017-03-11 13:21:54] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"a7828e2"}
+[2017-03-11 13:21:55] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"07a4d5f"}
+[2017-03-11 13:21:55] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"b48b4f0"}
+[2017-03-11 13:21:55] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"655c31b"}
+[2017-03-11 13:21:55] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"1692c9e"}
+[2017-03-11 13:21:55] klusbibapi.INFO: tool found:  [] {"uid":"1692c9e"}
+[2017-03-11 13:22:41] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"1a51f56"}
+[2017-03-11 13:22:42] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"d458d1b"}
+[2017-03-11 13:22:42] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"13ffc7a"}
+[2017-03-11 13:22:42] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"8a356b0"}
+[2017-03-11 13:22:42] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"786bcbc"}
+[2017-03-11 13:22:42] klusbibapi.INFO: tool found:  [] {"uid":"786bcbc"}
+[2017-03-11 13:24:48] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"80fd478"}
+[2017-03-11 13:24:48] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"c166465"}
+[2017-03-11 13:24:49] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"f805d9f"}
+[2017-03-11 13:24:49] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"1acde6e"}
+[2017-03-11 13:24:49] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"b1232b0"}
+[2017-03-11 13:24:49] klusbibapi.INFO: tool found:  [] {"uid":"b1232b0"}
+[2017-03-11 13:25:09] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"565e75c"}
+[2017-03-11 13:25:10] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"b966de2"}
+[2017-03-11 13:25:10] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"6aef8ca"}
+[2017-03-11 13:25:10] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"54c8fd1"}
+[2017-03-11 13:25:10] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"924857d"}
+[2017-03-11 13:25:10] klusbibapi.INFO: tool found:  [] {"uid":"924857d"}
+[2017-03-11 13:26:08] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"f87f760"}
+[2017-03-11 13:26:08] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"f5898b2"}
+[2017-03-11 13:26:08] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"13660ba"}
+[2017-03-11 13:26:08] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"295ace9"}
+[2017-03-11 13:26:09] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"04e5c32"}
+[2017-03-11 13:27:17] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"e47041c"}
+[2017-03-11 13:27:17] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"45a0e34"}
+[2017-03-11 13:27:17] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"e0ede25"}
+[2017-03-11 13:27:18] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"f31d114"}
+[2017-03-11 13:27:18] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"bc6c38d"}
+[2017-03-11 13:27:48] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"608946b"}
+[2017-03-11 13:27:48] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"e8b3883"}
+[2017-03-11 13:27:48] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"84d0ec3"}
+[2017-03-11 13:27:48] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"9ee5d03"}
+[2017-03-11 13:27:49] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"1e2cfb8"}
+[2017-03-11 13:41:08] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"f1cc3a0"}
+[2017-03-11 13:41:08] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"5021d0f"}
+[2017-03-11 13:41:08] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"87cfea6"}
+[2017-03-11 13:41:08] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"98e871a"}
+[2017-03-11 13:41:08] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"0ab4b28"}
+[2017-03-11 13:43:17] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"e1b05a8"}
+[2017-03-11 13:43:17] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"c9ad337"}
+[2017-03-11 13:43:17] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"7e05d74"}
+[2017-03-11 13:43:17] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"54a45ee"}
+[2017-03-11 13:43:17] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"61023ce"}
+[2017-03-11 13:47:26] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"8354583"}
+[2017-03-11 13:47:26] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"531f0e0"}
+[2017-03-11 13:47:26] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"6811f99"}
+[2017-03-11 13:47:26] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"7cf93da"}
+[2017-03-11 13:47:26] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"eccb9f8"}
+[2017-03-11 13:47:48] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"8ced3ec"}
+[2017-03-11 13:47:48] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"1cd115a"}
+[2017-03-11 13:47:48] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"3032790"}
+[2017-03-11 13:47:48] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"5fcf5bd"}
+[2017-03-11 13:47:48] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"379a65f"}
+[2017-03-11 13:48:06] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"0b0ecbc"}
+[2017-03-11 13:48:06] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"93c0867"}
+[2017-03-11 13:48:06] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"83b3c80"}
+[2017-03-11 13:48:06] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"195b4e5"}
+[2017-03-11 13:48:32] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"4808922"}
+[2017-03-11 13:48:32] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"8d611af"}
+[2017-03-11 13:48:32] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"cd68ac8"}
+[2017-03-11 13:48:32] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"6e55331"}
+[2017-03-11 13:49:08] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"68d03c7"}
+[2017-03-11 13:49:08] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"3c2987f"}
+[2017-03-11 13:49:08] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"32fc242"}
+[2017-03-11 13:49:08] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"469b2e7"}
+[2017-03-11 13:49:23] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"9522ff3"}
+[2017-03-11 13:49:23] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"c25482a"}
+[2017-03-11 13:49:23] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"7cd0e07"}
+[2017-03-11 13:49:23] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"93411a6"}
+[2017-03-11 13:49:23] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"274b509"}
+[2017-03-11 13:49:36] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"76a838b"}
+[2017-03-11 13:49:36] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"c5ac0ad"}
+[2017-03-11 13:49:36] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"a858dd4"}
+[2017-03-11 13:49:36] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"7caa4cc"}
+[2017-03-11 13:49:36] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"b9fd4c4"}
+[2017-03-11 13:49:43] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"3e68fbf"}
+[2017-03-11 13:49:43] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"9944689"}
+[2017-03-11 13:49:43] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"bf6a82f"}
+[2017-03-11 13:49:43] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"d824e7f"}
+[2017-03-11 13:49:43] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"e8bff11"}
+[2017-03-11 13:50:33] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"bbb1e28"}
+[2017-03-11 13:50:33] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"77e7496"}
+[2017-03-11 13:50:33] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"55708e6"}
+[2017-03-11 13:50:33] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"e2ac41f"}
+[2017-03-11 13:50:42] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"f966e2a"}
+[2017-03-11 13:50:42] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"fdac3e5"}
+[2017-03-11 13:50:42] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"f3167cc"}
+[2017-03-11 13:50:42] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"5c8779a"}
+[2017-03-11 13:50:42] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"9b128a5"}
+[2017-03-11 13:57:30] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"aa63180"}
+[2017-03-11 13:57:30] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"1ce8746"}
+[2017-03-11 13:57:30] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"f2718ce"}
+[2017-03-11 13:57:30] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"01f7ff2"}
+[2017-03-11 13:57:48] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"fff535f"}
+[2017-03-11 13:57:48] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"5c11722"}
+[2017-03-11 13:57:48] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"9ca21a9"}
+[2017-03-11 13:57:48] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"072cea5"}
+[2017-03-11 13:58:20] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"f7dbc19"}
+[2017-03-11 13:58:20] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"b2b1b08"}
+[2017-03-11 13:58:20] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"bc7cce6"}
+[2017-03-11 13:58:20] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"0478eeb"}
+[2017-03-11 13:58:20] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"d2912b8"}
+[2017-03-11 13:58:34] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"1056cbc"}
+[2017-03-11 13:58:34] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"e9ec67b"}
+[2017-03-11 13:58:34] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"356da70"}
+[2017-03-11 13:58:34] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"79cc385"}
+[2017-03-11 13:58:34] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"1479490"}
+[2017-03-11 13:58:54] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"80d49d0"}
+[2017-03-11 13:58:54] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"7b2dff5"}
+[2017-03-11 13:58:54] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"4b378c2"}
+[2017-03-11 13:58:54] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"df7b380"}
+[2017-03-11 13:58:54] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"b4eb986"}
+[2017-03-11 14:03:38] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"315e2e1"}
+[2017-03-11 14:03:38] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"c9c603a"}
+[2017-03-11 14:03:38] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"2a341dd"}
+[2017-03-11 14:03:38] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"ec1d24a"}
+[2017-03-11 14:03:38] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"9f4743e"}
+[2017-03-11 14:07:43] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"395ccd3"}
+[2017-03-11 14:07:43] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"0326395"}
+[2017-03-11 14:07:43] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"141df26"}
+[2017-03-11 14:07:44] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"c5ff105"}
+[2017-03-11 14:07:44] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"5a3f230"}
+[2017-03-11 14:10:45] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"cecd14d"}
+[2017-03-11 14:10:45] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"4ff2a56"}
+[2017-03-11 14:10:45] klusbibapi.INFO: Missing user firstname [] {"uid":"4ff2a56"}
+[2017-03-11 14:10:45] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"2b91df5"}
+[2017-03-11 14:10:45] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"7721cb1"}
+[2017-03-11 14:10:45] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"999094e"}
+[2017-03-11 14:12:55] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"5b23600"}
+[2017-03-11 14:12:55] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"e4430c8"}
+[2017-03-11 14:12:55] klusbibapi.INFO: Missing user firstname [] {"uid":"e4430c8"}
+[2017-03-11 14:12:55] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"89dbffc"}
+[2017-03-11 14:12:55] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"bb17849"}
+[2017-03-11 14:12:55] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"dc1fbed"}
+[2017-03-11 14:13:06] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"74b85d5"}
+[2017-03-11 14:13:06] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"69a2a8e"}
+[2017-03-11 14:13:06] klusbibapi.INFO: Missing user firstname [] {"uid":"69a2a8e"}
+[2017-03-11 14:13:06] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"56225cb"}
+[2017-03-11 14:13:07] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"e3e84f6"}
+[2017-03-11 14:13:07] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"2687d40"}
+[2017-03-11 14:14:38] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"9b8aded"}
+[2017-03-11 14:14:38] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"a131110"}
+[2017-03-11 14:14:38] klusbibapi.INFO: Missing user firstname [] {"uid":"a131110"}
+[2017-03-11 14:14:38] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"f77d11a"}
+[2017-03-11 14:14:38] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"d01cad4"}
+[2017-03-11 14:14:38] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"946feaf"}
+[2017-03-11 14:17:05] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"85f0702"}
+[2017-03-11 14:17:05] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"66ec79c"}
+[2017-03-11 14:17:05] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"155e074"}
+[2017-03-11 14:17:05] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"913afab"}
+[2017-03-11 14:17:06] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"dc94a8b"}
+[2017-03-11 14:17:25] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"9e48bd5"}
+[2017-03-11 14:17:25] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"95221d1"}
+[2017-03-11 14:17:25] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"e457fd8"}
+[2017-03-11 14:17:25] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"e17c81f"}
+[2017-03-11 14:17:26] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"7f893ca"}
+[2017-03-11 14:21:48] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"b499dfc"}
+[2017-03-11 14:21:48] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"2f57a0b"}
+[2017-03-11 14:21:48] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"d99cc27"}
+[2017-03-11 14:21:48] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"53e0ec1"}
+[2017-03-11 14:21:48] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"53e0ec1"}
+[2017-03-11 14:21:48] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"4bc9cde"}
+[2017-03-11 14:22:13] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"9a4d1d9"}
+[2017-03-11 14:22:13] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"ba249b5"}
+[2017-03-11 14:22:13] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"8ece11b"}
+[2017-03-11 14:22:13] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"4809521"}
+[2017-03-11 14:22:13] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"4809521"}
+[2017-03-11 14:22:13] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"d0144e8"}
+[2017-03-11 14:22:25] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"33e62fd"}
+[2017-03-11 14:22:25] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"70b599a"}
+[2017-03-11 14:22:25] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"eb3587a"}
+[2017-03-11 14:22:25] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"f35c5ab"}
+[2017-03-11 14:22:25] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"f35c5ab"}
+[2017-03-11 14:22:25] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"20f3255"}
+[2017-03-11 14:22:56] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"fa88f72"}
+[2017-03-11 14:22:56] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"e7e005f"}
+[2017-03-11 14:22:56] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"3e00e9e"}
+[2017-03-11 14:22:56] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"d5d5030"}
+[2017-03-11 14:22:56] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"d5d5030"}
+[2017-03-11 14:22:56] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"ec06eaa"}
+[2017-03-11 14:22:56] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"ec06eaa"}
+[2017-03-11 14:24:41] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"6386708"}
+[2017-03-11 14:24:42] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"9857db6"}
+[2017-03-11 14:24:42] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"ac50109"}
+[2017-03-11 14:24:42] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"e306b61"}
+[2017-03-11 14:24:42] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"e306b61"}
+[2017-03-11 14:24:42] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"e7fe741"}
+[2017-03-11 14:24:42] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"e7fe741"}
+[2017-03-11 14:25:04] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"e71efe4"}
+[2017-03-11 14:25:04] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"7741a19"}
+[2017-03-11 14:25:04] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"0d17c38"}
+[2017-03-11 14:25:04] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"aa243e4"}
+[2017-03-11 14:25:04] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"aa243e4"}
+[2017-03-11 14:25:04] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"5a2f771"}
+[2017-03-11 14:25:04] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"5a2f771"}
+[2017-03-11 14:25:24] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"327d9ad"}
+[2017-03-11 14:25:24] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"77d576b"}
+[2017-03-11 14:25:24] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"bd3c58c"}
+[2017-03-11 14:25:24] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"5d3be02"}
+[2017-03-11 14:25:24] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"5d3be02"}
+[2017-03-11 14:25:24] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"e828435"}
+[2017-03-11 14:25:24] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"e828435"}
+[2017-03-11 14:26:38] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"d25bf57"}
+[2017-03-11 14:26:38] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"a46214f"}
+[2017-03-11 14:26:38] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"aa87d26"}
+[2017-03-11 14:26:38] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"767ac3f"}
+[2017-03-11 14:26:38] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"767ac3f"}
+[2017-03-11 14:26:38] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"114232c"}
+[2017-03-11 14:26:38] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"114232c"}
+[2017-03-11 14:26:50] klusbibapi.INFO: Klusbib GET '/tools' route [] {"uid":"f0514d6"}
+[2017-03-11 14:26:50] klusbibapi.INFO: Klusbib POST '/tools' route [] {"uid":"cd63048"}
+[2017-03-11 14:26:50] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"8b90570"}
+[2017-03-11 14:26:50] klusbibapi.INFO: Klusbib PUT '/tools/id' route [] {"uid":"098aecc"}
+[2017-03-11 14:26:50] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"098aecc"}
+[2017-03-11 14:26:50] klusbibapi.INFO: Klusbib DELETE '/tools/id' route [] {"uid":"3aa0890"}
+[2017-03-11 14:26:50] klusbibapi.INFO: Klusbib GET '/tools/id' route [] {"uid":"3aa0890"}
+[2017-03-11 14:33:12] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"6fe2503"}
+[2017-03-11 14:33:12] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"e9b34f1"}
+[2017-03-11 14:33:13] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"66ecf29"}
+[2017-03-11 14:33:13] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"f9350d0"}
+[2017-03-11 14:33:14] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"3cce2e8"}
+[2017-03-11 14:34:32] klusbibapi.INFO: Klusbib '/users' route [] {"uid":"d67044f"}
+[2017-03-11 14:34:32] klusbibapi.INFO: Klusbib post on '/users' route [] {"uid":"616d94a"}
+[2017-03-11 14:34:32] klusbibapi.INFO: Missing user firstname [] {"uid":"616d94a"}
+[2017-03-11 14:34:33] klusbibapi.INFO: Klusbib get on '/users/id' route [] {"uid":"8335474"}
+[2017-03-11 14:34:33] klusbibapi.INFO: Klusbib pu on '/users/id' route [] {"uid":"8ba2cb4"}
+[2017-03-11 14:34:33] klusbibapi.INFO: Klusbib delete on '/users/id' route [] {"uid":"95cd43a"}
+[2017-03-11 17:07:56] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"67d0ca3"}
+[2017-03-11 17:07:56] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"9bfc0af"}
+[2017-03-11 17:07:56] klusbibapi.INFO: Missing user firstname [] {"uid":"9bfc0af"}
+[2017-03-11 17:07:57] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"1cb2ab5"}
+[2017-03-11 17:07:57] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"4f6301b"}
+[2017-03-11 17:07:58] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"bd8c5c8"}
+[2017-03-11 17:08:34] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"1cc5015"}
+[2017-03-11 17:08:34] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"8991339"}
+[2017-03-11 17:08:34] klusbibapi.INFO: Missing user firstname [] {"uid":"8991339"}
+[2017-03-11 17:08:34] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"c7a92d5"}
+[2017-03-11 17:08:35] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"f78f9ba"}
+[2017-03-11 17:08:35] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"74ae233"}
+[2017-03-11 17:09:09] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"be99644"}
+[2017-03-11 17:09:09] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"350fc13"}
+[2017-03-11 17:09:09] klusbibapi.INFO: Missing user firstname [] {"uid":"350fc13"}
+[2017-03-11 17:09:10] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"a2c0722"}
+[2017-03-11 17:09:10] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"21e1261"}
+[2017-03-11 17:09:11] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"79f1c28"}
+[2017-03-11 17:09:24] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"d669f05"}
+[2017-03-11 17:09:25] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"4bd64d3"}
+[2017-03-11 17:09:25] klusbibapi.INFO: Missing user firstname [] {"uid":"4bd64d3"}
+[2017-03-11 17:09:25] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"69b2bb5"}
+[2017-03-11 17:09:26] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"79fcb60"}
+[2017-03-11 17:09:26] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"601f042"}
+[2017-03-11 17:15:24] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"faa7f15"}
+[2017-03-11 17:15:25] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"75084fc"}
+[2017-03-11 17:15:25] klusbibapi.INFO: Missing user firstname [] {"uid":"75084fc"}
+[2017-03-11 17:15:25] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"b1c0f9d"}
+[2017-03-11 17:15:26] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"1843f4a"}
+[2017-03-11 17:15:26] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"3625c17"}
+[2017-03-11 17:15:44] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"56b0368"}
+[2017-03-11 17:15:44] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"8fd9860"}
+[2017-03-11 17:15:44] klusbibapi.INFO: Missing user firstname [] {"uid":"8fd9860"}
+[2017-03-11 17:15:44] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"1a20982"}
+[2017-03-11 17:15:45] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"7f9e2a2"}
+[2017-03-11 17:15:45] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"c44506e"}
+[2017-03-11 17:16:06] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"4623f30"}
+[2017-03-11 17:16:06] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"71fa994"}
+[2017-03-11 17:16:06] klusbibapi.INFO: Missing user firstname [] {"uid":"71fa994"}
+[2017-03-11 17:16:07] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"575d04f"}
+[2017-03-11 17:16:07] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"0a9b19c"}
+[2017-03-11 17:16:08] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"6548372"}
+[2017-03-11 17:18:09] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"79e932e"}
+[2017-03-11 17:18:13] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"5672820"}
+[2017-03-11 17:18:13] klusbibapi.INFO: Missing user firstname [] {"uid":"5672820"}
+[2017-03-11 17:18:14] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"f172ee8"}
+[2017-03-11 17:18:14] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"24e84ff"}
+[2017-03-11 17:18:15] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"c8e5fc6"}
+[2017-03-11 17:18:45] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"f28da35"}
+[2017-03-11 17:18:45] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"23aa570"}
+[2017-03-11 17:18:45] klusbibapi.INFO: Missing user firstname [] {"uid":"23aa570"}
+[2017-03-11 17:18:46] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"039e65e"}
+[2017-03-11 17:18:46] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"7951402"}
+[2017-03-11 17:18:46] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"60dae86"}
+[2017-03-11 17:19:04] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"4236f14"}
+[2017-03-11 17:19:05] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"82e6917"}
+[2017-03-11 17:19:05] klusbibapi.INFO: Missing user firstname [] {"uid":"82e6917"}
+[2017-03-11 17:19:05] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"b8b8e00"}
+[2017-03-11 17:19:06] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"f081a9b"}
+[2017-03-11 17:19:06] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"a50e739"}
+[2017-03-11 17:22:34] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"57c7379"}
+[2017-03-11 17:22:35] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"12225c6"}
+[2017-03-11 17:22:35] klusbibapi.INFO: Missing user firstname [] {"uid":"12225c6"}
+[2017-03-11 17:22:35] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"75a4a0e"}
+[2017-03-11 17:22:35] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"01f7769"}
+[2017-03-11 17:22:35] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"01f7769"}
+[2017-03-11 17:22:36] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"c97c622"}
+[2017-03-11 17:23:40] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"bac399b"}
+[2017-03-11 17:23:41] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"e6a2aea"}
+[2017-03-11 17:23:41] klusbibapi.INFO: Missing user firstname [] {"uid":"e6a2aea"}
+[2017-03-11 17:23:41] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"d0bdd10"}
+[2017-03-11 17:23:41] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"e30eca7"}
+[2017-03-11 17:23:41] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"e30eca7"}
+[2017-03-11 17:23:42] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"99caa4a"}
+[2017-03-11 17:23:42] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"5511956"}
+[2017-03-11 17:24:28] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"5917fc0"}
+[2017-03-11 17:24:28] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"79ce502"}
+[2017-03-11 17:24:28] klusbibapi.INFO: Missing user firstname [] {"uid":"79ce502"}
+[2017-03-11 17:24:29] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"9b195e4"}
+[2017-03-11 17:24:29] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"3938180"}
+[2017-03-11 17:24:29] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"3938180"}
+[2017-03-11 17:24:29] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"2d1f438"}
+[2017-03-11 17:24:30] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"315d9dd"}
+[2017-03-11 17:24:30] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"315d9dd"}
+[2017-03-11 17:33:10] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"4899802"}
+[2017-03-11 17:33:11] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"73eff2d"}
+[2017-03-11 17:33:11] klusbibapi.INFO: Missing user firstname [] {"uid":"73eff2d"}
+[2017-03-11 17:33:11] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"b46e6c0"}
+[2017-03-11 17:33:11] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"51b7b42"}
+[2017-03-11 17:33:12] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"be97b0a"}
+[2017-03-11 17:33:12] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"7a762cb"}
+[2017-03-11 17:33:12] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"7a762cb"}
+[2017-03-11 17:33:44] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"373fc64"}
+[2017-03-11 17:33:45] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"b883e24"}
+[2017-03-11 17:33:45] klusbibapi.INFO: Missing user firstname [] {"uid":"b883e24"}
+[2017-03-11 17:33:45] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"2d2edfa"}
+[2017-03-11 17:33:46] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"92b87dc"}
+[2017-03-11 17:33:46] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"dc4ddf0"}
+[2017-03-11 17:33:46] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"e25f97b"}
+[2017-03-11 17:33:46] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"e25f97b"}
+[2017-03-11 17:34:22] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"8a31a90"}
+[2017-03-11 17:34:23] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"3cfa503"}
+[2017-03-11 17:34:23] klusbibapi.INFO: Missing user firstname [] {"uid":"3cfa503"}
+[2017-03-11 17:34:23] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"636b82f"}
+[2017-03-11 17:34:23] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"8ac5f4f"}
+[2017-03-11 17:34:24] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"459c9ec"}
+[2017-03-11 17:34:24] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"f592808"}
+[2017-03-11 17:34:24] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"f592808"}
+[2017-03-11 17:34:55] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"6c7ea11"}
+[2017-03-11 17:34:55] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"8508d4d"}
+[2017-03-11 17:34:55] klusbibapi.INFO: Missing user firstname [] {"uid":"8508d4d"}
+[2017-03-11 17:34:56] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"21a2426"}
+[2017-03-11 17:34:56] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"97be840"}
+[2017-03-11 17:34:56] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"97be840"}
+[2017-03-11 17:34:56] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"5b21aaa"}
+[2017-03-11 17:34:57] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"af15314"}
+[2017-03-11 17:34:57] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"af15314"}
+[2017-03-11 17:36:35] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"b9929e2"}
+[2017-03-11 17:36:36] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"80ef282"}
+[2017-03-11 17:36:36] klusbibapi.INFO: Missing user firstname [] {"uid":"80ef282"}
+[2017-03-11 17:36:36] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"ca86012"}
+[2017-03-11 17:36:36] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"da07214"}
+[2017-03-11 17:36:36] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"da07214"}
+[2017-03-11 17:36:37] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"0bde550"}
+[2017-03-11 17:36:37] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"bd8d8da"}
+[2017-03-11 17:36:37] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"bd8d8da"}
+[2017-03-11 17:39:35] klusbibapi.INFO: Klusbib GET on '/users' route [] {"uid":"bc2d90d"}
+[2017-03-11 17:39:36] klusbibapi.INFO: Klusbib POST on '/users' route [] {"uid":"4523a73"}
+[2017-03-11 17:39:36] klusbibapi.INFO: Missing user firstname [] {"uid":"4523a73"}
+[2017-03-11 17:39:36] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"c8fa5e2"}
+[2017-03-11 17:39:37] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"8b264af"}
+[2017-03-11 17:39:37] klusbibapi.INFO: Klusbib GET on '/users/id' route [] {"uid":"8b264af"}
+[2017-03-11 17:39:37] klusbibapi.INFO: Klusbib PUT on '/users/id' route [] {"uid":"7f1bc9a"}
+[2017-03-11 17:39:37] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"475a180"}
+[2017-03-11 17:39:37] klusbibapi.INFO: Klusbib DELETE on '/users/id' route [] {"uid":"475a180"}

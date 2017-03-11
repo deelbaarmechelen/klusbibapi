@@ -1,9 +1,29 @@
 <?php
+$dotenv = new Dotenv\Dotenv(__DIR__ . '/../');
+$dotenv->load();
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Container\Container;
+use \AD7six\Dsn\Dsn;
 
+$url = getenv('TEST_DATABASE_URL');
+if (isset($url) && !empty($url)) {
+	$dsn = Dsn::parse($url);
+	$host = $dsn->host;
+	$database = substr($dsn->path, 1);
+	$user = $dsn->user;
+	$pass = $dsn->pass;
+	$port = $dsn->port;
+	
+}
+else {
+	$host = getenv('TEST_DB_HOST');
+	$database = getenv('TEST_DB_NAME');
+	$user = getenv('TEST_DB_USER');
+	$pass = getenv('TEST_DB_PASS');
+	$port = getenv('TEST_DB_PORT');
+}
 $capsule = new Capsule;
 
 $capsule->addConnection([
@@ -16,6 +36,12 @@ $capsule->addConnection([
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',
 ]);
+// $capsule->addConnection([
+// 		'driver'   => 'sqlite',
+// // 		'database' => __DIR__.'/database.sqlite',
+// 		'database' => ':memory:?cache=shared',
+// 		'prefix'   => '',
+// ], 'default');
 
 // Set the event dispatcher used by Eloquent models... (optional)
 $capsule->setEventDispatcher(new Dispatcher(new Container));
@@ -33,23 +59,27 @@ return [
 
         // Renderer settings
         'renderer' => [
-            'template_path' => __DIR__ . '/../templates/',
+            'template_path' => PROJECT_ROOT . '/templates/',
         ],
 
         // Monolog settings
         'logger' => [
             'name' => 'klusbibapi',
-            'path' => __DIR__ . '/../logs/app.log',
+            'path' => __DIR__ . '/logs/app.log',
             'level' => \Monolog\Logger::DEBUG,
         ],
     
     	// Database settings
     	'db' => [
+    		'url' => $url,
     		'host' => $host,
     		'user' => $user,
     		'pass' => $pass,
     		'dbname' => $database,
     		'port' => $port
     	],
+    	'version'        => '0.0.0',
+    	'debug'          => false,
+    	'mode'           => 'testing',
     ],
 ];
