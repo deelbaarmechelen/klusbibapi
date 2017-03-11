@@ -31,16 +31,23 @@ $app->post('/users', function ($request, $response, $args) {
 	}
 	
 	$parsedBody = $request->getParsedBody();
-	if (empty($parsedBody) || UserValidator::isValidUserData($parsedBody, $this->logger)) {
+	$this->logger->info("parsedbody=" . json_encode($parsedBody));
+	if (empty($parsedBody) || !UserValidator::isValidUserData($parsedBody, $this->logger)) {
 		return $response->withStatus(400); // Bad request
 	}
 	$user = new \Api\Model\User;
-	if (!empty($parsedBody->membership_start_date)) {
-		$user->membership_start_date = $parsedBody->membership_start_date;
-		if (!empty($parsedBody->membership_end_date)) {
-			$user->membership_end_date = $parsedBody->membership_end_date;
+	$user->firstname = $parsedBody["firstname"];
+	$user->lastname = $parsedBody["lastname"];
+	$user->role = $parsedBody["role"];
+	if (!empty($parsedBody["email"])) {
+		$user->email= $parsedBody["email"];
+	}
+	if (!empty($parsedBody["membership_start_date"])) {
+		$user->membership_start_date = $parsedBody["membership_start_date"];
+		if (!empty($parsedBody["membership_end_date"])) {
+			$user->membership_end_date = $parsedBody["membership_end_date"];
 		} else { // default to 1 year membership
-			$user->membership_end_date = strtotime("+1 year", strtotime($parsedBody->membership_start_date));
+			$user->membership_end_date = strtotime("+1 year", strtotime($parsedBody["membership_start_date"]));
 		}
 	}
 	$user->save();

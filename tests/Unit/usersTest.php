@@ -65,9 +65,26 @@ class UsersTest extends LocalDbWebTestCase
 		$header = array('Authorization' => "bearer $responseData->token");
 		$container = $this->app->getContainer();
 
-		$data = array("name" => "myname", "description" => "my description of tool");
-		$this->client->post('/users', $data, $header);
+		$data = array("firstname" => "myname", 
+				"lastname" => "my lastname",
+				"email" => "myname.lastname@klusbib.be",
+				"role" => "member"
+		);
+		$body = $this->client->post('/users', $data, $header);
+// 		print_r($body);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$user = json_decode($body);
+		$this->assertNotNull($user->user_id);
+		
+		// check user has properly been updated
+		$bodyGet = $this->client->get('/users/' . $user->user_id);
+		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$user = json_decode($bodyGet);
+		$this->assertEquals($data["firstname"], $user->firstname);
+		$this->assertEquals($data["lastname"], $user->lastname);
+		$this->assertEquals($data["email"], $user->email);
+		$this->assertEquals($data["role"], $user->role);
+		
 	}
 	
 	public function testGetUser()

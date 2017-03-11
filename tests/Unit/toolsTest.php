@@ -52,9 +52,23 @@ class ToolsTest extends LocalDbWebTestCase
 // 		$container["token"]->decoded = $decoded;
 // 		print_r($this->app->getContainer()["token"]);
 
-		$data = array("name" => "myname", "description" => "my description of tool");
-		$this->client->post('/tools', $data, $header);
+		$data = array("name" => "myname", 
+				"description" => "my description of tool",
+				"category" => "my category"
+		);
+		$body = $this->client->post('/tools', $data, $header);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$tool = json_decode($body);
+		$this->assertNotNull($tool->tool_id);
+		
+		// check tool has properly been updated
+		$bodyGet = $this->client->get('/tools/' . $tool->tool_id);
+		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$tool = json_decode($bodyGet);
+		$this->assertEquals($data["name"], $tool->name);
+		$this->assertEquals($data["description"], $tool->description);
+		$this->assertEquals($data["category"], $tool->category);
+		
 	}
 	public function testGetTool()
 	{
@@ -62,7 +76,7 @@ class ToolsTest extends LocalDbWebTestCase
 		$body = $this->client->get('/tools/1');
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$tool = json_decode($body);
-		$this->assertEquals("1", $tool->id);
+		$this->assertEquals("1", $tool->tool_id);
 		$this->assertEquals("tool 1", $tool->name);
 		$this->assertEquals("description 1", $tool->description);
 	}
@@ -71,7 +85,9 @@ class ToolsTest extends LocalDbWebTestCase
 	{
 		echo "test PUT tool\n";
 		$data = array("name" => "my new name", 
-				"description" =>"my new description");
+				"description" =>"my new description",
+				"category" => "my new category"
+		);
 		$header = array();
 		$this->client->put('/tools/1', $data, $header);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
@@ -82,6 +98,7 @@ class ToolsTest extends LocalDbWebTestCase
 		$tool = json_decode($bodyGet);
 		$this->assertEquals($data["name"], $tool->name);
 		$this->assertEquals($data["description"], $tool->description);
+		$this->assertEquals($data["category"], $tool->category);
 	}
 
 	public function testDeleteTool()

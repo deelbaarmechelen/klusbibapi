@@ -28,10 +28,6 @@ class LocalWebTestCase extends WebTestCase {
 		
 		// Register routes
 		require PROJECT_ROOT . '/src/routes.php';
-		require PROJECT_ROOT . '/src/routes/token.php';
-		require PROJECT_ROOT . '/src/routes/tools.php';
-		require PROJECT_ROOT . '/src/routes/users.php';
-		require PROJECT_ROOT . '/src/routes/consumers.php';
 		
 		return $app;
 	}
@@ -155,11 +151,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
     
     	// Register routes
     	require PROJECT_ROOT . '/src/routes.php';
-    	require PROJECT_ROOT . '/src/routes/token.php';
-    	require PROJECT_ROOT . '/src/routes/tools.php';
-    	require PROJECT_ROOT . '/src/routes/users.php';
-    	require PROJECT_ROOT . '/src/routes/consumers.php';
-    
+    	 
     	return $app;
     }
     

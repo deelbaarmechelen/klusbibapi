@@ -3,6 +3,7 @@
 use Api\Token;
 
 $app->post("/token", function ($request, $response, $arguments) {
+	$this->logger->info("Klusbib POST '/token' route");
 	$requested_scopes = $request->getParsedBody();
 	$valid_scopes = [
 			"tools.create",
@@ -11,6 +12,12 @@ $app->post("/token", function ($request, $response, $arguments) {
 			"tools.delete",
 			"tools.list",
 			"tools.all",
+			"reservations.create",
+			"reservations.read",
+			"reservations.update",
+			"reservations.delete",
+			"reservations.list",
+			"reservations.all",
 			"users.create",
 			"users.read",
 			"users.update",
