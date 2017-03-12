@@ -10,10 +10,6 @@ use Api\Authorisation;
 $app->get('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib GET on '/users' route");
 
-	if (false === $this->token->hasScope(["users.all", "users.list"])) {
-		throw new ForbiddenException("Token not allowed to list users.", 403);
-	}
-	
 	$users = Capsule::table('users')->orderBy('lastname', 'asc')->get();
 	$data = array();
 	foreach ($users as $user) {
@@ -22,6 +18,16 @@ $app->get('/users', function ($request, $response, $args) {
 	return $response->withJson($data);
 });
 
+$app->get('/users/{userid}', function ($request, $response, $args) {
+	$this->logger->info("Klusbib GET on '/users/id' route");
+
+	$user = User::find($args['userid']);
+	if (null == $user) {
+		return $response->withStatus(404);
+	}
+	return $response->withJson(UserMapper::mapUserToArray($user));
+});
+	
 $app->post('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib POST on '/users' route");
 
@@ -55,20 +61,6 @@ $app->post('/users', function ($request, $response, $args) {
 });
 
 	
-$app->get('/users/{userid}', function ($request, $response, $args) {
-	$this->logger->info("Klusbib GET on '/users/id' route");
-
-	if (false === $this->token->hasScope(["users.all", "users.read"])) {
-		throw new ForbiddenException("Token not allowed to read users.", 403);
-	}
-	
-	$user = User::find($args['userid']);
-	if (null == $user) {
-		return $response->withStatus(404);
-	}
-	return $response->withJson(UserMapper::mapUserToArray($user));
-});
-
 $app->put('/users/{userid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib PUT on '/users/id' route");
 
@@ -95,6 +87,7 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	if (isset($parsedBody["role"])) {
 		$user->role = $parsedBody["role"];
 	}
+	// FIXME: also allow update of membership dates for admin users
 	$user->save();
 	
 	return $response->withJson(UserMapper::mapUserToArray($user));
