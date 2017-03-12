@@ -70,11 +70,17 @@ class LocalDbWebTestCase extends WebDbTestCase {
   				`tool_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
  				`name` varchar(50) NOT NULL,
   				`description` varchar(255) DEFAULT NULL,
- 				`link` varchar(255) DEFAULT NULL,
  				`category` varchar(20) DEFAULT NULL,
   				`img` varchar(255) DEFAULT NULL,
   				`created_at` timestamp NULL DEFAULT NULL,
-  				`updated_at` timestamp NULL DEFAULT NULL
+  				`updated_at` timestamp NULL DEFAULT NULL,
+  				`brand` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  				`type` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  				`serial` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  				`manufacturing_year` date DEFAULT NULL,
+ 				`manufacturer_url` varchar(255) DEFAULT NULL,
+ 				`doc_url` varchar(255) DEFAULT NULL,
+				`replacement_value` int(11) DEFAULT NULL
 				)";
 		self::$pdo->query($queryTools);
 		
