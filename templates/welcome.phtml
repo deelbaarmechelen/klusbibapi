@@ -19,7 +19,6 @@
 	                alert("An error occured: " + xhr.status + " " + xhr.statusText);
 
 	                document.getElementById("queryresult").innerHTML = xhr.responseText.replace(/\n/g,"<br>");
-// 	                $("#queryresult").text(JSON.stringify(xhr.responseText, null, 2));
 	            }
 	        });
 	    };
@@ -62,8 +61,11 @@
 		    $("#tools1").on("click", function(){
 		        getApiUrl('/tools/1', token);
 		    });
-		    $("#dump").on("click", function(){
-		        getApiUrl('/dump', token);
+		    $("#consumers").on("click", function(){
+		        getApiUrl('/consumers', token);
+		    });
+		    $("#consumers1").on("click", function(){
+		        getApiUrl('/consumers/1', token);
 		    });
 		});
 		</script>
@@ -75,13 +77,13 @@
         <div>Welcome to Klusbib API</div>
         <div>Available routes:
             <ul>
-                <li>Hello + name : e.g. <a href="hello/world">hello world</a></li>
-                <li>Dump token: <a id="dump" href="javascript:void(0)">dump</a></li>
                 <li>Users : <a id="users" href="javascript:void(0)">users</a> (requires prior login)</li>
                 <li>Users + userId: <a id="user1" href="javascript:void(0)">users/1</a> (requires prior login)</li>
                 <li>Users + userId: <a id="user2" href="javascript:void(0)">users/2</a> (requires prior login)</li>
                 <li>Tools : <a id="tools" href="javascript:void(0)">tools<a></li>
                 <li>Tools + toolId: <a id="tools1" href="javascript:void(0)">tools/1<a></li>
+                <li>Consumers : <a id="consumers" href="javascript:void(0)">consumers<a></li>
+                <li>Consumers + consumerId: <a id="consumers1" href="javascript:void(0)">consumers/1<a></li>
             </ul>
         </div>
         <div>
