@@ -21,6 +21,7 @@
         "tuupola/slim-jwt-auth": "^2.0",
         "tuupola/slim-basic-auth": "^2.0",
         "tuupola/base62": "^0.7.0",
+        "intervention/image": "~2.0",
 		"illuminate/database": "5.2.*",
 		"robmorgan/phinx": "0.5.*",
 		"vlucas/phpdotenv": "^2.4",

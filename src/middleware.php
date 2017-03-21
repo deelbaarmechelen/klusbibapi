@@ -14,3 +14,9 @@ $app->add(function ($req, $res, $next) {
 		->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
 
+$app->add(new Api\Middleware\ImageResize([
+		"extensions" => ["jpg", "jpeg"],
+		"quality" => 90,
+		"sizes" => ["x400", "400x200", "x200", "200x", "100x100"]
+]));
+
