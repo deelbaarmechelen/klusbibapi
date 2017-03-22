@@ -29,7 +29,8 @@
 		"illuminate/events" : "5.2.*",
 		"illuminate/filesystem" : "5.2.*",
 		"illuminate/pagination" : "5.2.*",
-		"ad7six/dsn" : "0.4.*"
+		"ad7six/dsn" : "0.4.*",
+		"ext-gd": "*"
 	},
 	"require-dev" : {
 		"heroku/heroku-buildpack-php": "*",
