@@ -17,6 +17,6 @@ $app->add(function ($req, $res, $next) {
 $app->add(new Api\Middleware\ImageResize([
 		"extensions" => ["jpg", "jpeg"],
 		"quality" => 90,
-		"sizes" => ["x400", "400x200", "x200", "200x", "100x100"]
+		"sizes" => ["800x", "x800", "400x", "x400", "400x200", "x200", "200x", "100x100"]
 ]));
 
