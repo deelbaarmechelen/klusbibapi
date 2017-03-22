@@ -102,8 +102,8 @@
         </form>
         <?php 
         	if (isset($filename)) {
-        		echo "<img src=\"/uploads/$filename\">";
-        		echo "<img src=\"/uploads/3-x200.jpg\">";
+        		$path_parts = pathinfo($filename);
+        		echo "<img src=\"/uploads/" . $path_parts['filename'] . "-x200.jpg\">";
         	}
         ?>
     </body>
