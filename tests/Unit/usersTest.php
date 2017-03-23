@@ -54,10 +54,7 @@ class UsersTest extends LocalDbWebTestCase
 		echo "test POST users\n";
 		// get token
 		$data = ["users.all"];
-		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0",
-				"PHP_AUTH_USER" => "test",
-				"PHP_AUTH_PW" => "test"
-		);
+		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0");
 		$response = $this->client->post('/token', $data, $header);
 		$responseData = json_decode($response);
 		
@@ -124,7 +121,35 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals($data["role"], $user->role);
 		
 	}
+	public function testPutUserPassword()
+	{
+		echo "test PUT users\n";
+		$data = array("password" => "new pwd");
+		$header = array();
+// 		$newHash = password_hash("new pwd", PASSWORD_DEFAULT);
+// 		echo "expected new hash = $newHash \n";
+		$responsePut = $this->client->put('/users/1', $data, $header);
+		$this->assertEquals(200, $this->client->response->getStatusCode());
+		print_r($responsePut);
+		
+		// check get token no longer possible
+		$data = ["users.all"];
+		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0");
+		$response = $this->client->post('/token', $data, $header);
+		print_r($response);
+		$this->assertEquals(401, $this->client->response->getStatusCode());
 
+// 		// check get token with new password is ok
+// 		$basicAuth = base64_encode("admin@klusbib.be:new pwd");
+// 		$header = array('Authorization' => "Basic $basicAuth",
+// 				"PHP_AUTH_USER" => "admin@klusbib.be",
+// 				"PHP_AUTH_PW" => "new pwd"
+// 		);
+// 		$response = $this->client->post('/token', $data, $header);
+// 		$this->assertEquals(200, $this->client->response->getStatusCode());
+// 		$responseData = json_decode($response);
+	}
+	
 	public function testPutUserNotFound()
 	{
 		echo "test PUT users\n";

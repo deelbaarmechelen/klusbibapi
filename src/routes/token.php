@@ -1,44 +1,22 @@
 <?php
 
 use Api\Token;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
-$app->post("/token", function ($request, $response, $arguments) {
+$app->post("/token", function ($request, $response, $arguments) use ($app) {
 	$this->logger->info("Klusbib POST '/token' route");
-	$requested_scopes = $request->getParsedBody();
-	$valid_scopes = [
-			"tools.create",
-			"tools.read",
-			"tools.update",
-			"tools.delete",
-			"tools.list",
-			"tools.all",
-			"reservations.create",
-			"reservations.read",
-			"reservations.update",
-			"reservations.delete",
-			"reservations.list",
-			"reservations.all",
-			"consumers.create",
-			"consumers.read",
-			"consumers.update",
-			"consumers.delete",
-			"consumers.list",
-			"consumers.all",
-			"users.create",
-			"users.read",
-			"users.update",
-			"users.delete",
-			"users.list",
-			"users.all"
-	];
-
+	$valid_scopes = Token::validScopes();
+		
+	$container = $app->getContainer();
+	$sub = $container["user"];
+	$user = Capsule::table('users')->where('email', $sub)->first();
+	if (null == $user) {
+		return $response->withStatus(404);
+	}
+	$requested_scopes = Token::allowedScopes($user->role);
 	$scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
 		return in_array($needle, $valid_scopes);
 	});
-		
-	$server = $request->getServerParams();
-	$sub = $server["PHP_AUTH_USER"];
-	
 	$token = Token::generateToken($scopes, $sub); 
 	$data["status"] = "ok";
 	$data["token"] = $token;

@@ -22,6 +22,26 @@
 	            }
 	        });
 	    };
+	    var putApiUrl = function (url, token) {
+	        $.ajax({
+	            url: url,
+                type: 'PUT',
+                data: '{"password" : "new pwd"}',
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            beforeSend: function(xhr) {
+	                xhr.setRequestHeader("Authorization", "Bearer " + token)
+	            },
+	            success: function (data) {
+	                console.log('success');
+	                $("#queryresult").text(JSON.stringify(data));
+	            }, error: function(xhr) {
+	                alert("An error occured: " + xhr.status + " " + xhr.statusText);
+
+	                document.getElementById("queryresult").innerHTML = xhr.responseText.replace(/\n/g,"<br>");
+	            }
+	        });
+	    };
 		$(document).ready(function(){
 		    $("button").click(function(){
 		            var user = $("#login").val();
@@ -32,7 +52,7 @@
 		                headers: {
 		                    "Authorization": "Basic " + btoa(user + ":" + password)
 		                },
-		                data: '["tools.all"]',
+		                data: '["tools.all", "users.all"]',
 		                contentType: 'application/json; charset=utf-8',
 		                dataType: 'json',
 		                success: function (data) {
@@ -54,6 +74,9 @@
 		    });
 		    $("#user2").on("click", function(){
 		        getApiUrl('/users/2', token);
+		    });
+		    $("#userpwd").on("click", function(){
+		        putApiUrl('/users/1', token);
 		    });
 		    $("#tools").on("click", function(){
 		        getApiUrl('/tools', token);
@@ -80,6 +103,7 @@
                 <li>Users : <a id="users" href="javascript:void(0)">users</a> (requires prior login)</li>
                 <li>Users + userId: <a id="user1" href="javascript:void(0)">users/1</a> (requires prior login)</li>
                 <li>Users + userId: <a id="user2" href="javascript:void(0)">users/2</a> (requires prior login)</li>
+                <li>Users updt pwd: <a id="userpwd" href="javascript:void(0)">users/1</a> (requires prior login)</li>
                 <li>Tools : <a id="tools" href="javascript:void(0)">tools<a></li>
                 <li>Tools + toolId: <a id="tools1" href="javascript:void(0)">tools/1<a></li>
                 <li>Consumers : <a id="consumers" href="javascript:void(0)">consumers<a></li>

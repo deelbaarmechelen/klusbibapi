@@ -77,6 +77,10 @@ $container["token"] = function ($container) {
 	return $token;
 };
 
+$container["user"] = function ($container) {
+	return "";
+};
+
 $container["HttpBasicAuthentication"] = function ($container) {
 	return new HttpBasicAuthentication([
 			"path" => "/token",
@@ -87,7 +91,10 @@ $container["HttpBasicAuthentication"] = function ($container) {
 					"table" => "users",
 					"user" => "email",
 					"hash" => "hash"
-		])
+			]),
+			"callback" => function ($request, $response, $arguments) use ($container) {
+				$container["user"] = $arguments["user"];
+			}
 	]);
 };
 

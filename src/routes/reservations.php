@@ -58,7 +58,7 @@ $app->get('/reservations/{reservationid}', function ($request, $response, $args)
 
 $app->put('/reservations/{reservationid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib PUT '/reservations/id' route");
-	Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.update"]);
+	Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.update", "reservations.update.owner"]);
 	$reservation = \Api\Model\Reservation::find($args['reservationid']);
 	if (null == $reservation) {
 		return $response->withStatus(404);
@@ -87,7 +87,7 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 
 $app->delete('/reservations/{reservationid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib DELETE '/reservations/id' route");
-	Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.delete"]);
+	Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.delete", "reservations.delete.owner"]);
 	$reservation = \Api\Model\Reservation::find($args['reservationid']);
 	if (null == $reservation) {
 		return $response->withStatus(204);

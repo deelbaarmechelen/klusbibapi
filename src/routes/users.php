@@ -64,8 +64,9 @@ $app->post('/users', function ($request, $response, $args) {
 $app->put('/users/{userid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib PUT on '/users/id' route");
 
-	if (false === $this->token->hasScope(["users.all", "users.update"])) {
-		throw new ForbiddenException("Token not allowed to update users.", 403);
+	if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner"])) {
+// 		throw new ForbiddenException("Token not allowed to update users.", 403);
+		return $response->withStatus(403)->write("Token not allowed to update users.");
 	}
 	
 	$usermapper = new UserMapper();
@@ -74,6 +75,11 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 		return $response->withStatus(404);
 	}
 
+	if (false === $this->token->hasScope(["users.all", "users.update"]) && 
+			$user->email != $this->token->decoded->sub) {
+		return $response->withStatus(403)->write("Token sub doesn't match user.");
+	}
+	
 	$parsedBody = $request->getParsedBody();
 	if (isset($parsedBody["firstname"])) {
 		$user->firstname = $parsedBody["firstname"];
@@ -86,6 +92,10 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	}
 	if (isset($parsedBody["role"])) {
 		$user->role = $parsedBody["role"];
+	}
+	if (isset($parsedBody["password"])) {
+		$this->logger->info("Updating password for user " . $user->user_id . " - " . $user->firstname . " " . $user->lastname);
+		$user->hash = password_hash($parsedBody["password"], PASSWORD_DEFAULT);
 	}
 	// FIXME: also allow update of membership dates for admin users
 	$user->save();
