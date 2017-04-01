@@ -10,6 +10,9 @@ class ToolMapper
 		$toolArray = array("tool_id" => $tool->tool_id,
 			"name" => $tool->name,
 			"description" => $tool->description,
+			"code" => $tool->code,
+			"owner_id" => $tool->owner_id,
+			"reception_date" => $tool->reception_date,
 			"category" => $tool->category,
 			"brand" => $tool->brand,
 			"type" => $tool->type,
@@ -29,6 +32,15 @@ class ToolMapper
 		}
 		if (isset($data["description"])) {
 			$tool->description = $data["description"];
+		}
+		if (isset($data["code"])) {
+			$tool->code = $data["code"];
+		}
+		if (isset($data["owner_id"])) {
+			$tool->owner_id = $data["owner_id"];
+		}
+		if (isset($data["reception_date"])) {
+			$tool->reception_date = $data["reception_date"];
 		}
 		if (isset($data["category"])) {
 			$tool->category = $data["category"];
