@@ -8,7 +8,15 @@ use Api\Authorisation;
 $app->get('/tools', function ($request, $response, $args) {
 	
 	$this->logger->info("Klusbib GET '/tools' route");
-	$tools = Capsule::table('tools')->orderBy('name', 'asc')->get();
+	$sortdir = $request->getQueryParam('sortDir');
+	if (!isset($sortdir)) {
+			$sortdir = 'asc';
+	}
+	$sortfield = $request->getQueryParam('sortField');
+	if (isset($sortfield)) {
+		$sortfield = 'name';
+	}
+	$tools = Capsule::table('tools')->orderBy($sortfield, $sortdir)->get();
 	$data = array();
 	foreach ($tools as $tool) {
 		array_push($data, ToolMapper::mapToolToArray($tool));
