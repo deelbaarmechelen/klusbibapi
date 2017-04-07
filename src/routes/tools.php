@@ -4,16 +4,17 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Exception\ForbiddenException;
 use Api\ModelMapper\ToolMapper;
 use Api\Authorisation;
+use Api\Model\Tool;
 
 $app->get('/tools', function ($request, $response, $args) {
 	
 	$this->logger->info("Klusbib GET '/tools' route");
-	$sortdir = $request->getQueryParam('sortDir');
+	$sortdir = $request->getQueryParam('_sortDir');
 	if (!isset($sortdir)) {
 			$sortdir = 'asc';
 	}
-	$sortfield = $request->getQueryParam('sortField');
-	if (isset($sortfield)) {
+	$sortfield = $request->getQueryParam('_sortField');
+	if (!Tool::canBeSortedOn($sortfield) ) {
 		$sortfield = 'name';
 	}
 	$tools = Capsule::table('tools')->orderBy($sortfield, $sortdir)->get();
