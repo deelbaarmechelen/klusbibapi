@@ -20,7 +20,6 @@ $app->get('/users', function ($request, $response, $args) {
 	}
 	$users = Capsule::table('users')->orderBy($sortfield, $sortdir)->get();
 	
-// 	$users = Capsule::table('users')->orderBy('lastname', 'asc')->get();
 	$data = array();
 	foreach ($users as $user) {
 		array_push($data, UserMapper::mapUserToArray($user));

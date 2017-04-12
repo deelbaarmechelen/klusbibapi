@@ -18,7 +18,7 @@ namespace Api\Middleware\ImageResize;
 class ScaleAndCropMutator extends MutatorAbstract
 {
     protected static $regexp =
-        "/(?<original>[^-]+)-(?<size>(?<scale>\d*)-(?<width>\d*)x(?<height>\d*))-?(?<signature>[0-9a-z]*)/";
+        "/(?<original>.+)-(?<size>(?<scale>\d*)-(?<width>\d*)x(?<height>\d*))-?(?<signature>[0-9a-z]*)/";
 
     public function execute()
     {

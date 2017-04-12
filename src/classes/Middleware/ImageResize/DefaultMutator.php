@@ -17,7 +17,7 @@ namespace Api\Middleware\ImageResize;
 
 class DefaultMutator extends MutatorAbstract
 {
-    protected static $regexp = "/(?<original>[^-]+)-(?<size>(?<width>\d*)x(?<height>\d*))-?(?<signature>[0-9a-z]*)/";
+    protected static $regexp = "/(?<original>.+)-(?<size>(?<width>\d*)x(?<height>\d*))-?(?<signature>[0-9a-z]*)/";
 
     public function execute()
     {
