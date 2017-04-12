@@ -10,7 +10,17 @@ use Api\Authorisation;
 $app->get('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib GET on '/users' route");
 
-	$users = Capsule::table('users')->orderBy('lastname', 'asc')->get();
+	$sortdir = $request->getQueryParam('_sortDir');
+	if (!isset($sortdir)) {
+		$sortdir = 'asc';
+	}
+	$sortfield = $request->getQueryParam('_sortField');
+	if (!User::canBeSortedOn($sortfield) ) {
+		$sortfield = 'lastname';
+	}
+	$users = Capsule::table('users')->orderBy($sortfield, $sortdir)->get();
+	
+// 	$users = Capsule::table('users')->orderBy('lastname', 'asc')->get();
 	$data = array();
 	foreach ($users as $user) {
 		array_push($data, UserMapper::mapUserToArray($user));
