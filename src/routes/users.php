@@ -54,6 +54,12 @@ $app->post('/users', function ($request, $response, $args) {
 	$user->firstname = $parsedBody["firstname"];
 	$user->lastname = $parsedBody["lastname"];
 	$user->role = $parsedBody["role"];
+	if (!empty($parsedBody["user_id"])) {
+		$user->user_id= $parsedBody["user_id"];
+	} else {
+		$max_user_id = Capsule::table('users')->max('user_id');
+		$user->user_id = $max_user_id + 1;
+	}
 	if (!empty($parsedBody["email"])) {
 		$user->email= $parsedBody["email"];
 	}
@@ -90,6 +96,9 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	}
 	
 	$parsedBody = $request->getParsedBody();
+	if (isset($parsedBody["user_id"])) {
+		$user->user_id= $parsedBody["user_id"];
+	}
 	if (isset($parsedBody["firstname"])) {
 		$user->firstname = $parsedBody["firstname"];
 	}

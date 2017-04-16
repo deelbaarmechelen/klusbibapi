@@ -7,7 +7,8 @@ class UserMapper
 {
 	static public function mapUserToArray($user) {
 	
-		$userArray = array("user_id" => $user->user_id,
+		$userArray = array("id" => $user->id,
+				"user_id" => $user->user_id,
 				"firstname" => $user->firstname,
 				"lastname" => $user->lastname,
 				"email" => $user->email,

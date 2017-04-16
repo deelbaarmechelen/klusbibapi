@@ -30,7 +30,8 @@
 		"illuminate/filesystem" : "5.2.*",
 		"illuminate/pagination" : "5.2.*",
 		"ad7six/dsn" : "0.4.*",
-		"ext-gd": "*"
+		"ext-gd": "*",
+		"doctrine/dbal": "^2.5"
 	},
 	"require-dev" : {
 		"heroku/heroku-buildpack-php": "*",
