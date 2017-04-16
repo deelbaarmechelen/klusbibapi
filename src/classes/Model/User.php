@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
 {
-	protected $primaryKey = "id";
+	protected $primaryKey = "user_id";
 	static protected $fieldArray = ['user_id', 'firstname', 'lastname', 'role', 'email', 
 			'membership_start_date', 'membership_end_date', 'created_at', 'updated_at'
 	];
