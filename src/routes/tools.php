@@ -15,7 +15,7 @@ $app->get('/tools', function ($request, $response, $args) {
 	}
 	$sortfield = $request->getQueryParam('_sortField');
 	if (!Tool::canBeSortedOn($sortfield) ) {
-		$sortfield = 'name';
+		$sortfield = 'code';
 	}
 	$tools = Capsule::table('tools')->orderBy($sortfield, $sortdir)->get();
 	$data = array();
