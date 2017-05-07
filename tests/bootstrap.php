@@ -8,6 +8,8 @@ date_default_timezone_set('UTC');
 use There4\Slim\Test\WebTestCase;
 use There4\Slim\Test\WebDbTestCase;
 use Tests\DbUnitArrayDataSet;
+use Api\Token;
+use Tuupola\Base62;
 
 define('PROJECT_ROOT', realpath(__DIR__ . '/..'));
 
@@ -40,10 +42,22 @@ class LocalDbWebTestCase extends WebDbTestCase {
 	 */
 	static private $pdo = null;
 	public $settings;
+	private $dependencies;
 	
 	function __construct() {
 		$this->settings = require __DIR__ . '/test_settings.php';
 // 		$this->settings = $settings["settings"];
+	}
+	
+	// Run for each unit test to setup our slim app environment
+	public function setup($dependencies = null, WebTestClient $client = NULL)
+	{
+		$this->dependencies = $dependencies;
+		parent::setUp();
+	
+		if (isset($client)) {
+			$this->client = $client;
+		}
 	}
 	
 	/**
@@ -133,6 +147,9 @@ class LocalDbWebTestCase extends WebDbTestCase {
 		return $this->conn;
 	}
 	
+	protected function getPdo() {
+		return self::$pdo;
+	}
 	/**
      * You must implement this method
      * @return PHPUnit_Extensions_Database_DataSet_IDataSet
@@ -145,15 +162,74 @@ class LocalDbWebTestCase extends WebDbTestCase {
 //         );
     }
 
+    public function setUser($user) {
+    	$container = $this->app->getContainer();
+    	$container["user"] = $user;
+    }
+    public function setToken($sub, $scopes) {
+    	if (!isset($sub)) {
+    		$sub = 'test';
+    	}
+    	if (!isset($scopes)) {
+ 	    	$scopes = [
+     				"tools.create",
+     				"tools.read",
+     				"tools.update",
+     				"tools.delete",
+     				"tools.list",
+     				"tools.all",
+     				"reservations.create",
+     				"reservations.read",
+     				"reservations.update",
+     				"reservations.delete",
+     				"reservations.list",
+     				"reservations.all",
+     				"consumers.create",
+     				"consumers.read",
+     				"consumers.update",
+     				"consumers.delete",
+     				"consumers.list",
+     				"consumers.all",
+     				"users.create",
+     				"users.read",
+     				"users.update",
+     				"users.delete",
+     				"users.list",
+     				"users.all"
+     		];
+    	}
+    	$container = $this->app->getContainer();
+    	$container["token"] = $this->generateToken($sub, $scopes);
+    }
+    
+    private function generateToken($sub, $scopes) {
+    	$token = new Token;
+    	$now = new \DateTime();
+    	$future = new \DateTime("now +2 hours");
+    	
+    	$jti = Base62::encode(random_bytes(16));
+
+    	$payload = [
+    			"iat" => $now->getTimeStamp(), 		// issued at
+    			"exp" => $future->getTimeStamp(),	// expiration
+    			"jti" => $jti,						// JWT ID
+    			"sub" => $sub,
+    			"scope" => $scopes
+    	];
+    	$token->decoded = json_decode(json_encode($payload));
+    	return $token;
+    }
+    
     public function getSlimInstance() {
     	$app = new \Slim\App($this->settings);
     
     	// Include our core application file
     	// Set up dependencies
     	require __DIR__ . '/dependencies.php';
-    
+    	 
     	// Register middleware
-    	require PROJECT_ROOT . '/src/middleware.php';
+    	// Middleware load is of no use as not called by client
+//     	require PROJECT_ROOT . '/src/middleware.php';
     
     	// Register routes
     	require PROJECT_ROOT . '/src/routes.php';

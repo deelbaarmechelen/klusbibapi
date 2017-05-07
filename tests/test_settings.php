@@ -79,7 +79,7 @@ return [
     		'port' => $port
     	],
     	'version'        => '0.0.0',
-    	'debug'          => false,
+    	'debug'          => true,
     	'mode'           => 'testing',
     ],
 ];

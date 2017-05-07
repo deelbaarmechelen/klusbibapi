@@ -93,6 +93,8 @@ $container["HttpBasicAuthentication"] = function ($container) {
 					"hash" => "hash"
 			]),
 			"callback" => function ($request, $response, $arguments) use ($container) {
+				$container['logger']->info("User " . $arguments['user'] . " authenticated");
+				echo "User is " . $arguments["user"];
 				$container["user"] = $arguments["user"];
 			}
 	]);

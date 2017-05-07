@@ -1,6 +1,10 @@
 <?php
 use Api\Token;
 use Tests\DbUnitArrayDataSet;
+use Slim\Http\Request;
+use Slim\Http\Response;
+use Slim\Middleware\HttpBasicAuthentication;
+use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 
 class UsersTest extends LocalDbWebTestCase
 {
@@ -48,21 +52,25 @@ class UsersTest extends LocalDbWebTestCase
 		$users = json_decode($body);
 		$this->assertEquals(3, count($users));
 	}
-
+	
+	public function testGetUsersUnauthorized()
+	{
+		echo "test GET users unauthorized\n";
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["users.none"]);
+		$body = $this->client->get('/users');
+		$this->assertEquals(403, $this->client->response->getStatusCode());
+		$this->assertTrue(empty($body));
+	}
+	
 	public function testPostUsers()
 	{
 		echo "test POST users\n";
-		// get token
-		$data = ["users.all"];
-		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0");
-		$response = $this->client->post('/token', $data, $header);
-		$responseData = json_decode($response);
-		
-		$scopes = array("users.all");
-		$header = array('Authorization' => "bearer $responseData->token");
+		$scopes = array("users.create");
+		$this->setToken(null, $scopes);
+		$header = array('Authorization' => "bearer 123456");
 		$container = $this->app->getContainer();
-
-		$data = array("firstname" => "myname", 
+		$data = array("user_id" => "5", "firstname" => "myname", 
 				"lastname" => "my lastname",
 				"email" => "myname.lastname@klusbib.be",
 				"role" => "member"
@@ -73,7 +81,9 @@ class UsersTest extends LocalDbWebTestCase
 		$user = json_decode($body);
 		$this->assertNotNull($user->user_id);
 		
-		// check user has properly been updated
+		// check user has properly been created
+		$scopes = array("users.all");
+		$this->setToken(null, $scopes);
 		$bodyGet = $this->client->get('/users/' . $user->user_id);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$user = json_decode($bodyGet);
@@ -82,6 +92,23 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals($data["email"], $user->email);
 		$this->assertEquals($data["role"], $user->role);
 		
+	}
+	public function testPostUsersNotAllowed()
+	{
+		echo "test POST users (not allowed)\n";
+		// scope users.all and users.create missing
+		$scopes = array("users.list", "users.update", "users.read");
+		$this->setToken(null, $scopes);
+		
+		$header = array('Authorization' => "bearer 123456");
+		$data = array("firstname" => "myname",
+				"lastname" => "my lastname",
+				"email" => "myname.lastname@klusbib.be",
+				"role" => "member"
+		);
+		$body = $this->client->post('/users', $data, $header);
+		$this->assertEquals(403, $this->client->response->getStatusCode());
+		$this->assertTrue(empty($body));
 	}
 	
 	public function testGetUser()
@@ -123,36 +150,66 @@ class UsersTest extends LocalDbWebTestCase
 	}
 	public function testPutUserPassword()
 	{
-		echo "test PUT users\n";
+		echo "test PUT users (password)\n";
 		$data = array("password" => "new pwd");
 		$header = array();
 // 		$newHash = password_hash("new pwd", PASSWORD_DEFAULT);
 // 		echo "expected new hash = $newHash \n";
 		$responsePut = $this->client->put('/users/1', $data, $header);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
-		print_r($responsePut);
+// 		print_r($responsePut);
 		
-		// check get token no longer possible
-		$data = ["users.all"];
-		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0");
-		$response = $this->client->post('/token', $data, $header);
-		print_r($response);
-		$this->assertEquals(401, $this->client->response->getStatusCode());
-
-// 		// check get token with new password is ok
-// 		$basicAuth = base64_encode("admin@klusbib.be:new pwd");
-// 		$header = array('Authorization' => "Basic $basicAuth",
-// 				"PHP_AUTH_USER" => "admin@klusbib.be",
-// 				"PHP_AUTH_PW" => "new pwd"
-// 		);
-// 		$response = $this->client->post('/token', $data, $header);
-// 		$this->assertEquals(200, $this->client->response->getStatusCode());
-// 		$responseData = json_decode($response);
+		// check get token ok with new pwd and nok with another pwd
+		echo "\nCheck get token no longer possible\n";
+// 		$data = ["users.all"];
+// 		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0");
+		// FIXME: need to call middleware to test new password!
+		$this->callBasicAuthMw('admin@klusbib.be',"new pwd", 200);
+		$this->callBasicAuthMw('admin@klusbib.be',"other pwd", 401);
+	}
+	
+	private function callBasicAuthMw($user, $pwd, $expectedStatusCode = 200) {
+		echo "attempt a direct call to auth middleware";
+		$query = array();
+		$env = \Slim\Http\Environment::mock([
+				'REQUEST_METHOD' => 'POST',
+				'REQUEST_URI' => '/token',
+				'AUTH_TYPE' => 'Basic',
+				'PHP_AUTH_USER' => $user,
+				'PHP_AUTH_PW' => $pwd,
+				'SERVER_NAME' => 'example.com',
+				'CONTENT_TYPE' => 'application/json;charset=utf8',
+				'CONTENT_LENGTH' => 15
+		]);
+		$request = Request::createFromEnvironment($env);
+		
+		$response = new Response;
+		$auth = new HttpBasicAuthentication([
+			"path" => "/token",
+			"secure" => false,
+			"relaxed" => ["admin", "klusbib.deeleco"],
+			"authenticator" => new PdoAuthenticator([
+					"pdo" => $this->getPdo(),
+					"table" => "users",
+					"user" => "email",
+					"hash" => "hash"
+			]),
+		]);
+		
+		$next = function (Request $request, Response $response) {
+			$response->getBody()->write("Success");
+			return $response;
+		};
+		
+		$response = $auth($request, $response, $next);
+		
+		$this->assertEquals($expectedStatusCode, $response->getStatusCode());
+// 		$this->assertEquals("Success", $response->getBody());
 	}
 	
 	public function testPutUserNotFound()
 	{
-		echo "test PUT users\n";
+		echo "test PUT users (not found)\n";
 		$data = array("firstname" => "new firstname",
 				"lastname" =>"my new lastname",
 				"email" =>"newemail@klusbib.be",

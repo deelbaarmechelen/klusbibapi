@@ -10,6 +10,11 @@ use Api\Authorisation;
 $app->get('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib GET on '/users' route");
 
+	$authorised = Authorisation::checkUserAccess($this->token, "list", null);
+	if (!$authorised) {
+		$this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()) );
+		return $response->withStatus(403);
+	}
 	$sortdir = $request->getQueryParam('_sortDir');
 	if (!isset($sortdir)) {
 		$sortdir = 'asc';
@@ -29,7 +34,13 @@ $app->get('/users', function ($request, $response, $args) {
 
 $app->get('/users/{userid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib GET on '/users/id' route");
-
+// 	Authorisation::checkAccessByToken($this->token, ["users.all", "users.read", "users.read.owner"]);
+	$authorised = Authorisation::checkUserAccess($this->token, "read", $args['userid']);
+	if (!$authorised) {
+		$this->logger->warn("Access denied for user " . $args['userid']);
+		return $response->withStatus(403);
+	}
+	// FIXME: restrict access to owner only for users.read.owner
 	$user = User::find($args['userid']);
 	if (null == $user) {
 		return $response->withStatus(404);
@@ -40,9 +51,10 @@ $app->get('/users/{userid}', function ($request, $response, $args) {
 $app->post('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib POST on '/users' route");
 
-	Authorisation::checkAccessByToken($this->token, ["users.all", "users.create"]);
-	if (false === $this->token->hasScope(["users.all", "users.create"])) {
-		throw new ForbiddenException("Token not allowed to create users.", 403);
+	$authorised = Authorisation::checkUserAccess($this->token, "create", null);
+	if (!$authorised) {
+		$this->logger->warn("Token not allowed to create users.");
+		return $response->withStatus(403);
 	}
 	
 	$parsedBody = $request->getParsedBody();
@@ -54,11 +66,12 @@ $app->post('/users', function ($request, $response, $args) {
 	$user->firstname = $parsedBody["firstname"];
 	$user->lastname = $parsedBody["lastname"];
 	$user->role = $parsedBody["role"];
-	if (!empty($parsedBody["user_id"])) {
+	if (isset($parsedBody["user_id"]) && !empty($parsedBody["user_id"])) {
 		$user->user_id= $parsedBody["user_id"];
 	} else {
 		$max_user_id = Capsule::table('users')->max('user_id');
 		$user->user_id = $max_user_id + 1;
+		$this->logger->info("New user will be assigned id " . $user->user_id);
 	}
 	if (!empty($parsedBody["email"])) {
 		$user->email= $parsedBody["email"];
@@ -71,7 +84,9 @@ $app->post('/users', function ($request, $response, $args) {
 			$user->membership_end_date = strtotime("+1 year", strtotime($parsedBody["membership_start_date"]));
 		}
 	}
+	$this->logger->debug("Before save: " . json_encode($user));
 	$user->save();
+	$this->logger->debug("After save: " . json_encode($user));
 	return $response->withJson(UserMapper::mapUserToArray($user));
 });
 
@@ -91,7 +106,7 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	}
 
 	if (false === $this->token->hasScope(["users.all", "users.update"]) && 
-			$user->email != $this->token->decoded->sub) {
+			$user->user_id != $this->token->decoded->sub) {
 		return $response->withStatus(403)->write("Token sub doesn't match user.");
 	}
 	

@@ -75,15 +75,15 @@ $container["JwtAuthentication"] = function ($container) {
 					->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			},
 			"rules" => [
-// 					new RequestPathRule([
-// 							"path" => "/api",
-// 							"passthrough" => ["/api/token", "/api/ping"]
-// 					]),
+					new \Api\Middleware\Jwt\JwtCustomRule([
+							"getpassthrough" => ["/tools", "/consumers"]
+					]),
 					new \Slim\Middleware\JwtAuthentication\RequestMethodRule([
-							"passthrough" => ["OPTIONS", "GET"]
+							"passthrough" => ["OPTIONS"]
 					])
 			],
 			"callback" => function ($request, $response, $arguments) use ($container) {
+				$container['logger']->debug("Authentication ok for token: " . json_encode($arguments["decoded"]));
 				$container["token"]->hydrate($arguments["decoded"]);
 			}
 	]);
