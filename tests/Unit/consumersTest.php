@@ -62,25 +62,15 @@ class ConsumersTest extends LocalDbWebTestCase
 	public function testPostConsumers()
 	{
 		echo "test POST consumers\n";
-		// get token
-		$data = ["consumers.all"];
-		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0",
-				"PHP_AUTH_USER" => "test",
-				"PHP_AUTH_PW" => "test"
-		);
-		$response = $this->client->post('/token', $data, $header);
-		$responseData = json_decode($response);
-		
-		$scopes = array("consumers.all");		
-		$header = array('Authorization' => "bearer $responseData->token");
-		$container = $this->app->getContainer();
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["consumers.all"]);
 
 		$data = array("brand" => "brand", 
 				"reference" => "my reference",
 				"description" => "my description of consumer",
 				"category" => "my category"
 		);
-		$body = $this->client->post('/consumers', $data, $header);
+		$body = $this->client->post('/consumers', $data);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$consumer = json_decode($body);
 		$this->assertNotNull($consumer->consumer_id);

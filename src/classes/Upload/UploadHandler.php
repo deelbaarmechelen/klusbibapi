@@ -14,7 +14,7 @@ class UploadHandler
 	function uploadFiles($files) {
 		if (empty($files['newfile'])) {
 			$this->logger->error("Upload error: Expected a newfile");
-			throw new Exception('Expected a newfile');
+			throw new \Exception('Expected a newfile');
 		}
 		
 		$newfile = $files['newfile'];

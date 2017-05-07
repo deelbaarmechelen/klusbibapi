@@ -5,26 +5,26 @@ namespace Tests\Functional;
 class HomepageTest extends BaseTestCase
 {
     /**
-     * Test that the index route returns a rendered response containing the text 'SlimFramework' but not a greeting
+     * Test that the welcome route returns a rendered response containing the text 'Klusbib API' and no longer 'SlimFramework'
      */
-    public function testGetHomepageWithoutName()
+    public function testGetWelcome()
     {
-        $response = $this->runApp('GET', '/');
+        $response = $this->runApp('GET', '/welcome');
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertContains('SlimFramework', (string)$response->getBody());
-        $this->assertNotContains('Hello', (string)$response->getBody());
+        $this->assertContains('Klusbib API', (string)$response->getBody());
+        $this->assertNotContains('SlimFramework', (string)$response->getBody());
     }
 
     /**
-     * Test that the index route with optional name argument returns a rendered greeting
+     * Test that the tools route returns a rendered list of tools
      */
     public function testGetHomepageWithGreeting()
     {
-        $response = $this->runApp('GET', '/name');
+        $response = $this->runApp('GET', '/tools');
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertContains('Hello name!', (string)$response->getBody());
+//         $this->assertContains('Hello name!', (string)$response->getBody());
     }
 
     /**

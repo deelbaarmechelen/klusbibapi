@@ -62,32 +62,27 @@ class ToolsTest extends LocalDbWebTestCase
 	public function testPostTools()
 	{
 		echo "test POST tools\n";
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["tools.all"]);
 		// get token
-		$data = ["tools.all"];
-		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0",
-				"PHP_AUTH_USER" => "test",
-				"PHP_AUTH_PW" => "test"
-		);
-		$response = $this->client->post('/token', $data, $header);
-		$responseData = json_decode($response);
+// 		$data = ["tools.all"];
+// 		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0",
+// 				"PHP_AUTH_USER" => "test",
+// 				"PHP_AUTH_PW" => "test"
+// 		);
+// 		$response = $this->client->post('/token', $data, $header);
+// 		$responseData = json_decode($response);
 		
-		$scopes = array("tools.all");
-// 		$sub = 'tester';
-// 		$token = Token::generateToken($scopes, $sub);
-// 		$data = array("name" => "myName",
-// 				"description" =>"my description");
+// 		$scopes = array("tools.all");
 		
-		$header = array('Authorization' => "bearer $responseData->token");
-		$container = $this->app->getContainer();
-// 		$decoded = json_decode('{"iat":1489196152,"exp":1489203352,"jti":"34tViX9UTPsdCiAGYThOuZ","sub":"test","scope":["tools.create","tools.read","tools.update","tools.delete","tools.list","tools.all"]}');
-// 		$container["token"]->decoded = $decoded;
-// 		print_r($this->app->getContainer()["token"]);
+// 		$header = array('Authorization' => "bearer $responseData->token");
+// 		$container = $this->app->getContainer();
 
 		$data = array("name" => "myname", 
 				"description" => "my description of tool",
 				"category" => "my category"
 		);
-		$body = $this->client->post('/tools', $data, $header);
+		$body = $this->client->post('/tools', $data);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$tool = json_decode($body);
 		$this->assertNotNull($tool->tool_id);

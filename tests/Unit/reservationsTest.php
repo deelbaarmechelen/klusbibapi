@@ -13,6 +13,26 @@ class ReservationsTest extends LocalDbWebTestCase
 		$this->enddate = clone $this->startdate;
 		$this->enddate->add(new DateInterval('P7D'));
 		return new DbUnitArrayDataSet(array(
+				'users' => array(
+						array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
+								'role' => 'admin', 'email' => 'admin@klusbib.be',
+								'hash' => password_hash("test", PASSWORD_DEFAULT),
+								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
+						),
+						array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
+								'role' => 'volunteer', 'email' => 'harry@klusbib.be',
+								'hash' => password_hash("test", PASSWORD_DEFAULT),
+								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
+						),
+						array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+								'role' => 'member', 'email' => 'daniel@klusbib.be',
+								'hash' => password_hash("test", PASSWORD_DEFAULT),
+								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
+						),
+				),
 				'reservations' => array(
 						array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
 								'title' => 'title 1',
@@ -61,11 +81,13 @@ class ReservationsTest extends LocalDbWebTestCase
 	public function testPostReservations()
 	{
 		echo "test POST reservations\n";
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["reservations.all"]);
 		// get token
-		$token = $this->getToken();
+// 		$token = $this->getToken();
 		
-		$scopes = array("reservations.all");
-		$header = array('Authorization' => "bearer $token");
+// 		$scopes = array("reservations.all");
+// 		$header = array('Authorization' => "bearer $token");
 		
 		$data = array("tool_id" => 2, "user_id" => 2, 
 				"title" => "my reservation",
@@ -90,34 +112,33 @@ class ReservationsTest extends LocalDbWebTestCase
 	public function testPostReservationsInvalidUser()
 	{
 		echo "test POST reservations\n";
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["reservations.all"]);
 		// get token
-		$token = $this->getToken();
+// 		$token = $this->getToken();
 		
-		$scopes = array("reservations.all");
-		$header = array('Authorization' => "bearer $token");
+// 		$scopes = array("reservations.all");
+// 		$header = array('Authorization' => "bearer $token");
 		
 		$data = array("tool_id" => 2, "user_id" => 999,
 				"title" => "my reservation",
 				"type" => "reservation"
 		);
-		$body = $this->client->post('/reservations', $data, $header);
+		$body = $this->client->post('/reservations', $data);
 		$this->assertEquals(400, $this->client->response->getStatusCode());
 	}
 	
 	public function testPostReservationsInvalidTool()
 	{
 		echo "test POST reservations\n";
-		// get token
-		$token = $this->getToken();
-	
-		$scopes = array("reservations.all");
-		$header = array('Authorization' => "bearer $token");
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["reservations.all"]);
 	
 		$data = array("tool_id" => 999, "user_id" => 2,
 				"title" => "my reservation",
 				"type" => "reservation"
 		);
-		$body = $this->client->post('/reservations', $data, $header);
+		$body = $this->client->post('/reservations', $data);
 		$this->assertEquals(400, $this->client->response->getStatusCode());
 	}
 	
