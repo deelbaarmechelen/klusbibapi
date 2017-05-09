@@ -4,7 +4,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Validator\UserValidator;
 use Api\Exception\ForbiddenException;
 use Api\ModelMapper\UserMapper;
-use \Api\Model\User;
+use Api\Model\User;
 use Api\Authorisation;
 
 $app->get('/users', function ($request, $response, $args) {
@@ -73,6 +73,9 @@ $app->post('/users', function ($request, $response, $args) {
 		$user->user_id = $max_user_id + 1;
 		$this->logger->info("New user will be assigned id " . $user->user_id);
 	}
+	if (!empty($parsedBody["state"])) {
+		$user->state= $parsedBody["state"];
+	}
 	if (!empty($parsedBody["email"])) {
 		$user->email= $parsedBody["email"];
 	}
@@ -109,27 +112,8 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 			$user->user_id != $this->token->decoded->sub) {
 		return $response->withStatus(403)->write("Token sub doesn't match user.");
 	}
-	
-	$parsedBody = $request->getParsedBody();
-	if (isset($parsedBody["user_id"])) {
-		$user->user_id= $parsedBody["user_id"];
-	}
-	if (isset($parsedBody["firstname"])) {
-		$user->firstname = $parsedBody["firstname"];
-	}
-	if (isset($parsedBody["lastname"])) {
-		$user->lastname = $parsedBody["lastname"];
-	}
-	if (isset($parsedBody["email"])) {
-		$user->email = $parsedBody["email"];
-	}
-	if (isset($parsedBody["role"])) {
-		$user->role = $parsedBody["role"];
-	}
-	if (isset($parsedBody["password"])) {
-		$this->logger->info("Updating password for user " . $user->user_id . " - " . $user->firstname . " " . $user->lastname);
-		$user->hash = password_hash($parsedBody["password"], PASSWORD_DEFAULT);
-	}
+	$data = $request->getParsedBody();
+	UserMapper::mapArrayToUser($data, $user);
 	// FIXME: also allow update of membership dates for admin users
 	$user->save();
 	
