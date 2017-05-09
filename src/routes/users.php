@@ -57,39 +57,28 @@ $app->post('/users', function ($request, $response, $args) {
 		return $response->withStatus(403);
 	}
 	
-	$parsedBody = $request->getParsedBody();
-	$this->logger->info("parsedbody=" . json_encode($parsedBody));
-	if (empty($parsedBody) || !UserValidator::isValidUserData($parsedBody, $this->logger)) {
+	$data = $request->getParsedBody();
+	$this->logger->info("parsedbody=" . json_encode($data));
+	if (empty($data) || !UserValidator::isValidUserData($data, $this->logger)) {
 		return $response->withStatus(400); // Bad request
 	}
 	$user = new \Api\Model\User;
-	$user->firstname = $parsedBody["firstname"];
-	$user->lastname = $parsedBody["lastname"];
-	$user->role = $parsedBody["role"];
-	if (isset($parsedBody["user_id"]) && !empty($parsedBody["user_id"])) {
-		$user->user_id= $parsedBody["user_id"];
-	} else {
+	if (!isset($data["user_id"]) || empty($data["user_id"])) {
 		$max_user_id = Capsule::table('users')->max('user_id');
-		$user->user_id = $max_user_id + 1;
-		$this->logger->info("New user will be assigned id " . $user->user_id);
+		$data["user_id"] = $max_user_id + 1;
+		$this->logger->info("New user will be assigned id " . $data["user_id"]);
 	}
-	if (!empty($parsedBody["state"])) {
-		$user->state= $parsedBody["state"];
-	}
-	if (!empty($parsedBody["email"])) {
-		$user->email= $parsedBody["email"];
-	}
-	if (!empty($parsedBody["membership_start_date"])) {
-		$user->membership_start_date = $parsedBody["membership_start_date"];
-		if (!empty($parsedBody["membership_end_date"])) {
-			$user->membership_end_date = $parsedBody["membership_end_date"];
+	if (!empty($data["membership_start_date"])) {
+		$user->membership_start_date = $data["membership_start_date"];
+		if (!empty($data["membership_end_date"])) {
+			$user->membership_end_date = $data["membership_end_date"];
 		} else { // default to 1 year membership
-			$user->membership_end_date = strtotime("+1 year", strtotime($parsedBody["membership_start_date"]));
+			$user->membership_end_date = strtotime("+1 year", strtotime($data["membership_start_date"]));
 		}
 	}
-	$this->logger->debug("Before save: " . json_encode($user));
+	$isAdmin = False; // FIXME: check current user role
+	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
 	$user->save();
-	$this->logger->debug("After save: " . json_encode($user));
 	return $response->withJson(UserMapper::mapUserToArray($user));
 });
 
@@ -102,7 +91,12 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 		return $response->withStatus(403)->write("Token not allowed to update users.");
 	}
 	
-	$usermapper = new UserMapper();
+	$currentUser = \Api\Model\User::find($this->token->getSub());
+	$isAdmin = false;
+	if ($currentUser->role == 'admin') {
+		$isAdmin = true;
+	}
+	
 	$user = \Api\Model\User::find($args['userid']);
 	if (null == $user) {
 		return $response->withStatus(404);
@@ -113,8 +107,7 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 		return $response->withStatus(403)->write("Token sub doesn't match user.");
 	}
 	$data = $request->getParsedBody();
-	UserMapper::mapArrayToUser($data, $user);
-	// FIXME: also allow update of membership dates for admin users
+	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
 	$user->save();
 	
 	return $response->withJson(UserMapper::mapUserToArray($user));

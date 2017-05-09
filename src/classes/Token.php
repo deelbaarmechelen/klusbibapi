@@ -22,6 +22,9 @@ class Token
 	public function getScopes() {
 		return $this->decoded->scope;
 	}
+	public function getSub() {
+		return $this->decoded->sub;
+	}
 	
 	static private function generatePayload($scopes, $sub) {
 		$now = new \DateTime();
