@@ -76,7 +76,11 @@ $app->post('/users', function ($request, $response, $args) {
 			$user->membership_end_date = strtotime("+1 year", strtotime($data["membership_start_date"]));
 		}
 	}
-	$isAdmin = False; // FIXME: check current user role
+	$currentUser = \Api\Model\User::find($this->token->getSub());
+	$isAdmin = false;
+	if ($currentUser->role == 'admin') {
+		$isAdmin = true;
+	}
 	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
 	$user->save();
 	return $response->withJson(UserMapper::mapUserToArray($user));
