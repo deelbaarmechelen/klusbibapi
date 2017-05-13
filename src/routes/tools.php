@@ -17,12 +17,23 @@ $app->get('/tools', function ($request, $response, $args) {
 	if (!Tool::canBeSortedOn($sortfield) ) {
 		$sortfield = 'code';
 	}
+	$page = $request->getQueryParam('_page');
+	if (!isset($page)) {
+		$page = '1';
+	}
+	$perPage = $request->getQueryParam('_perPage');
+	if (!isset($perPage)) {
+		$perPage = '50';
+	}
 	$tools = Capsule::table('tools')->orderBy($sortfield, $sortdir)->get();
+	$tools_page = array_slice($tools, ($page - 1) * $perPage, $perPage);
+	
 	$data = array();
-	foreach ($tools as $tool) {
+	foreach ($tools_page as $tool) {
 		array_push($data, ToolMapper::mapToolToArray($tool));
 	}
-	return $response->withJson($data);
+	return $response->withJson($data)
+					->withHeader('X-Total-Count', count($tools));
 });
 
 $app->get('/tools/{toolid}', function ($request, $response, $args) {
