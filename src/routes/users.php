@@ -23,13 +23,22 @@ $app->get('/users', function ($request, $response, $args) {
 	if (!User::canBeSortedOn($sortfield) ) {
 		$sortfield = 'lastname';
 	}
+	$page = $request->getQueryParam('_page');
+	if (!isset($page)) {
+		$page = '1';
+	}
+	$perPage = $request->getQueryParam('_perPage');
+	if (!isset($perPage)) {
+		$perPage = '50';
+	}
 	$users = Capsule::table('users')->orderBy($sortfield, $sortdir)->get();
-	
+	$users_page = array_slice($users, ($page - 1) * $perPage, $perPage);
 	$data = array();
-	foreach ($users as $user) {
+	foreach ($users_page as $user) {
 		array_push($data, UserMapper::mapUserToArray($user));
 	}
-	return $response->withJson($data);
+	return $response->withJson($data)
+					->withHeader('X-Total-Count', count($users));
 });
 
 $app->get('/users/{userid}', function ($request, $response, $args) {
