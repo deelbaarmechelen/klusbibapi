@@ -22,6 +22,8 @@ class ToolMapper
 			"doc_url" => $tool->doc_url,
 			"img" => $tool->img,
 			"replacement_value" => $tool->replacement_value,
+			"experience_level" => $tool->experience_level,
+			"safety_risk" => $tool->safety_risk,
 			"reservations" => array()
 		);
 		return $toolArray;
@@ -68,6 +70,12 @@ class ToolMapper
 		}
 		if (isset($data["replacement_value"])) {
 			$tool->replacement_value = $data["replacement_value"];
+		}
+		if (isset($data["experience_level"])) {
+			$tool->experience_level = $data["experience_level"];
+		}
+		if (isset($data["safety_risk"])) {
+			$tool->safety_risk = $data["safety_risk"];
 		}
 		
 	}
