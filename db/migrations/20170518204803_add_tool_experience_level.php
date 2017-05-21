@@ -27,6 +27,7 @@ class AddToolExperienceLevel extends AbstractMigration
 	{
 		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->string('experience_level', 20)->nullable();
+			$table->string('safety_risk', 20)->nullable();
 		});
 	}
     /**
@@ -38,6 +39,7 @@ class AddToolExperienceLevel extends AbstractMigration
 	{
 		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->dropColumn('experience_level');
+			$table->dropColumn('safety_risk');
 		});
 	}
 }
