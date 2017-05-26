@@ -16,4 +16,8 @@ class Tool extends Model
 		}
 		return in_array($field, Tool::$fieldArray);
 	}
+	public function reservations()
+	{
+		return $this->hasMany('Api\Model\Reservation');
+	}
 }

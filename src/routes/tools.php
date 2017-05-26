@@ -1,10 +1,10 @@
 <?php
 
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Api\Exception\ForbiddenException;
 use Api\ModelMapper\ToolMapper;
 use Api\Authorisation;
 use Api\Model\Tool;
+use Api\ModelMapper\ReservationMapper;
 
 $app->get('/tools', function ($request, $response, $args) {
 	
@@ -45,28 +45,37 @@ $app->get('/tools/{toolid}', function ($request, $response, $args) {
 
 	$data = ToolMapper::mapToolToArray($tool);
 
-	// lookup reservations for this tool
-	$reservations = Capsule::table('reservations')->where('tool_id', $args['toolid'])->get();
-	// 	if (null == $reservations) {
-	// 		return $response->withStatus(500);
-	// 	}
-
+	// Add tool reservations
+	$reservations = $tool->reservations;
+	$reservationsArray = array();
 	foreach ($reservations as $reservation) {
-		$item  = array(
-				"reservation_id" => $reservation->reservation_id,
-				"tool_id" => $reservation->tool_id,
-				"user_id" => $reservation->user_id,
-				"title" => $reservation->title,
-				// 				"color" => "blue",
-				// 				"draggable" => true,
-				// 				"resizable" => true,
-				// 				"actions" => "actions",
-				"startsAt" => $reservation->startsAt,
-				"endsAt" => $reservation->endsAt,
-				"type" => $reservation->type
-		);
-		// 		array_push($data["reservations"], $item);
+		array_push($reservationsArray, ReservationMapper::mapReservationToArray($reservation));
 	}
+	$data["reservations"] = $reservationsArray;
+	return $response->withJson($data);
+	
+// 	// lookup reservations for this tool
+// 	$reservations = Capsule::table('reservations')->where('tool_id', $args['toolid'])->get();
+// 	// 	if (null == $reservations) {
+// 	// 		return $response->withStatus(500);
+// 	// 	}
+
+// 	foreach ($reservations as $reservation) {
+// 		$item  = array(
+// 				"reservation_id" => $reservation->reservation_id,
+// 				"tool_id" => $reservation->tool_id,
+// 				"user_id" => $reservation->user_id,
+// 				"title" => $reservation->title,
+// 				// 				"color" => "blue",
+// 				// 				"draggable" => true,
+// 				// 				"resizable" => true,
+// 				// 				"actions" => "actions",
+// 				"startsAt" => $reservation->startsAt,
+// 				"endsAt" => $reservation->endsAt,
+// 				"type" => $reservation->type
+// 		);
+// 		// 		array_push($data["reservations"], $item);
+// 	}
 
 	return $response->withJson($data);
 });

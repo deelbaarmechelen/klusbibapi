@@ -14,4 +14,9 @@ class Reservation extends Model
 	{
 		return $this->belongsTo('Api\Model\User');
 	}
+	public function tool()
+	{
+		return $this->belongsTo('Api\Model\Tool');
+	}
+	
 }
