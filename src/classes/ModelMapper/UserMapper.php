@@ -23,8 +23,8 @@ class UserMapper
 				"mobile" => $user->mobile,
 				"created_at" => $user->created_at,
 				"updated_at" => $user->updated_at,
-				"reservations" => array()
 		);
+		
 		return $userArray;
 	}
 	static public function mapArrayToUser($data, $user, $isAdmin = false, $logger = null) {

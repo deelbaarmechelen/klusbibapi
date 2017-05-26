@@ -26,11 +26,6 @@ require __DIR__ . '/../src/middleware.php';
 
 // Register routes
 require __DIR__ . '/../src/routes.php';
-// require __DIR__ . '/../src/routes/token.php';
-// require __DIR__ . '/../src/routes/tools.php';
-// require __DIR__ . '/../src/routes/users.php';
-// require __DIR__ . '/../src/routes/reservations.php';
-// require __DIR__ . '/../src/routes/consumers.php';
 
 // Run app
 $app->run();

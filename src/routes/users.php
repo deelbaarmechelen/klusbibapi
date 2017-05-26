@@ -6,6 +6,7 @@ use Api\Exception\ForbiddenException;
 use Api\ModelMapper\UserMapper;
 use Api\Model\User;
 use Api\Authorisation;
+use Api\ModelMapper\ReservationMapper;
 
 $app->get('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib GET on '/users' route");
@@ -54,7 +55,16 @@ $app->get('/users/{userid}', function ($request, $response, $args) {
 	if (null == $user) {
 		return $response->withStatus(404);
 	}
-	return $response->withJson(UserMapper::mapUserToArray($user));
+	$userArray = UserMapper::mapUserToArray($user);
+	
+	// Add user reservations
+	$reservations = $user->reservations;
+	$reservationsArray = array();
+	foreach ($reservations as $reservation) {
+		array_push($reservationsArray, ReservationMapper::mapReservationToArray($reservation));
+	}
+	$userArray["reservations"] = $reservationsArray;
+	return $response->withJson($userArray);
 });
 	
 $app->post('/users', function ($request, $response, $args) {
@@ -86,6 +96,10 @@ $app->post('/users', function ($request, $response, $args) {
 		}
 	}
 	$currentUser = \Api\Model\User::find($this->token->getSub());
+	if (!isset($currentUser)) {
+		$this->logger->warn("No user found for token " + $this->token->getSub());
+		return $response->withStatus(403);
+	}
 	$isAdmin = false;
 	if ($currentUser->role == 'admin') {
 		$isAdmin = true;

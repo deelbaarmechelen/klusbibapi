@@ -40,6 +40,26 @@ class UsersTest extends LocalDbWebTestCase
 						'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
 			),
+			'reservations' => array(
+					array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
+							'title' => 'title 1',
+							'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
+							'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
+							'type' => 'repair'
+					),
+					array('reservation_id' => 2, 'tool_id' => 1, 'user_id' => 1,
+							'title' => 'title 2',
+							'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
+							'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
+							'type' => 'maintenance'
+					),
+					array('reservation_id' => 3, 'tool_id' => 3, 'user_id' => 1,
+							'title' => 'title 3',
+							'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
+							'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
+							'type' => 'repair'
+					),
+			),
 		));
 	}
 	
@@ -67,7 +87,7 @@ class UsersTest extends LocalDbWebTestCase
 	{
 		echo "test POST users\n";
 		$scopes = array("users.create");
-		$this->setToken(null, $scopes);
+		$this->setToken("1", $scopes);
 		$header = array('Authorization' => "bearer 123456");
 		$container = $this->app->getContainer();
 		$data = array("user_id" => "5", "firstname" => "myname", 
@@ -98,7 +118,7 @@ class UsersTest extends LocalDbWebTestCase
 		echo "test POST users (not allowed)\n";
 		// scope users.all and users.create missing
 		$scopes = array("users.list", "users.update", "users.read");
-		$this->setToken(null, $scopes);
+		$this->setToken("1", $scopes);
 		
 		$header = array('Authorization' => "bearer 123456");
 		$data = array("firstname" => "myname",
@@ -125,6 +145,8 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals("admin", $user->role);
 		$this->assertEquals($this->startdate->format('Y-m-d'), $user->membership_start_date);
 		$this->assertEquals($this->enddate->format('Y-m-d'), $user->membership_end_date);
+		$this->assertEquals(3, count($user->reservations));
+		
 	}
 	
 	public function testPutUser()
@@ -135,6 +157,7 @@ class UsersTest extends LocalDbWebTestCase
 				"email" =>"newemail@klusbib.be",
 				"role" => "new admin");
 		$header = array();
+		$this->setToken("1", null);
 		$this->client->put('/users/1', $data, $header);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 
@@ -155,6 +178,7 @@ class UsersTest extends LocalDbWebTestCase
 		$header = array();
 // 		$newHash = password_hash("new pwd", PASSWORD_DEFAULT);
 // 		echo "expected new hash = $newHash \n";
+		$this->setToken("1", null);
 		$responsePut = $this->client->put('/users/1', $data, $header);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 // 		print_r($responsePut);
@@ -215,6 +239,7 @@ class UsersTest extends LocalDbWebTestCase
 				"email" =>"newemail@klusbib.be",
 				"role" => "new admin");
 		$header = array();
+		$this->setToken("1", null);
 		$this->client->put('/users/999', $data, $header);
 		$this->assertEquals(404, $this->client->response->getStatusCode());
 	}

@@ -19,4 +19,9 @@ class User extends Model
 		}
 		return in_array($field, User::$fieldArray);
 	}
+	
+	public function reservations()
+	{
+		return $this->hasMany('Api\Model\Reservation');
+	}
 }
