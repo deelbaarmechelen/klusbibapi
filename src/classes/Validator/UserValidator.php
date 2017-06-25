@@ -17,7 +17,33 @@ class UserValidator
 			$logger->info("Missing user role");
 			return false;
 		}
+		if (!empty($user["registration_number"])) {
+			return isValidRegistrationNumber($user["registration_number"]);
+		}
+		
+		return true;
+	}
 	
+	static function isValidRegistrationNumber($registrationNumber) {
+		if (!is_numeric($registrationNumber)) {
+			return false;
+		}
+		if (strlen($registrationNumber) != 11) {
+			return false;
+		}
+		$base = substr($registrationNumber, 0, strlen($registrationNumber) - 2);
+		$verificationNumber = substr($registrationNumber, -2);
+		
+		// born after year 2000 -> prefix with 2
+		$current_year = intval(date('y'));
+		$birthyear = intval(substr($registrationNumber, 0, 2));
+		if ($birthyear <= $current_year) {
+			$base = '2' . $base;
+		}
+		$mod97 = 97 - (intval($base) % 97);
+		if ($mod97 != intval($verificationNumber)) {
+			return false;
+		}
 		return true;
 	}
 	
