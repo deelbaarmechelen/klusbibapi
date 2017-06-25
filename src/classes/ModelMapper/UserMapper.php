@@ -21,6 +21,7 @@ class UserMapper
 				"city" => $user->city,
 				"phone" => $user->phone,
 				"mobile" => $user->mobile,
+				"registration_number" => $user->registration_number,
 				"created_at" => $user->created_at,
 				"updated_at" => $user->updated_at,
 		);
@@ -78,6 +79,8 @@ class UserMapper
 		if (isset($data["mobile"])) {
 			$user->mobile = $data["mobile"];
 		}
-		
+		if (isset($data["registration_number"])) {
+			$user->registration_number = $data["registration_number"];
+		}
 	}
 }

@@ -9,8 +9,8 @@ class User extends Model
 	public $incrementing = false;
 	
 	static protected $fieldArray = ['user_id', 'state', 'firstname', 'lastname', 'role', 'email', 
-			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'ciy',
-			'phone', 'mobile', 'created_at', 'updated_at'
+			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
+			'phone', 'mobile', 'registration_number', 'created_at', 'updated_at'
 	];
 	
 	public static function canBeSortedOn($field) {
