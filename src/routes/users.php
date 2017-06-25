@@ -78,7 +78,9 @@ $app->post('/users', function ($request, $response, $args) {
 	
 	$data = $request->getParsedBody();
 	$this->logger->info("parsedbody=" . json_encode($data));
-	if (empty($data) || !UserValidator::isValidUserData($data, $this->logger)) {
+	if (empty($data) 
+			|| !UserValidator::containsMandatoryData($data, $this->logger)
+			|| !UserValidator::isValidUserData($data, $this->logger)) {
 		return $response->withStatus(400); // Bad request
 	}
 	$user = new \Api\Model\User;
@@ -134,6 +136,9 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 		return $response->withStatus(403)->write("Token sub doesn't match user.");
 	}
 	$data = $request->getParsedBody();
+	if (empty($data) || !UserValidator::isValidUserData($data, $this->logger)) {
+		return $response->withStatus(400)->write("Invalid value for registration number"); // Bad request
+	}
 	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
 	$user->save();
 	

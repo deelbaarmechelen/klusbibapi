@@ -4,7 +4,7 @@ use Api\Model\User;
 
 class UserValidator 
 {
-	static function isValidUserData($user, $logger) {
+	static function containsMandatoryData($user, $logger) {
 		if (empty($user["firstname"])) {
 			$logger->info("Missing user firstname");
 			return false;
@@ -17,8 +17,11 @@ class UserValidator
 			$logger->info("Missing user role");
 			return false;
 		}
+	}
+	
+	static function isValidUserData($user, $logger) {
 		if (!empty($user["registration_number"])) {
-			return isValidRegistrationNumber($user["registration_number"]);
+			return UserValidator::isValidRegistrationNumber($user["registration_number"]);
 		}
 		
 		return true;
