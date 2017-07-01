@@ -17,9 +17,11 @@ class UserValidator
 			$logger->info("Missing user role");
 			return false;
 		}
+		return true;
 	}
 	
 	static function isValidUserData($user, $logger) {
+		$logger->info("Validating user");
 		if (!empty($user["registration_number"])) {
 			$logger->info("Validating registration number");
 			return UserValidator::isValidRegistrationNumber($user["registration_number"], $logger);
