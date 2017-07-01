@@ -21,17 +21,20 @@ class UserValidator
 	
 	static function isValidUserData($user, $logger) {
 		if (!empty($user["registration_number"])) {
-			return UserValidator::isValidRegistrationNumber($user["registration_number"]);
+			$logger->info("Validating registration number");
+			return UserValidator::isValidRegistrationNumber($user["registration_number"], $logger);
 		}
 		
 		return true;
 	}
 	
-	static function isValidRegistrationNumber($registrationNumber) {
+	static function isValidRegistrationNumber($registrationNumber, $logger) {
 		if (!is_numeric($registrationNumber)) {
+			$logger->info("Registration number not numeric");
 			return false;
 		}
 		if (strlen($registrationNumber) != 11) {
+			$logger->info("Registration number has invalid length (expected 11 chars)");
 			return false;
 		}
 		$base = substr($registrationNumber, 0, strlen($registrationNumber) - 2);
@@ -45,6 +48,7 @@ class UserValidator
 		}
 		$mod97 = 97 - (intval($base) % 97);
 		if ($mod97 != intval($verificationNumber)) {
+			$logger->info("Invalid check digit for registration number:" + $verificationNumber);
 			return false;
 		}
 		return true;
