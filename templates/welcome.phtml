@@ -43,7 +43,7 @@
 	        });
 	    };
 		$(document).ready(function(){
-		    $("button").click(function(){
+		    $("#login").click(function(){
 		            var user = $("#login").val();
 		            var password = $("#password").val();
 		            $.ajax({
@@ -65,6 +65,24 @@
 // 			                $("#queryresult").text(JSON.stringify(xhr, null, 2));
 		                }
 		            });
+		    });
+		    $("#resetRequest").click(function(){
+	            var email = $("#email").val();
+		        $.ajax({
+	                type: 'POST',
+		            url: '/auth/reset',
+	                data: '{"email": "' + email + '"}',
+		            contentType: 'application/json; charset=utf-8',
+		            dataType: 'json',
+		            success: function (data) {
+		                console.log('success');
+		                $("#queryresult").text(JSON.stringify(data));
+		            }, error: function(xhr) {
+		                alert("An error occured: " + xhr.status + " " + xhr.statusText);
+
+		                document.getElementById("queryresult").innerHTML = xhr.responseText.replace(/\n/g,"<br>");
+		            }
+		        });
 		    });
 		    $("#users").on("click", function(){
 		        getApiUrl('/users', token);
@@ -113,7 +131,9 @@
         <div>
             User: <input type='text' id='login' size='30'><br>
             Paswoord: <input type='password' id='password' size='30'><br>
-            <button>Login</button>
+            <button id="login">Login</button><br>
+            Email: <input type='text' id='email' size='50'><br>
+            <button id="resetRequest">Reset password</button>
         </div>
         <div id="queryresult">
         </div>
@@ -129,6 +149,8 @@
         		$path_parts = pathinfo($filename);
         		echo "<img src=\"/uploads/" . $path_parts['filename'] . "-x200.jpg\">";
         	}
+        	
+//         	phpinfo();
         ?>
     </body>
 </html>

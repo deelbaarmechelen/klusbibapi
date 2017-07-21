@@ -31,7 +31,8 @@
 		"illuminate/pagination" : "5.2.*",
 		"ad7six/dsn" : "0.4.*",
 		"ext-gd": "*",
-		"doctrine/dbal": "^2.5"
+		"doctrine/dbal": "^2.5",
+		"phpmailer/phpmailer": "^5.2"
 	},
 	"require-dev" : {
 		"heroku/heroku-buildpack-php": "*",

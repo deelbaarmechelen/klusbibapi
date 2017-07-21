@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<title>Paswoord Reset</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script>
+		function parse_query_string(query) {
+			var vars = query.split("&");
+			var query_string = {};
+			for (var i = 0; i < vars.length; i++) {
+			    var pair = vars[i].split("=");
+			    // If first entry with this name
+			    if (typeof query_string[pair[0]] === "undefined") {
+			      query_string[pair[0]] = decodeURIComponent(pair[1]);
+			      // If second entry with this name
+			    } else if (typeof query_string[pair[0]] === "string") {
+			      var arr = [query_string[pair[0]], decodeURIComponent(pair[1])];
+			      query_string[pair[0]] = arr;
+			      // If third or later entry with this name
+			    } else {
+			      query_string[pair[0]].push(decodeURIComponent(pair[1]));
+			    }
+			}
+	  		return query_string;
+		}
+
+		var token = "";
+	    var putApiUrl = function (url, token, new_password) {
+	        $.ajax({
+	            url: url,
+                type: 'PUT',
+                data: '{"password" : "' + new_password + '"}',
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            beforeSend: function(xhr) {
+	                xhr.setRequestHeader("Authorization", "Bearer " + token)
+	            },
+	            success: function (data) {
+	                console.log('success');
+	                $("#queryresult").text(JSON.stringify(data));
+	            }, error: function(xhr) {
+	                alert("An error occured: " + xhr.status + " " + xhr.statusText);
+
+	                document.getElementById("queryresult").innerHTML = xhr.responseText.replace(/\n/g,"<br>");
+	            }
+	        });
+	    };
+		$(document).ready(function(){
+			var query = window.location.search.substring(1);
+			var qs = parse_query_string(query);
+			console.log(qs.token);
+			$("#username").text(qs.name);
+
+		    $("#changePwd").click(function(){
+	            var new_password = $("#new_password").val();
+	            var confirm_password = $("#confirm_password").val();
+	            if (new_password !== confirm_password) {
+		            alert('Paswoorden zijn verschillend');
+		            return;
+	            }
+	            var token = qs.token;
+	            putApiUrl('/users/<?= htmlspecialchars($userId); ?>', token, new_password);
+
+		    });
+		});
+		</script>
+    </head>
+    <body>
+    	<h1>Klusbib</h1>
+        <p>Beste <span id="username"></span><br>
+        Op deze pagina kan je een nieuw paswoord kiezen om toegang te verkrijgen tot je Klusbib profiel. <br>
+        Kies een nieuw paswoord en klik op 'Wijzigen' om verder te gaan
+        </p>
+        <div>
+            Nieuw paswoord: <input type='password' id='new_password' size='30'><br>
+            Bevestig paswoord: <input type='password' id='confirm_password' size='30'><br>
+            <button id="changePwd">Wijzigen</button><br>
+        </div>
+        <div id="queryresult">
+    </body>
+</html>    

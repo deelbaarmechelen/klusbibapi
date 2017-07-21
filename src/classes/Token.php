@@ -37,7 +37,7 @@ class Token
 				"exp" => $future->getTimeStamp(),	// expiration
 				"jti" => $jti,						// JWT ID
 				"sub" => $sub,
-				"scope" => $scopes
+				"scope" => array_values($scopes)    // drop keys of scopes array
 		];
 		return $payload;
 	}
@@ -85,19 +85,28 @@ class Token
 				"users.read.owner",
 				"users.update",
 				"users.update.owner",
+				"users.update.password",
 				"users.delete",
 				"users.list",
 				"users.all"
 		];
 		return $valid_scopes;
 	}
+	static public function resetPwdScopes () {
+		$reset_pwd_scopes = [
+				"users.update.password"
+		];
+		return $reset_pwd_scopes;
+	}
+	
 	static public function allowedScopes($role) {
 		if ($role == 'admin') {
 			return [
 					"tools.all",
 					"reservations.all",
 					"consumers.all",
-					"users.all"
+					"users.all",
+					"users.update.password",
 			];
 		}
 		if ($role = 'member') {
@@ -112,6 +121,7 @@ class Token
 					"consumers.read",
 					"consumers.list",
 					"users.read.owner", // not allowed to consult other users info
+					"users.update.password",
 					"users.update.owner", // not allowed to update other users info
 			];
 		}
@@ -127,6 +137,7 @@ class Token
 					"consumers.read",
 					"consumers.list",
 					"users.read.owner", // not allowed to consult other users info
+					"users.update.password",
 					"users.update.owner", // not allowed to update other users info
 			];
 		}

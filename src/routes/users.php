@@ -115,7 +115,7 @@ $app->post('/users', function ($request, $response, $args) {
 $app->put('/users/{userid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib PUT on '/users/id' route");
 
-	if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner"])) {
+	if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner", "users.update.password"])) {
 // 		throw new ForbiddenException("Token not allowed to update users.", 403);
 		return $response->withStatus(403)->write("Token not allowed to update users.");
 	}

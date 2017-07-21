@@ -62,7 +62,7 @@ $container["HttpBasicAuthentication"] = function ($container) {
 $container["JwtAuthentication"] = function ($container) {
 	return new JwtAuthentication([
 			"path" => "/",
-			"passthrough" => ["/token", "/welcome", "/upload"],
+			"passthrough" => ["/token", "/welcome", "/upload", "/auth/reset"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
 			"secure" => false, // FIXME: enable HTTPS and switch this to true

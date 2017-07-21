@@ -21,3 +21,14 @@ else {
 	$pass = getenv('DB_PASS');
 	$port = getenv('DB_PORT');
 }
+
+define("PROJECT_HOME",getenv('PROJECT_HOME'));
+
+define("PORT", getenv('PORT')); // port number
+define("MAIL_USERNAME", getenv('MAIL_USERNAME')); // smtp usernmae
+define("MAIL_PASSWORD", getenv('MAIL_PASSWORD')); // smtp password
+define("MAIL_HOST", getenv('MAIL_HOST')); // smtp host
+define("MAILER", getenv('MAILER'));
+
+define("SENDER_NAME", getenv('SENDER_NAME'));
+define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
