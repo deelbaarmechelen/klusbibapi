@@ -9,7 +9,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 // $user = 'klusbib';
 // $pass = 'klusbib';
 // $port = 3306;
-require __DIR__ . '/../../src/env.php';
+require_once __DIR__ . '/../../src/env.php';
 $settings = require __DIR__ . '/../../src/settings.php';
 
 class CreateTools extends AbstractMigration

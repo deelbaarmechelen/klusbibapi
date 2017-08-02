@@ -88,7 +88,8 @@ class Token
 				"users.update.password",
 				"users.delete",
 				"users.list",
-				"users.all"
+				"users.all",
+				"auth.confirm"
 		];
 		return $valid_scopes;
 	}
@@ -109,7 +110,7 @@ class Token
 					"users.update.password",
 			];
 		}
-		if ($role = 'member') {
+		if ($role == 'member') {
 			return [
 					"tools.read",
 					"tools.list",
@@ -125,7 +126,7 @@ class Token
 					"users.update.owner", // not allowed to update other users info
 			];
 		}
-		if ($role = 'supporter') {
+		if ($role == 'supporter') {
 			return [
 					"tools.read",
 					"tools.list",
@@ -149,6 +150,7 @@ class Token
 				"reservations.list",
 				"consumers.read",
 				"consumers.list",
+				"auth.confirm"
 		];
 	}
 }

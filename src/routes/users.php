@@ -7,6 +7,8 @@ use Api\ModelMapper\UserMapper;
 use Api\Model\User;
 use Api\Authorisation;
 use Api\ModelMapper\ReservationMapper;
+use Api\Mail\MailManager;
+use Api\Token;
 
 $app->get('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib GET on '/users' route");
@@ -69,13 +71,6 @@ $app->get('/users/{userid}', function ($request, $response, $args) {
 	
 $app->post('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib POST on '/users' route");
-
-	$authorised = Authorisation::checkUserAccess($this->token, "create", null);
-	if (!$authorised) {
-		$this->logger->warn("Token not allowed to create users.");
-		return $response->withStatus(403);
-	}
-	
 	$data = $request->getParsedBody();
 	$this->logger->info("parsedbody=" . json_encode($data));
 	if (empty($data) 
@@ -83,31 +78,58 @@ $app->post('/users', function ($request, $response, $args) {
 			|| !UserValidator::isValidUserData($data, $this->logger)) {
 		return $response->withStatus(400); // Bad request
 	}
+
+	$isAdmin = false;
 	$user = new \Api\Model\User;
+	$authorised = Authorisation::checkUserAccess($this->token, "create", null);
+	if (!$authorised) {
+		// Web enrolment
+		$user->state = "CONFIRM_EMAIL";
+		$user->role = 'member'; // only members can be created through web enrolment
+		$data["membership_start_date"] = strftime('%Y-%m-%d',time());
+		$mailmgr = new MailManager();
+		$sendNotification = TRUE;
+		$sendEmailVerification = TRUE;
+	} else {
+		$currentUser = \Api\Model\User::find($this->token->getSub());
+		if (!isset($currentUser)) {
+			$this->logger->warn("No user found for token " + $this->token->getSub());
+			return $response->withStatus(403);
+		}
+		if ($currentUser->role == 'admin') {
+			$isAdmin = true;
+		}
+		$sendNotification = FALSE;
+		$sendEmailVerification = FALSE;
+	}
+	
 	if (!isset($data["user_id"]) || empty($data["user_id"])) {
 		$max_user_id = Capsule::table('users')->max('user_id');
-		$data["user_id"] = $max_user_id + 1;
-		$this->logger->info("New user will be assigned id " . $data["user_id"]);
+		$user->user_id = $max_user_id + 1;
+		$this->logger->info("New user will be assigned id " . $user->user_id);
 	}
 	if (!empty($data["membership_start_date"])) {
 		$user->membership_start_date = $data["membership_start_date"];
 		if (!empty($data["membership_end_date"])) {
 			$user->membership_end_date = $data["membership_end_date"];
 		} else { // default to 1 year membership
-			$user->membership_end_date = strtotime("+1 year", strtotime($data["membership_start_date"]));
+			$user->membership_end_date = strftime('%Y-%m-%d',strtotime("+1 year", strtotime($data["membership_start_date"])));
 		}
-	}
-	$currentUser = \Api\Model\User::find($this->token->getSub());
-	if (!isset($currentUser)) {
-		$this->logger->warn("No user found for token " + $this->token->getSub());
-		return $response->withStatus(403);
-	}
-	$isAdmin = false;
-	if ($currentUser->role == 'admin') {
-		$isAdmin = true;
 	}
 	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
 	$user->save();
+	if ($sendEmailVerification) {
+		$sub = $user->user_id;
+		$scopes = ["auth.confirm"];
+		$result = $mailmgr->sendEmailVerification($user->user_id, $user->firstname, $user->email,
+				Token::generateToken($scopes, $sub));
+		$this->logger->info('Sending email verification result: ' . $mailmgr->getLastMessage());
+	}
+	if ($sendNotification) {
+		$result = $mailmgr->sendEnrolmentNotification(ENROLMENT_NOTIF_EMAIL, $user);
+		$this->logger->info('Sending enrolment notification result: ' . $mailmgr->getLastMessage());
+	}
+	
 	return $response->withJson(UserMapper::mapUserToArray($user));
 });
 

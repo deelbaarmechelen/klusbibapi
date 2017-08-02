@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../src/settings.php';
  * 
  * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
  */
-class AddToolExperienceLevel extends AbstractMigration
+class UpdateUserPaymentMode extends AbstractMigration
 {
     /**
      * Up Method.
@@ -25,21 +25,19 @@ class AddToolExperienceLevel extends AbstractMigration
      */
 	public function up()
 	{
-		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
-			$table->string('experience_level', 20)->nullable();
-			$table->string('safety_risk', 20)->nullable();
+		Capsule::schema()->table('users', function(Illuminate\Database\Schema\Blueprint $table){
+			$table->string('payment_mode', 20)->nullable()->default(null);
 		});
 	}
-    /**
-     * Down Method.
-     *
-     * Called when invoking rollback
-     */
+	/**
+	 * Down Method.
+	 *
+	 * Called when invoking rollback
+	 */
 	public function down()
 	{
-		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
-			$table->dropColumn('experience_level');
-			$table->dropColumn('safety_risk');
+		Capsule::schema()->table('users', function(Illuminate\Database\Schema\Blueprint $table){
+			$table->dropColumn('payment_mode');
 		});
 	}
 }

@@ -22,6 +22,7 @@ class UserMapper
 				"phone" => $user->phone,
 				"mobile" => $user->mobile,
 				"registration_number" => $user->registration_number,
+				"payment_mode" => $user->payment_mode,
 				"created_at" => $user->created_at,
 				"updated_at" => $user->updated_at,
 		);
@@ -58,7 +59,7 @@ class UserMapper
 			if (!empty($data["membership_end_date"])) {
 				$user->membership_end_date = $data["membership_end_date"];
 			} else { // default to 1 year membership
-				$user->membership_end_date = date('Ymd', strtotime("+1 year", strtotime($data["membership_start_date"])));
+				$user->membership_end_date = date('Y-m-d', strtotime("+1 year", strtotime($data["membership_start_date"])));
 			}
 		}
 		if (isset($data["birth_date"])) {
@@ -81,6 +82,9 @@ class UserMapper
 		}
 		if (isset($data["registration_number"])) {
 			$user->registration_number = $data["registration_number"];
+		}
+		if (isset($data["payment_mode"])) {
+			$user->payment_mode = $data["payment_mode"];
 		}
 	}
 }

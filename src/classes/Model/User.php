@@ -10,7 +10,7 @@ class User extends Model
 	
 	static protected $fieldArray = ['user_id', 'state', 'firstname', 'lastname', 'role', 'email', 
 			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
-			'phone', 'mobile', 'registration_number', 'created_at', 'updated_at'
+			'phone', 'mobile', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
 	];
 	
 	public static function canBeSortedOn($field) {

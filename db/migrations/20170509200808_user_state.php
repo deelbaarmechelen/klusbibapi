@@ -3,8 +3,8 @@
 use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require __DIR__ . '/../../src/env.php';
-require __DIR__ . '/../../src/settings.php';
+require_once __DIR__ . '/../../src/env.php';
+require_once __DIR__ . '/../../src/settings.php';
 /**
  * Custom template for database migration with Illuminate\Database
  * 

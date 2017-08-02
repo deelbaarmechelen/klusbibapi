@@ -43,6 +43,7 @@ $container["user"] = function ($container) {
 $container["HttpBasicAuthentication"] = function ($container) {
 	return new HttpBasicAuthentication([
 			"path" => "/token",
+			"passthrough" => "/token/guest",
 			"secure" => false,
 			"relaxed" => ["admin", "klusbib.deeleco"],
 			"authenticator" => new PdoAuthenticator([
@@ -76,7 +77,7 @@ $container["JwtAuthentication"] = function ($container) {
 			},
 			"rules" => [
 					new \Api\Middleware\Jwt\JwtCustomRule([
-							"getpassthrough" => ["/tools", "/consumers"]
+							"getpassthrough" => ["/tools", "/consumers", "/auth/confirm"]
 					]),
 					new \Slim\Middleware\JwtAuthentication\RequestMethodRule([
 							"passthrough" => ["OPTIONS"]

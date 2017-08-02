@@ -3,7 +3,6 @@ $dotenv = new Dotenv\Dotenv(__DIR__ . '/../');
 $dotenv->load();
 
 use \AD7six\Dsn\Dsn;
-
 $url = getenv('DATABASE_URL');
 if (isset($url) && !empty($url)) {
 	$dsn = Dsn::parse($url);
@@ -32,3 +31,4 @@ define("MAILER", getenv('MAILER'));
 
 define("SENDER_NAME", getenv('SENDER_NAME'));
 define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
+define("ENROLMENT_NOTIF_EMAIL", getenv('ENROLMENT_NOTIF_EMAIL'));
