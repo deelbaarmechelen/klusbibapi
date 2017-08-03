@@ -23,8 +23,8 @@ else {
 
 define("PROJECT_HOME",getenv('PROJECT_HOME'));
 
-define("PORT", getenv('PORT')); // port number
-define("MAIL_USERNAME", getenv('MAIL_USERNAME')); // smtp usernmae
+define("MAIL_PORT", getenv('MAIL_PORT')); // smtp port number
+define("MAIL_USERNAME", getenv('MAIL_USERNAME')); // smtp username
 define("MAIL_PASSWORD", getenv('MAIL_PASSWORD')); // smtp password
 define("MAIL_HOST", getenv('MAIL_HOST')); // smtp host
 define("MAILER", getenv('MAILER'));

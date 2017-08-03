@@ -58,6 +58,7 @@ class MailManager {
 		$this->message = '';
 		
 		$mail = $this->mailer;
+		$mail->clearAllRecipients();
 		$mail->setLanguage('nl');
 		
 		$mail->IsSMTP ();
@@ -65,7 +66,7 @@ class MailManager {
 		// 		$mail->SMTPDebug = \SMTP::DEBUG_SERVER;
 		$mail->SMTPAuth = TRUE;
 		$mail->SMTPSecure = "tls";
-		$mail->Port = PORT;
+		$mail->Port = MAIL_PORT;
 		$mail->Username = MAIL_USERNAME;
 		$mail->Password = MAIL_PASSWORD;
 		$mail->Host = MAIL_HOST;
