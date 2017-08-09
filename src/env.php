@@ -32,3 +32,4 @@ define("MAILER", getenv('MAILER'));
 define("SENDER_NAME", getenv('SENDER_NAME'));
 define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
 define("ENROLMENT_NOTIF_EMAIL", getenv('ENROLMENT_NOTIF_EMAIL'));
+define("RESERVATION_NOTIF_EMAIL", getenv('RESERVATION_NOTIF_EMAIL'));

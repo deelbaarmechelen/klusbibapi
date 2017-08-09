@@ -25,7 +25,10 @@ class ReservationValidator
 			$logger->info("Inexistant tool " . $reservation["tool_id"]);
 			return false;
 		}
-		
+		if (isset($data["startsAt"]) && isset($data["endsAt"]) && $data["endsAt"] < $data["startsAt"]) {
+			$logger->info("End date (". $data["endsAt"] . " cannot be smaller than start data (" . $data["startsAt"] . ")");
+			return false;
+		}
 		return true;
 	}
 	static function toolExists($toolid, $logger) {

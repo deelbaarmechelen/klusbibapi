@@ -33,6 +33,9 @@ class LocalWebTestCase extends WebTestCase {
 		
 		return $app;
 	}
+	public function getLogger() {
+		return $this->app->logger;
+	}
 };
 
 class LocalDbWebTestCase extends WebDbTestCase {

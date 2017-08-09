@@ -13,6 +13,9 @@ $app->post("/token", function ($request, $response, $arguments) use ($app) {
 	if (null == $user) {
 		return $response->withStatus(404);
 	}
+	if ('ACTIVE' != $user->state) {
+		return $response->withStatus(403);
+	}
 	$sub = $user->user_id;
 	$requested_scopes = Token::allowedScopes($user->role);
 	$scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {

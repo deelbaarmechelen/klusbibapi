@@ -12,64 +12,71 @@ use Slim\Http\Uri;
 // class ImageResizeTest extends \PHPUnit_Framework_TestCase
 class ImageResizeTest extends LocalDbWebTestCase
 {
-	public function testGetImage()
-	{
-		echo "test GET users\n";
-		$body = $this->client->get('/image/3.jpg');
-		// 		print_r($body);
-		$this->assertEquals(200, $this->client->response->getStatusCode());
-// 		$users = json_decode($body);
-// 		$this->assertEquals(3, count($users));
-	}
-	
 	public function testShouldReturnImage()
 	{
 		Environment::mock(array(
 				/* TODO: Figure out why setting this breaks test. */
-				//"SCRIPT_NAME" => "/index.php",
-				"PATH_INFO" => "/images/3-200x200.jpg"
+// 				"SCRIPT_NAME" => "/index.php",
+				"PATH_INFO" => "/images/3-x200.jpg"
 		));
 		$app = new \Slim\App();
-		$app->add(new Api\Middleware\ImageResize([
-				"extensions" => ["jpg", "jpeg"],
-				"quality" => 90,
-				"sizes" => ["400x200", "x200", "200x", "100x100"]
-		]));
+		$middleware = new \Api\Middleware\ImageResize([
+			"extensions" => ["jpg", "jpeg"],
+			"quality" => 90,
+			"sizes" => ["800x", "x800", "400x", "x400", "400x200", "x200", "200x", "100x100"]
+		], $this->mockMutator());
+		$app->add($middleware);
 		$app->get("/foo", function () {
 			echo "Success";
 		});
-			$middleware = new \Api\Middleware\ImageResize(array(
-			));
 		$_SERVER["DOCUMENT_ROOT"] = __DIR__ . '/../../public';
 		
 		$uri = new Uri("http", "host", 8080, "/uploads/3-x200.jpg");
 		$headers = new Headers();
 		$request = new Request("GET", $uri, $headers, [], [], new RequestBody());
 		$response = new Response();
-			$response = $middleware->__invoke($request, $response, $app);
-			$this->assertEquals(200, $response->getStatusCode());
-			$contentTypeHeaders = $response->getHeader("Content-Type");
-			$this->assertEquals("image/jpeg", $contentTypeHeaders[0]);
+		$response = $middleware->__invoke($request, $response, $app);
+		$this->assertEquals(200, $response->getStatusCode());
+		$contentTypeHeaders = $response->getHeader("Content-Type");
+		$this->assertEquals("image/jpeg", $contentTypeHeaders[0]);
 	}
-// 	public function testShouldReturnHtml()
-// 	{
-// 		Environment::mock(array(
-// 				"SCRIPT_NAME" => "/index.php",
-// 				"PATH_INFO" => "/foo"
-// 		));
-// 		$app = new \Slim\App();
-// 		$app->add(new Api\Middleware\ImageResize([
-// 				"extensions" => ["jpg", "jpeg"],
-// 				"quality" => 90,
-// 				"sizes" => ["400x200", "x200", "200x", "100x100"]
-// 		]));
-// 		$app->get("/foo", function () {
-// 			echo "Success";
-// 		});
-// 			$middleware = new \Api\Middleware\ImageResize(array(
-// 			));
-// 			$middleware->__invoke();
-// 			$this->assertEquals(200, $app->response()->status());
-// 			$this->assertEquals("text/html", $app->response()->header("Content-Type"));
-// 	}
+	
+	private function mockMutator() {
+		return new MockMutator();
+	}
+}
+
+class MockMutator
+{
+	public function parse() {
+		echo "MockMutator::parse\n";
+		return array('extension' => 'jpg',
+				'size' => 'x200',
+				'signature' => null,
+				'source' => '/uploads/3-x200.jpg'
+		);
+	}
+	
+	public function execute() {
+		echo "MockMutator::execute\n";
+	}
+	
+	public function encode() {
+		echo "MockMutator::encode\n";
+		return new MockImage();
+	}
+	public function save() {
+		echo "MockMutator::save\n";
+		
+	}
+	public function mime() {
+		echo "MockMutator::mime\n";
+		return "image/jpeg";
+	}
+}
+
+class MockImage {
+	public function getEncoded(){
+		
+	}
 }

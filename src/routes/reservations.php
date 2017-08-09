@@ -5,6 +5,9 @@ use Api\Exception\ForbiddenException;
 use Api\ModelMapper\ReservationMapper;
 use Api\Authorisation;
 use Api\Validator\ReservationValidator;
+use Api\AccessType;
+use Api\Model\ReservationState;
+use Api\Mail\MailManager;
 
 $app->get('/reservations', function ($request, $response, $args) {
 	
@@ -19,14 +22,16 @@ $app->get('/reservations', function ($request, $response, $args) {
 
 $app->post('/reservations', function ($request, $response, $args) {
 	$this->logger->info("Klusbib POST '/reservations' route");
-	Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.create"]);
-
+	Authorisation::checkAccessByToken($this->token, 
+			["reservations.all", "reservations.create", "reservations.create.owner", "reservations.create.owner.donation_only"]);
 	$data = $request->getParsedBody();
 	if (!ReservationValidator::isValidReservationData($data, $this->logger)) {
 		return $response->withStatus(400); // Bad request
 	}
 	$reservation = new \Api\Model\Reservation();
 	// 	$reservation->name = filter_var($data['name'], FILTER_SANITIZE_STRING);
+	// TODO: check restricted reservation periods for this tool
+	// TODO: check conflicts with other reservations
 	$reservation->tool_id = $data["tool_id"];
 	$reservation->user_id = $data["user_id"];
 	if (isset($data["title"])) {
@@ -36,12 +41,41 @@ $app->post('/reservations', function ($request, $response, $args) {
 		$reservation->type = $data["type"];
 	}
 	if (isset($data["startsAt"])) {
+		// TODO: if not admin, only allow future dates
 		$reservation->startsAt = $data["startsAt"];
+	} else {
+		$reservation->startsAt = new \DateTime("now");
 	}
 	if (isset($data["endsAt"])) {
 		$reservation->endsAt = $data["endsAt"];
+	} else {
+		$reservation->endsAt = clone $reservation->startsAt;
+		$reservation->endsAt->add(new DateInterval('P7D'));
 	}
+// 	$this->logger->debug('tool =' . json_encode($reservation->tool));
+	$access = Authorisation::checkReservationAccess($this->token, "create", $reservation, $reservation->tool->owner_id);
+	if ($access === AccessType::NO_ACCESS) {
+		return $response->withStatus(403); // Unauthorized
+	}
+	// TODO: add state on reservation: REQUESTED / CONFIRMED / CANCELLED
+	if ($access !== AccessType::FULL_ACCESS) {
+		$reservation->state = ReservationState::REQUESTED;
+	}
+	if ($access !== AccessType::FULL_ACCESS) {
+		$reservation->type = "reservation";
+	}
+	// TODO: if not admin, should be max startsAt + 7 days
 	$reservation->save();
+	if ($reservation->state === ReservationState::REQUESTED) {
+		// Send notification to confirm the reservation
+		$mailMgr = new MailManager();
+		$isSendSuccessful = $mailMgr->sendReservationRequest(RESERVATION_NOTIF_EMAIL, 
+				$reservation->user, $reservation->tool, $reservation);
+		if (!$isSendSuccessful) {
+			$message = $mailMgr->getLastMessage();
+			$this->logger->warn('Problem sending reservation notification email: '. $message);
+		}
+	}
 	return $response->withJson(ReservationMapper::mapReservationToArray($reservation));
 });
 
@@ -81,6 +115,7 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 		$this->logger->info("Klusbib PUT updating endsAt from " . $reservation->endsAt . " to " . $data["endsAt"]);
 		$reservation->endsAt = $data["endsAt"];
 	}
+	// TODO: only allow update of own reservations if access is reservations.update.owner
 	$reservation->save();
 	return $response->withJson(ReservationMapper::mapReservationToArray($reservation));
 });
@@ -88,6 +123,7 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 $app->delete('/reservations/{reservationid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib DELETE '/reservations/id' route");
 	Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.delete", "reservations.delete.owner"]);
+	// TODO: only allow delete of own reservations if access is reservations.delete.owner
 	$reservation = \Api\Model\Reservation::find($args['reservationid']);
 	if (null == $reservation) {
 		return $response->withStatus(204);
@@ -96,11 +132,4 @@ $app->delete('/reservations/{reservationid}', function ($request, $response, $ar
 	return $response->withStatus(200);
 });
 	
-// $app->post('/reservations/{toolid}/reservations/new', function ($request, $response, $args) {
-// 	$this->logger->info("Klusbib POST '/reservations/{reservationid}/reservations/new' route");
-// 	$reservation = new \Api\Model\Reservation();
-// 	$reservation->name = 'test';
-// 	$reservation->description = 'my new reservation';
-// 	$reservation->save();
-// 	echo 'created';
-// });
+

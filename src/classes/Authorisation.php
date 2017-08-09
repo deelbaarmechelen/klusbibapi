@@ -48,4 +48,52 @@ class Authorisation {
 		}
 		
 	}
+	
+	static function checkReservationAccess($token, $operation, $reservation, $toolOwner = NULL) {
+		if (!isset($token)) {
+			return AccessType::NO_ACCESS;
+		}
+		switch ($operation) {
+			case "list":
+				if ($token->hasScope(["reservations.all", "reservations.list"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+			case "read":
+				if ($token->hasScope(["reservations.all", "reservations.read"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+			case "create":
+				if ($token->hasScope(["reservations.all", "reservations.create"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				if ($token->hasScope(["reservations.create.owner"])
+						&& ($reservation->user_id == $token->decoded->sub)) {
+					return AccessType::OWNER_ACCESS;
+				}
+				if ($token->hasScope(["reservations.create.owner.donation_only"])
+						&& ($reservation->user_id == $token->decoded->sub)
+						&& ($toolOwner == $token->decoded->sub)) {
+							return AccessType::TOOL_OWNER_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+			case "update":
+				if ($token->hasScope(["reservations.all", "reservations.update"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				if ($token->hasScope(["reservations.update.owner"]) && ($reservation->user_id == $token->decoded->sub)) {
+					return AccessType::OWNER_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+			case "delete":
+				if ($token->hasScope(["reservations.all", "reservations.delete"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				if ($token->hasScope(["reservations.delete.owner"]) && ($reservation->user_id == $token->decoded->sub)) {
+					return AccessType::OWNER_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+		}
+	}
 }

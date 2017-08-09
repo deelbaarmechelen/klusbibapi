@@ -103,11 +103,19 @@ $container["HttpBasicAuthentication"] = function ($container) {
 $container["JwtAuthentication"] = function ($container) {
 	return new JwtAuthentication([
 			"path" => "/",
-			"passthrough" => ["/token", "/welcome"],
+			"passthrough" => ["/token", "/welcome", "/upload", "/auth/reset"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
 			"secure" => false, // FIXME: enable HTTPS and switch this to true
 			"relaxed" => ["admin", "klusbib.deeleco"], // list hosts allowed without HTTPS for DEV
+			"rules" => [
+					new \Api\Middleware\Jwt\JwtCustomRule([
+							"getpassthrough" => ["/tools", "/consumers", "/auth/confirm"]
+					]),
+					new \Slim\Middleware\JwtAuthentication\RequestMethodRule([
+							"passthrough" => ["OPTIONS"]
+					])
+			],
 			"error" => function ($request, $response, $arguments) {
 			$data["status"] = "error";
 			$data["message"] = $arguments["message"];

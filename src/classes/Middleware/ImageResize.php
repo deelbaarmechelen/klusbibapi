@@ -31,7 +31,7 @@ class ImageResize
     protected $options;
     public $mutator;
 
-    public function __construct($options = null)
+    public function __construct($options = null, $mutator = null)
     {
 
         /* Default options. */
@@ -48,7 +48,11 @@ class ImageResize
         }
 
         /* TODO: Use proper DI. */
-        $this->mutator = $this->options["mutator"];
+        if (isset($mutator)) {
+        	$this->mutator = $mutator;
+        } else {
+        	$this->mutator = $this->options["mutator"];
+        }
         unset($this->options["mutator"]);
     }
 

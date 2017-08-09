@@ -2,7 +2,6 @@
 
 namespace Tests\Functional;
 
-use PHPUnit\Framework\TestCase;
 use Slim\App;
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -12,7 +11,7 @@ use Slim\Http\Environment;
  * This is an example class that shows how you could set up a method that
  * runs the application. 
  */
-class BaseTestCase extends TestCase
+trait BaseTestCaseTrait
 {
     /**
      * Use middleware when running application?
@@ -46,9 +45,12 @@ class BaseTestCase extends TestCase
     	$response = $this
     		->withBasicAuthentication($user, $password)
     		->runApp('POST', '/token');
-    	print_r($response);
-    	$decoded = json_decode($response);
+    	$decoded = json_decode((string)$response->getBody());
     	$this->token = $decoded->token;
+    	$this->optionalHeaders = array(
+    			'HTTP_AUTHORIZATION' => "Bearer " . $this->token,
+    			'AUTH_TYPE' => 'Bearer'
+    	);
     	return $this;
     }
     
@@ -81,7 +83,7 @@ class BaseTestCase extends TestCase
     	 
     	// Create a mock environment for testing with
     	$environment = Environment::mock(array_merge($options, $this->optionalHeaders));
-    	print_r($environment);
+//     	print_r($environment);
 //     	$environment = Environment::mock(
 //             [
 //                 'REQUEST_METHOD' => $requestMethod,

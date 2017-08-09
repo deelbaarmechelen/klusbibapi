@@ -2,8 +2,40 @@
 use Api\Token;
 use Tests\DbUnitArrayDataSet;
 
+require_once __DIR__ . '/../test_env.php';
+
 class ReservationsTest extends LocalDbWebTestCase
 {
+	// Run for each unit test to setup our slim app environment
+	public function setup($dependencies = null, WebTestClient $client = NULL)
+	{
+// 		if (!defined("RESERVATION_NOTIF_EMAIL")) {
+// 			define("RESERVATION_NOTIF_EMAIL", "ut@klusbib.be");
+// 		}
+// 		if (!defined("MAIL_PORT")) {
+// 			define("MAIL_PORT", "26");
+// 		}
+// 		if (!defined("MAIL_USERNAME")) {
+// 			define("MAIL_USERNAME", "username");
+// 		}
+// 		if (!defined("MAIL_PASSWORD")) {
+// 			define("MAIL_PASSWORD", "password");
+// 		}
+// 		if (!defined("MAIL_HOST")) {
+// 			define("MAIL_HOST", "localhost");
+// 		}
+// 		if (!defined("MAILER")) {
+// 			define("MAILER", "sendmail");
+// 		}
+// 		if (!defined("SENDER_EMAIL")) {
+// 			define("SENDER_EMAIL", "ut@klusbib.be");
+// 		}
+// 		if (!defined("SENDER_NAME")) {
+// 			define("SENDER_NAME", "Unit Tests");
+// 		}
+		parent::setUp($dependencies, $client);
+	}
+	
 	/**
 	 * @return PHPUnit_Extensions_Database_DataSet_IDataSet
 	 */
@@ -32,6 +64,26 @@ class ReservationsTest extends LocalDbWebTestCase
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
+				),
+				'tools' => array(
+						array('tool_id' => 1, 'name' => 'tool 1', 'description' => 'description 1',
+								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
+								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
+								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25',
+								'code' => 'KB-000-17-001', 'owner_id' => 0
+						),
+						array('tool_id' => 2, 'name' => 'tool 2', 'description' => 'description 2',
+								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
+								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
+								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25',
+								'code' => 'KB-002-17-001', 'owner_id' => 2
+						),
+						array('tool_id' => 3, 'name' => 'tool 3', 'description' => 'description 3',
+								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
+								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
+								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25',
+								'code' => 'KB-000-17-002', 'owner_id' => 0
+						)
 				),
 				'reservations' => array(
 						array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
@@ -73,6 +125,7 @@ class ReservationsTest extends LocalDbWebTestCase
 		echo "test GET reservations\n";
 		$body = $this->client->get('/reservations');
 		print_r($body);
+		echo "\n";
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$reservations = json_decode($body);
 		$this->assertEquals(3, count($reservations));
@@ -111,7 +164,7 @@ class ReservationsTest extends LocalDbWebTestCase
 	
 	public function testPostReservationsInvalidUser()
 	{
-		echo "test POST reservations\n";
+		echo "test POST reservations - Invalid User\n";
 		$this->setUser('daniel@klusbib.be');
 		$this->setToken('3', ["reservations.all"]);
 		// get token
@@ -130,7 +183,7 @@ class ReservationsTest extends LocalDbWebTestCase
 	
 	public function testPostReservationsInvalidTool()
 	{
-		echo "test POST reservations\n";
+		echo "test POST reservations - Invalid tool\n";
 		$this->setUser('daniel@klusbib.be');
 		$this->setToken('3', ["reservations.all"]);
 	
@@ -140,6 +193,64 @@ class ReservationsTest extends LocalDbWebTestCase
 		);
 		$body = $this->client->post('/reservations', $data);
 		$this->assertEquals(400, $this->client->response->getStatusCode());
+	}
+	
+	public function testPostReservationsOwnerOnly()
+	{
+		echo "test POST reservations - Owner only\n";
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["reservations.create.owner"]);
+	
+		$data = array("tool_id" => 2, "user_id" => 3,
+				"title" => "my reservation",
+				"type" => "reservation"
+		);
+		$body = $this->client->post('/reservations', $data);
+		print_r($body);
+		echo "\n";
+		$this->assertEquals(200, $this->client->response->getStatusCode());
+	}
+	
+	public function testPostReservationsDifferentOwner()
+	{
+		echo "test POST reservations - Diffferent Owner\n";
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('3', ["reservations.create.owner"]);
+	
+		$data = array("tool_id" => 2, "user_id" => 2,
+				"title" => "my reservation",
+				"type" => "reservation"
+		);
+		$body = $this->client->post('/reservations', $data);
+		print_r($body);
+		echo "\n";
+		$this->assertEquals(403, $this->client->response->getStatusCode());
+	}
+	public function testPostReservationsDonationOnly()
+	{
+		echo "test POST reservations - Donation only\n";
+		$this->setUser('daniel@klusbib.be');
+		$this->setToken('2', ["reservations.create.owner.donation_only"]);
+	
+		// reservation on own tool
+		$data = array("tool_id" => 2, "user_id" => 2,
+				"title" => "my reservation",
+				"type" => "reservation"
+		);
+		$body = $this->client->post('/reservations', $data);
+		print_r($body);
+		echo "\n";
+		$this->assertEquals(200, $this->client->response->getStatusCode());
+
+		// reservation on tool owned by someone else
+		$data = array("tool_id" => 3, "user_id" => 2,
+				"title" => "my reservation",
+				"type" => "reservation"
+		);
+		$body = $this->client->post('/reservations', $data);
+		print_r($body);
+		echo "\n";
+		$this->assertEquals(403, $this->client->response->getStatusCode());
 	}
 	
 	public function testGetReservation()

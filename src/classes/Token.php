@@ -67,6 +67,7 @@ class Token
 				"tools.all",
 				"reservations.create",
 				"reservations.create.owner",
+				"reservations.create.owner.donation_only",
 				"reservations.read",
 				"reservations.update",
 				"reservations.update.owner",
@@ -114,7 +115,7 @@ class Token
 			return [
 					"tools.read",
 					"tools.list",
-					"reservations.create",
+					"reservations.create.owner",
 					"reservations.read",
 					"reservations.update.owner",
 					"reservations.delete.owner",
@@ -130,7 +131,7 @@ class Token
 			return [
 					"tools.read",
 					"tools.list",
-					"reservations.create.owner", // allow reservations on donated tools only
+					"reservations.create.owner.donation_only", // allow reservations on donated tools only
 					"reservations.read",
 					"reservations.update.owner",
 					"reservations.delete.owner",

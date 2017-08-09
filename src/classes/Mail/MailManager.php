@@ -54,6 +54,18 @@ class MailManager {
 		return $this->send($subject, $body, $userEmail);
 	}
 	
+	public function sendReservationRequest($to, $user, $tool, $reservation) {
+		$subject = "Nieuwe reservatie";
+		$body = "<div>Beste,<br><br>"
+				. "<p>Via de website werd een aanvraag voor een reservatie geregistreerd<br>"
+				. "Gebruiker ". $user->firstname . " " . $user->lastname
+				. " (user id: " . $user->user_id . ") "
+				. "wenst toestel " . $tool->code . " te reserveren van " 
+				. $reservation->startsAt->format('Y-m-d') . " tot " . $reservation->endsAt->format('Y-m-d') . "</p>"
+				. "Groetjes,<br> Admin.</div>";
+		return $this->send($subject, $body, $to);
+	}
+	
 	private function send($subject, $body, $to) {
 		$this->message = '';
 		

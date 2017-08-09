@@ -21,19 +21,22 @@ class TokenTest extends LocalDbWebTestCase
 								'role' => 'admin', 'email' => 'admin@klusbib.be',
 								'hash' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
+								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+								'state' => 'ACTIVE'
 						),
 						array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
 								'role' => 'volunteer', 'email' => 'harry@klusbib.be',
 								'hash' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
+								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+								'state' => 'ACTIVE'
 						),
 						array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
 								'role' => 'member', 'email' => 'daniel@klusbib.be',
 								'hash' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
+								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+								'state' => 'DISABLED'
 						),
 				),
 		));
@@ -41,11 +44,23 @@ class TokenTest extends LocalDbWebTestCase
 	
 	public function testPostToken()
 	{
-		echo "test POST token";
+		echo "test POST token\n";
 		
 		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0"	);
-		$this->client->post('/token', null, $header);
+		$this->setUser('admin@klusbib.be');
+		$body = $this->client->post('/token', null, $header);
+// 		print_r($body);
 		$this->assertEquals(201, $this->client->response->getStatusCode());
-		// 		$this->assertEquals($this->app->get('settings')['version'], $this->client->response->getBody());
 	}
+	
+	public function testPostToken_inactiveUser()
+	{
+		echo "test POST token\n";
+	
+		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0"	);
+		$this->setUser('daniel@klusbib.be');
+		$body = $this->client->post('/token', null, $header);
+		$this->assertEquals(403, $this->client->response->getStatusCode());
+	}
+	
 }

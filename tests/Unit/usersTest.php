@@ -4,7 +4,10 @@ use Tests\DbUnitArrayDataSet;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Slim\Middleware\HttpBasicAuthentication;
-use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Api\Model\UserState;
+
+require_once __DIR__ . '/../test_env.php';
 
 class UsersTest extends LocalDbWebTestCase
 {
@@ -97,7 +100,7 @@ class UsersTest extends LocalDbWebTestCase
 		);
 		$body = $this->client->post('/users', $data, $header);
 // 		print_r($body);
-		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$this->assertEquals(201, $this->client->response->getStatusCode());
 		$user = json_decode($body);
 		$this->assertNotNull($user->user_id);
 		
@@ -113,22 +116,34 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals($data["role"], $user->role);
 		
 	}
-	public function testPostUsersNotAllowed()
+	public function testPostUsersEnrolment()
 	{
-		echo "test POST users (not allowed)\n";
+		echo "test POST users (enrolment)\n";
 		// scope users.all and users.create missing
 		$scopes = array("users.list", "users.update", "users.read");
 		$this->setToken("1", $scopes);
 		
-		$header = array('Authorization' => "bearer 123456");
 		$data = array("firstname" => "myname",
 				"lastname" => "my lastname",
 				"email" => "myname.lastname@klusbib.be",
-				"role" => "member"
+				"role" => "admin"
 		);
-		$body = $this->client->post('/users', $data, $header);
-		$this->assertEquals(403, $this->client->response->getStatusCode());
-		$this->assertTrue(empty($body));
+		$body = $this->client->post('/users', $data);
+		$this->assertEquals(201, $this->client->response->getStatusCode());
+		$user = json_decode($body);
+		$this->assertNotNull($user->user_id);
+
+		// check user has properly been created
+		$scopes = array("users.all");
+		$this->setToken(null, $scopes);
+		$bodyGet = $this->client->get('/users/' . $user->user_id);
+		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$user = json_decode($bodyGet);
+		$this->assertEquals($data["firstname"], $user->firstname);
+		$this->assertEquals($data["lastname"], $user->lastname);
+		$this->assertEquals($data["email"], $user->email);
+		$this->assertEquals("member", $user->role); // role should be forced to member
+		$this->assertEquals(UserState::CONFIRM_EMAIL, $user->state); // state should be forced to confirm email
 	}
 	
 	public function testGetUser()
@@ -184,7 +199,7 @@ class UsersTest extends LocalDbWebTestCase
 // 		print_r($responsePut);
 		
 		// check get token ok with new pwd and nok with another pwd
-		echo "\nCheck get token no longer possible\n";
+		echo "Check get token no longer possible\n";
 // 		$data = ["users.all"];
 // 		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0");
 		// FIXME: need to call middleware to test new password!
@@ -193,7 +208,6 @@ class UsersTest extends LocalDbWebTestCase
 	}
 	
 	private function callBasicAuthMw($user, $pwd, $expectedStatusCode = 200) {
-		echo "attempt a direct call to auth middleware";
 		$query = array();
 		$env = \Slim\Http\Environment::mock([
 				'REQUEST_METHOD' => 'POST',
