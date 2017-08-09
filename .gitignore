@@ -1,4 +1,5 @@
 /vendor/
+/backup/
 /logs/*
 !/logs/README.md
 .env
