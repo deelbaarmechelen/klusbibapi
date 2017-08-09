@@ -40,6 +40,9 @@ $app->post('/reservations', function ($request, $response, $args) {
 	if (isset($data["type"])) {
 		$reservation->type = $data["type"];
 	}
+	if (isset($data["state"])) {
+		$reservation->state = $data["state"];
+	}
 	if (isset($data["startsAt"])) {
 		// TODO: if not admin, only allow future dates
 		$reservation->startsAt = $data["startsAt"];
@@ -68,15 +71,19 @@ $app->post('/reservations', function ($request, $response, $args) {
 	$reservation->save();
 	if ($reservation->state === ReservationState::REQUESTED) {
 		// Send notification to confirm the reservation
+		$this->logger->info('Sending notification for new reservation ' . json_encode($reservation));
 		$mailMgr = new MailManager();
 		$isSendSuccessful = $mailMgr->sendReservationRequest(RESERVATION_NOTIF_EMAIL, 
 				$reservation->user, $reservation->tool, $reservation);
-		if (!$isSendSuccessful) {
+		if ($isSendSuccessful) {
+			$this->logger->info('notification email sent successfully to ' . RESERVATION_NOTIF_EMAIL);
+		} else {
 			$message = $mailMgr->getLastMessage();
 			$this->logger->warn('Problem sending reservation notification email: '. $message);
 		}
 	}
-	return $response->withJson(ReservationMapper::mapReservationToArray($reservation));
+	return $response->withJson(ReservationMapper::mapReservationToArray($reservation))
+					->withStatus(201);
 });
 
 $app->get('/reservations/{reservationid}', function ($request, $response, $args) {

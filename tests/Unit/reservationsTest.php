@@ -147,7 +147,7 @@ class ReservationsTest extends LocalDbWebTestCase
 				"type" => "reservation"
 		);
 		$body = $this->client->post('/reservations', $data);
-		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$this->assertEquals(201, $this->client->response->getStatusCode());
 		$reservation = json_decode($body);
 		$this->assertNotNull($reservation->reservation_id);
 		
@@ -208,7 +208,7 @@ class ReservationsTest extends LocalDbWebTestCase
 		$body = $this->client->post('/reservations', $data);
 		print_r($body);
 		echo "\n";
-		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$this->assertEquals(201, $this->client->response->getStatusCode());
 	}
 	
 	public function testPostReservationsDifferentOwner()
@@ -240,7 +240,7 @@ class ReservationsTest extends LocalDbWebTestCase
 		$body = $this->client->post('/reservations', $data);
 		print_r($body);
 		echo "\n";
-		$this->assertEquals(200, $this->client->response->getStatusCode());
+		$this->assertEquals(201, $this->client->response->getStatusCode());
 
 		// reservation on tool owned by someone else
 		$data = array("tool_id" => 3, "user_id" => 2,

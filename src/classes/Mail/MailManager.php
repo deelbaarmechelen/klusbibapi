@@ -56,11 +56,17 @@ class MailManager {
 	
 	public function sendReservationRequest($to, $user, $tool, $reservation) {
 		$subject = "Nieuwe reservatie";
+		if (empty($tool->code)) {
+			$toolCode = "zonder code (Naam/beschrijving/merk/type: " 
+					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
+		} else {
+			$toolCode = "met code " . $tool->code;
+		}
 		$body = "<div>Beste,<br><br>"
 				. "<p>Via de website werd een aanvraag voor een reservatie geregistreerd<br>"
 				. "Gebruiker ". $user->firstname . " " . $user->lastname
 				. " (user id: " . $user->user_id . ") "
-				. "wenst toestel " . $tool->code . " te reserveren van " 
+				. "wenst toestel " . $toolCode . " te reserveren van " 
 				. $reservation->startsAt->format('Y-m-d') . " tot " . $reservation->endsAt->format('Y-m-d') . "</p>"
 				. "Groetjes,<br> Admin.</div>";
 		return $this->send($subject, $body, $to);
