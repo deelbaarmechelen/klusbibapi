@@ -45,12 +45,13 @@ $app->post('/reservations', function ($request, $response, $args) {
 	}
 	if (isset($data["startsAt"])) {
 		// TODO: if not admin, only allow future dates
-		$reservation->startsAt = $data["startsAt"];
+		$startsAt = new \DateTime($data["startsAt"]);
+		$reservation->startsAt = new \DateTime($data["startsAt"]);
 	} else {
 		$reservation->startsAt = new \DateTime("now");
 	}
 	if (isset($data["endsAt"])) {
-		$reservation->endsAt = $data["endsAt"];
+		$reservation->endsAt = new \DateTime($data["endsAt"]);
 	} else {
 		$reservation->endsAt = clone $reservation->startsAt;
 		$reservation->endsAt->add(new DateInterval('P7D'));
@@ -81,6 +82,7 @@ $app->post('/reservations', function ($request, $response, $args) {
 			$message = $mailMgr->getLastMessage();
 			$this->logger->warn('Problem sending reservation notification email: '. $message);
 		}
+		// TODO: also send a confirmation to requester?
 	}
 	return $response->withJson(ReservationMapper::mapReservationToArray($reservation))
 					->withStatus(201);
@@ -113,6 +115,10 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 	if (isset($data["type"])) {
 		$this->logger->info("Klusbib PUT updating type from " . $reservation->type . " to " . $data["type"]);
 		$reservation->type = $data["type"];
+	}
+	if (isset($data["state"])) {
+		$this->logger->info("Klusbib PUT updating state from " . $reservation->state . " to " . $data["state"]);
+		$reservation->state = $data["state"];
 	}
 	if (isset($data["startsAt"])) {
 		$this->logger->info("Klusbib PUT updating startsAt from " . $reservation->startsAt . " to " . $data["startsAt"]);

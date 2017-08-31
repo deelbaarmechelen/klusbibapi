@@ -25,8 +25,16 @@ class ReservationValidator
 			$logger->info("Inexistant tool " . $reservation["tool_id"]);
 			return false;
 		}
-		if (isset($data["startsAt"]) && isset($data["endsAt"]) && $data["endsAt"] < $data["startsAt"]) {
-			$logger->info("End date (". $data["endsAt"] . " cannot be smaller than start data (" . $data["startsAt"] . ")");
+		if (isset($data["startsAt"]) && (FALSE == new \DateTime($data["startsAt"]))) {
+			$logger->info("End date (". $data["startsAt"] . " has invalid date format (expected YYYY-MM-DD)");
+			return false;
+		}
+		if (isset($data["endsAt"]) && (FALSE == new \DateTime($data["endsAt"]))) {
+			$logger->info("End date (". $data["endsAt"] . " has invalid date format (expected YYYY-MM-DD)");
+			return false;
+		}
+		if (isset($data["startsAt"]) && isset($data["endsAt"]) && new \DateTime($data["endsAt"]) < new \DateTime($data["startsAt"])) {
+			$logger->info("End date (". $data["endsAt"] . " cannot be smaller than start date (" . $data["startsAt"] . ")");
 			return false;
 		}
 		return true;
