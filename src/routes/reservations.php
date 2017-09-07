@@ -6,18 +6,47 @@ use Api\ModelMapper\ReservationMapper;
 use Api\Authorisation;
 use Api\Validator\ReservationValidator;
 use Api\AccessType;
+use Api\Model\Reservation;
 use Api\Model\ReservationState;
 use Api\Mail\MailManager;
 
 $app->get('/reservations', function ($request, $response, $args) {
 	
 	$this->logger->info("Klusbib GET '/reservations' route");
-	$reservations = Capsule::table('reservations')->orderBy('startsAt', 'desc')->get();
+
+	$sortdir = $request->getQueryParam('_sortDir');
+	if (!isset($sortdir)) {
+		$sortdir = 'asc';
+	}
+	$sortfield = $request->getQueryParam('_sortField');
+	if (!Reservation::canBeSortedOn($sortfield) ) {
+		$sortfield = 'reservation_id';
+	}
+	$page = $request->getQueryParam('_page');
+	if (!isset($page)) {
+		$page = '1';
+	}
+	$perPage = $request->getQueryParam('_perPage');
+	if (!isset($perPage)) {
+		$perPage = '50';
+	}
+	$reservations = Capsule::table('reservations')->orderBy($sortfield, $sortdir)->get();
+	$reservations_page = array_slice($reservations, ($page - 1) * $perPage, $perPage);
+	
 	$data = array();
 	foreach ($reservations as $reservation) {
 		array_push($data, ReservationMapper::mapReservationToArray($reservation));
 	}
-	return $response->withJson($data);
+	return $response->withJson($data)
+		->withHeader('X-Total-Count', count($reservations));
+	
+	
+// 	$reservations = Capsule::table('reservations')->orderBy('startsAt', 'desc')->get();
+// 	$data = array();
+// 	foreach ($reservations as $reservation) {
+// 		array_push($data, ReservationMapper::mapReservationToArray($reservation));
+// 	}
+// 	return $response->withJson($data);
 });
 
 $app->post('/reservations', function ($request, $response, $args) {
