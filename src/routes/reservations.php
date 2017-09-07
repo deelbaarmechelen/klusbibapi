@@ -137,6 +137,9 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 	}
 	$data = $request->getParsedBody();
 	$this->logger->info("Klusbib PUT body: ". json_encode($data));
+	if (!ReservationValidator::isValidReservationData($data, $this->logger)) {
+		return $response->withStatus(400); // Bad request
+	}
 	if (isset($data["title"])) {
 		$this->logger->info("Klusbib PUT updating title from " . $reservation->title . " to " . $data["title"]);
 		$reservation->title = $data["title"];

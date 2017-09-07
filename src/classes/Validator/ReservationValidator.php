@@ -9,7 +9,7 @@ class ReservationValidator
 		if (empty($reservation)) {
 			return false;
 		}
-		if (empty($reservation["user_id"])) {
+		if (!isset($reservation["user_id"])) {
 			$logger->info("Missing user_id");
 			return false;
 		}
@@ -25,19 +25,31 @@ class ReservationValidator
 			$logger->info("Inexistant tool " . $reservation["tool_id"]);
 			return false;
 		}
-		if (isset($data["startsAt"]) && (FALSE == new \DateTime($data["startsAt"]))) {
-			$logger->info("End date (". $data["startsAt"] . " has invalid date format (expected YYYY-MM-DD)");
+		if (isset($reservation["startsAt"]) && 
+				(FALSE == ReservationValidator::cnvStrToDateTime($reservation["startsAt"], $logger))) {
+			$logger->info("End date (". $reservation["startsAt"] . " has invalid date format (expected YYYY-MM-DD)");
 			return false;
 		}
-		if (isset($data["endsAt"]) && (FALSE == new \DateTime($data["endsAt"]))) {
-			$logger->info("End date (". $data["endsAt"] . " has invalid date format (expected YYYY-MM-DD)");
+		if (isset($reservation["endsAt"]) && 
+				(FALSE == ReservationValidator::cnvStrToDateTime($reservation["endsAt"], $logger))) {
+			$logger->info("End date (". $reservation["endsAt"] . " has invalid date format (expected YYYY-MM-DD)");
 			return false;
 		}
-		if (isset($data["startsAt"]) && isset($data["endsAt"]) && new \DateTime($data["endsAt"]) < new \DateTime($data["startsAt"])) {
-			$logger->info("End date (". $data["endsAt"] . " cannot be smaller than start date (" . $data["startsAt"] . ")");
+		if (isset($reservation["startsAt"]) && isset($reservation["endsAt"]) 
+				&& new \DateTime($reservation["endsAt"]) < new \DateTime($reservation["startsAt"])) {
+			$logger->info("End date (". $reservation["endsAt"] . " cannot be smaller than start date (" . $reservation["startsAt"] . ")");
 			return false;
 		}
 		return true;
+	}
+	static private function cnvStrToDateTime($str, $logger) {
+		try {
+			$date = new \DateTime($str);
+		} catch (\Exception $e) {
+			$logger->warn($e->getMessage());
+			return false;
+		}
+		return $date;
 	}
 	static function toolExists($toolid, $logger) {
 		$toolCount = Tool::where('tool_id', $toolid)->count();
