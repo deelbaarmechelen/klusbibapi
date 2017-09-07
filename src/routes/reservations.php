@@ -140,6 +140,20 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 	if (!ReservationValidator::isValidReservationData($data, $this->logger)) {
 		return $response->withStatus(400); // Bad request
 	}
+	$access = Authorisation::checkReservationAccess($this->token, "update", $reservation, $reservation->tool->owner_id);
+	if ($access === AccessType::NO_ACCESS) {
+		return $response->withStatus(403); // Unauthorized
+	}
+	if ($access === AccessType::FULL_ACCESS) {
+		if (isset($data["tool_id"])) {
+			$this->logger->info("Klusbib PUT updating tool_id from " . $reservation->tool_id . " to " . $data["tool_id"]);
+			$reservation->tool_id = $data["tool_id"];
+		}
+		if (isset($data["user_id"])) {
+			$this->logger->info("Klusbib PUT updating user_id from " . $reservation->user_id . " to " . $data["user_id"]);
+			$reservation->user_id = $data["user_id"];
+		}
+	}
 	if (isset($data["title"])) {
 		$this->logger->info("Klusbib PUT updating title from " . $reservation->title . " to " . $data["title"]);
 		$reservation->title = $data["title"];
@@ -160,7 +174,6 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 		$this->logger->info("Klusbib PUT updating endsAt from " . $reservation->endsAt . " to " . $data["endsAt"]);
 		$reservation->endsAt = $data["endsAt"];
 	}
-	// TODO: only allow update of own reservations if access is reservations.update.owner
 	$reservation->save();
 	return $response->withJson(ReservationMapper::mapReservationToArray($reservation));
 });
