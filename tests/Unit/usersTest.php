@@ -126,7 +126,8 @@ class UsersTest extends LocalDbWebTestCase
 		$data = array("firstname" => "myname",
 				"lastname" => "my lastname",
 				"email" => "myname.lastname@klusbib.be",
-				"role" => "admin"
+				"role" => "admin",
+				"accept_terms" => true
 		);
 		$body = $this->client->post('/users', $data);
 		$this->assertEquals(201, $this->client->response->getStatusCode());
@@ -144,6 +145,7 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals($data["email"], $user->email);
 		$this->assertEquals("member", $user->role); // role should be forced to member
 		$this->assertEquals(UserState::CONFIRM_EMAIL, $user->state); // state should be forced to confirm email
+		$this->assertNotNull($user->accept_terms_date);
 	}
 	
 	public function testPostUsersAlreadyExists()
@@ -157,7 +159,8 @@ class UsersTest extends LocalDbWebTestCase
 		$data = array("firstname" => "myname",
 				"lastname" => "my lastname",
 				"email" => "daniel@klusbib.be",
-				"role" => "admin"
+				"role" => "admin",
+				"accept_terms" => true
 		);
 		$body = $this->client->post('/users', $data);
 		$this->assertEquals(409, $this->client->response->getStatusCode());

@@ -23,6 +23,7 @@ class UserMapper
 				"mobile" => $user->mobile,
 				"registration_number" => $user->registration_number,
 				"payment_mode" => $user->payment_mode,
+				"accept_terms_date" => $user->accept_terms_date,
 				"created_at" => $user->created_at,
 				"updated_at" => $user->updated_at,
 		);
@@ -85,6 +86,9 @@ class UserMapper
 		}
 		if (isset($data["payment_mode"])) {
 			$user->payment_mode = $data["payment_mode"];
+		}
+		if (isset($data["accept_terms_date"])) {
+			$user->accept_terms_date = $data["accept_terms_date"];
 		}
 	}
 }

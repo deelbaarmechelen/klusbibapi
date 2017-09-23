@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * follow JSON API conventions?
+ * http://jsonapi.org/format
+ */
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Validator\UserValidator;
 use Api\Exception\ForbiddenException;
@@ -69,7 +72,7 @@ $app->get('/users/{userid}', function ($request, $response, $args) {
 	$userArray["reservations"] = $reservationsArray;
 	return $response->withJson($userArray);
 });
-	
+
 $app->post('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib POST on '/users' route");
 	$data = $request->getParsedBody();
@@ -88,6 +91,14 @@ $app->post('/users', function ($request, $response, $args) {
 		$user->state = UserState::CONFIRM_EMAIL;
 		$user->role = 'member'; // only members can be created through web enrolment
 		$data["membership_start_date"] = strftime('%Y-%m-%d',time());
+		if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {
+			$this->logger->warn('user ' . $data["firstname"] . ' ' . $data["lastname"] . ' did not accept terms');
+			return $response->withStatus(400)
+							->withJson('{"error": {"status": 400,"message": "user should accept terms"}}');
+		} else {
+			// set date on which terms were accepted
+			$user->accept_terms_date = date('Y-m-d');
+		}
 		$mailmgr = new MailManager();
 		$sendNotification = TRUE;
 		$sendEmailVerification = TRUE;
@@ -107,7 +118,7 @@ $app->post('/users', function ($request, $response, $args) {
 	$userExists = \Api\Model\User::where('email', $data["email"])->count();
 	if ($userExists > 0) {
 		$this->logger->info('user with email ' . $data["email"] . ' already exists');
-		return $response->withJson('{"error": "A user with that email already exists"}')
+		return $response->withJson('{"error": {"status": 409,"message": A user with that email already exists"}}')
 						->withStatus(409);
 	}
 	
@@ -148,7 +159,6 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib PUT on '/users/id' route");
 
 	if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner", "users.update.password"])) {
-// 		throw new ForbiddenException("Token not allowed to update users.", 403);
 		return $response->withStatus(403)->write("Token not allowed to update users.");
 	}
 	
