@@ -103,6 +103,13 @@ $app->post('/users', function ($request, $response, $args) {
 		$sendNotification = FALSE;
 		$sendEmailVerification = FALSE;
 	}
+	$this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
+	$userExists = \Api\Model\User::where('email', $data["email"])->count();
+	if ($userExists > 0) {
+		$this->logger->info('user with email ' . $data["email"] . ' already exists');
+		return $response->withJson('{"error": "A user with that email already exists"}')
+						->withStatus(409);
+	}
 	
 	if (!isset($data["user_id"]) || empty($data["user_id"])) {
 		$max_user_id = Capsule::table('users')->max('user_id');
@@ -130,8 +137,9 @@ $app->post('/users', function ($request, $response, $args) {
 		$result = $mailmgr->sendEnrolmentNotification(ENROLMENT_NOTIF_EMAIL, $user);
 		$this->logger->info('Sending enrolment notification result: ' . $mailmgr->getLastMessage());
 	}
-	
-	return $response->withJson(UserMapper::mapUserToArray($user))
+	$resourceUri = '/users/' . $user->user_id;
+	return $response->withAddedHeader('Location', $resourceUri)
+					->withJson(UserMapper::mapUserToArray($user))
 					->withStatus(201);
 });
 

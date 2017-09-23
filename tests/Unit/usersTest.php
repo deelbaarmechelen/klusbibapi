@@ -146,6 +146,23 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals(UserState::CONFIRM_EMAIL, $user->state); // state should be forced to confirm email
 	}
 	
+	public function testPostUsersAlreadyExists()
+	{
+		echo "test POST users (already exists)\n";
+// 		$scopes = array("users.create");
+		// scope users.all and users.create missing
+		$scopes = array("users.list", "users.update", "users.read");
+		$this->setToken("1", $scopes);
+		
+		$data = array("firstname" => "myname",
+				"lastname" => "my lastname",
+				"email" => "daniel@klusbib.be",
+				"role" => "admin"
+		);
+		$body = $this->client->post('/users', $data);
+		$this->assertEquals(409, $this->client->response->getStatusCode());
+		
+	}
 	public function testGetUser()
 	{
 		echo "test GET users\n";
