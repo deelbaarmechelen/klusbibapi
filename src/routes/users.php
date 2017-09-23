@@ -94,7 +94,7 @@ $app->post('/users', function ($request, $response, $args) {
 		if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {
 			$this->logger->warn('user ' . $data["firstname"] . ' ' . $data["lastname"] . ' did not accept terms');
 			return $response->withStatus(400)
-							->withJson('{"error": {"status": 400,"message": "user should accept terms"}}');
+							->withJson(array('error' => array('status' => 400, 'message' => "user should accept terms")));
 		} else {
 			// set date on which terms were accepted
 			$user->accept_terms_date = date('Y-m-d');
@@ -118,7 +118,7 @@ $app->post('/users', function ($request, $response, $args) {
 	$userExists = \Api\Model\User::where('email', $data["email"])->count();
 	if ($userExists > 0) {
 		$this->logger->info('user with email ' . $data["email"] . ' already exists');
-		return $response->withJson('{"error": {"status": 409,"message": A user with that email already exists"}}')
+		return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
 						->withStatus(409);
 	}
 	
