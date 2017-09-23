@@ -270,12 +270,14 @@ class ReservationsTest extends LocalDbWebTestCase
 	{
 		echo "test PUT reservation\n";
 		$data = array("title" => "my new reservation",
-				"type" => "my new type"
+				"type" => "my new type",
+				"user_id" => "3",
+				"tool_id" => "3"
 		);
 		$header = array();
 		$body = $this->client->put('/reservations/1', $data, $header);
-		$this->assertEquals(200, $this->client->response->getStatusCode());
 		print_r($body);
+		$this->assertEquals(200, $this->client->response->getStatusCode());
 		
 		// check reservation has properly been updated
 		$bodyGet = $this->client->get('/reservations/1');
