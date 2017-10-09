@@ -34,7 +34,7 @@ class MailManager {
 		$link = PROJECT_HOME . "auth/confirm/" . $userId . "?token=" . $token . "&email=" . $to . "&name=" . $userName;
 		$body = "<h1>Welkom bij Klusbib</h1>"
 				. "<div>Beste " . $userName . ",<br><br>"
-				. "<p>Om uw inschrijving te vervolledigen dient je dit email adres te bevestigen door op onderstaande link te klikken:<br>"
+				. "<p>Om uw inschrijving te vervolledigen dien je dit email adres te bevestigen door op onderstaande link te klikken:<br>"
 				. "<a href='$link'>$link</a><br><br></p>"
 				. "<p>Herken je deze actie niet, dan kan je dit bericht veilig negeren<br></p>"
 				. "Groetjes,<br> Klusbib Team.</div>";
