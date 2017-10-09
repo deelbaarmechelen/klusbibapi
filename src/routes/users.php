@@ -36,7 +36,7 @@ $app->get('/users', function ($request, $response, $args) {
 	}
 	$perPage = $request->getQueryParam('_perPage');
 	if (!isset($perPage)) {
-		$perPage = '50';
+		$perPage = '1000';
 	}
 	$users = Capsule::table('users')->orderBy($sortfield, $sortdir)->get();
 	$users_page = array_slice($users, ($page - 1) * $perPage, $perPage);
