@@ -183,10 +183,10 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	}
 	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
 	$user->save();
-	
+
 	return $response->withJson(UserMapper::mapUserToArray($user));
 });
-	
+
 $app->delete('/users/{userid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib DELETE on '/users/id' route");
 

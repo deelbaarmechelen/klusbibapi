@@ -63,14 +63,15 @@ $container["HttpBasicAuthentication"] = function ($container) {
 $container["JwtAuthentication"] = function ($container) {
 	return new JwtAuthentication([
 			"path" => "/",
-			"passthrough" => ["/token", "/welcome", "/upload", "/auth/reset"],
+			"passthrough" => ["/token", "/welcome", "/upload", "/auth/reset", "/auth/verifyemail"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
 			"secure" => false, // FIXME: enable HTTPS and switch this to true
 			"relaxed" => ["admin", "klusbib.deeleco"], // list hosts allowed without HTTPS for DEV
 			"error" => function ($request, $response, $arguments) {
-				$data["status"] = "error";
-				$data["message"] = $arguments["message"];
+				$data = array("error" => array( "status" => 401, "message" => $arguments["message"]));
+// 				$data["status"] = "error";
+// 				$data["message"] = $arguments["message"];
 				return $response
 					->withHeader("Content-Type", "application/json")
 					->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));

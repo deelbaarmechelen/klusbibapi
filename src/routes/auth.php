@@ -1,11 +1,14 @@
 <?php
 use Api\Token;
+use Api\Model\UserState;
+use Api\Mail\MailManager;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 $app->post("/auth/reset", function ($request, $response, $arguments) use ($app) {
 	$this->logger->info("Klusbib POST '/auth/reset' route");
 	// lookup email in users table
 	$body = $request->getParsedBody();
-	$this->logger->info("parsedbody=" . json_encode($data));
+	$this->logger->info("parsedbody=" . json_encode($body));
 	$email = $body["email"];
 	$this->logger->debug("email=" . $email);
 	$user = Capsule::table('users')->where('email', $email)->first();
@@ -54,6 +57,40 @@ $app->get('/auth/reset/{userId}', function ($request, $response, $args) {
 	]);
 });
 
+$app->post('/auth/verifyemail', function ($request, $response, $args) {
+	// TODO: check who is allowed to request email verification
+	// lookup email in users table
+	$body = $request->getParsedBody();
+	$this->logger->info("parsedbody=" . json_encode($body));
+	$email = $body["email"];
+	$this->logger->debug("email=" . $email);
+	$user = Capsule::table('users')->where('email', $email)->first();
+	if (null == $user) {
+		return $response->withStatus(404);
+	}
+	if ($user->state != UserState::CONFIRM_EMAIL) {
+		$data["status"] = "error";
+		$data["message"] = "No email confirmation required for user";
+		return $response->withStatus(412)
+		->withHeader("Content-Type", "application/json")
+		->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+	}
+	$mailmgr = new MailManager();
+	$sub = $user->user_id;
+	$scopes = ["auth.confirm"];
+	$result = $mailmgr->sendEmailVerification($user->user_id, $user->firstname, $user->email,
+			Token::generateToken($scopes, $sub));
+	$message = $mailmgr->getLastMessage();
+	$this->logger->info('Sending email verification result: ' . $message);
+
+	$data["status"] = "ok";
+	$data["message"] = $message;
+	
+	return $response->withStatus(200)
+		->withHeader("Content-Type", "application/json")
+		->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+});
+
 $app->get('/auth/confirm/{userId}', function ($request, $response, $args) {
 	$token = $request->getQueryParam("token", $default = null);
 	if (is_null($token)) {
@@ -82,7 +119,9 @@ $app->get('/auth/confirm/{userId}', function ($request, $response, $args) {
 	return $this->renderer->render($response, 'confirm_email.phtml',  [
 			'userId' => $args['userId']
 	]);
-});	
+});
+
+
 	
 // $app->get("/auth/password/reset", "PasswordResetController:getResetPassword")->setName("auth.password.reset");
 

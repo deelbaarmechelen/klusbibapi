@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Upload\UploadHandler;
 
 // handle options requests to return CORS headers
