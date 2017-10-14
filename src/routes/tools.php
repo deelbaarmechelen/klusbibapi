@@ -23,7 +23,7 @@ $app->get('/tools', function ($request, $response, $args) {
 	}
 	$perPage = $request->getQueryParam('_perPage');
 	if (!isset($perPage)) {
-		$perPage = '50';
+		$perPage = '1000';
 	}
 	$tools = Capsule::table('tools')->orderBy($sortfield, $sortdir)->get();
 	$tools_page = array_slice($tools, ($page - 1) * $perPage, $perPage);
