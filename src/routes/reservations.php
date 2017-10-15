@@ -39,14 +39,6 @@ $app->get('/reservations', function ($request, $response, $args) {
 	}
 	return $response->withJson($data)
 		->withHeader('X-Total-Count', count($reservations));
-	
-	
-// 	$reservations = Capsule::table('reservations')->orderBy('startsAt', 'desc')->get();
-// 	$data = array();
-// 	foreach ($reservations as $reservation) {
-// 		array_push($data, ReservationMapper::mapReservationToArray($reservation));
-// 	}
-// 	return $response->withJson($data);
 });
 
 $app->post('/reservations', function ($request, $response, $args) {
@@ -85,7 +77,10 @@ $app->post('/reservations', function ($request, $response, $args) {
 		$reservation->endsAt = clone $reservation->startsAt;
 		$reservation->endsAt->add(new DateInterval('P7D'));
 	}
-// 	$this->logger->debug('tool =' . json_encode($reservation->tool));
+	if (isset($data["comment"])) {
+		$reservation->comment = $data["comment"];
+	}
+	// 	$this->logger->debug('tool =' . json_encode($reservation->tool));
 	$access = Authorisation::checkReservationAccess($this->token, "create", $reservation, $reservation->tool->owner_id);
 	if ($access === AccessType::NO_ACCESS) {
 		return $response->withStatus(403); // Unauthorized
@@ -173,6 +168,10 @@ $app->put('/reservations/{reservationid}', function ($request, $response, $args)
 	if (isset($data["endsAt"])) {
 		$this->logger->info("Klusbib PUT updating endsAt from " . $reservation->endsAt . " to " . $data["endsAt"]);
 		$reservation->endsAt = $data["endsAt"];
+	}
+	if (isset($data["comment"])) {
+		$this->logger->info("Klusbib PUT updating comment from " . $reservation->comment . " to " . $data["comment"]);
+		$reservation->comment = $data["comment"];
 	}
 	$reservation->save();
 	return $response->withJson(ReservationMapper::mapReservationToArray($reservation));

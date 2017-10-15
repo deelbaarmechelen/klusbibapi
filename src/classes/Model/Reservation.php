@@ -8,7 +8,7 @@ class Reservation extends Model
 	protected $primaryKey = "reservation_id";
 	
 	static protected $fieldArray = ['reservation_id', 'user_id', 'tool_id', 'state', 'startsAt', 'endsAt', 
-			'type', 'created_at', 'updated_at'
+			'type', 'comment', 'created_at', 'updated_at'
 	];
 	
 	public static function canBeSortedOn($field) {

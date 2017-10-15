@@ -16,6 +16,7 @@ class ReservationMapper
 				"endsAt" => $reservation->endsAt,
 				"type" => $reservation->type,
 				"state" => $reservation->state,
+				"comment" => $reservation->comment,
 		);
 		
 		return $reservationArray;
