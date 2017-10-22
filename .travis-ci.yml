@@ -1,0 +1,9 @@
+language: php
+php:
+  - '5.6'
+
+services:
+  - mysql
+
+before_script:
+  - mysql -e "create database IF NOT EXISTS klusbibapi_test;" -uroot;
