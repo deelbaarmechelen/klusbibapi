@@ -1,9 +1,12 @@
 <?php
-$dotenv = new Dotenv\Dotenv(__DIR__ . '/../');
-$dotenv->load();
-
 use \AD7six\Dsn\Dsn;
-$url = getenv('DATABASE_URL');
+
+if (file_exists(__DIR__ . '/../.env')) {
+	$dotenv = new Dotenv\Dotenv(__DIR__ . '/../');
+	$dotenv->load();
+}
+
+$url = getenv('TEST_DATABASE_URL');
 if (isset($url) && !empty($url)) {
 	$dsn = Dsn::parse($url);
 	$host = $dsn->host;
@@ -12,8 +15,7 @@ if (isset($url) && !empty($url)) {
 	$pass = $dsn->pass;
 	$port = $dsn->port;
 
-}
-else {
+} else {
 	$host = getenv('DB_HOST');
 	$database = getenv('DB_NAME');
 	$user = getenv('DB_USER');
@@ -21,15 +23,15 @@ else {
 	$port = getenv('DB_PORT');
 }
 
-define("PROJECT_HOME",getenv('PROJECT_HOME'));
+defined('PROJECT_HOME') or define("PROJECT_HOME",getenv('PROJECT_HOME'));
 
-define("MAIL_PORT", "26"); // smtp port number
-define("MAIL_USERNAME", "myUser"); // smtp username
-define("MAIL_PASSWORD", "myPassword"); // smtp password
-define("MAIL_HOST", "localhost"); // smtp host
-define("MAILER", "sendmail");
+defined('MAIL_PORT') or define("MAIL_PORT", "26"); // smtp port number
+defined('MAIL_USERNAME') or define("MAIL_USERNAME", "myUser"); // smtp username
+defined('MAIL_PASSWORD') or define("MAIL_PASSWORD", "myPassword"); // smtp password
+defined('MAIL_HOST') or define("MAIL_HOST", "localhost"); // smtp host
+defined('MAILER') or define("MAILER", "sendmail");
 
-define("SENDER_NAME", "Unit tester");
-define("SENDER_EMAIL", "test@klusbib.be");
-define("ENROLMENT_NOTIF_EMAIL", "test@klusbib.be");
-define("RESERVATION_NOTIF_EMAIL", "test@klusbib.be");
+defined('SENDER_NAME') or define("SENDER_NAME", "Unit tester");
+defined('SENDER_EMAIL') or define("SENDER_EMAIL", "test@klusbib.be");
+defined('ENROLMENT_NOTIF_EMAIL') or define("ENROLMENT_NOTIF_EMAIL", "test@klusbib.be");
+defined('RESERVATION_NOTIF_EMAIL') or define("RESERVATION_NOTIF_EMAIL", "test@klusbib.be");

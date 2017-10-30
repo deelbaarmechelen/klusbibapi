@@ -11,6 +11,7 @@ use PDO;
  * 
  * @author bernard
  */
+// FIXME: class obsolete??
 abstract class TestsDatabaseTestCase extends \PHPUnit_Extensions_Database_TestCase 
 //PHPUnit_Framework_TestCase
 {
@@ -27,30 +28,11 @@ abstract class TestsDatabaseTestCase extends \PHPUnit_Extensions_Database_TestCa
     private $dbpass;
    
     public function __construct() {
-        $this->loadTestSettings();
         parent::__construct();
-    }
-    
-    private function loadTestSettings() {
-        $dotenv = new \Dotenv\Dotenv(__DIR__ . '/..');
-        $dotenv->load();
-        $dotenv->required(['DBNAME', 'DBUSER', 'DBPASS']);
-        $host = getenv('DBHOST');
-        if (isset($host) && !empty($host)) {
-            $this->dbhost = $host;
-        }
-        $port = getenv('DBPORT');
-        if (isset($port) && !empty($port)) {
-            $this->dbport = $port;
-        }
-        $this->dbname = getenv('DBNAME');
-        $this->dbuser = getenv('DBUSER');
-        $this->dbpass = getenv('DBPASS');
     }
     
     protected function setUp()
     {
-        $this->loadTestSettings();
         parent::setUp();
     }
 

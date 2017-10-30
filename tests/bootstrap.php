@@ -14,6 +14,7 @@ use Tuupola\Base62;
 define('PROJECT_ROOT', realpath(__DIR__ . '/..'));
 
 require_once PROJECT_ROOT . '/vendor/autoload.php';
+require_once __DIR__ . '/test_env.php';
 
 // Initialize our own copy of the slim application
 class LocalWebTestCase extends WebTestCase {

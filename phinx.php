@@ -5,25 +5,30 @@ if (file_exists(__DIR__ . '/.env')) {
 	$dotenv = new Dotenv\Dotenv(__DIR__);
 	$dotenv->load();
 }
-
+// define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
+$defaultUrl = "mysql://root:@127.0.0.1:3306/klusbibapi";
 $url = getenv('DATABASE_URL');
-if (isset($url) && !empty($url)) {
-	$dsn = Dsn::parse($url);
-	$host = $dsn->host;
-	$database = substr($dsn->path, 1);
-	$user = $dsn->user;
-	$pass = $dsn->pass;
-	$port = $dsn->port;
+if (!isset($url) || empty($url)) {
+	$url = $defaultUrl;
 }
+$dsn = Dsn::parse($url);
+$host = $dsn->host;
+$database = substr($dsn->path, 1);
+$user = $dsn->user;
+$pass = $dsn->pass;
+$port = $dsn->port;
+
 $urltst = getenv('TEST_DATABASE_URL');
-if (isset($urltst) && !empty($urltst)) {
-	$dsntst = Dsn::parse($urltst);
-	$hosttst = $dsntst->host;
-	$databasetst = substr($dsntst->path, 1);
-	$usertst = $dsntst->user;
-	$passtst = $dsntst->pass;
-	$porttst = $dsntst->port;
+if (!isset($urltst) || empty($urltst)) {
+	$urltst = $defaultUrl;
 }
+$dsntst = Dsn::parse($urltst);
+$hosttst = $dsntst->host;
+$databasetst = substr($dsntst->path, 1);
+$usertst = $dsntst->user;
+$passtst = $dsntst->pass;
+$porttst = $dsntst->port;
+
 return array(
 		"paths" => array(
 				"migrations" => "%%PHINX_CONFIG_DIR%%/db/migrations",
