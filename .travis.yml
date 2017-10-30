@@ -3,7 +3,7 @@ php:
   - '7.0'
 
 env:
-  - DATABASE_URL=mysql://root:@127.0.0.1:3306/klusbibapi_test
+  - TEST_DATABASE_URL=mysql://root:@127.0.0.1:3306/klusbibapi_test
   
 services:
   - mysql
@@ -14,4 +14,4 @@ before_script:
   - vendor/bin/phinx migrate -e ci --verbose
 
 # omitting "script:" will default to phpunit
-script: phpunit --bootstrap tests/bootstrap.php --coverage-text
+script: vendor/bin/phpunit --verbose --bootstrap tests/bootstrap.php --coverage-text
