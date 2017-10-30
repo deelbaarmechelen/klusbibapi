@@ -3,8 +3,8 @@
 use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-$settings = require __DIR__ . '/../../src/settings.php';
+// require_once __DIR__ . '/../../src/env.php';
+// $settings = require __DIR__ . '/../../src/settings.php';
 
 class CreateTools extends AbstractMigration
 {
