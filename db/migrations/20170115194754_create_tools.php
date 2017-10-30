@@ -3,12 +3,6 @@
 use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-// uncomment to force access to test database
-// $host = 'localhost';
-// $database = 'klusbibapi_test';
-// $user = 'klusbib';
-// $pass = 'klusbib';
-// $port = 3306;
 require_once __DIR__ . '/../../src/env.php';
 $settings = require __DIR__ . '/../../src/settings.php';
 

@@ -2,6 +2,9 @@ language: php
 php:
   - '7.0'
 
+env:
+  - DATABASE_URL=mysql://root:@127.0.0.1:3306/klusbibapi_test
+  
 services:
   - mysql
 
