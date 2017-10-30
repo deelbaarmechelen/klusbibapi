@@ -1,8 +1,10 @@
 <?php
 use \AD7six\Dsn\Dsn;
 
-$dotenv = new Dotenv\Dotenv(__DIR__);
-$dotenv->load();
+if (file_exists(__DIR__ . '/.env')) {
+	$dotenv = new Dotenv\Dotenv(__DIR__);
+	$dotenv->load();
+}
 
 $url = getenv('DATABASE_URL');
 if (isset($url) && !empty($url)) {
@@ -54,6 +56,13 @@ return array(
 						"user" => $dsntst->user,
 						"pass" => $dsntst->pass,
 						"port" => $dsntst->port
+				),
+				"ci" => array(
+						"adapter" => "mysql",
+						"host" => "localhost",
+						"name" => "klusbibapi_test",
+						"user" => "travis",
+						"pass" => ""
 				),
 				"dokku" => array(
 						"adapter" => "mysql",
