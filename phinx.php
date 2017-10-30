@@ -66,7 +66,7 @@ return array(
 						"adapter" => "mysql",
 						"host" => "127.0.0.1",
 						"name" => "klusbibapi_test",
-						"user" => "travis",
+						"user" => "root",
 						"pass" => ""
 				),
 				"dokku" => array(
