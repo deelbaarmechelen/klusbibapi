@@ -8,7 +8,7 @@ services:
 before_script:
   - mysql -e "create database IF NOT EXISTS klusbibapi_test;" -uroot;
   - composer install
-  - vendor/bin/phinx migrate -e ci
+  - vendor/bin/phinx migrate -e ci --verbose
 
 # omitting "script:" will default to phpunit
 script: phpunit --bootstrap tests/bootstrap.php --coverage-text
