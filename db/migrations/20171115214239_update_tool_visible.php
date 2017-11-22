@@ -27,6 +27,7 @@ class UpdateToolVisible extends AbstractMigration
 	{
 		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->boolean('visible')->default(true);
+			$table->string('state', 20)->default("NEW");
 		});
 	}
     /**
@@ -38,6 +39,7 @@ class UpdateToolVisible extends AbstractMigration
 	{
 		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->dropColumn('visible');
+			$table->dropColumn('state');
 		});
 	}
 }

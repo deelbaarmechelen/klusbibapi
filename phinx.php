@@ -30,22 +30,6 @@ $passtst = $dsntst->pass;
 $porttst = $dsntst->port;
 
 require __DIR__ . '/tests/test_env.php';
-// if (empty($host)) {
-// 	$host = "127.0.0.1";
-// }
-// if (empty($user)) {
-// 	$user = "root";
-// }
-// if (empty($pass)) {
-// 	$pass = "";
-// }
-// if (empty($database)) {
-// 	$database = "klusbibapi_test";
-// }
-// if (empty($port)) {
-// 	$port = "3306";
-// }
-
 
 $settings = require __DIR__ . '/src/settings.php';
 
