@@ -9,10 +9,10 @@ $capsule = new Capsule;
 
 $capsule->addConnection([
 			'driver'    => 'mysql',
-			'host' => $host, //getenv('DB_HOST'),
-			'database' => $database, //getenv('DB_NAME'),
-			'username' => $user, //getenv('DB_USER'),
-			'password' => $pass, //getenv('DB_PASS'),
+			'host' => $hosttst, //getenv('DB_HOST'),
+			'database' => $databasetst, //getenv('DB_NAME'),
+			'username' => $usertst, //getenv('DB_USER'),
+			'password' => $passtst, //getenv('DB_PASS'),
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',
@@ -52,12 +52,12 @@ return [
     
     	// Database settings
     	'db' => [
-    		'url' => $url,
-    		'host' => $host,
-    		'user' => $user,
-    		'pass' => $pass,
-    		'dbname' => $database,
-    		'port' => $port
+    		'url' => $urltst,
+    		'host' => $hosttst,
+    		'user' => $usertst,
+    		'pass' => $passtst,
+    		'dbname' => $databasetst,
+    		'port' => $porttst
     	],
     	'version'        => '0.0.0',
     	'debug'          => true,

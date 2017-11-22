@@ -18,16 +18,6 @@ $user = $dsn->user;
 $pass = $dsn->pass;
 $port = $dsn->port;
 
-$urltst = getenv('TEST_DATABASE_URL');
-if (!isset($urltst) || empty($urltst)) {
-	$urltst = $defaultUrl;
-}
-$dsntst = Dsn::parse($urltst);
-$hosttst = $dsntst->host;
-$databasetst = substr($dsntst->path, 1);
-$usertst = $dsntst->user;
-$passtst = $dsntst->pass;
-$porttst = $dsntst->port;
 
 require __DIR__ . '/tests/test_env.php';
 

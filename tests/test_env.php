@@ -6,22 +6,26 @@ if (file_exists(__DIR__ . '/../.env')) {
 	$dotenv->load();
 }
 
-$url = getenv('TEST_DATABASE_URL');
-if (isset($url) && !empty($url)) {
-	$dsn = Dsn::parse($url);
-	$host = $dsn->host;
-	$database = substr($dsn->path, 1);
-	$user = $dsn->user;
-	$pass = $dsn->pass;
-	$port = $dsn->port;
-
-} else {
-	$host = getenv('DB_HOST');
-	$database = getenv('DB_NAME');
-	$user = getenv('DB_USER');
-	$pass = getenv('DB_PASS');
-	$port = getenv('DB_PORT');
+// define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
+$defaultTstUrl = "mysql://root:@127.0.0.1:3306/klusbibapi_tst";
+$urltst = getenv('TEST_DATABASE_URL');
+if (!isset($urltst) || empty($urltst)) {
+	$urltst = $defaultTstUrl;
 }
+$dsntst = Dsn::parse($urltst);
+$hosttst = $dsntst->host;
+$databasetst = substr($dsntst->path, 1);
+$usertst = $dsntst->user;
+$passtst = $dsntst->pass;
+$porttst = $dsntst->port;
+
+// Keep standard variables for retro-compatibility?
+$dsn = $dsntst;
+$host = $hosttst;
+$database = $databasetst;
+$user = $usertst;
+$pass = $passtst;
+$port = $porttst;
 
 defined('PROJECT_HOME') or define("PROJECT_HOME",getenv('PROJECT_HOME'));
 
