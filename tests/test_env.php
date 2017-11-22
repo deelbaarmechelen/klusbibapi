@@ -19,14 +19,6 @@ $usertst = $dsntst->user;
 $passtst = $dsntst->pass;
 $porttst = $dsntst->port;
 
-// Keep standard variables for retro-compatibility?
-$dsn = $dsntst;
-$host = $hosttst;
-$database = $databasetst;
-$user = $usertst;
-$pass = $passtst;
-$port = $porttst;
-
 defined('PROJECT_HOME') or define("PROJECT_HOME",getenv('PROJECT_HOME'));
 
 defined('MAIL_PORT') or define("MAIL_PORT", "26"); // smtp port number
