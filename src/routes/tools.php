@@ -26,7 +26,9 @@ $app->get('/tools', function ($request, $response, $args) {
 		$perPage = '1000';
 	}
     $showAll = $request->getQueryParam('_all');
-    if (!isset($showAll)) {
+    if (isset($showAll) && $showAll == 'true') {
+        $showAll = true;
+    } else {
         $showAll = false;
     }
 	// TODO: if not admin, filter non visible tools
@@ -38,9 +40,6 @@ $app->get('/tools', function ($request, $response, $args) {
             ->where('visible', true)
             ->orderBy($sortfield, $sortdir)->get();
     }
-	$tools = Capsule::table('tools')
-		->where('visible', true)
-		->orderBy($sortfield, $sortdir)->get();
 	$tools_page = array_slice($tools, ($page - 1) * $perPage, $perPage);
 	
 	$data = array();
