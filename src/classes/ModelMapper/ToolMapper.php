@@ -6,7 +6,11 @@ use \Api\Model\Tool;
 class ToolMapper
 {
 	static public function mapToolToArray($tool) {
-
+		if ($tool->visible == 1) {
+			$visible = true;
+		} else {
+			$visible = false;
+		}
 		$toolArray = array("tool_id" => $tool->tool_id,
 			"name" => $tool->name,
 			"description" => $tool->description,
@@ -24,6 +28,8 @@ class ToolMapper
 			"replacement_value" => $tool->replacement_value,
 			"experience_level" => $tool->experience_level,
 			"safety_risk" => $tool->safety_risk,
+			"state" => $tool->state,
+			"visible" => $visible,
 			"reservations" => array()
 		);
 		return $toolArray;
@@ -76,6 +82,16 @@ class ToolMapper
 		}
 		if (isset($data["safety_risk"])) {
 			$tool->safety_risk = $data["safety_risk"];
+		}
+		if (isset($data["state"])) {
+			$tool->state = $data["state"];
+		}
+		if (isset($data["visible"])) {
+			if ($data["visible"] == true) {
+				$tool->visible = 1;
+			} else {
+				$tool->visible = 0;
+			}
 		}
 		
 	}

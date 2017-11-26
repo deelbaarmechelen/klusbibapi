@@ -25,7 +25,22 @@ $app->get('/tools', function ($request, $response, $args) {
 	if (!isset($perPage)) {
 		$perPage = '1000';
 	}
-	$tools = Capsule::table('tools')->orderBy($sortfield, $sortdir)->get();
+    $showAll = $request->getQueryParam('_all');
+    if (!isset($showAll)) {
+        $showAll = false;
+    }
+	// TODO: if not admin, filter non visible tools
+    if ($showAll) {
+        $tools = Capsule::table('tools')
+            ->orderBy($sortfield, $sortdir)->get();
+    } else {
+        $tools = Capsule::table('tools')
+            ->where('visible', true)
+            ->orderBy($sortfield, $sortdir)->get();
+    }
+	$tools = Capsule::table('tools')
+		->where('visible', true)
+		->orderBy($sortfield, $sortdir)->get();
 	$tools_page = array_slice($tools, ($page - 1) * $perPage, $perPage);
 	
 	$data = array();
@@ -52,31 +67,6 @@ $app->get('/tools/{toolid}', function ($request, $response, $args) {
 		array_push($reservationsArray, ReservationMapper::mapReservationToArray($reservation));
 	}
 	$data["reservations"] = $reservationsArray;
-	return $response->withJson($data);
-	
-// 	// lookup reservations for this tool
-// 	$reservations = Capsule::table('reservations')->where('tool_id', $args['toolid'])->get();
-// 	// 	if (null == $reservations) {
-// 	// 		return $response->withStatus(500);
-// 	// 	}
-
-// 	foreach ($reservations as $reservation) {
-// 		$item  = array(
-// 				"reservation_id" => $reservation->reservation_id,
-// 				"tool_id" => $reservation->tool_id,
-// 				"user_id" => $reservation->user_id,
-// 				"title" => $reservation->title,
-// 				// 				"color" => "blue",
-// 				// 				"draggable" => true,
-// 				// 				"resizable" => true,
-// 				// 				"actions" => "actions",
-// 				"startsAt" => $reservation->startsAt,
-// 				"endsAt" => $reservation->endsAt,
-// 				"type" => $reservation->type
-// 		);
-// 		// 		array_push($data["reservations"], $item);
-// 	}
-
 	return $response->withJson($data);
 });
 	
