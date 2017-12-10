@@ -24,4 +24,11 @@ class User extends Model
 	{
 		return $this->hasMany('Api\Model\Reservation');
 	}
+	
+	public function isAdmin() {
+		if ($this->role == 'admin') {
+			return true;
+		}
+		return false;
+	}
 }

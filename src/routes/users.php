@@ -77,10 +77,14 @@ $app->post('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib POST on '/users' route");
 	$data = $request->getParsedBody();
 	$this->logger->info("parsedbody=" . json_encode($data));
-	if (empty($data) 
-			|| !UserValidator::containsMandatoryData($data, $this->logger)
-			|| !UserValidator::isValidUserData($data, $this->logger)) {
-		return $response->withStatus(400); // Bad request
+    $errors = array();
+    if (empty($data)
+        || !UserValidator::containsMandatoryData($data, $this->logger, $errors)
+        || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
+        $this->logger->info("errors=" . json_encode($errors));
+
+        return $response->withStatus(400) // Bad request
+        ->withJson($errors);
 	}
 
 	$isAdmin = false;
@@ -163,10 +167,10 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	}
 	
 	$currentUser = \Api\Model\User::find($this->token->getSub());
-	$isAdmin = false;
-	if ($currentUser->role == 'admin') {
-		$isAdmin = true;
-	}
+//	$isAdmin = false;
+//	if ($currentUser->role == 'admin') {
+//		$isAdmin = true;
+//	}
 	
 	$user = \Api\Model\User::find($args['userid']);
 	if (null == $user) {
@@ -181,7 +185,7 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	if (empty($data) || !UserValidator::isValidUserData($data, $this->logger)) {
 		return $response->withStatus(400)->write("Invalid value for registration number"); // Bad request
 	}
-	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
+	UserMapper::mapArrayToUser($data, $user, $user->isAdmin(), $this->logger);
 	$user->save();
 
 	return $response->withJson(UserMapper::mapUserToArray($user));
