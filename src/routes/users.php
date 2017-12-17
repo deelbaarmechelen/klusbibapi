@@ -182,9 +182,12 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 		return $response->withStatus(403)->write("Token sub doesn't match user.");
 	}
 	$data = $request->getParsedBody();
-	if (empty($data) || !UserValidator::isValidUserData($data, $this->logger)) {
-		return $response->withStatus(400)->write("Invalid value for registration number"); // Bad request
+    $errors = array();
+	if (empty($data) || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
+        $this->logger->info("errors=" . json_encode($errors));
+        return $response->withStatus(400)->withJson($errors); // Bad request
 	}
+    
 	UserMapper::mapArrayToUser($data, $user, $user->isAdmin(), $this->logger);
 	$user->save();
 
