@@ -112,7 +112,7 @@ $app->post('/users', function ($request, $response, $args) {
 			$this->logger->warn("No user found for token " + $this->token->getSub());
 			return $response->withStatus(403);
 		}
-		if ($currentUser->role == 'admin') {
+		if ($currentUser->isAdmin()) {
 			$isAdmin = true;
 		}
 		$sendNotification = FALSE;
@@ -167,11 +167,7 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
 	}
 	
 	$currentUser = \Api\Model\User::find($this->token->getSub());
-//	$isAdmin = false;
-//	if ($currentUser->role == 'admin') {
-//		$isAdmin = true;
-//	}
-	
+
 	$user = \Api\Model\User::find($args['userid']);
 	if (null == $user) {
 		return $response->withStatus(404);
@@ -187,8 +183,8 @@ $app->put('/users/{userid}', function ($request, $response, $args) {
         $this->logger->info("errors=" . json_encode($errors));
         return $response->withStatus(400)->withJson($errors); // Bad request
 	}
-    
-	UserMapper::mapArrayToUser($data, $user, $user->isAdmin(), $this->logger);
+
+	UserMapper::mapArrayToUser($data, $user, $currentUser->isAdmin(), $this->logger);
 	$user->save();
 
 	return $response->withJson(UserMapper::mapUserToArray($user));
