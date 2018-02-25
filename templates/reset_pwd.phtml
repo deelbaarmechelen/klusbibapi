@@ -37,7 +37,8 @@
 	            },
 	            success: function (data) {
 	                console.log('success');
-	                $("#queryresult").text(JSON.stringify(data));
+	                //$("#queryresult").text(JSON.stringify(data));
+                    $("#queryresult").text("Paswoord succesvol gewijzigd!");
 	            }, error: function(xhr) {
 	                alert("An error occured: " + xhr.status + " " + xhr.statusText);
 
