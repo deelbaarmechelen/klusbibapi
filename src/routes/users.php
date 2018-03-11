@@ -118,14 +118,17 @@ $app->post('/users', function ($request, $response, $args) {
 		$sendNotification = FALSE;
 		$sendEmailVerification = FALSE;
 	}
-	$this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
-	$userExists = \Api\Model\User::where('email', $data["email"])->count();
-	if ($userExists > 0) {
-		$this->logger->info('user with email ' . $data["email"] . ' already exists');
-		return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
-						->withStatus(409);
-	}
-	
+	if (isset($data["email"])) {
+	    $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
+        $userExists = \Api\Model\User::where('email', $data["email"])->count();
+        if ($userExists > 0) {
+            $this->logger->info('user with email ' . $data["email"] . ' already exists');
+            return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
+                ->withStatus(409);
+        }
+    }
+    // TODO: else : check user exists based on name? or registration id?
+
 	if (!isset($data["user_id"]) || empty($data["user_id"])) {
 		$max_user_id = Capsule::table('users')->max('user_id');
 		$user->user_id = $max_user_id + 1;
