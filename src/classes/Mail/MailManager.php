@@ -1,20 +1,29 @@
 <?php
 namespace Api\Mail;
 
-use \PHPMailer;
+use PHPMailer;
+use Twig_Environment;
 
 class MailManager {
 	
 	private $message;
 	private $mailer;
-	
-	function __construct(PHPMailer $mailer = null) {
+    private $twig;
+
+	function __construct(PHPMailer $mailer = null, Twig_Environment $twig = null) {
 		if (is_null($mailer)) {
 			$this->mailer = new PHPMailer ();
 		} else {
 			$this->mailer = $mailer;
 		}
-	}
+        $this->twig = $twig;
+		if (is_null($this->twig)) {
+            $loader = new \Twig_Loader_Filesystem(__DIR__ . '/../../../templates');
+            $this->twig = new Twig_Environment($loader, array(
+                // 'cache' => '/path/to/compilation_cache',
+            ));
+        }
+    }
 	
 	public function sendEnrolmentNotification($userEmail, $newUser) {
 		$subject = "Nieuwe inschrijving";
@@ -71,7 +80,20 @@ class MailManager {
 				. "Groetjes,<br> Admin.</div>";
 		return $this->send($subject, $body, $to);
 	}
-	
+
+    public function sendRenewal($user) {
+        $parameters = array('user' => $user);
+        return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
+    }
+
+	protected function sendTwigTemplate($to, $identifier, $parameters = array()) {
+        $template = $this->twig->loadTemplate('/mail/'.$identifier.'.twig');
+
+        $subject  = $template->renderBlock('subject',   $parameters);
+        $body = $template->renderBlock('body', $parameters);
+        return $this->send($subject, $body, $to);
+    }
+
 	private function send($subject, $body, $to) {
 		$this->message = '';
 		

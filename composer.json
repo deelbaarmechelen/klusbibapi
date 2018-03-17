@@ -32,7 +32,8 @@
 		"ad7six/dsn" : "0.4.*",
 		"ext-gd": "*",
 		"doctrine/dbal": "^2.5",
-		"phpmailer/phpmailer": "^5.2"
+		"phpmailer/phpmailer": "^5.2",
+		"twig/twig":"^2.0"
 	},
 	"require-dev" : {
 		"heroku/heroku-buildpack-php": "*",

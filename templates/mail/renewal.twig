@@ -1,0 +1,11 @@
+{% block subject 'Klusbib lidmaatschap' %}
+
+{% block body %}
+    Beste {{ user.firstname }},
+    Op {{ user.membership_end_date }} loopt je lidmaatschap ten einde.
+    Wil je graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, stort dan 20 € op rekeningnummer <bold>BE79 5230 8088 4133</bold>
+    met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap 2018'</i>.
+
+    Met vriendelijke groeten
+    Het Klusbib-team
+{% endblock %}
