@@ -1,7 +1,7 @@
 #!/app/.heroku/php/bin/php
 <?php
 require __DIR__ . '/../vendor/autoload.php';
-
+require __DIR__ . '/../src/env.php';
 echo "test renewal cron";
 $mailmgr = new \Api\Mail\MailManager();
 $user = new UserTest();
