@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "200b520ab0831d9aa7e9aa808550d0d3",
+    "content-hash": "9427d9b6214267bb4d931b0439a02ec1",
     "packages": [
         {
             "name": "ad7six/dsn",
@@ -46,6 +46,7 @@
                 }
             ],
             "description": "A utility for parsing and generating service DSNs",
+            "abandoned": true,
             "time": "2015-03-28T07:40:11+00:00"
         },
         {
@@ -1204,16 +1205,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "1.24.2",
+            "version": "1.25.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "bba6c6e410c6b4317e37a9474aeaa753808c3875"
+                "reference": "cbcf13da0b531767e39eb86e9687f5deba9857b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/bba6c6e410c6b4317e37a9474aeaa753808c3875",
-                "reference": "bba6c6e410c6b4317e37a9474aeaa753808c3875",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/cbcf13da0b531767e39eb86e9687f5deba9857b4",
+                "reference": "cbcf13da0b531767e39eb86e9687f5deba9857b4",
                 "shasum": ""
             },
             "require": {
@@ -1253,7 +1254,7 @@
                 "datetime",
                 "time"
             ],
-            "time": "2018-03-10T10:10:14+00:00"
+            "time": "2018-03-19T15:50:49+00:00"
         },
         {
             "name": "nikic/fast-route",
@@ -2353,16 +2354,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v2.4.6",
+            "version": "v2.4.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "d2117ec118c1ff3d28ccddca8212d82787a4809f"
+                "reference": "69aacd44dbbaa3199d5afb68605c996d577896fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/d2117ec118c1ff3d28ccddca8212d82787a4809f",
-                "reference": "d2117ec118c1ff3d28ccddca8212d82787a4809f",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/69aacd44dbbaa3199d5afb68605c996d577896fc",
+                "reference": "69aacd44dbbaa3199d5afb68605c996d577896fc",
                 "shasum": ""
             },
             "require": {
@@ -2371,8 +2372,8 @@
             },
             "require-dev": {
                 "psr/container": "^1.0",
-                "symfony/debug": "~2.7",
-                "symfony/phpunit-bridge": "~3.3@dev"
+                "symfony/debug": "^2.7",
+                "symfony/phpunit-bridge": "^3.3"
             },
             "type": "library",
             "extra": {
@@ -2415,7 +2416,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2018-03-03T16:23:01+00:00"
+            "time": "2018-03-20T04:31:17+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -2575,16 +2576,16 @@
         },
         {
             "name": "heroku/heroku-buildpack-php",
-            "version": "v132",
+            "version": "v133",
             "source": {
                 "type": "git",
                 "url": "https://github.com/heroku/heroku-buildpack-php.git",
-                "reference": "dd950a605fb0c5e50ab71774e299fa26c9093f80"
+                "reference": "f4f15fda108cdc9af04d380fc4005ebf977e1eb8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/heroku/heroku-buildpack-php/zipball/dd950a605fb0c5e50ab71774e299fa26c9093f80",
-                "reference": "dd950a605fb0c5e50ab71774e299fa26c9093f80",
+                "url": "https://api.github.com/repos/heroku/heroku-buildpack-php/zipball/f4f15fda108cdc9af04d380fc4005ebf977e1eb8",
+                "reference": "f4f15fda108cdc9af04d380fc4005ebf977e1eb8",
                 "shasum": ""
             },
             "bin": [
@@ -2615,7 +2616,7 @@
                 "nginx",
                 "php"
             ],
-            "time": "2018-03-02T17:10:10+00:00"
+            "time": "2018-03-21T18:15:15+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3943,7 +3944,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.5.0",
+        "php": "~7.0.0",
         "ext-gd": "*"
     },
     "platform-dev": []
