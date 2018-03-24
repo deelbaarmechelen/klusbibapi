@@ -1,5 +1,8 @@
 #!/app/.heroku/php/bin/php
 <?php
+# Deny access from the web
+if (isset($_SERVER['REMOTE_ADDR'])) die('Permission denied.');
+
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../src/env.php';
 echo "test renewal cron";

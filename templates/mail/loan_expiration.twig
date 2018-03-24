@@ -1,0 +1,18 @@
+{% block subject 'Klusbib ontlening' %}
+
+{% block body %}
+    Beste {{ user.firstname }},<br><br>
+    <p>Even terug kwam je langs bij de Klusbib voor gereedschap te ontlenen. De ontlening van onderstaand gereedschap werd nog niet teruggebracht.<br>
+        <ul>
+            <li>{{ tools.code }}</li>
+            <li>{{ tools.code }}</li>
+        </ul>
+        Volgens de afspraken van de Klusbib kan je gereedschap ontlenen voor 1 week en verlengen indien het gereedschap niet gereserveerd is.
+        {{ reservationLink }}
+        ( en moeten we er dan iets inzetten of een kost die we aanrekenen indien dit niet gebeurd? 25 cent per toestel per week hadden we niet zoiets gezegd ??)
+    </p><br>
+    <p>
+        Met vriendelijke groeten<br>
+        Het Klusbib-team
+    </p>
+{% endblock %}
