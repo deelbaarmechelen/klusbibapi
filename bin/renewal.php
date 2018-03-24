@@ -5,6 +5,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) die('Permission denied.');
 
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../src/env.php';
+$settings = require __DIR__ . '/../src/settings.php';
 echo "test renewal cron";
 $mailmgr = new \Api\Mail\MailManager();
 $user = new UserTest();
