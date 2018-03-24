@@ -14,7 +14,20 @@ $user->lastname = "de mock";
 $user->membership_end_date = date('Y-m-d');
 
 $mailmgr->sendRenewal($user);
+
+$fromDate = date('Y-m-d' . ' 00:00:00', strtotime("+1 week"));
+$toDate   = date('Y-m-d' . ' 23:59:59', strtotime("+1 week"));
+$users = \Api\Model\User::active()->whereBetween('membership_end_date' , [$fromDate, $toDate])->get();
+// TODO: log renewal events
+foreach ($users as $user) {
+    echo "renewal required for user $user->user_id\n";
+    echo "name: " . $user->firstname . " " . $user->lastname;
+    echo "state: " . $user->state;
+    echo "membership start: " . $user->membership_start_date;
+    echo "membership end: " . $user->membership_end_date;
+}
 echo "end of renewal cron";
+
 
 class UserTest {
     //['user_id', 'state', 'firstname', 'lastname', 'role', 'email',

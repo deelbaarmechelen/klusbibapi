@@ -31,4 +31,9 @@ class User extends Model
 		}
 		return false;
 	}
+
+    public function scopeActive($query)
+    {
+        return $query->where('state', '=', 'ACTIVE');
+    }
 }
