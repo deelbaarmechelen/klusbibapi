@@ -7,14 +7,15 @@ final class UserValidatorTest extends TestCase
 {
 	public function testRegistrationNumberIsNumeric()
 	{
-		$logger = $this->loggerDummy();
+		$errors = array();
+	    $logger = $this->loggerDummy();
 		$registrationNumber = "99010112390";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger, $errors);
 		$this->assertTrue($result);
 		
 		// number not numeric
 		$registrationNumber = "abcdef";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger, $errors);
 		$this->assertFalse($result);
 	}
 	
@@ -22,17 +23,17 @@ final class UserValidatorTest extends TestCase
 	{
 		$logger = $this->loggerDummy();
 		$registrationNumber = "99010112390";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger, $errors);
 		$this->assertTrue($result);
 		
 		// number too long
 		$registrationNumber = "00010112345123";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger, $errors);
 		$this->assertFalse($result);
 		
 		// number too short
 		$registrationNumber = "000101123";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger, $errors);
 		$this->assertFalse($result);
 	}
 	
@@ -42,17 +43,17 @@ final class UserValidatorTest extends TestCase
 		
 		// before year 2000
 		$registrationNumber = "99010112390";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger,$errors);
 		$this->assertTrue($result);
 		
 		// above year 2000
 		$registrationNumber = "00010112377";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger,$errors);
 		$this->assertTrue($result);
 		
 		// mod97 invalid
 		$registrationNumber = "00010112399";
-		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger);
+		$result = UserValidator::isValidRegistrationNumber($registrationNumber, $logger, $errors);
 		$this->assertFalse($result);
 	}
 	

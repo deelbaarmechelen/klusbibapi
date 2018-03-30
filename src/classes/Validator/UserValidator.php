@@ -25,7 +25,13 @@ class UserValidator
         }
 		return true;
 	}
-	
+
+    /**
+     * @param $user user to be validated as received from POST or PUT request
+     * @param $logger to sent messages to
+     * @param $errors array containing previous and new errors
+     * @return bool
+     */
 	static function isValidUserData($user, $logger, &$errors) {
         $logger->info("Validating user");
         if (!empty($user["registration_number"])) {
@@ -35,7 +41,13 @@ class UserValidator
 
 		return true;
 	}
-	
+
+    /**
+     * @param $registrationNumber
+     * @param $logger
+     * @param $errors array containing previous and new errors
+     * @return bool
+     */
 	static function isValidRegistrationNumber($registrationNumber, $logger, &$errors) {
         if (!is_numeric($registrationNumber)) {
             $message = "Registration number not numeric";

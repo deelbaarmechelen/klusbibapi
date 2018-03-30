@@ -30,11 +30,16 @@ $app->get('/reservations', function ($request, $response, $args) {
 	if (!isset($perPage)) {
 		$perPage = '50';
 	}
-	$reservations = Capsule::table('reservations')->orderBy($sortfield, $sortdir)->get();
+    $querybuilder = Capsule::table('reservations');
+    $isOpen = $request->getQueryParam('isOpen');
+	if (isset($isOpen) && $isOpen == 'true') {
+	    $querybuilder->whereIn('state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
+    }
+	$reservations = $querybuilder->orderBy($sortfield, $sortdir)->get();
 	$reservations_page = array_slice($reservations, ($page - 1) * $perPage, $perPage);
 	
 	$data = array();
-	foreach ($reservations as $reservation) {
+	foreach ($reservations_page as $reservation) {
 		array_push($data, ReservationMapper::mapReservationToArray($reservation));
 	}
 	return $response->withJson($data)
@@ -85,7 +90,7 @@ $app->post('/reservations', function ($request, $response, $args) {
 	if ($access === AccessType::NO_ACCESS) {
 		return $response->withStatus(403); // Unauthorized
 	}
-	// TODO: add state on reservation: REQUESTED / CONFIRMED / CANCELLED
+	// TODO: add state on reservation: REQUESTED / CONFIRMED / CANCELLED / CLOSED
 	if ($access !== AccessType::FULL_ACCESS) {
 		$reservation->state = ReservationState::REQUESTED;
 	}

@@ -1,6 +1,7 @@
 <?php
 namespace Api\Validator;
 
+use Api\Model\ReservationState;
 use Api\Model\Tool;
 
 class ReservationValidator 
@@ -40,6 +41,13 @@ class ReservationValidator
 			$logger->info("End date (". $reservation["endsAt"] . " cannot be smaller than start date (" . $reservation["startsAt"] . ")");
 			return false;
 		}
+        if (isset($reservation["state"]) &&
+            (FALSE == ReservationValidator::isValidState($reservation["state"], $logger))) {
+            $logger->info("State (". $reservation["state"] . " is invalid (expected "
+                . ReservationState::REQUESTED . "," . ReservationState::CANCELLED . ", "
+                . ReservationState::CONFIRMED . "," . ReservationState::CLOSED . ")");
+            return false;
+        }
 		return true;
 	}
 	static private function cnvStrToDateTime($str, $logger) {
@@ -59,5 +67,13 @@ class ReservationValidator
 	
 		return true;
 	}
-	
+	static private function isValidState($state) {
+	    if ($state == ReservationState::REQUESTED
+            || $state == ReservationState::CONFIRMED
+            || $state == ReservationState::CANCELLED
+            || $state == ReservationState::CLOSED) {
+	        return true;
+        }
+	    return false;
+    }
 }

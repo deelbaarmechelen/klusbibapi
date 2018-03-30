@@ -90,19 +90,19 @@ class ReservationsTest extends LocalDbWebTestCase
 								'title' => 'title 1',
 								'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
 								'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
-								'type' => 'repair'
+								'type' => 'repair', 'state' => 'REQUESTED', 'comment' => 'my comment'
 						),
 						array('reservation_id' => 2, 'tool_id' => 1, 'user_id' => 1,
 								'title' => 'title 2',
 								'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
 								'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
-								'type' => 'maintenance'
+								'type' => 'maintenance', 'state' => 'CONFIRMED'
 						),
 						array('reservation_id' => 3, 'tool_id' => 3, 'user_id' => 1,
 								'title' => 'title 3',
 								'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
 								'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
-								'type' => 'repair'
+								'type' => 'repair', 'state' => 'CLOSED', 'comment' => ''
 						),
 				),
 		));
@@ -130,6 +130,33 @@ class ReservationsTest extends LocalDbWebTestCase
 		$reservations = json_decode($body);
 		$this->assertEquals(3, count($reservations));
 	}
+
+    public function testGetReservationsPage()
+    {
+        echo "test GET reservations\n";
+        $body = $this->client->get('/reservations?_perPage=2');
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $reservations = json_decode($body);
+        $this->assertEquals(2, count($reservations));
+    }
+    public function testGetReservationsSecondPage()
+    {
+        echo "test GET reservations\n";
+        $body = $this->client->get('/reservations?_perPage=2&_page=2');
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $reservations = json_decode($body);
+        $this->assertEquals(1, count($reservations));
+    }
+    public function testGetOpenReservations()
+    {
+        echo "test GET reservations\n";
+        $body = $this->client->get('/reservations?isOpen=true');
+        print_r($body);
+        echo "\n";
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $reservations = json_decode($body);
+        $this->assertEquals(2, count($reservations));
+    }
 
 	public function testPostReservations()
 	{
