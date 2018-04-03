@@ -23,15 +23,15 @@ else {
 	$port = getenv('DB_PORT');
 }
 
-define("PROJECT_HOME",getenv('PROJECT_HOME'));
+if (!defined('PROJECT_HOME')) define("PROJECT_HOME",getenv('PROJECT_HOME'));
 
-define("MAIL_PORT", getenv('MAIL_PORT')); // smtp port number
-define("MAIL_USERNAME", getenv('MAIL_USERNAME')); // smtp username
-define("MAIL_PASSWORD", getenv('MAIL_PASSWORD')); // smtp password
-define("MAIL_HOST", getenv('MAIL_HOST')); // smtp host
-define("MAILER", getenv('MAILER'));
+if (!defined('MAIL_PORT')) define("MAIL_PORT", getenv('MAIL_PORT')); // smtp port number
+if (!defined('MAIL_USERNAME')) define("MAIL_USERNAME", getenv('MAIL_USERNAME')); // smtp username
+if (!defined('MAIL_PASSWORD')) define("MAIL_PASSWORD", getenv('MAIL_PASSWORD')); // smtp password
+if (!defined('MAIL_HOST')) define("MAIL_HOST", getenv('MAIL_HOST')); // smtp host
+if (!defined('MAILER')) define("MAILER", getenv('MAILER'));
 
-define("SENDER_NAME", getenv('SENDER_NAME'));
-define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
-define("ENROLMENT_NOTIF_EMAIL", getenv('ENROLMENT_NOTIF_EMAIL'));
-define("RESERVATION_NOTIF_EMAIL", getenv('RESERVATION_NOTIF_EMAIL'));
+if (!defined('SENDER_NAME')) define("SENDER_NAME", getenv('SENDER_NAME'));
+if (!defined('SENDER_EMAIL')) define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
+if (!defined('ENROLMENT_NOTIF_EMAIL')) define("ENROLMENT_NOTIF_EMAIL", getenv('ENROLMENT_NOTIF_EMAIL'));
+if (!defined('RESERVATION_NOTIF_EMAIL')) define("RESERVATION_NOTIF_EMAIL", getenv('RESERVATION_NOTIF_EMAIL'));
