@@ -13,6 +13,13 @@ use Tuupola\Base62;
 
 define('PROJECT_ROOT', realpath(__DIR__ . '/..'));
 
+$settings = require __DIR__ . '/test_settings.php';
+$GLOBALS['DB_DSN']='mysql:host=' . $settings["settings"]["db"]["host"]
+    . ';dbname=' . $settings["settings"]["db"]["dbname"];
+$GLOBALS['DB_USER']=$settings["settings"]["db"]["user"];
+$GLOBALS['DB_PASSWD']=$settings["settings"]["db"]["pass"];
+$GLOBALS['DB_DBNAME']=$settings["settings"]["db"]["dbname"];
+
 require_once PROJECT_ROOT . '/vendor/autoload.php';
 require_once __DIR__ . '/test_env.php';
 
