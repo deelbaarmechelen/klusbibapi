@@ -58,10 +58,10 @@ return array(
 				),
 				"ci" => array(
 						"adapter" => "mysql",
-						"host" => $settings['settings']['db']['host'],
-						"name" => $settings['settings']['db']['dbname'],
-						"user" => $settings['settings']['db']['user'],
-						"pass" => $settings['settings']['db']['pass']
+						"host" => "127.0.0.1",
+						"name" => "klusbibapi_test",
+						"user" => "root",
+						"pass" => ""
 				),
 				"dokku" => array(
 						"adapter" => "mysql",
