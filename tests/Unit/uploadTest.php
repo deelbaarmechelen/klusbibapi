@@ -5,6 +5,7 @@ use Slim\Http\UploadedFile;
 class UploadTest extends LocalWebTestCase {
 	public function testUpload()
 	{
+	    $this->markTestSkipped('requires patch of slim-test-helpers (https://github.com/there4/slim-test-helpers) to provide uploadedFiles array');
 		$uploadedFiles = array('newfile' => $this->mockUploadedFile());
 		$data = array("name" => "myname",
 				"description" => "my description of tool",
