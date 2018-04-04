@@ -72,8 +72,9 @@ class BaseTestCase extends TestCase
      */
     public function runApp($requestMethod, $requestUri, $requestData = null)
     {
-    	 
-    	$method = strtoupper($requestMethod);
+        echo "in BaseTestCase::runApp";
+
+        $method = strtoupper($requestMethod);
     	$options = array(
     			'REQUEST_METHOD' => $method,
     			'REQUEST_URI'    => $requestUri
