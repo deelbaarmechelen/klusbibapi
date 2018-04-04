@@ -53,11 +53,25 @@ class HomepageTest extends BaseDBTestCase
     /**
      * Test that the index route won't accept a post request
      */
+    public function testPostHomepageNotAuthorized()
+    {
+        echo "test POST HomepageNotAuthorized\n";
+        $response = $this->withTokenFor("unknown@klusbib.be", "invalid")
+            ->runApp('POST', '/', ['test']);
+ 		print_r($response);
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    /**
+     * Test that the index route won't accept a post request
+     */
     public function testPostHomepageNotAllowed()
     {
+        echo "test POST HomepageNotAllowed\n";
+
     	$response = $this->withTokenFor("admin@klusbib.be", "test")
     		->runApp('POST', '/', ['test']);
-// 		print_r($response);
+ 		print_r($response);
         $this->assertEquals(404, $response->getStatusCode());
     }
 }

@@ -75,19 +75,13 @@ class BaseTestCase extends TestCase
     	 
     	$method = strtoupper($requestMethod);
     	$options = array(
-    			'REQUEST_METHOD' => $requestMethod,
+    			'REQUEST_METHOD' => $method,
     			'REQUEST_URI'    => $requestUri
     	);
     	 
     	// Create a mock environment for testing with
     	$environment = Environment::mock(array_merge($options, $this->optionalHeaders));
     	print_r($environment);
-//     	$environment = Environment::mock(
-//             [
-//                 'REQUEST_METHOD' => $requestMethod,
-//                 'REQUEST_URI' => $requestUri
-//             ]
-//         );
 
         // Set up a request object based on the environment
         $request = Request::createFromEnvironment($environment);
