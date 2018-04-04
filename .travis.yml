@@ -15,3 +15,6 @@ before_script:
 
 # omitting "script:" will default to phpunit
 script: vendor/bin/phpunit --verbose --bootstrap tests/bootstrap.php --coverage-text
+
+after_failure:
+  - cat /home/travis/build/renardeau/klusbibapi/tests/logs/app.log
