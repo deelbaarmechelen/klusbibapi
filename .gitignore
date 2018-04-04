@@ -5,3 +5,5 @@
 .env
 .settings
 .buildpath
+.travis/*.key
+.travis/*.key.pub
