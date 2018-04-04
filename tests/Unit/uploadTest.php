@@ -10,6 +10,7 @@ class UploadTest extends LocalWebTestCase {
 				"description" => "my description of tool",
 				"category" => "my category"
 		);
+		print_r($uploadedFiles);
 		$body = $this->client->post('/upload', $data, array(), $uploadedFiles);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 	}

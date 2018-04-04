@@ -28,6 +28,7 @@ $app->get('/hello[/{name}]', function ($request, $response, $args) {
 $app->post('/upload', function ($request, $response, $args) {
 	$this->logger->info("Klusbibapi '/upload' route");
 	$files = $request->getUploadedFiles();
+	print_r($files);
 	$uploader = new UploadHandler($this->logger);
 	$uploader->uploadFiles($files);
 	return $this->renderer->render($response, 'welcome.phtml', ['filename' => $uploader->getUploadedFileName()]);
