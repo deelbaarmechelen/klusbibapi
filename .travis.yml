@@ -4,6 +4,7 @@ php:
 
 env:
   - TEST_DATABASE_URL=mysql://root:@127.0.0.1:3306/klusbibapi
+  - JWT_SECRET=dummy
   
 services:
   - mysql
@@ -17,4 +18,4 @@ before_script:
 script: vendor/bin/phpunit --verbose --bootstrap tests/bootstrap.php --coverage-text
 
 after_failure:
-  - cat /home/travis/build/renardeau/klusbibapi/tests/logs/app.log
+  - cat $HOME/build/renardeau/klusbibapi/tests/logs/app.log
