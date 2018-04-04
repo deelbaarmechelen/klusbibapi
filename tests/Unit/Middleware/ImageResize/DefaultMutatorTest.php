@@ -6,13 +6,13 @@ class DefaultMutatorTest extends LocalWebTestCase
 	public function testParse()
 	{
 		echo "test mutator parse";
-		$_SERVER["DOCUMENT_ROOT"] = __DIR__ . "/../../../../public";
+		$_SERVER["DOCUMENT_ROOT"] = __DIR__ . "/../../../resources";
 		$mutator = new DefaultMutator(array(), $this->mockImage());
 		$target = '/uploads/KB-000-17-001-x200.jpg';
 		$parsed = $mutator->parse($target);
 		
 		$this->assertTrue(is_array($parsed));
-		$this->assertEquals(__DIR__ . "/../../../../public//uploads/KB-000-17-001.jpg", $parsed["source"]);
+		$this->assertEquals(__DIR__ . "/../../../resources//uploads/KB-000-17-001.jpg", $parsed["source"]);
 // 		print_r($parsed);
 		
 		static $regexp = "/(?<original>.+)-(?<size>(?<width>\d*)x(?<height>\d*))-?(?<signature>[0-9a-z]*)/";
