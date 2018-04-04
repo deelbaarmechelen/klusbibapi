@@ -45,9 +45,11 @@ trait BaseTestCaseTrait
     	$response = $this
     		->withBasicAuthentication($user, $password)
     		->runApp('POST', '/token');
+    	echo "token response = " . (string) $response->getBody() . "\n";
     	$decoded = json_decode((string)$response->getBody());
     	if (isset($decoded)) {
             $this->token = $decoded->token;
+            echo "Token received = " . $this->token . "\n";
         }
     	$this->optionalHeaders = array(
     			'HTTP_AUTHORIZATION' => "Bearer " . $this->token,

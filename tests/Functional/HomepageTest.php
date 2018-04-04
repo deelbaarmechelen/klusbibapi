@@ -55,10 +55,8 @@ class HomepageTest extends BaseDBTestCase
      */
     public function testPostHomepageNotAuthorized()
     {
-        echo "test POST HomepageNotAuthorized\n";
         $response = $this->withTokenFor("unknown@klusbib.be", "invalid")
-            ->runApp('POST', '/', ['test']);
- 		print_r($response);
+            ->runApp('POST', '/');
         $this->assertEquals(401, $response->getStatusCode());
     }
 
@@ -70,7 +68,7 @@ class HomepageTest extends BaseDBTestCase
         echo "test POST HomepageNotAllowed\n";
 
     	$response = $this->withTokenFor("admin@klusbib.be", "test")
-    		->runApp('POST', '/', ['test']);
+    		->runApp('POST', '/');
  		print_r($response);
         $this->assertEquals(404, $response->getStatusCode());
     }
