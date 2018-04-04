@@ -86,7 +86,6 @@ trait BaseTestCaseTrait
     	 
     	// Create a mock environment for testing with
     	$environment = Environment::mock(array_merge($options, $this->optionalHeaders));
-     	print_r($environment);
 
         // Set up a request object based on the environment
         $request = Request::createFromEnvironment($environment);
@@ -101,8 +100,7 @@ trait BaseTestCaseTrait
 
         // Use the application settings
         $settings = require __DIR__ . '/../test_settings.php';
-        print_r($settings);
-        
+
         // Instantiate the application
         $app = new App($settings);
 
@@ -117,7 +115,6 @@ trait BaseTestCaseTrait
         // Register routes
         require __DIR__ . '/../../src/routes.php';
 
-        print_r($request);
         // Process the application
         $response = $app->process($request, $response);
 

@@ -32,7 +32,6 @@ class HomepageTest extends BaseDBTestCase
      */
     public function testGetWelcome()
     {
-        
     	$response = $this->runApp('GET', '/welcome');
 
         $this->assertEquals(200, $response->getStatusCode());
@@ -46,7 +45,6 @@ class HomepageTest extends BaseDBTestCase
     public function testGetHomepageWithGreeting()
     {
         $response = $this->runApp('GET', '/tools');
-
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -65,11 +63,8 @@ class HomepageTest extends BaseDBTestCase
      */
     public function testPostHomepageNotAllowed()
     {
-        echo "test POST HomepageNotAllowed\n";
-
     	$response = $this->withTokenFor("admin@klusbib.be", "test")
     		->runApp('POST', '/');
- 		print_r($response);
         $this->assertEquals(404, $response->getStatusCode());
     }
 }
