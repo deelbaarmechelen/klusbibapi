@@ -1,4 +1,11 @@
 language: php
+addons:
+  apt:
+    sources:
+      - mysql-5.7-trusty
+    packages:
+      - mysql-server
+      - mysql-client
 php:
 - '7.0'
 env:
@@ -6,6 +13,9 @@ env:
 services:
 - mysql
 before_install:
+- sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
+- sudo mysql_upgrade
+- sudo service mysql restart
 - openssl aes-256-cbc -K $encrypted_f65dcc8c7326_key -iv $encrypted_f65dcc8c7326_iv
   -in .travis/deploy.key.enc -out .travis/deploy.key -d
 before_script:
