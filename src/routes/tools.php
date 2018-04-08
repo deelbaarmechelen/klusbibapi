@@ -32,14 +32,17 @@ $app->get('/tools', function ($request, $response, $args) {
         $showAll = false;
     }
 	// TODO: if not admin, filter non visible tools
-    if ($showAll) {
-        $tools = Capsule::table('tools')
-            ->orderBy($sortfield, $sortdir)->get();
+    if ($showAll === true) {
+        $builder = Capsule::table('tools');
     } else {
-        $tools = Capsule::table('tools')
-            ->where('visible', true)
-            ->orderBy($sortfield, $sortdir)->get();
+        $builder = Capsule::table('tools')
+            ->where('visible', true);
     }
+    $category = $request->getQueryParam('category');
+    if (isset($category)) {
+        $builder = $builder->where('category', $category);
+    }
+    $tools = $builder->orderBy($sortfield, $sortdir)->get();
 	$tools_page = array_slice($tools, ($page - 1) * $perPage, $perPage);
 	
 	$data = array();

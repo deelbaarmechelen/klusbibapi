@@ -11,21 +11,26 @@ class ToolsTest extends LocalDbWebTestCase
 	{
 		return new DbUnitArrayDataSet(array(
 				'tools' => array(
-						array('tool_id' => 1, 'name' => 'tool 1', 'description' => 'description 1',
-								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
+						array('tool_id' => 1, 'name' => 'tool 1', 'description' => 'description 1', 'code' => 'KB-000-18-001',
+								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345', 'category' => 'wood',
 								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
-								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25'
+								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25', 'visible' => 1
 						),
-						array('tool_id' => 2, 'name' => 'tool 2', 'description' => 'description 2',
-								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
+						array('tool_id' => 2, 'name' => 'tool 2', 'description' => 'description 2', 'code' => 'KB-000-17-001',
+								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345', 'category' => 'wood',
 								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com', 
-								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25'
+								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25', 'visible' => 1
 						),
-						array('tool_id' => 3, 'name' => 'tool 3', 'description' => 'description 3',
-								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
+						array('tool_id' => 3, 'name' => 'tool 3', 'description' => 'description 3', 'code' => 'KB-000-17-003',
+								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345', 'category' => 'construction',
 								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
-								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25'
-						)
+								'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25', 'visible' => 1
+						),
+						array('tool_id' => 4, 'name' => 'tool 4', 'description' => 'description 4', 'code' => 'KB-000-17-002',
+                            'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345', 'category' => 'construction',
+                            'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
+                            'doc_url' => 'my doc', 'img' => '/assets/img/tool.jpg', 'replacement_value' => '25', 'visible' => 0
+                        )
 				),
 		));
 	}
@@ -34,11 +39,46 @@ class ToolsTest extends LocalDbWebTestCase
 	{
 		echo "test GET tools\n";
 		$body = $this->client->get('/tools');
-		print_r($body);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$tools = json_decode($body);
 		$this->assertEquals(3, count($tools));
 	}
+
+    public function testGetToolsAll()
+    {
+        echo "test GET all tools\n";
+        $body = $this->client->get('/tools?_all=true');
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $tools = json_decode($body);
+        $this->assertEquals(4, count($tools));
+    }
+
+    public function testGetToolsFilterCategory()
+    {
+        echo "test GET tools filter category\n";
+        $body = $this->client->get('/tools?category=wood');
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $tools = json_decode($body);
+        $this->assertEquals(2, count($tools));
+        $this->assertEquals('wood', $tools[0]->category);
+        $this->assertEquals('wood', $tools[1]->category);
+    }
+
+    public function testGetToolsPagination()
+    {
+        echo "test GET tools filter category\n";
+        $body = $this->client->get('/tools?_perPage=2');
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $tools = json_decode($body);
+        $this->assertEquals(2, count($tools));
+        $this->assertEquals('KB-000-17-001', $tools[0]->code);
+        $this->assertEquals('KB-000-17-003', $tools[1]->code);
+        $body = $this->client->get('/tools?_page=2&_perPage=2');
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $tools = json_decode($body);
+        $this->assertEquals(1, count($tools));
+        $this->assertEquals('KB-000-18-001', $tools[0]->code);
+    }
 
 	public function testGetTool()
 	{
@@ -64,19 +104,6 @@ class ToolsTest extends LocalDbWebTestCase
 		echo "test POST tools\n";
 		$this->setUser('daniel@klusbib.be');
 		$this->setToken('3', ["tools.all"]);
-		// get token
-// 		$data = ["tools.all"];
-// 		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0",
-// 				"PHP_AUTH_USER" => "test",
-// 				"PHP_AUTH_PW" => "test"
-// 		);
-// 		$response = $this->client->post('/token', $data, $header);
-// 		$responseData = json_decode($response);
-		
-// 		$scopes = array("tools.all");
-		
-// 		$header = array('Authorization' => "bearer $responseData->token");
-// 		$container = $this->app->getContainer();
 
 		$data = array("name" => "myname", 
 				"description" => "my description of tool",
