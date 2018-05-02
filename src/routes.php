@@ -39,5 +39,6 @@ require __DIR__ . '/routes/tools.php';
 require __DIR__ . '/routes/users.php';
 require __DIR__ . '/routes/consumers.php';
 require __DIR__ . '/routes/reservations.php';
+require __DIR__ . '/routes/events.php';
 
 	

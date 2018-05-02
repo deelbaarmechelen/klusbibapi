@@ -81,6 +81,12 @@ class Token
 				"consumers.delete",
 				"consumers.list",
 				"consumers.all",
+            "events.create",
+            "events.read",
+            "events.update",
+            "events.delete",
+            "events.list",
+            "events.all",
 				"users.create",
 				"users.read",
 				"users.read.owner",
@@ -104,11 +110,12 @@ class Token
 	static public function allowedScopes($role) {
 		if ($role == 'admin') {
 			return [
-					"tools.all",
-					"reservations.all",
-					"consumers.all",
-					"users.all",
-					"users.update.password",
+				"tools.all",
+				"reservations.all",
+				"consumers.all",
+				"users.all",
+                "events.all",
+				"users.update.password",
 			];
 		}
 		if ($role == 'member') {
