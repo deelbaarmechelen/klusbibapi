@@ -36,4 +36,12 @@ class User extends Model
     {
         return $query->where('state', '=', 'ACTIVE');
     }
+    public function scopeAdmin($query)
+    {
+        return $query->where('role', '=', 'admin');
+    }
+    public function scopeNotAdmin($query)
+    {
+        return $query->where('role', '<>', 'admin');
+    }
 }
