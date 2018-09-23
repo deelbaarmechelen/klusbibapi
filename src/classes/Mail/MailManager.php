@@ -3,6 +3,8 @@ namespace Api\Mail;
 
 use PHPMailer;
 use Twig_Environment;
+use DateTime;
+use DateInterval;
 
 class MailManager {
 	
@@ -82,7 +84,18 @@ class MailManager {
 	}
 
     public function sendRenewal($user) {
-        $parameters = array('user' => $user);
+        $endDate = DateTime::createFromFormat('Y-m-d',$user->membership_end_date);
+	    $pivotDate = DateTime::createFromFormat('Y-m-d', date('Y') . '-07-01');
+	    $membership_year = $endDate->format('Y');
+	    if ($endDate > $pivotDate) {
+	        $nextYear = $endDate->add(new DateInterval('P1Y'));
+            $membership_year = $membership_year . '-' . $nextYear->format('Y');
+        }
+        echo '$membership_year: ' . $membership_year;
+        $parameters = array('user' => $user,
+            'amount' => 20,
+            'account' => 'BE79 5230 8088 4133',
+            'membership_year' => $membership_year);
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
 

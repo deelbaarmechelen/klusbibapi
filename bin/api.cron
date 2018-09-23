@@ -19,7 +19,8 @@ SHELL=/bin/bash
 ### PLACE ALL CRON TASKS BELOW
 
 # removes unresponsive users from the subscriber list to decrease bounce rates
-0 0 * * * dokku dokku --rm run api echo "cron test"
-#0 0 * * * dokku dokku --rm run api /app/.heroku/php/bin/php bin/renewal.php
+#0 0 * * * dokku dokku --rm run api echo "cron test"
+0 16 * * * dokku dokku --rm run api /app/.heroku/php/bin/php bin/renewal.php
+0 0  * * 0 dokku dokku --rm run api /app/.heroku/php/bin/php bin/expiry.php
 
 ### PLACE ALL CRON TASKS ABOVE, DO NOT REMOVE THE WHITESPACE AFTER THIS LINE
