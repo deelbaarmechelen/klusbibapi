@@ -5,13 +5,16 @@ namespace Api\Upload;
 class UploadHandler
 {
 	private $logger;
-	private $uploadedFileName;
-	
-	function __construct($logger = NULL) {
+	private $uploadFileName;
+
+    const UPLOAD_DIR = 'uploads/';
+
+    function __construct($logger = NULL) {
 		$this->logger = $logger;
 	}
 	
 	function uploadFiles($files) {
+
 		if (empty($files['newfile'])) {
 			$this->logger->error("Upload error: Expected a newfile");
 			throw new \Exception('Expected a newfile');
@@ -21,10 +24,19 @@ class UploadHandler
 		return $this->uploadFile($newfile);
 	}
 	
-	function uploadFile($newfile) {
+	function uploadFile($newfile, $filename = NULL) {
 		if ($newfile->getError() === UPLOAD_ERR_OK) {
-			$this->uploadFileName = $newfile->getClientFilename();
-			$newfile->moveTo(__DIR__ . "/../../../public/uploads/$this->uploadFileName");
+		    if (is_null($filename)) {
+                $this->uploadFileName = $newfile->getClientFilename();
+            } else {
+		        $this->uploadFileName = $filename;
+            }
+            $uploadFileParts = pathinfo($this->uploadFileName);
+            if (empty($uploadFileParts['extension'])) {
+                $clientNameParts = pathinfo($newfile->getClientFilename());
+                $this->uploadFileName .= '.' . $clientNameParts['extension'];
+            }
+			$newfile->moveTo(__DIR__ . "/../../../public/" . self::UPLOAD_DIR . $this->uploadFileName);
 		} else {
 			$this->formatErrorMessage($newfile->getError());
 		}
@@ -62,4 +74,12 @@ class UploadHandler
 	function getUploadedFileName() {
 		return $this->uploadFileName;
 	}
+
+	function getUploadPublicUrl() {
+        $publicUrl = !empty($_SERVER['HTTPS']) ? 'https' : 'http'; //HTTPS or HTTP
+        $publicUrl .= '://' . $_SERVER['HTTP_HOST']; //HOST
+        $publicUrl .= '/' . self::UPLOAD_DIR;
+        $publicUrl .= $this->getUploadedFileName();
+        return $publicUrl;
+    }
 }

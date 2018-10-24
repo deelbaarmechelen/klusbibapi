@@ -5,6 +5,7 @@ use Api\ModelMapper\ToolMapper;
 use Api\Authorisation;
 use Api\Model\Tool;
 use Api\ModelMapper\ReservationMapper;
+use Api\Upload\UploadHandler;
 
 $app->get('/tools', function ($request, $response, $args) {
 	
@@ -87,6 +88,31 @@ $app->post('/tools', function ($request, $response, $args) {
 	$tool->save();
 	return $response->withJson(ToolMapper::mapToolToArray($tool));
 });
+$app->post('/tools/{toolid}/upload', function ($request, $response, $args) {
+    $this->logger->info("Klusbib POST '/tools/{toolid}/upload' route");
+    /* Check if token has needed scope. */
+    Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.update"]);
+
+    $this->logger->info('$_FILES=' . json_encode($_FILES));
+    $files = $request->getUploadedFiles();
+    $this->logger->info('$files=' . json_encode($files));
+
+    $tool = \Api\Model\Tool::find($args['toolid']);
+    if (null == $tool) {
+        return $response->withStatus(404);
+    }
+    // upload file and save location to tool img url
+    $uploader = new UploadHandler($this->logger);
+    if (empty($tool->code) || $tool->code == 'not assigned') {
+        $uploader->uploadFile($files['newfile']);
+    } else {
+        $uploader->uploadFile($files['newfile'], $tool->code);
+    }
+
+    $tool->img = $uploader->getUploadPublicUrl();
+    $tool->save();
+    return $response->withJson(ToolMapper::mapToolToArray($tool));
+});
 
 $app->put('/tools/{toolid}', function ($request, $response, $args) {
 	$this->logger->info("Klusbib PUT '/tools/id' route");
@@ -97,7 +123,6 @@ $app->put('/tools/{toolid}', function ($request, $response, $args) {
 	}
 	$data = $request->getParsedBody();
 	ToolMapper::mapArrayToTool($data, $tool);
-	// TODO: add image??
 	$tool->save();
 	return $response->withJson(ToolMapper::mapToolToArray($tool));
 });
