@@ -36,6 +36,10 @@ class User extends Model
     {
         return $query->where('state', '=', 'ACTIVE');
     }
+    public function scopeExpired($query)
+    {
+        return $query->where('state', '=', 'EXPIRED');
+    }
     public function scopeAdmin($query)
     {
         return $query->where('role', '=', 'admin');

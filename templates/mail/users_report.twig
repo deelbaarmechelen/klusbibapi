@@ -1,0 +1,63 @@
+{% block subject 'Ovezicht Klusbib leden' %}
+
+{% block body %}
+    <h1>Overzicht actieve leden</h1>
+    <br>
+    <table>
+        <tr>
+            <th>Firstname</th>
+            <th>lastname</th>
+            <th>role</th>
+            <th>phone</th>
+            <th>mobile</th>
+            <th>email</th>
+            <th>membership_start_date</th>
+            <th>membership_end_date</th>
+        </tr>
+        {% for user in active_users %}
+            <tr>
+                <td>{{ user.firstname|e }}</td>
+                <td>{{ user.lastname|e }}</td>
+                <td>{{ user.role|e }}</td>
+                <td>{{ user.phone|e }}</td>
+                <td>{{ user.mobile|e }}</td>
+                <td>{{ user.email|e }}</td>
+                <td>{{ user.membership_start_date|e }}</td>
+                <td>{{ user.membership_end_date|e }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <h1>Overzicht lidmaatschap vervallen</h1>
+    <br>
+    <table>
+        <tr>
+            <th>Firstname</th>
+            <th>lastname</th>
+            <th>role</th>
+            <th>phone</th>
+            <th>mobile</th>
+            <th>email</th>
+            <th>membership_start_date</th>
+            <th>membership_end_date</th>
+        </tr>
+        {% for user in expired_users %}
+            <tr>
+                <td>{{ user.firstname|e }}</td>
+                <td>{{ user.lastname|e }}</td>
+                <td>{{ user.role|e }}</td>
+                <td>{{ user.phone|e }}</td>
+                <td>{{ user.mobile|e }}</td>
+                <td>{{ user.email|e }}</td>
+                <td>{{ user.membership_start_date|e }}</td>
+                <td>{{ user.membership_end_date|e }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <hr>
+    <p>
+        Met vriendelijke groeten<br>
+        Het Klusbib-team<br>
+        E: <a href="mailto:info@klusbib.be" >info@klusbib.be</a><br>
+        W: <a href="https://www.klusbib.be" >www.klusbib.be</a><br>
+    </p>
+{% endblock %}
