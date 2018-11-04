@@ -99,11 +99,12 @@ class MailManager {
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
 
-    public function sendUsersReport($active_users, $expired_users) {
+    public function sendUsersReport($active_users, $expired_users, $pending_users) {
 	    $reportEmail = 'info@klusbib.be';
 	    $current_day = date('Y-m-d');
         $parameters = array('active_users' => $active_users,
             'expired_users' => $expired_users,
+            'pending_users' => $pending_users,
             'current_day' => $current_day);
         return $this->sendTwigTemplate($reportEmail, 'users_report', $parameters);
     }

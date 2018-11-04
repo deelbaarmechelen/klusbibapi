@@ -18,10 +18,11 @@ echo "Generating report on users\n";
 $mailmgr = new \Api\Mail\MailManager();
 $active_users = \Api\Model\User::active()->orderBy('firstname', 'asc')->get();
 $expired_users = \Api\Model\User::expired()->orderBy('firstname', 'asc')->get();
+$pending_users = \Api\Model\User::pending()->orderBy('firstname', 'asc')->get();
 echo "Active users count: " . count($active_users) . "\n";
 echo "calling sendUsersReport\n";
 try {
-    $mailmgr->sendUsersReport($active_users, $expired_users);
+    $mailmgr->sendUsersReport($active_users, $expired_users, $pending_users);
 } catch (\Exception $ex) {
     echo "A problem occurred $ex";
 }

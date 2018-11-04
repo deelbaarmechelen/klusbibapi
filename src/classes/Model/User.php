@@ -40,6 +40,11 @@ class User extends Model
     {
         return $query->where('state', '=', 'EXPIRED');
     }
+    public function scopePending($query)
+    {
+        return $query->where('state', '=', UserState::CHECK_PAYMENT)
+            ->orWhere('state', '=', UserState::CONFIRM_EMAIL);
+    }
     public function scopeAdmin($query)
     {
         return $query->where('role', '=', 'admin');
