@@ -32,13 +32,22 @@ class User extends Model
 		return false;
 	}
 
+    public function scopeMembers($query)
+    {
+        return $query->where('role', '=', 'member')
+            ->orWhere('role', '=', 'admin');
+    }
+    public function scopeSupporters($query)
+    {
+        return $query->where('role', '=', 'supporter');
+    }
     public function scopeActive($query)
     {
-        return $query->where('state', '=', 'ACTIVE');
+        return $query->where('state', '=', UserState::ACTIVE);
     }
     public function scopeExpired($query)
     {
-        return $query->where('state', '=', 'EXPIRED');
+        return $query->where('state', '=', UserState::EXPIRED);
     }
     public function scopePending($query)
     {
