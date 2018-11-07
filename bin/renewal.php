@@ -12,7 +12,7 @@ $mailmgr = new \Api\Mail\MailManager();
 $fromDate = date('Y-m-d' . ' 00:00:00', strtotime("+1 week"));
 $toDate   = date('Y-m-d' . ' 23:59:59', strtotime("+1 week"));
 echo "selecting active users between $fromDate and $toDate \n";
-$users = \Api\Model\User::active()->whereBetween('membership_end_date' , [$fromDate, $toDate])->get();
+$users = \Api\Model\User::active()->members()->whereBetween('membership_end_date' , [$fromDate, $toDate])->get();
 echo "selected users: " . count($users) . "\n";
 // TODO: log renewal events
 foreach ($users as $user) {
