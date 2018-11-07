@@ -12,6 +12,7 @@ class UserMapper
 				"firstname" => $user->firstname,
 				"lastname" => $user->lastname,
 				"email" => $user->email,
+				"email_state" => $user->email_state,
 				"role" => $user->role,
 				"membership_start_date" => $user->membership_start_date,
 				"membership_end_date" => $user->membership_end_date,
@@ -45,6 +46,9 @@ class UserMapper
 		}
 		if (isset($data["email"])) {
 			$user->email = $data["email"];
+		}
+		if (isset($data["email_state"])) {
+			$user->email_state = $data["email_state"];
 		}
 		if (isset($data["role"]) && $isAdmin) {
 			$user->role = $data["role"];

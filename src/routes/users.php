@@ -13,6 +13,7 @@ use Api\ModelMapper\ReservationMapper;
 use Api\Mail\MailManager;
 use Api\Token;
 use Api\Model\UserState;
+use Api\Model\EmailState;
 
 $app->get('/users', function ($request, $response, $args) {
 	$this->logger->info("Klusbib GET on '/users' route");
@@ -93,6 +94,7 @@ $app->post('/users', function ($request, $response, $args) {
 	if (!$authorised) {
 		// Web enrolment
 		$user->state = UserState::CONFIRM_EMAIL;
+		$user->email_state = EmailState::CONFIRM_EMAIL;
 		$user->role = 'member'; // only members can be created through web enrolment
 		$data["membership_start_date"] = strftime('%Y-%m-%d',time());
 		if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {

@@ -1,6 +1,7 @@
 <?php
 use Api\Token;
 use Api\Model\UserState;
+use Api\Model\EmailState;
 use Api\Mail\MailManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -111,10 +112,13 @@ $app->get('/auth/confirm/{userId}', function ($request, $response, $args) {
 		return $response->withStatus(403);
 	}
 	$user = \Api\Model\User::find($token->getSub());
-	if ($user->state === "CONFIRM_EMAIL") {
-		$user->state = "CHECK_PAYMENT";
-		$user->save();
-	}
+
+    if ($user->state === "CONFIRM_EMAIL") {
+        $user->state = "CHECK_PAYMENT";
+    }
+    $user->email_state = EmailState::CONFIRMED;
+    $user->save();
+
 	// Render index view
 	return $this->renderer->render($response, 'confirm_email.phtml',  [
 			'userId' => $args['userId']
