@@ -31,6 +31,7 @@ class CreatePayments extends AbstractMigration
             $table->integer('user_id')->unsigned;
             $table->string('mode', 20); // CASH, TRANSFER, MOLLIE
             $table->timestamp('payment_date')->nullable()->default(null);
+            $table->string('order_id',50)->nullable()->default(null);
             $table->decimal('amount')->nullable()->default(null);
             $table->string('currency', 20)->nullable()->default(null); // euro, blusser, koekoek
 

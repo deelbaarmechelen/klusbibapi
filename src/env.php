@@ -35,3 +35,5 @@ if (!defined('SENDER_NAME')) define("SENDER_NAME", getenv('SENDER_NAME'));
 if (!defined('SENDER_EMAIL')) define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
 if (!defined('ENROLMENT_NOTIF_EMAIL')) define("ENROLMENT_NOTIF_EMAIL", getenv('ENROLMENT_NOTIF_EMAIL'));
 if (!defined('RESERVATION_NOTIF_EMAIL')) define("RESERVATION_NOTIF_EMAIL", getenv('RESERVATION_NOTIF_EMAIL'));
+
+if (!defined('MOLLIE_API_KEY')) define("MOLLIE_API_KEY", getenv('MOLLIE_API_KEY'));
