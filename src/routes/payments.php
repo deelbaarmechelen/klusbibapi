@@ -83,6 +83,8 @@ $app->post('/payments', function ($request, $response, $args) {
         if ($protocol == "http") {
             $this->logger->warn("payment triggered on unsecure connection (SERVER var HTTPS=" .
                 (isset($_SERVER['HTTPS']) ? $_SERVER['HTTPS'] : "not set") . ")");
+            $this->logger->warn("request uri scheme=". $request->getUri()->getScheme()
+                . ";host=" . $request->getUri()->getHost() . ";port=" . $request->getUri()->getPort());
         }
         $hostname = $_SERVER['HTTP_HOST'];
 
