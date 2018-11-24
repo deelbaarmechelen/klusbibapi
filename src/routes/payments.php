@@ -131,11 +131,13 @@ $app->post('/payments', function ($request, $response, $args) {
 $app->post('/payments/{orderId}', function ($request, $response, $args) {
     $this->logger->info("Klusbib POST '/payments/{$args['orderId']}' route");
     if (empty($args['orderId'])) {
+        $this->logger->error("POST /payments/{orderId} failed due to missing orderId param");
         return $response->withStatus(400) // Bad request
         ->withJson("Missing or empty orderId");
     }
     $paymentId = $_POST["id"];
     if (empty($paymentId)) {
+        $this->logger->error("POST /payments/{orderId} failed due to missing id param (orderId=" . $args['orderId']);
         return $response->withStatus(400) // Bad request
         ->withJson("Missing or empty paymentId");
     }
@@ -220,6 +222,7 @@ $app->post('/payments/{orderId}', function ($request, $response, $args) {
         // Lookup user and update state
         $user = \Api\Model\User::find($userId);
         if (null == $user) {
+            $this->logger->error("POST /payments/$orderId failed: user $userId is not found");
             return $response->withStatus(400)
                 ->withJson("No user found with id $userId");;
         }
