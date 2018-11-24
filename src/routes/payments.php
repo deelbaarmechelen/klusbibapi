@@ -135,9 +135,11 @@ $app->post('/payments/{orderId}', function ($request, $response, $args) {
         return $response->withStatus(400) // Bad request
         ->withJson("Missing or empty orderId");
     }
+    // Get data
+    $data = $request->getParsedBody();
     $paymentId = $_POST["id"];
     if (empty($paymentId)) {
-        $this->logger->error("POST /payments/{orderId} failed due to missing id param (orderId=" . $args['orderId']);
+        $this->logger->error("POST /payments/{orderId} failed due to missing id param (orderId=" . $args['orderId'] . "; parsed body=" . json_encode($data));
         return $response->withStatus(400) // Bad request
         ->withJson("Missing or empty paymentId");
     }
