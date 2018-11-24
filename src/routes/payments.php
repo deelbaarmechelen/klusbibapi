@@ -93,7 +93,8 @@ $app->post('/payments', function ($request, $response, $args) {
                 ],
                 "description" => "Klusbib inschrijving {$user->firstname} {$user->lastname}",
                 "redirectUrl" => "{$redirectUrl}?orderId={$orderId}",
-                "webhookUrl" => "{$protocol}://{$hostname}/payments/{$orderId}",
+//                "webhookUrl" => "{$protocol}://{$hostname}/payments/{$orderId}",
+                "webhookUrl" => "https://{$hostname}/payments/{$orderId}",
                 "metadata" => [
                     "order_id" => $orderId,
                     "user_id" => $userId,
