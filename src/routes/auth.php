@@ -69,7 +69,7 @@ $app->post('/auth/verifyemail', function ($request, $response, $args) {
 	if (null == $user) {
 		return $response->withStatus(404);
 	}
-	if ($user->state != UserState::CONFIRM_EMAIL) {
+	if ($user->email_state != EmailState::CONFIRM_EMAIL) {
 		$data["status"] = "error";
 		$data["message"] = "No email confirmation required for user";
 		return $response->withStatus(412)
@@ -114,13 +114,13 @@ $app->get('/auth/confirm/{userId}', function ($request, $response, $args) {
 	$user = \Api\Model\User::find($token->getSub());
 
     if ($user->state === "CONFIRM_EMAIL") {
-        $user->state = "CHECK_PAYMENT";
+        $user->state = UserState::CHECK_PAYMENT;
     }
     $user->email_state = EmailState::CONFIRMED;
     $user->save();
 
 	// Render index view
-	return $this->renderer->render($response, 'confirm_email.phtml',  [
+	return $this->view->render($response, 'confirm_email',  [
 			'userId' => $args['userId']
 	]);
 });

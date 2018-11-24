@@ -5,14 +5,20 @@ use PHPMailer;
 use Twig_Environment;
 use DateTime;
 use DateInterval;
+use Api\Settings;
 
+/**
+ * Class MailManager
+ * Triggers send of email messages
+ * @package Api\Mail
+ */
 class MailManager {
 	
 	private $message;
 	private $mailer;
     private $twig;
 
-	function __construct(PHPMailer $mailer = null, Twig_Environment $twig = null) {
+    function __construct(PHPMailer $mailer = null, Twig_Environment $twig = null) {
 		if (is_null($mailer)) {
 			$this->mailer = new PHPMailer ();
 		} else {
@@ -27,19 +33,48 @@ class MailManager {
         }
     }
 	
+//	public function sendEnrolmentNotification($userEmail, $newUser) {
+//		$subject = "Nieuwe inschrijving";
+//		$body = "<div>Beste,<br><br>"
+//				. "<p>Via de website werd een aanvraag tot lidmaatschap geregistreerd<br>"
+//				. "Er werd een nieuwe gebruiker ". $newUser->firstname . " " . $newUser->lastname
+//				. " aangemaakt met status '" . $newUser->state . "' (user id: " . $newUser->user_id . ")<br>"
+//				. "Deze gebruiker koos ervoor om te betalen via " . $newUser->payment_mode . "<br>"
+//				. "Gelieve deze gebruiker te activeren van zodra het lidgeld ontvangen is</p>"
+//				. "Groetjes,<br> Admin.</div>";
+//
+//		return $this->send($subject, $body, $userEmail);
+//	}
 	public function sendEnrolmentNotification($userEmail, $newUser) {
-		$subject = "Nieuwe inschrijving";
-		$body = "<div>Beste,<br><br>"
-				. "<p>Via de website werd een aanvraag tot lidmaatschap geregistreerd<br>"
-				. "Er werd een nieuwe gebruiker ". $newUser->firstname . " " . $newUser->lastname
-				. " aangemaakt met status '" . $newUser->state . "' (user id: " . $newUser->user_id . ")<br>"
-				. "Deze gebruiker koos ervoor om te betalen via " . $newUser->payment_mode . "<br>"
-				. "Gelieve deze gebruiker te activeren van zodra het lidgeld ontvangen is</p>"
-				. "Groetjes,<br> Admin.</div>";
-
-		return $this->send($subject, $body, $userEmail);
+        $parameters = array(
+            'newUser' => $newUser);
+        return $this->sendTwigTemplate($userEmail, 'enrolment_new_notif', $parameters);
 	}
-	
+	public function sendEnrolmentSuccessNotification($userEmail, $newUser) {
+        $parameters = array(
+            'newUser' => $newUser);
+        return $this->sendTwigTemplate($userEmail, 'enrolment_success_notif', $parameters);
+	}
+	public function sendEnrolmentFailedNotification($userEmail, $newUser, $payment) {
+        $parameters = array(
+            'newUser' => $newUser,
+            'payment' => $payment);
+        return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
+	}
+
+    public function sendEnrolmentConfirmation($user, $paymentMode) {
+        $membership_year = $this->getMembershipYear(date('Y-m-d'));
+        $parameters = array(
+            'user' => $user,
+            'paymentMode' => $paymentMode,
+            'account' => Settings::ACCOUNT_NBR,
+            'amount' => Settings::ENROLMENT_AMOUNT,
+            'membership_year' => $membership_year,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'facebookLink' => Settings::FACEBOOK_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
+        return $this->sendTwigTemplate($user->email, 'enrolment', $parameters);
+    }
 	public function sendEmailVerification($userId, $userName, $to, $token) {
 		$subject = "Klusbib - Bevestig email adres";
 		$link = PROJECT_HOME . "auth/confirm/" . $userId . "?token=" . $token . "&email=" . $to . "&name=" . $userName;
@@ -84,17 +119,13 @@ class MailManager {
 	}
 
     public function sendRenewal($user) {
-        $endDate = DateTime::createFromFormat('Y-m-d',$user->membership_end_date);
-	    $pivotDate = DateTime::createFromFormat('Y-m-d', date('Y') . '-07-01');
-	    $membership_year = $endDate->format('Y');
-	    if ($endDate > $pivotDate) {
-	        $nextYear = $endDate->add(new DateInterval('P1Y'));
-            $membership_year = $membership_year . '-' . $nextYear->format('Y');
-        }
-        echo '$membership_year: ' . $membership_year;
+        $membership_year = $this->getMembershipYear($user->membership_end_date);
         $parameters = array('user' => $user,
-            'amount' => 20,
-            'account' => 'BE79 5230 8088 4133',
+            'amount' => Settings::RENEWAL_AMOUNT,
+            'account' => Settings::ACCOUNT_NBR,
+            'emailLink' => Settings::EMAIL_LINK,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'facebookLink' => Settings::FACEBOOK_LINK,
             'membership_year' => $membership_year);
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
@@ -154,4 +185,21 @@ class MailManager {
 	public function getLastMessage() {
 		return $this->message;
 	}
+
+    /**
+     * @param $startDateMembership
+     * @return string
+     * @throws \Exception
+     */
+    protected function getMembershipYear($startDateMembership): string
+    {
+        $endDate = DateTime::createFromFormat('Y-m-d', $startDateMembership);
+        $pivotDate = DateTime::createFromFormat('Y-m-d', date('Y') . '-07-01');
+        $membership_year = $endDate->format('Y');
+        if ($endDate > $pivotDate) {
+            $nextYear = $endDate->add(new DateInterval('P1Y'));
+            $membership_year = $membership_year . '-' . $nextYear->format('Y');
+        }
+        return $membership_year;
+    }
 }

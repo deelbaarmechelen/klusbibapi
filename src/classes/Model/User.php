@@ -13,6 +13,15 @@ class User extends Model
 			'phone', 'mobile', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
 	];
 	
+    // Accessors and mutators
+    public function setEmailAttribute($value) {
+        if (isset($value) && !empty($value)
+            && (!isset($this->attributes['email']) || $this->attributes['email'] != $value)) {
+            $this->attributes['email_state'] = EmailState::CONFIRM_EMAIL;
+        }
+        $this->attributes['email'] = $value;
+    }
+    // public methods
 	public static function canBeSortedOn($field) {
 		if (!isset($field)) {
 			return false;
@@ -32,6 +41,7 @@ class User extends Model
 		return false;
 	}
 
+	// Query helpers
     public function scopeMembers($query)
     {
         return $query->where('role', '=', 'member')

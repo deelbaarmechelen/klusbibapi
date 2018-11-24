@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     protected $primaryKey = "payment_id";
-    static protected $fieldArray = ['payment_id', 'user_id', 'mode', 'payment_date', 'order_id',
+    static protected $fieldArray = ['payment_id', 'user_id', 'state', 'mode', 'payment_date', 'order_id',
         'amount', 'currency', 'created_at', 'updated_at'
     ];
 

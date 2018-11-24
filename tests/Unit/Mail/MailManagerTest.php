@@ -37,7 +37,7 @@ final class MailManagerTest extends TestCase
 		$this->assertTrue($result);
 		$get_sent = $mailer->get_sent(0);
 		$this->assertNotNull($get_sent);
-		$this->assertEquals("Nieuwe inschrijving", $get_sent->subject);
+		$this->assertEquals("Nieuwe inschrijving geregistreerd", $get_sent->subject);
 	}
 	public function testSendEmailVerification()
 	{
@@ -68,6 +68,40 @@ final class MailManagerTest extends TestCase
 		$this->assertNotNull($get_sent);
 		$this->assertEquals("Nieuwe reservatie", $get_sent->subject);
 	}
+    public function testSendEnrolmentConfirmationTransfer()
+    {
+        $user = new UserTest();
+        $user->email = "info@klusbib.be";
+        $user->firstname = "tester";
+        $user->lastname = "de mock";
+        $user->membership_end_date = date('Y-m-d');
+        $mailer = new PHPMailerMock ();
+        $mailmgr = new MailManager($mailer);
+        $result = $mailmgr->sendEnrolmentConfirmation($user, \Api\Model\PaymentMode::TRANSFER);
+        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
+        $this->assertTrue($result);
+        $get_sent = $mailer->get_sent(0);
+        $this->assertNotNull($get_sent);
+        $this->assertEquals("Klusbib inschrijving", $get_sent->subject);
+        print_r($get_sent->body);
+    }
+    public function testSendEnrolmentConfirmationMollie()
+    {
+        $user = new UserTest();
+        $user->email = "info@klusbib.be";
+        $user->firstname = "tester";
+        $user->lastname = "de mock";
+        $user->membership_end_date = date('Y-m-d');
+        $mailer = new PHPMailerMock ();
+        $mailmgr = new MailManager($mailer);
+        $result = $mailmgr->sendEnrolmentConfirmation($user, \Api\Model\PaymentMode::MOLLIE);
+        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
+        $this->assertTrue($result);
+        $get_sent = $mailer->get_sent(0);
+        $this->assertNotNull($get_sent);
+        $this->assertEquals("Klusbib inschrijving", $get_sent->subject);
+        print_r($get_sent->body);
+    }
     public function testSendRenewal()
     {
         $user = new UserTest();

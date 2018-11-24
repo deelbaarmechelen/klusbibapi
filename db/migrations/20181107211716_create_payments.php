@@ -31,9 +31,11 @@ class CreatePayments extends AbstractMigration
             $table->integer('user_id')->unsigned;
             $table->string('mode', 20); // CASH, TRANSFER, MOLLIE
             $table->timestamp('payment_date')->nullable()->default(null);
+            $table->string('state',20)->default('NEW'); // NEW, OPEN, SUCCESS, FAILED
             $table->string('order_id',50)->nullable()->default(null);
             $table->decimal('amount')->nullable()->default(null);
-            $table->string('currency', 20)->nullable()->default(null); // euro, blusser, koekoek
+            $table->string('currency', 20)->nullable()->default(null); // EUR, blusser, koekoek
+            $table->string('comment', 50)->nullable()->default(null);
 
 			// Required for Eloquent's created_at and updated_at columns
 			$table->timestamps();

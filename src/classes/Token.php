@@ -81,15 +81,16 @@ class Token
 				"consumers.delete",
 				"consumers.list",
 				"consumers.all",
-            "events.create",
-            "events.read",
-            "events.update",
-            "events.delete",
-            "events.list",
-            "events.all",
+                "events.create",
+                "events.read",
+                "events.update",
+                "events.delete",
+                "events.list",
+                "events.all",
 				"users.create",
 				"users.read",
 				"users.read.owner",
+				"users.read.state",
 				"users.update",
 				"users.update.owner",
 				"users.update.password",
@@ -158,7 +159,8 @@ class Token
 				"reservations.list",
 				"consumers.read",
 				"consumers.list",
-				"auth.confirm"
+				"auth.confirm",
+                "users.read.state"
 		];
 	}
 }

@@ -20,6 +20,21 @@ $app->get('/users', function ($request, $response, $args) {
 
 	$authorised = Authorisation::checkUserAccess($this->token, "list", null);
 	if (!$authorised) {
+	    if (Authorisation::checkUserAccess($this->token, "read.state", null)) {
+	        // Allow read of state to resume enrolment
+            $email = $request->getQueryParam('email');
+            if (!isset($email)) {
+                return $response->withStatus(400)
+                    ->withJson(array(message => "Missing email parameter"));
+            }
+            $user = Capsule::table('users')->where('email', $email)->first();
+            if (!isset($user)) {
+                return $response->withStatus(404)
+                    ->withJson(array(message => "Unknown email"));
+            }
+
+            return $response->withJson(array(user_id => $user->user_id, state => $user->state));
+        }
 		$this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()) );
 		return $response->withStatus(403);
 	}
@@ -89,12 +104,15 @@ $app->post('/users', function ($request, $response, $args) {
 	}
 
 	$isAdmin = false;
-	$user = new \Api\Model\User;
+	$user = new User;
 	$authorised = Authorisation::checkUserAccess($this->token, "create", null);
 	if (!$authorised) {
 		// Web enrolment
-		$user->state = UserState::CONFIRM_EMAIL;
-		$user->email_state = EmailState::CONFIRM_EMAIL;
+		$user->state = UserState::CHECK_PAYMENT;
+        if (!isset($data["payment_mode"])) {
+            $data["payment_mode"] = \Api\Model\PaymentMode::UNKNOWN;
+        }
+
 		$user->role = 'member'; // only members can be created through web enrolment
 		$data["membership_start_date"] = strftime('%Y-%m-%d',time());
 		if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {
@@ -109,7 +127,7 @@ $app->post('/users', function ($request, $response, $args) {
 		$sendNotification = TRUE;
 		$sendEmailVerification = TRUE;
 	} else {
-		$currentUser = \Api\Model\User::find($this->token->getSub());
+		$currentUser = User::find($this->token->getSub());
 		if (!isset($currentUser)) {
 			$this->logger->warn("No user found for token " + $this->token->getSub());
 			return $response->withStatus(403);
@@ -122,7 +140,7 @@ $app->post('/users', function ($request, $response, $args) {
 	}
 	if (isset($data["email"])) {
 	    $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
-        $userExists = \Api\Model\User::where('email', $data["email"])->count();
+        $userExists = User::where('email', $data["email"])->count();
         if ($userExists > 0) {
             $this->logger->info('user with email ' . $data["email"] . ' already exists');
             return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
@@ -154,6 +172,7 @@ $app->post('/users', function ($request, $response, $args) {
 		$this->logger->info('Sending email verification result: ' . $mailmgr->getLastMessage());
 	}
 	if ($sendNotification) {
+	    // Notification to be sent to Klusbib team of new enrolment
 		$result = $mailmgr->sendEnrolmentNotification(ENROLMENT_NOTIF_EMAIL, $user);
 		$this->logger->info('Sending enrolment notification result: ' . $mailmgr->getLastMessage());
 	}

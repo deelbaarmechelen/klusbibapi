@@ -6,6 +6,7 @@ use Slim\Http\Response;
 use Slim\Middleware\HttpBasicAuthentication;
 use Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Api\Model\UserState;
+use Api\Model\EmailState;
 
 require_once __DIR__ . '/../test_env.php';
 
@@ -144,7 +145,8 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals($data["lastname"], $user->lastname);
 		$this->assertEquals($data["email"], $user->email);
 		$this->assertEquals("member", $user->role); // role should be forced to member
-		$this->assertEquals(UserState::CONFIRM_EMAIL, $user->state); // state should be forced to confirm email
+		$this->assertEquals(UserState::CHECK_PAYMENT, $user->state); // state should be forced to check payment
+		$this->assertEquals(EmailState::CONFIRM_EMAIL, $user->email_state); // email state should be forced to confirm email
 		$this->assertNotNull($user->accept_terms_date);
 	}
 	

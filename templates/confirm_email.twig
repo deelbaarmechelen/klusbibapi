@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<title>Confirm Email</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script>
+		function parse_query_string(query) {
+			var vars = query.split("&");
+			var query_string = {};
+			for (var i = 0; i < vars.length; i++) {
+			    var pair = vars[i].split("=");
+			    // If first entry with this name
+			    if (typeof query_string[pair[0]] === "undefined") {
+			      query_string[pair[0]] = decodeURIComponent(pair[1]);
+			      // If second entry with this name
+			    } else if (typeof query_string[pair[0]] === "string") {
+			      var arr = [query_string[pair[0]], decodeURIComponent(pair[1])];
+			      query_string[pair[0]] = arr;
+			      // If third or later entry with this name
+			    } else {
+			      query_string[pair[0]].push(decodeURIComponent(pair[1]));
+			    }
+			}
+	  		return query_string;
+		}
+
+		$(document).ready(function(){
+			var query = window.location.search.substring(1);
+			var qs = parse_query_string(query);
+			console.log(qs.token);
+			$("#username").text(qs.name);
+		});
+		</script>
+    </head>
+    <body>
+    	<h1>Klusbib</h1>
+        <p>Beste <span id="username"></span><br>
+        Je email adres is nu bevestigd !
+        </p>
+        <p>Terug naar <a href="//www.klusbib.be">Klusbib</a>
+        </p>
+    </body>
+</html>    

@@ -22,6 +22,6 @@ SHELL=/bin/bash
 #0 0 * * * dokku dokku --rm run api echo "cron test"
 0 16 * * * dokku dokku --rm run api /app/.heroku/php/bin/php bin/renewal.php
 0 0  * * 0 dokku dokku --rm run api /app/.heroku/php/bin/php bin/expiry.php
-0 0  1 * * dokku dokku --rm run api /app/.heroku/php/bin/php bin/usersreport.php
+0 0  * * 1 dokku dokku --rm run api /app/.heroku/php/bin/php bin/usersreport.php
 
 ### PLACE ALL CRON TASKS ABOVE, DO NOT REMOVE THE WHITESPACE AFTER THIS LINE

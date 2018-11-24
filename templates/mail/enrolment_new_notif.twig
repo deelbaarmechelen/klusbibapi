@@ -1,0 +1,20 @@
+{% block subject 'Nieuwe inschrijving geregistreerd' %}
+
+{% block body %}
+    <div>
+        <p>Beste,</p>
+        <p>Via de website werd een aanvraag tot lidmaatschap geregistreerd<br/>
+            Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
+            aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
+        </p>
+        <p>
+            Groetjes,<br/>
+            Admin.
+        </p>
+    </div>
+
+{% endblock %}
+
+
+
+

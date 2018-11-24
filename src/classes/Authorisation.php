@@ -25,7 +25,9 @@ class Authorisation {
 		switch ($operation) {
 			case "list":
 				return $token->hasScope(["users.all", "users.list"]);
-			case "read":
+            case "read.state":
+                return $token->hasScope(["users.all", "users.list", "users.read.state"]);
+            case "read":
 				if ($token->hasScope(["users.all", "users.read"])) {
 					return true;
 				}
