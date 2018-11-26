@@ -61,8 +61,7 @@ class User extends Model
     }
     public function scopePending($query)
     {
-        return $query->where('state', '=', UserState::CHECK_PAYMENT)
-            ->orWhere('state', '=', UserState::CONFIRM_EMAIL);
+        return $query->where('state', '=', UserState::CHECK_PAYMENT);
     }
     public function scopeAdmin($query)
     {

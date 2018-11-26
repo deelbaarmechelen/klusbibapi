@@ -99,7 +99,21 @@ class Authorisation {
 		}
 	}
 
-	static function checkEventAccess ($token, $operation) {
+    static function checkPaymentAccess($token, $operation)
+    {
+        if (!isset($token)) {
+            return AccessType::NO_ACCESS;
+        }
+        switch ($operation) {
+            case "list":
+                if ($token->hasScope(["payments.all", "payments.list"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+        }
+    }
+
+    static function checkEventAccess ($token, $operation) {
         if (!isset($token)) {
             return AccessType::NO_ACCESS;
         }

@@ -97,6 +97,8 @@ class Token
 				"users.delete",
 				"users.list",
 				"users.all",
+                "payments.all",
+                "payments.list",
 				"auth.confirm"
 		];
 		return $valid_scopes;
@@ -116,6 +118,7 @@ class Token
 				"consumers.all",
 				"users.all",
                 "events.all",
+                "payments.all",
 				"users.update.password",
 			];
 		}
