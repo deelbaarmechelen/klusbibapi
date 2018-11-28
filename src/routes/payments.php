@@ -68,6 +68,8 @@ $app->post('/payments', function ($request, $response, $args) {
         $data["orderId"] = $orderId;
         $data["paymentMode"] = $payment->mode;
         $data["paymentState"] = $payment->state;
+        $data["mode"] = $payment->mode;
+        $data["state"] = $payment->state;
         return $response->withStatus(200)
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -266,7 +268,6 @@ $app->post('/payments/{orderId}', function ($request, $response, $args) {
         ->write(json_encode([], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 });
 
-// FIXME: admin page requires get based on payment_id!
 $app->get('/payments/{paymentId}', function ($request, $response, $args) {
     $this->logger->info("Klusbib GET '/payments/:paymentId' route (" . $args['paymentId'] . ")");
     $payment = \Api\Model\Payment::find($args['paymentId']);
