@@ -1,8 +1,11 @@
 <?php
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Model\PaymentMode;
+use Api\Model\Payment;
 use Api\Model\UserState;
 use Api\Mail\MailManager;
+use Api\Authorisation;
+use Api\ModelMapper\PaymentMapper;
 
 $app->post('/payments', function ($request, $response, $args) {
     $this->logger->info("Klusbib POST '/payments' route");
@@ -263,28 +266,69 @@ $app->post('/payments/{orderId}', function ($request, $response, $args) {
         ->write(json_encode([], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 });
 
-$app->get('/payments/{orderId}', function ($request, $response, $args) {
-    $this->logger->info("Klusbib GET '/payments/:orderId' route (" . $args['orderId'] . ")");
-    $payment = \Api\Model\Payment::where([
-        ['order_id', '=', $args['orderId']],
-    ])->first();
+// FIXME: admin page requires get based on payment_id!
+$app->get('/payments/{paymentId}', function ($request, $response, $args) {
+    $this->logger->info("Klusbib GET '/payments/:paymentId' route (" . $args['paymentId'] . ")");
+    $payment = \Api\Model\Payment::find($args['paymentId']);
     if (empty($payment)) {
         return $response->withStatus(404) // Not found
-        ->withJson(array(message => "No payment found for provided orderId"));
+        ->withJson(array(message => "No payment found for provided paymentId"));
     }
-    $data = array();
-    if ($payment->state == 'SUCCESS') {
-        $data["message"] = "Betaling geslaagd!";
-    } elseif ($payment->state == 'FAILED' || $payment->state == 'CANCELED' || $payment->state == 'EXPIRED') {
-        $data["message"] = "Betaling mislukt";
-    } else {
-        $data["message"] = "Betaling nog niet afgerond";
-    }
-
-    $data["paymentStatus"] = $payment->state; // NEW, SUCCESS, FAILED, OPEN
-    $data["paymentMode"] = $payment->mode;
+//    $data = array();
+//    if ($payment->state == 'SUCCESS') {
+//        $data["message"] = "Betaling geslaagd!";
+//    } elseif ($payment->state == 'FAILED' || $payment->state == 'CANCELED' || $payment->state == 'EXPIRED') {
+//        $data["message"] = "Betaling mislukt";
+//    } else {
+//        $data["message"] = "Betaling nog niet afgerond";
+//    }
+//
+//    $data["paymentStatus"] = $payment->state; // NEW, SUCCESS, FAILED, OPEN
+//    $data["paymentMode"] = $payment->mode;
     return $response->withStatus(200)
         ->withHeader("Content-Type", "application/json")
-        ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        ->write(json_encode(PaymentMapper::mapPaymentToArray($payment), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
+});
+$app->get('/payments', function ($request, $response, $args) {
+    $this->logger->info("Klusbib GET '/payments' route");
+
+    // FIXME: no token scopes due to passthrough settings?
+//    $authorised = Authorisation::checkPaymentAccess($this->token, "list", null);
+//    if (!$authorised) {
+//        $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()) );
+//        return $response->withStatus(403);
+//    }
+
+    $sortdir = $request->getQueryParam('_sortDir');
+    if (!isset($sortdir)) {
+        $sortdir = 'asc';
+    }
+    $sortfield = $request->getQueryParam('_sortField');
+    if (!Payment::canBeSortedOn($sortfield) ) {
+        $sortfield = 'payment_id';
+    }
+    $page = $request->getQueryParam('_page');
+    if (!isset($page)) {
+        $page = '1';
+    }
+    $perPage = $request->getQueryParam('_perPage');
+    if (!isset($perPage)) {
+        $perPage = '100';
+    }
+    $orderId = $request->getQueryParam('orderId');
+    if (!isset($orderId)) {
+        $builder = Capsule::table('payments');
+    } else {
+        $builder = Capsule::table('payments')
+            ->where('order_id', $orderId);
+    }
+    $payments = $builder->orderBy($sortfield, $sortdir)->get();
+    $payments_page = array_slice($payments, ($page - 1) * $perPage, $perPage);
+    $data = array();
+    foreach ($payments_page as $payment) {
+        array_push($data, PaymentMapper::mapPaymentToArray($payment));
+    }
+    return $response->withJson($data)
+        ->withHeader('X-Total-Count', count($payments));
 });
