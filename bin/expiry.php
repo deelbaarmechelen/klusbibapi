@@ -23,7 +23,7 @@ foreach ($users as $user) {
     $user->state = 'EXPIRED';
     $user->save();
 }
-$activeCount = \Api\Model\User::active()->count();
+$activeCount = \Api\Model\User::active()->members()->count();
 $expiredCount = \Api\Model\User::where('state', 'EXPIRED')->count();
 echo "Active users: $activeCount\n";
 echo "Expired users: $expiredCount\n";
