@@ -33,7 +33,10 @@ $app->get('/users', function ($request, $response, $args) {
                     ->withJson(array(message => "Unknown email"));
             }
 
-            return $response->withJson(array(user_id => $user->user_id, state => $user->state));
+            return $response->withJson(array("user_id" => $user->user_id,
+                "state" => $user->state,
+                "membership_end_date" => $user->membership_end_date
+            ));
         }
 		$this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()) );
 		return $response->withStatus(403);

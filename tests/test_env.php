@@ -31,3 +31,4 @@ defined('SENDER_NAME') or define("SENDER_NAME", "Unit tester");
 defined('SENDER_EMAIL') or define("SENDER_EMAIL", "test@klusbib.be");
 defined('ENROLMENT_NOTIF_EMAIL') or define("ENROLMENT_NOTIF_EMAIL", "test@klusbib.be");
 defined('RESERVATION_NOTIF_EMAIL') or define("RESERVATION_NOTIF_EMAIL", "test@klusbib.be");
+defined('MOLLIE_API_KEY') or define("MOLLIE_API_KEY", "test_EaVzmHexdwwThxbQp6qn3rqjDdDAbA");

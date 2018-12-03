@@ -9,6 +9,7 @@ class Settings
     const ENROLMENT_AMOUNT = 20;
     const ENROLMENT_AMOUNT_STRING = "20.00";
     const RENEWAL_AMOUNT = 20;
+    const RENEWAL_AMOUNT_STRING = "20.00";
 
     const EMAIL_LINK = 'info@klusbib.be';
     const WEBPAGE_LINK = 'https://www.klusbib.be';

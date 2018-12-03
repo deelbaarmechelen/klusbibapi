@@ -4,6 +4,8 @@ use Api\Token;
 use Slim\Middleware\JwtAuthentication;
 use Slim\Middleware\HttpBasicAuthentication;
 use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Api\Mail\MailManager;
+use Mollie\Api\MollieApiClient;
 
 // Fetch DI Container
 $container = $app->getContainer();
@@ -78,7 +80,7 @@ $container["HttpBasicAuthentication"] = function ($container) {
 $container["JwtAuthentication"] = function ($container) {
 	return new JwtAuthentication([
 			"path" => "/",
-			"passthrough" => ["/token", "/welcome", "/upload", "/payments", "/auth/reset", "/auth/verifyemail"],
+			"passthrough" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/auth/reset", "/auth/verifyemail"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
 			"secure" => false, // FIXME: enable HTTPS and switch this to true
@@ -102,4 +104,8 @@ $container["JwtAuthentication"] = function ($container) {
 				$container["token"]->hydrate($arguments["decoded"]);
 			}
 	]);
+};
+
+$container["enrolmentFactory"] = function ($container) {
+    return new \Api\Enrolment\EnrolmentFactory(new MailManager(), new MollieApiClient());
 };

@@ -5,6 +5,9 @@ use Slim\Middleware\JwtAuthentication;
 use Slim\Middleware\HttpBasicAuthentication;
 use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Tuupola\Base62;
+use Api\Mail\MailManager;
+use Tests\Mock\PHPMailerMock;
+use Tests\Mock\MollieApiClientMock;
 
 $container = $app->getContainer();
 
@@ -127,4 +130,8 @@ $container["JwtAuthentication"] = function ($container) {
 // 				$container["token"]->hydrate($arguments["decoded"]);
 			}
 	]);
+};
+
+$container["enrolmentFactory"] = function ($container) {
+    return new \Api\Enrolment\EnrolmentFactory(new MailManager(new PHPMailerMock()), new MollieApiClientMock());
 };

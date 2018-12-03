@@ -1,0 +1,27 @@
+{% block subject 'Klusbib hernieuwing lidmaatschap' %}
+
+{% block body %}
+    Beste {{ user.firstname }},<br><br>
+
+    <p>
+        Bedankt voor je blijvende steun!
+    </p>
+    {% if paymentMode == 'MOLLIE' %}<p>
+        Je lidmaatschap is nu verlengd tot {{ user.membership_end_date }}
+    </p>{% endif %}
+    {% if paymentMode == 'TRANSFER' %}<p>
+        Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b> te storten
+        met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.<br>
+        Van zodra we je betaling ontvangen zullen we je lidmaatschap verlengen.
+    </p>{% endif %}
+    <p>
+        Met vriendelijke groeten<br>
+        Het Klusbib-team<br>
+        E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+        W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+    </p>
+{% endblock %}
+
+
+
+

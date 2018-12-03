@@ -27,10 +27,11 @@ $app->post('/upload', function ($request, $response, $args) {
 
 require __DIR__ . '/routes/token.php';
 require __DIR__ . '/routes/auth.php';
+require __DIR__ . '/routes/enrolment.php';
 require __DIR__ . '/routes/tools.php';
 require __DIR__ . '/routes/users.php';
 require __DIR__ . '/routes/consumers.php';
 require __DIR__ . '/routes/reservations.php';
-require __DIR__ . '/routes/events.php';
 require __DIR__ . '/routes/payments.php';
-	
+require __DIR__ . '/routes/events.php';
+

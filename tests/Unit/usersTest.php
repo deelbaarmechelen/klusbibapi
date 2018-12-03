@@ -26,19 +26,19 @@ class UsersTest extends LocalDbWebTestCase
 		return new DbUnitArrayDataSet(array(
 			'users' => array(
 				array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
-						'role' => 'admin', 'email' => 'admin@klusbib.be', 
+						'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
 						'hash' => password_hash("test", PASSWORD_DEFAULT),
 						'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 						'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
 				array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
-						'role' => 'volunteer', 'email' => 'harry@klusbib.be',
+						'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => 'ACTIVE',
 						'hash' => password_hash("test", PASSWORD_DEFAULT),
 						'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 						'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
 				array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
-						'role' => 'member', 'email' => 'daniel@klusbib.be',
+						'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => 'ACTIVE',
 						'hash' => password_hash("test", PASSWORD_DEFAULT),
 						'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 						'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
@@ -76,7 +76,22 @@ class UsersTest extends LocalDbWebTestCase
 		$users = json_decode($body);
 		$this->assertEquals(3, count($users));
 	}
-	
+	public function testGetUsersByEmail()
+	{
+		echo "test GET users by email\n";
+        $data = array(
+            "email" => "daniel@klusbib.be"
+        );
+        $this->setToken('guest', ["users.read.state"]);
+        $body = $this->client->get('/users', $data);
+// 		print_r($body);
+		$this->assertEquals(200, $this->client->response->getStatusCode());
+        $user = json_decode($body);
+		$this->assertEquals(3, $user->user_id);
+		$this->assertEquals(UserState::ACTIVE, $user->state);
+		$this->assertEquals($this->enddate->format('Y-m-d'), $user->membership_end_date);
+	}
+
 	public function testGetUsersUnauthorized()
 	{
 		echo "test GET users unauthorized\n";
