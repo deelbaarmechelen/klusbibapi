@@ -7,3 +7,6 @@
 .buildpath
 .travis/*.key
 .travis/*.key.pub
+public/uploads
+public/cache
+tests/logs

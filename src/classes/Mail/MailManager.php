@@ -28,7 +28,7 @@ class MailManager {
 		if (is_null($this->twig)) {
             $loader = new \Twig_Loader_Filesystem(__DIR__ . '/../../../templates');
             $this->twig = new Twig_Environment($loader, array(
-                // 'cache' => '/path/to/compilation_cache',
+                 'cache' => __DIR__ . '/../../../public/cache/twig_compilations',
             ));
         }
     }
