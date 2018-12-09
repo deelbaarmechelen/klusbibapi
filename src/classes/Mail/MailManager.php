@@ -28,13 +28,13 @@ class MailManager {
 		if (is_null($this->twig)) {
             $loader = new \Twig_Loader_Filesystem(__DIR__ . '/../../../templates');
             $this->twig = new Twig_Environment($loader, array(
-                 'cache' => __DIR__ . '/../../../public/cache/twig_compilations',
+                'cache' => __DIR__ . '/../../../public/cache/twig_compilations',
+                'auto_reload' => true
             ));
         }
     }
-	
+
 	public function sendEmailVerification($userId, $userName, $to, $token) {
-		$subject = "Klusbib - Bevestig email adres";
 		$link = PROJECT_HOME . "auth/confirm/" . $userId . "?token=" . $token . "&email=" . $to . "&name=" . $userName;
 		$body = "<h1>Welkom bij Klusbib</h1>"
 				. "<div>Beste " . $userName . ",<br><br>"
@@ -42,38 +42,34 @@ class MailManager {
 				. "<a href='$link'>$link</a><br><br></p>"
 				. "<p>Herken je deze actie niet, dan kan je dit bericht veilig negeren<br></p>"
 				. "Groetjes,<br> Klusbib Team.</div>";
-		return $this->send($subject, $body, $to);
-		
+        $parameters = array(
+            'userName' => $userName,
+            'link' => $link,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
+        return $this->sendTwigTemplate($to, 'email_verification', $parameters);
 	}
-	
 	public function sendPwdRecoveryMail($userId, $userName, $userEmail, $token) {
-		$subject = "Paswoord Vergeten";
 		$link = PROJECT_HOME . "auth/reset/" . $userId . "?token=" . $token . "&name=" . $userName;
-		$body = "<div>" . $userName . ",<br><br>"
-		. "<p>Klik op deze link om je paswoord te herstellen<br>"
-		. "<a href='$link'>$link</a><br><br></p>"
-		. "<p>Heb je geen paswoord reset aangevraagd, dan kan je dit bericht veilig negeren<br></p>"
-		. "Groetjes,<br> Admin.</div>";
-		
-		return $this->send($subject, $body, $userEmail);
+        $parameters = array(
+            'userName' => $userName,
+            'link' => $link,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
+        return $this->sendTwigTemplate($userEmail, 'password_recovery', $parameters);
 	}
-	
 	public function sendReservationRequest($to, $user, $tool, $reservation) {
-		$subject = "Nieuwe reservatie";
 		if (empty($tool->code)) {
-			$toolCode = "zonder code (Naam/beschrijving/merk/type: " 
+			$toolCode = "zonder code (Naam/beschrijving/merk/type: "
 					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
 		} else {
 			$toolCode = "met code " . $tool->code;
 		}
-		$body = "<div>Beste,<br><br>"
-				. "<p>Via de website werd een aanvraag voor een reservatie geregistreerd<br>"
-				. "Gebruiker ". $user->firstname . " " . $user->lastname
-				. " (user id: " . $user->user_id . ") "
-				. "wenst toestel " . $toolCode . " te reserveren van " 
-				. $reservation->startsAt->format('Y-m-d') . " tot " . $reservation->endsAt->format('Y-m-d') . "</p>"
-				. "Groetjes,<br> Admin.</div>";
-		return $this->send($subject, $body, $to);
+        $parameters = array(
+            'user' => $user,
+            'toolCode' => $toolCode,
+            'reservation' => $reservation);
+        return $this->sendTwigTemplate($to, 'reservation_request', $parameters);
 	}
 
     public function sendEnrolmentNotification($userEmail, $newUser) {

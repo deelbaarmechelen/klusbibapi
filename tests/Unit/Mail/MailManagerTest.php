@@ -21,6 +21,7 @@ final class MailManagerTest extends TestCase
 		$get_sent = $mailer->get_sent(0);
 		$this->assertNotNull($get_sent);
 		$this->assertEquals("Paswoord Vergeten", $get_sent->subject);
+        print_r($get_sent->body);
 	}
 
 	public function testSendEnrolmentNotification()
@@ -38,6 +39,7 @@ final class MailManagerTest extends TestCase
 		$get_sent = $mailer->get_sent(0);
 		$this->assertNotNull($get_sent);
 		$this->assertEquals("Nieuwe inschrijving geregistreerd", $get_sent->subject);
+        print_r($get_sent->body);
 	}
 	public function testSendEmailVerification()
 	{
@@ -50,16 +52,26 @@ final class MailManagerTest extends TestCase
 		$get_sent = $mailer->get_sent(0);
 		$this->assertNotNull($get_sent);
 		$this->assertEquals("Klusbib - Bevestig email adres", $get_sent->subject);
+        print_r($get_sent->body);
 	}
 	public function testSendReservationRequest()
 	{
 		$mailer = new PHPMailerMock ();
 		$mailmgr = new MailManager($mailer);
-		$user = new User();
-		$tool = new Tool();
-		$reservation = new Reservation();
+        $user = new UserTest();
+        $user->user_id = 123;
+        $user->email = "info@klusbib.be";
+        $user->firstname = "tester";
+        $user->lastname = "de mock";
+		$tool = new ToolTest();
+		$tool->name = "mytool";
+		$tool->description = "mydescription";
+		$tool->brand = "myBrand";
+		$tool->type = "myType";
+		$reservation = new ReservationTest();
+		$reservationStart = new DateTime();
 		$reservation->startsAt = new DateTime();
-		$reservation->endsAt = clone $reservation->startsAt;
+		$reservation->endsAt = clone $reservationStart;
 		$reservation->endsAt->add(new DateInterval('P7D'));
 		$result = $mailmgr->sendReservationRequest("info@klusbib.be", $user, $tool, $reservation);
 		$this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
@@ -67,6 +79,7 @@ final class MailManagerTest extends TestCase
 		$get_sent = $mailer->get_sent(0);
 		$this->assertNotNull($get_sent);
 		$this->assertEquals("Nieuwe reservatie", $get_sent->subject);
+        print_r($get_sent->body);
 	}
     public function testSendEnrolmentConfirmationTransfer()
     {
@@ -175,4 +188,29 @@ class UserTest {
     public $email;
     public $membership_start_date;
     public $membership_end_date;
+}
+class ToolTest {
+    //	'tool_id', 'name', 'description', 'category', 'img', 'created_at', 'updated_at',
+    //	'brand', 'type', 'serial', 'manufacturing_year', 'manufacturer_url', 'doc_url', 'code', 'owner_id', 'reception_date',
+    //	'state', 'visible'
+    public $tool_id = 456;
+    public $name;
+    public $description;
+    public $category;
+    public $img;
+    public $brand;
+    public $type;
+    public $code;
+}
+class ReservationTest {
+    //'reservation_id', 'user_id', 'tool_id', 'state', 'startsAt', 'endsAt',
+    //'type', 'comment', 'created_at', 'updated_at'
+    public $reservation_id = 999;
+    public $user_id;
+    public $tool_id;
+    public $state;
+    public $startsAt;
+    public $endsAt;
+    public $type;
+    public $comment;
 }

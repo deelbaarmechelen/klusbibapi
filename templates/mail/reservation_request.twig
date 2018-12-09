@@ -1,18 +1,15 @@
 {% block subject 'Nieuwe reservatie' %}
 
 {% block body %}
-    Beste {{ user.firstname }},<br><br>
-    <p>Via de website werd een aanvraag voor een reservatie geregistreerd<br>
-        Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
-        wenst toestel {{ toolCode }} te reserveren van {{ reservationStart }}  tot {{ reservationEnd }}
-    </p>
-    <p>
-
-    </p>
-    <p>
-        Met vriendelijke groeten<br>
-        Admin<br>
-        E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
-        W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
-    </p>
+Beste {{ user.firstname }},<br><br>
+<p>Via de website werd een aanvraag voor een reservatie geregistreerd<br>
+Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
+wenst toestel {{ toolCode }} te reserveren van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}
+</p>
+<p>
+Met vriendelijke groeten<br>
+Admin<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
 {% endblock %}
