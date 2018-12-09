@@ -30,7 +30,8 @@ class JwtCustomRule implements RuleInterface
     protected $options = [
         "path" => ["/"],
         "passthrough" => [],
-    	"getpassthrough" => []
+    	"getpassthrough" => [],
+    	"postpassthrough" => []
     ];
 
     /**
@@ -63,6 +64,14 @@ class JwtCustomRule implements RuleInterface
 
         if ($request->getMethod() == "GET") {
         	foreach ((array)$this->options["getpassthrough"] as $passthrough) {
+        		$passthrough = rtrim($passthrough, "/");
+        		if (!!preg_match("@^{$passthrough}(/.*)?$@", $uri)) {
+        			return false;
+        		}
+        	}
+        }
+        if ($request->getMethod() == "POST") {
+        	foreach ((array)$this->options["postpassthrough"] as $passthrough) {
         		$passthrough = rtrim($passthrough, "/");
         		if (!!preg_match("@^{$passthrough}(/.*)?$@", $uri)) {
         			return false;

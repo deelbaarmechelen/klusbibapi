@@ -17,7 +17,7 @@ class HomepageTest extends BaseDBTestCase
 		return new DbUnitArrayDataSet(array(
 				'users' => array(
 						array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
-								'role' => 'admin', 'email' => 'admin@klusbib.be',
+								'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
 								'hash' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
@@ -50,6 +50,7 @@ class HomepageTest extends BaseDBTestCase
 
     /**
      * Test that the index route won't accept a post request
+     * Unknown user -> no token
      */
     public function testPostHomepageNotAuthorized()
     {

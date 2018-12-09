@@ -10,6 +10,7 @@ use Api\Model\User;
 use Api\Model\PaymentMode;
 use Api\Model\Payment;
 use Api\Model\UserState;
+use Api\Settings;
 use DateTime;
 use DateInterval;
 use Mollie\Api\MollieApiClient;
@@ -182,6 +183,11 @@ class EnrolmentManager
      */
     protected function initiateMolliePayment($orderId, $amount, $redirectUrl, $requestedPaymentMean, $hostname, $protocol, $productId, $membershipEndDate = null)
     {
+        if ($productId == Product::ENROLMENT) {
+            $description = "Klusbib inschrijving {$this->user->firstname} {$this->user->lastname}";
+        } elseif ($productId == Product::RENEWAL) {
+            $description = "Klusbib verlenging lidmaatschap {$this->user->firstname} {$this->user->lastname}";
+        }
         try {
             $this->mollie->setApiKey(MOLLIE_API_KEY);
             $paymentData = [
@@ -189,10 +195,11 @@ class EnrolmentManager
                     "currency" => "EUR",
                     "value" => $amount
                 ],
-                "description" => "Klusbib inschrijving {$this->user->firstname} {$this->user->lastname}",
+                "description" => $description,
                 "redirectUrl" => "{$redirectUrl}?orderId={$orderId}",
 //                "webhookUrl" => "{$protocol}://{$hostname}/Enrolment/{$orderId}",
                 "webhookUrl" => "https://{$hostname}/enrolment/{$orderId}",
+                "locale" => Settings::MOLLIE_LOCALE,
                 "metadata" => [
                     "order_id" => $orderId,
                     "user_id" => $this->user->user_id,

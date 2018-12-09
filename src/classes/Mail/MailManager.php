@@ -118,6 +118,42 @@ class MailManager {
             'membership_year' => $membership_year);
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
+    public function sendRenewalReminder($user, $token) {
+        echo "Renewal reminder called with token $token\n";
+        $membership_year = $this->getMembershipYear($user->membership_end_date);
+        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
+        $parameters = array('user' => $user,
+            'link' => $link,
+            'amount' => Settings::RENEWAL_AMOUNT,
+            'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
+            'enrolmentLink' => Settings::ENROLMENT_LINK,
+            'account' => Settings::ACCOUNT_NBR,
+            'currentDate' => date('Y-m-d'),
+            'emailLink' => Settings::EMAIL_LINK,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'facebookLink' => Settings::FACEBOOK_LINK,
+            'evaluationLink' => Settings::EVALUATION_LINK,
+            'membership_year' => $membership_year);
+        return $this->sendTwigTemplate($user->email, 'renewal_reminder', $parameters);
+    }
+    public function sendResumeEnrolmentReminder($user, $token) {
+        echo "Resume enrolment reminder called with token $token\n";
+        $membership_year = $this->getMembershipYear($user->membership_end_date);
+        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
+        $parameters = array('user' => $user,
+            'link' => $link,
+            'amount' => Settings::RENEWAL_AMOUNT,
+            'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
+            'enrolmentLink' => Settings::ENROLMENT_LINK,
+            'account' => Settings::ACCOUNT_NBR,
+            'currentDate' => date('Y-m-d'),
+            'emailLink' => Settings::EMAIL_LINK,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'facebookLink' => Settings::FACEBOOK_LINK,
+            'evaluationLink' => Settings::EVALUATION_LINK,
+            'membership_year' => $membership_year);
+        return $this->sendTwigTemplate($user->email, 'resume_enrolment_reminder', $parameters);
+    }
     public function sendRenewalConfirmation($user, $paymentMode) {
         $membership_year = $this->getMembershipYear($user->membership_end_date);
         $parameters = array(
@@ -142,49 +178,68 @@ class MailManager {
         return $this->sendTwigTemplate($reportEmail, 'users_report', $parameters);
     }
 
-	protected function sendTwigTemplate($to, $identifier, $parameters = array()) {
+    public function sendNewGeneralConditionsNotification($user) {
+        $parameters = array(
+            'user' => $user,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'facebookLink' => Settings::FACEBOOK_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
+        $attachments = array('KlusbibAfspraken.pdf' => Settings::GEN_CONDITIONS_URL,
+            'PrivacyVerklaring.pdf' => Settings::PRIVACY_STATEMENT_URL);
+        return $this->sendTwigTemplate($user->email, 'changed_general_conditions_notification', $parameters, $attachments);
+    }
+	protected function sendTwigTemplate($to, $identifier, $parameters = array(), $attachments = array()) {
+        setlocale(LC_ALL, 'nl_BE');
         $template = $this->twig->loadTemplate('/mail/'.$identifier.'.twig');
         $subject  = $template->renderBlock('subject',   $parameters);
         $body = $template->renderBlock('body', $parameters);
-        return $this->send($subject, $body, $to);
+        if (empty($attachments)) {
+            return $this->send($subject, $body, $to);
+        } else {
+            return $this->sendWithAttachments($subject, $body, $to, $attachments);
+        }
     }
 
+	private function sendWithAttachments($subject, $body, $to, $files)
+    {
+        $this->resetMailer();
+        foreach ($files as $filename => $url) {
+            $this->mailer->addStringAttachment(file_get_contents($url), $filename);
+        }
+        return $this->realSend($subject, $body, $to);
+    }
 	private function send($subject, $body, $to) {
-		$this->message = '';
-		
-		$mail = $this->mailer;
-		$mail->clearAllRecipients();
-		$mail->setLanguage('nl');
-		
-		$mail->IsSMTP ();
-		$mail->SMTPDebug = 0;
-		// 		$mail->SMTPDebug = \SMTP::DEBUG_SERVER;
-		$mail->SMTPAuth = TRUE;
-		$mail->SMTPSecure = "tls";
-		$mail->Port = MAIL_PORT;
-		$mail->Username = MAIL_USERNAME;
-		$mail->Password = MAIL_PASSWORD;
-		$mail->Host = MAIL_HOST;
-		$mail->Mailer = MAILER;
+        $this->resetMailer();
 
-		$mail->SetFrom ( SENDER_EMAIL, SENDER_NAME );
-		$mail->AddReplyTo ( SENDER_EMAIL, SENDER_NAME );
-		$mail->ReturnPath = SENDER_EMAIL;
-		$mail->AddAddress ( $to );
-		$mail->Subject = $subject;
-		$mail->MsgHTML ( $body );
-		$mail->IsHTML ( true );
+        return $this->realSend($subject, $body, $to);
+    }
+    /**
+     * @param $subject
+     * @param $body
+     * @param $to
+     * @return bool
+     * @throws \phpmailerException
+     */
+    private function realSend($subject, $body, $to): bool
+    {
+        $this->mailer->SetFrom(SENDER_EMAIL, SENDER_NAME);
+        $this->mailer->AddReplyTo(SENDER_EMAIL, SENDER_NAME);
+        $this->mailer->ReturnPath = SENDER_EMAIL;
+        $this->mailer->AddAddress($to);
+        $this->mailer->Subject = $subject;
+        $this->mailer->MsgHTML($body);
+        $this->mailer->IsHTML(true);
 
-		if (! $mail->Send ()) {
-			$this->message = 'Problem in Sending Email. Mailer Error: ' . $mail->ErrorInfo;
-			return FALSE;
-		} else {
-			$this->message = 'Email verstuurd!';
-			return TRUE;
-		}
-	}
-	
-	public function getLastMessage() {
+        if (!$this->mailer->Send()) {
+            $this->message = 'Problem in Sending Email. Mailer Error: ' . $this->mailer->ErrorInfo;
+            return FALSE;
+        } else {
+            $this->message = 'Email verstuurd!';
+            return TRUE;
+        }
+    }
+
+    public function getLastMessage() {
 		return $this->message;
 	}
 
@@ -204,4 +259,29 @@ class MailManager {
         }
         return $membership_year;
     }
+
+    /**
+     * @return PHPMailer
+     */
+    private function resetMailer()
+    {
+        $this->message = '';
+
+        $this->mailer->clearAllRecipients();
+        $this->mailer->clearAttachments();
+        $this->mailer->clearCustomHeaders();
+        $this->mailer->setLanguage('nl');
+
+        $this->mailer->IsSMTP();
+        $this->mailer->SMTPDebug = 0;
+        // 		$this->mailer->SMTPDebug = \SMTP::DEBUG_SERVER;
+        $this->mailer->SMTPAuth = TRUE;
+        $this->mailer->SMTPSecure = "tls";
+        $this->mailer->Port = MAIL_PORT;
+        $this->mailer->Username = MAIL_USERNAME;
+        $this->mailer->Password = MAIL_PASSWORD;
+        $this->mailer->Host = MAIL_HOST;
+        $this->mailer->Mailer = MAILER;
+    }
+
 }

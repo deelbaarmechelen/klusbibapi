@@ -1,0 +1,20 @@
+{% block subject 'Klusbib - Bevestig email adres' %}
+
+{% block body %}
+    <h1>Welkom bij Klusbib</h1>
+    Beste {{ user.firstname }},<br><br>
+    <p>
+        Om uw inschrijving te vervolledigen dien je dit email adres te bevestigen door op onderstaande link te klikken:<br>
+        <a href='{{ link }}'>{{ link }}</a><br><br>
+    </p>
+    <p>
+        Herken je deze actie niet, dan kan je dit bericht veilig negeren
+    </p>
+    <p>
+        Met vriendelijke groeten<br>
+        Het Klusbib-team<br>
+        E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+        W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+    </p>
+{% endblock %}
+

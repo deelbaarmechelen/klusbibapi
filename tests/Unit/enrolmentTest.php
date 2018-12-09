@@ -185,7 +185,7 @@ class EnrolmentTest extends LocalDbWebTestCase
             $actualPaymentData["amount"]["currency"]);
         $this->assertEquals("20",
             $actualPaymentData["amount"]["value"]);
-        $this->assertEquals("Klusbib inschrijving nele HippeDame",
+        $this->assertEquals("Klusbib verlenging lidmaatschap nele HippeDame",
             $actualPaymentData["description"]);
         $this->assertEquals("$redirectUrl?orderId=$orderId",
             $actualPaymentData["redirectUrl"]);

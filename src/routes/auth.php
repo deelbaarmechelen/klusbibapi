@@ -24,28 +24,28 @@ $app->post("/auth/reset", function ($request, $response, $arguments) use ($app) 
 	$scopes = array_filter($requested_scopes, function ($needle) {
 		return in_array($needle, Token::resetPwdScopes());
 	});
-		$this->logger->debug("requested_scopes=" . json_encode($requested_scopes));
-		$token = Token::generateToken($scopes, $sub);
-		$this->logger->info("Token generated with scopes " . json_encode($scopes) . " and sub " .  json_encode($sub));
+    $this->logger->debug("requested_scopes=" . json_encode($requested_scopes));
+    $token = Token::generateToken($scopes, $sub);
+    $this->logger->info("Token generated with scopes " . json_encode($scopes) . " and sub " .  json_encode($sub));
 
-		// generate email
-		$mailMgr = new MailManager();
-		$result = $mailMgr->sendPwdRecoveryMail($user->user_id, $user->firstname, $email, $token);
+    // generate email
+    $mailMgr = new MailManager();
+    $result = $mailMgr->sendPwdRecoveryMail($user->user_id, $user->firstname, $email, $token);
 
-		if (!$result) { // error in mail send
-			$error["message"] = $mailMgr->getLastMessage();
-			return $response->withStatus(500)
-			->withHeader("Content-Type", "application/json")
-			->write(json_encode($error, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-		}
+    if (!$result) { // error in mail send
+        $error["message"] = $mailMgr->getLastMessage();
+        return $response->withStatus(500)
+        ->withHeader("Content-Type", "application/json")
+        ->write(json_encode($error, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    }
 
-		$data["status"] = "ok";
-		$data["message"] = $mailMgr->getLastMessage();
-		$data["token"] = $token;
+    $data["status"] = "ok";
+    $data["message"] = $mailMgr->getLastMessage();
+    $data["token"] = $token;
 
-		return $response->withStatus(201)
-		->withHeader("Content-Type", "application/json")
-		->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    return $response->withStatus(201)
+    ->withHeader("Content-Type", "application/json")
+    ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
 });
 

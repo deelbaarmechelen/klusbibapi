@@ -26,10 +26,12 @@ class Token
 		return $this->decoded->sub;
 	}
 	
-	static private function generatePayload($scopes, $sub) {
+	static private function generatePayload($scopes, $sub, $future = null) {
 		$now = new \DateTime();
-		$future = new \DateTime("now +2 hours");
-		
+		if (is_null($future)) {
+            $future = new \DateTime("now +2 hours");
+        }
+
 		$jti = Base62::encode(random_bytes(16));
 		
 		$payload = [
@@ -42,9 +44,13 @@ class Token
 		return $payload;
 	}
 	
-	static public function createToken($scopes, $sub) {
+	static public function createToken($scopes, $sub, $future = null) {
 		$token = new Token();
-		$payload = Token::generatePayload($scopes, $sub);
+		if (is_null($future)) {
+		    $payload = Token::generatePayload($scopes, $sub);
+        } else {
+            $payload = Token::generatePayload($scopes, $sub, $future);
+        }
 		// convert $payload from array to object and add to token object
 		$token->hydrate(json_decode(json_encode($payload), false, 512, JSON_BIGINT_AS_STRING));
 		return $token;
@@ -109,7 +115,15 @@ class Token
 		];
 		return $reset_pwd_scopes;
 	}
-	
+	static public function emailLinkScopes () {
+		$reset_pwd_scopes = [
+            "users.read.owner", // not allowed to consult other users info
+            "users.update.password",
+            "users.update.owner" // not allowed to update other users info
+		];
+		return $reset_pwd_scopes;
+	}
+
 	static public function allowedScopes($role) {
 		if ($role == 'admin') {
 			return [
@@ -119,7 +133,9 @@ class Token
 				"users.all",
                 "events.all",
                 "payments.all",
-				"users.update.password",
+                "users.read.owner", // need to be added for check against emailLinkScopes
+                "users.update.password", // need to be added for check against resetPwdScopes, emailLinkScopes
+                "users.update.owner" // need to be added for check against emailLinkScopes
 			];
 		}
 		if ($role == 'member') {
