@@ -1,32 +1,31 @@
 {% block subject 'Probleem bij inschrijving' %}
 
 {% block body %}
-    <div>
-        <p>Beste,</p>
-        <p>Via de website werd een nieuw lidmaatschap geregistreerd, maar er trad een probleem op bij de verwerking van de betaling<br/>
-            Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
-            aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
-            Deze gebruiker koos ervoor om te betalen via {{ newUser.payment_mode }}  <br/>
-        </p>
-        <p>
-            Betalingsgegevens:<br/>
-            <ul>
-            <li>Payment id: {{ payment.payment_id }}</li>
-            <li>Order id: {{ payment.order_id }}</li>
-            <li>User id: {{ payment.user_id }}</li>
-            <li>Status: {{ payment.state }}</li>
-            <li>Mode: {{ payment.mode }}</li>
-            <li>Datum: {{ payment.payment_date }}</li>
-            <li>Bedrag: {{ payment.amount }} {{ payment.currency }}</li>
-            </ul>
-        </p>
+<div>
+    <p>Beste,</p>
+    <p>Via de website werd een nieuw lidmaatschap geregistreerd, maar er trad een probleem op bij de verwerking van de betaling<br/>
+        Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
+        aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
+        Deze gebruiker koos ervoor om te betalen via {{ newUser.payment_mode }}  <br/>
+    </p>
+    <p>
+        Betalingsgegevens:<br/>
+        <ul>
+        <li>Payment id: {{ payment.payment_id }}</li>
+        <li>Order id: {{ payment.order_id }}</li>
+        <li>User id: {{ payment.user_id }}</li>
+        <li>Status: {{ payment.state }}</li>
+        <li>Mode: {{ payment.mode }}</li>
+        <li>Datum: {{ payment.payment_date }}</li>
+        <li>Bedrag: {{ payment.amount }} {{ payment.currency }}</li>
+        </ul>
+    </p>
 
-
-        <p>
-            Groetjes,<br/>
-            Admin.
-        </p>
-    </div>
+    <p>
+        Groetjes,<br/>
+        Admin.
+    </p>
+</div>
 
 {% endblock %}
 

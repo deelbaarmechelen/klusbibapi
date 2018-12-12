@@ -105,12 +105,11 @@ class EnrolmentManager
      * @return string
      * @throws \Exception
      */
-    protected function getMembershipEndDate($currentEndDateMembership): string
+    public static function getMembershipEndDate($startDateMembership): string
     {
-        $endDate = DateTime::createFromFormat('Y-m-d', $currentEndDateMembership);
+        $startDate = DateTime::createFromFormat('Y-m-d', $startDateMembership);
         $pivotDate = new DateTime('first day of december this year');
-//        $pivotDate = DateTime::createFromFormat('Y-m-d', date('Y') . '-12-01');
-        $membershipEndDate = $endDate->add(new DateInterval('P1Y')); //$endDate->format('Y');
+        $membershipEndDate = $startDate->add(new DateInterval('P1Y')); //$endDate->format('Y');
         $currentDate = new DateTime();
         if ($currentDate > $pivotDate) { // extend membership until end of year
             $extendedEndDate = $currentDate->modify('last day of december next year');

@@ -3,10 +3,10 @@
 {% block body %}
 Beste {{ user.firstname }},<br><br>
 <p>Op {{ user.membership_end_date | date("j F Y") }} {%  if user.membership_end_date < currentDate %}liep{% else %}loopt{% endif %} je lidmaatschap bij Klusbib ten einde.<br>
-We willen je alvast bedanken voor je vertrouwen en hopen dat je veel genot mocht hebben aan je lidmaatschap.
+We willen je alvast bedanken voor je vertrouwen en hopen dat je ook het komende jaar verder gebruik zal maken van de Klusbib.
 </p>
 <p>
-Wil je graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, verleng dan je lidmaatschap
+Verleng daarom vandaag nog je lidmaatschap en blijf ervan genieten tem 31 december 2019
     <ul>
         <li>
 hetzij online <a href='{{ link }}'>{{ link }}</a>
@@ -18,12 +18,10 @@ met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {
     </ul>
 </p>
 <p>
-Doe het snel, want gedurende de maand december verlengen we je lidmaatschap tot 31 december 2019.<br>
-Vanaf januari stijgt de prijs voor een lidmaatschap naar 30 &euro;!
+Let op! Vanaf januari stijgt de prijs voor een (ver)nieuw(d) lidmaatschap naar 30 &euro;!
 </p>
 <p>
-Kies je ervoor om toch niet te verlengen, dan vernemen we graag waar wij ons op moeten verbeteren. <br>
-Kan je snel aanvinken wat voor jou de voornaamste reden is via onderstaande link?<br>
+Kies je toch on niet te verlengen laat ons dan hier in nog geen 5 seconden weten waarom<br>
 <a href='{{ evaluationLink }}'>{{ evaluationLink }}</a> (anoniem)
 </p>
 <p>

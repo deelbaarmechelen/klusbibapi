@@ -34,7 +34,6 @@
 		"doctrine/dbal": "^2.5",
 		"phpmailer/phpmailer": "^5.2",
 		"twig/twig":"^2.0",
-		"stripe/stripe-php": "^6.7",
 		"mollie/mollie-api-php": "^2.0",
 		"slim/twig-view": "^2.4"
 	},

@@ -162,7 +162,7 @@ $app->post('/users', function ($request, $response, $args) {
 		if (!empty($data["membership_end_date"])) {
 			$user->membership_end_date = $data["membership_end_date"];
 		} else { // default to 1 year membership
-			$user->membership_end_date = strftime('%Y-%m-%d',strtotime("+1 year", strtotime($data["membership_start_date"])));
+            $data["membership_end_date"] = \Api\Enrolment\EnrolmentManager::getMembershipEndDate($user->membership_start_date);
 		}
 	}
 	UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);

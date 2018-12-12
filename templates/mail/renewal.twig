@@ -1,18 +1,18 @@
 {% block subject 'Klusbib lidmaatschap' %}
 
 {% block body %}
-    Beste {{ user.firstname }},<br><br>
-    <p>Op {{ user.membership_end_date | date("j-n-Y") }} loopt je lidmaatschap bij de Klusbib ten einde.<br>
-        We willen je alvast bedanken voor je vertrouwen en hopen dat je veel genot mocht hebben aan je lidmaatschap.
-    </p>
-    <p>
-        Wil je graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, stort dan {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b>
-    met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.
-    </p><br>
-    <p>
-        Met vriendelijke groeten<br>
-        Het Klusbib-team<br>
-        E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
-        W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
-    </p>
+Beste {{ user.firstname }},<br><br>
+<p>Op {{ user.membership_end_date | date("j-n-Y") }} loopt je lidmaatschap bij de Klusbib ten einde.<br>
+We willen je alvast bedanken voor je vertrouwen en hopen dat je veel genot mocht hebben aan je lidmaatschap.
+</p>
+<p>
+Wil je graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, stort dan {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b>
+met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.
+</p><br>
+<p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
 {% endblock %}

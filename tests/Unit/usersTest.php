@@ -111,6 +111,7 @@ class UsersTest extends LocalDbWebTestCase
 		$container = $this->app->getContainer();
 		$data = array("user_id" => "5", "firstname" => "myname", 
 				"lastname" => "my lastname",
+				"membership_start_date" => "2018-12-12",
 				"email" => "myname.lastname@klusbib.be",
 				"role" => "member"
 		);

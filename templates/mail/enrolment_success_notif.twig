@@ -1,20 +1,17 @@
 {% block subject 'Nieuwe inschrijving voltooid' %}
 
 {% block body %}
-    <div>
-        <p>Beste,</p>
-        <p>Via de website werd een nieuw lidmaatschap succesvol afgerond<br/>
-            Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
-            aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
-            Deze gebruiker koos ervoor om te betalen via {{ newUser.payment_mode }}  <br/>
-            Lidmaatschap loopt van {{ newUser.membership_start_date }} tot {{ newUser.membership_end_date }}
-        </p>
-        <p>
-            Groetjes,<br/>
-            Admin.
-        </p>
-    </div>
-
+<p>Beste,</p>
+<p>Via de website werd een nieuw lidmaatschap succesvol afgerond<br/>
+    Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
+    aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
+    Deze gebruiker koos ervoor om te betalen via {{ newUser.payment_mode }}  <br/>
+    Lidmaatschap loopt van {{ newUser.membership_start_date }} tot {{ newUser.membership_end_date }}
+</p>
+<p>
+    Groetjes,<br/>
+    Admin.
+</p>
 {% endblock %}
 
 
