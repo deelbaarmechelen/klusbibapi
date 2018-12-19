@@ -134,7 +134,7 @@ class MailManager {
     }
     public function sendResumeEnrolmentReminder($user, $token) {
         echo "Resume enrolment reminder called with token $token\n";
-        $membership_year = $this->getMembershipYear($user->membership_end_date);
+        $membership_year = $this->getMembershipYear(date('Y-m-d'));
         $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
         $parameters = array('user' => $user,
             'link' => $link,

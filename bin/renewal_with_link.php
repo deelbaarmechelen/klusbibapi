@@ -29,21 +29,21 @@ foreach ($users as $user) {
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
     echo "email: " . $user->email . "\n";
-    $token = generateProfileToken($user);
+//    $token = generateProfileToken($user);
 //    $result = $mailMgr->sendRenewalReminder($user, $token);
 
-    if (!$result) { // error in mail send
-        $error = $mailMgr->getLastMessage();
-        echo "Error from mail manager: $error\n";
-    }
+//    if (!$result) { // error in mail send
+//        $error = $mailMgr->getLastMessage();
+//        echo "Error from mail manager: $error\n";
+//    }
     // TODO: remove when going live. Break assures only 1 user is processed in test mode
-    // FIXME: no renewal possible if state is not ACTIVE or EXPIRED (e.g. CHECK_PAYMENT)
 //    break;
 
 }
 echo "\n\n";
 echo "selecting members with CHECK_PAYMENT state\n";
-$users = \Api\Model\User::members()->where('state', 'CHECK_PAYMENT')->get();
+$users = \Api\Model\User::members()->where('state', 'CHECK_PAYMENT')
+    ->where('membership_start_date', '<', '2018-12-01')->get();
 echo "selected users: " . count($users) . "\n";
 foreach ($users as $user) {
     echo "enrolment unfinished for user $user->user_id\n";
@@ -59,10 +59,6 @@ foreach ($users as $user) {
         $error = $mailMgr->getLastMessage();
         echo "Error from mail manager: $error\n";
     }
-    // TODO: remove when going live. Break assures only 1 user is processed in test mode
-    // FIXME: no renewal possible if state is not ACTIVE or EXPIRED (e.g. CHECK_PAYMENT)
-    break;
-
 }
 
 echo "End of renewal reminder\n";
