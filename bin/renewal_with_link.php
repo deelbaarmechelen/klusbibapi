@@ -40,26 +40,26 @@ foreach ($users as $user) {
 //    break;
 
 }
-echo "\n\n";
-echo "selecting members with CHECK_PAYMENT state\n";
-$users = \Api\Model\User::members()->where('state', 'CHECK_PAYMENT')
-    ->where('membership_start_date', '<', '2018-12-01')->get();
-echo "selected users: " . count($users) . "\n";
-foreach ($users as $user) {
-    echo "enrolment unfinished for user $user->user_id\n";
-    echo "name: " . $user->firstname . " " . $user->lastname . "\n";
-    echo "state: " . $user->state . "\n";
-    echo "membership start: " . $user->membership_start_date . "\n";
-    echo "membership end: " . $user->membership_end_date . "\n";
-    echo "email: " . $user->email . "\n";
-    $token = generateProfileToken($user);
-    $result = $mailMgr->sendResumeEnrolmentReminder($user, $token);
-
-    if (!$result) { // error in mail send
-        $error = $mailMgr->getLastMessage();
-        echo "Error from mail manager: $error\n";
-    }
-}
+//echo "\n\n";
+//echo "selecting members with CHECK_PAYMENT state\n";
+//$users = \Api\Model\User::members()->where('state', 'CHECK_PAYMENT')
+//    ->where('membership_start_date', '<', '2018-12-01')->get();
+//echo "selected users: " . count($users) . "\n";
+//foreach ($users as $user) {
+//    echo "enrolment unfinished for user $user->user_id\n";
+//    echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+//    echo "state: " . $user->state . "\n";
+//    echo "membership start: " . $user->membership_start_date . "\n";
+//    echo "membership end: " . $user->membership_end_date . "\n";
+//    echo "email: " . $user->email . "\n";
+//    $token = generateProfileToken($user);
+//    $result = $mailMgr->sendResumeEnrolmentReminder($user, $token);
+//
+//    if (!$result) { // error in mail send
+//        $error = $mailMgr->getLastMessage();
+//        echo "Error from mail manager: $error\n";
+//    }
+//}
 
 echo "End of renewal reminder\n";
 
