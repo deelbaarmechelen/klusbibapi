@@ -38,7 +38,7 @@
 		"slim/twig-view": "^2.4"
 	},
 	"require-dev" : {
-		"heroku/heroku-buildpack-php": "*",
+		"heroku/heroku-buildpack-php": "v147",
 		"phpunit/phpunit" : ">=5.7 < 6.0",
 		"there4/slim-test-helpers": "v2.1.1",
 		"fzaninotto/faker" : "~1.4"

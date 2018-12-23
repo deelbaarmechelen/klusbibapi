@@ -29,13 +29,13 @@ foreach ($users as $user) {
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
     echo "email: " . $user->email . "\n";
-//    $token = generateProfileToken($user);
-//    $result = $mailMgr->sendRenewalReminder($user, $token);
+    $token = generateProfileToken($user);
+    $result = $mailMgr->sendRenewalReminder($user, $token);
 
-//    if (!$result) { // error in mail send
-//        $error = $mailMgr->getLastMessage();
-//        echo "Error from mail manager: $error\n";
-//    }
+    if (!$result) { // error in mail send
+        $error = $mailMgr->getLastMessage();
+        echo "Error from mail manager: $error\n";
+    }
     // TODO: remove when going live. Break assures only 1 user is processed in test mode
 //    break;
 
