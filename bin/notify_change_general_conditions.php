@@ -31,10 +31,6 @@ foreach ($users as $user) {
         $error = $mailMgr->getLastMessage();
         echo "Error from mail manager: $error";
     }
-    // TODO: remove when going live. Break assures only 1 user is processed in test mode
-    // FIXME: no renewal possible if state is not ACTIVE or EXPIRED (e.g. CHECK_PAYMENT)
-    break;
-
 }
 echo "End of renewal cron\n";
 
