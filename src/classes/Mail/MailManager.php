@@ -71,7 +71,7 @@ class MailManager {
             'reservation' => $reservation);
         return $this->sendTwigTemplate($to, 'reservation_request', $parameters);
 	}
-
+    // Send notification to Klusbib team
     public function sendEnrolmentNotification($userEmail, $newUser) {
         $parameters = array(
             'newUser' => $newUser);
@@ -101,6 +101,16 @@ class MailManager {
             'facebookLink' => Settings::FACEBOOK_LINK,
             'emailLink' => Settings::EMAIL_LINK);
         return $this->sendTwigTemplate($user->email, 'enrolment', $parameters);
+    }
+    public function sendEnrolmentPaymentConfirmation($user, $paymentMode) {
+        $parameters = array(
+            'user' => $user,
+            'paymentMode' => $paymentMode,
+            'reservationEmail' => Settings::RESERVATION_EMAIL,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'facebookLink' => Settings::FACEBOOK_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
+        return $this->sendTwigTemplate($user->email, 'enrolment_confirm_payment', $parameters);
     }
 
     public function sendRenewal($user) {

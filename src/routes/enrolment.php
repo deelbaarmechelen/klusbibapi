@@ -5,6 +5,10 @@ use Api\Model\Payment;
 use Api\Model\UserState;
 use Api\Mail\MailManager;
 use Api\Enrolment\EnrolmentManager;
+use DateTime;
+use DateInterval;
+use Api\Authorisation;
+use Api\AccessType;
 
 $app->post('/enrolment', function ($request, $response, $args) {
     $this->logger->info("Klusbib POST '/enrolment' route");
@@ -133,8 +137,68 @@ $app->post('/enrolment', function ($request, $response, $args) {
 
 });
 
+$app->post('/enrolment_confirm', function ($request, $response, $args) {
+    $this->logger->info("Klusbib POST '/enrolment_confirm' route");
+
+    // TODO: restrict access to admin
+    $access = Authorisation::checkEnrolmentAccess($this->token, "confirm");
+    if ($access === AccessType::NO_ACCESS) {
+        return $response->withStatus(403); // Unauthorized
+    }
+
+    // Get data
+    $data = $request->getParsedBody();
+    if (empty($data["paymentMode"]) || !isset($data["userId"])) {
+        $message = "no paymentMode and/or userId provided";
+        return $response->withStatus(400)// Bad request
+        ->withJson("Missing or invalid data: $message");
+    }
+    $paymentMode = $data["paymentMode"];
+    $userId = $data["userId"];
+    $user = \Api\Model\User::find($userId);
+    $renewal = false;
+    if (isset($data["renewal"]) && $data["renewal"] == true) {
+        $renewal = true;
+    }
+    if (null == $user) {
+        return $response->withStatus(400)
+            ->withJson("No user found with id $userId");;
+    }
+
+    if ($this->has("enrolmentFactory")) {
+        $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
+    } else {
+        $enrolmentManager = new EnrolmentManager($this->logger, $user);
+    }
+    try {
+        if ($renewal) {
+            $enrolmentManager->confirmRenewalPayment($paymentMode,$user);
+        } else {
+            $enrolmentManager->confirmEnrolmentPayment($paymentMode,$user);
+        }
+        $data = array();
+        return $response->withStatus(200)
+            ->withHeader("Content-Type", "application/json")
+            ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    } catch (\Api\Exception\EnrolmentException $e) {
+        if ($e->getCode() == \Api\Exception\EnrolmentException::UNEXPECTED_PAYMENT_MODE) {
+            $message = "Unsupported payment mode ($paymentMode)";
+            $this->logger->warn("Invalid POST request on /enrolment/confirm received: $message");
+            return $response->withStatus(400) // Bad request
+            ->withJson($message);
+        } else if ($e->getCode() == \Api\Exception\EnrolmentException::UNEXPECTED_CONFIRMATION) {
+            $message = "Unexpected confirmation for payment mode ($paymentMode)";
+            return $response->withStatus(400)// Bad request
+            ->withJson($message);
+        } else {
+            return $response->withStatus(500)// Internal error
+            ->withJson($e->getMessage());
+        }
+    }
+});
+
 $app->post('/enrolment/{orderId}', function ($request, $response, $args) {
-    $this->logger->info("Klusbib POST '/payments/{$args['orderId']}' route");
+    $this->logger->info("Klusbib POST '/enrolment/{$args['orderId']}' route");
     if (empty($args['orderId'])) {
         $this->logger->error("POST /enrolment/{orderId} failed due to missing orderId param");
         return $response->withStatus(400) // Bad request

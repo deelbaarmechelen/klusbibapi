@@ -130,4 +130,21 @@ class Authorisation {
                 return AccessType::NO_ACCESS;
         }
     }
+    /**
+     *
+     * @param Token $token
+     * @param string $operation: possible values confirm
+     */
+    static function checkEnrolmentAccess($token, $operation)
+    {
+        if (!isset($token)) {
+            echo "no token set";
+            return AccessType::NO_ACCESS;
+        }
+        switch ($operation) {
+            case "confirm":
+                return $token->hasScope(["enrolment.confirm"]);
+        }
+        return AccessType::NO_ACCESS;
+    }
 }

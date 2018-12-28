@@ -1,0 +1,28 @@
+{% block subject 'Klusbib bevestiging inschrijving' %}
+
+{% block body %}
+Beste {{ user.firstname }},<br><br>
+
+<p>
+We hebben je betaling goed ontvangen.<br>
+Je lidmaatschap is nu actief en loopt tot {{ user.membership_end_date }}
+</p>
+<p>
+Neem een kijkje op onze <a href="{{ webpageLink }}" >website</a> voor een overzicht van het beschikbare gereedschap.<br>
+Heb je iets gevonden dat je graag wil ontlenen en wil je zeker zijn dat het aanwezig is, dan kan je het reserveren door een berichtje te sturen naar
+<a href="mailto:{{ reservationEmail }}" >{{ reservationEmail }}</a>.<br>
+</p><p>
+Om van de laatste nieuwtjes op de hoogte te blijven kan je ons ook volgen via onze <a href="{{ facebookLink }}">facebook pagina</a>.<br>
+Mocht je nog vragen of bedenkingen hebben dan horen we het graag. Enkel hierdoor kunnen wij onze werking verder uitbouwen.<br>
+</p>
+<p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}
+
+
+
+
