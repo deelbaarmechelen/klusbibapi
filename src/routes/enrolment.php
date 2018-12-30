@@ -140,7 +140,6 @@ $app->post('/enrolment', function ($request, $response, $args) {
 $app->post('/enrolment_confirm', function ($request, $response, $args) {
     $this->logger->info("Klusbib POST '/enrolment_confirm' route");
 
-    // TODO: restrict access to admin
     $access = Authorisation::checkEnrolmentAccess($this->token, "confirm");
     if ($access === AccessType::NO_ACCESS) {
         return $response->withStatus(403); // Unauthorized
@@ -171,11 +170,7 @@ $app->post('/enrolment_confirm', function ($request, $response, $args) {
         $enrolmentManager = new EnrolmentManager($this->logger, $user);
     }
     try {
-        if ($renewal) {
-            $enrolmentManager->confirmRenewalPayment($paymentMode,$user);
-        } else {
-            $enrolmentManager->confirmEnrolmentPayment($paymentMode,$user);
-        }
+        $enrolmentManager->confirmPayment($paymentMode,$user);
         $data = array();
         return $response->withStatus(200)
             ->withHeader("Content-Type", "application/json")

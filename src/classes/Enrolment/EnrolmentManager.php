@@ -100,34 +100,33 @@ class EnrolmentManager
             $requestedPaymentMean, $requestUri->getHost(), $requestUri->getScheme(), Product::RENEWAL, $membershipEndDate);
     }
 
-    function confirmEnrolmentPayment($paymentMode, $user) {
-        if ($paymentMode == PaymentMode::TRANSFER ||
-            $paymentMode == PaymentMode::CASH) {
-            $user->payment_mode = $paymentMode;
-            $user->state = UserState::ACTIVE;
-            // end_date already set at enrolment initiation, no need to update it
-            $user->save();
-
-            $mailMgr = new MailManager();
-            $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
-        } else if ($paymentMode == PaymentMode::LETS ||
+    function confirmPayment($paymentMode, $user) {
+        if ($paymentMode == PaymentMode::LETS ||
             $paymentMode == PaymentMode::OVAM) {
             throw new EnrolmentException("Not yet supported", EnrolmentException::UNEXPECTED_PAYMENT_MODE);
-        } else if ($paymentMode == PaymentMode::MOLLIE) {
+        }
+        if ($paymentMode == PaymentMode::MOLLIE) {
             $message = "Unexpected confirmation for payment mode ($paymentMode)";
             $this->logger->warn($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-        } else {
+        }
+        if ($paymentMode != PaymentMode::CASH &&
+            $paymentMode != PaymentMode::TRANSFER) {
             $message = "Unsupported payment mode ($paymentMode)";
             $this->logger->warn($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
         }
-    }
-    function confirmRenewalPayment($paymentMode, $user) {
-        if ($paymentMode == PaymentMode::TRANSFER ||
-            $paymentMode == PaymentMode::CASH) {
-            $user->payment_mode = $paymentMode;
-            $user->state = UserState::ACTIVE;
+        if ($user->state != UserState::CHECK_PAYMENT &&
+            $user->state != UserState::ACTIVE &&
+            $user->state != UserState::EXPIRED) {
+            $message = "Unexpected confirmation for user state ($user->state)";
+            $this->logger->warn($message);
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
+        }
+        $user->payment_mode = $paymentMode;
+        if ($user->state == UserState::CHECK_PAYMENT) {
+            // end_date already set at enrolment initiation, no need to update it
+        } else {
             // If end_date more than 6 months in future, assume it has already been updated
             $pivotDate = new DateTime('now');
             $pivotDate->add(new DateInterval('P6M'));
@@ -135,21 +134,12 @@ class EnrolmentManager
             if ($currentEndDate < $pivotDate) {
                 $user->membership_end_date = EnrolmentManager::getMembershipEndDate($user->membership_end_date);
             }
-            $user->save();
-            $mailMgr = new MailManager();
-            $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
-        } else if ($paymentMode == PaymentMode::LETS ||
-            $paymentMode == PaymentMode::OVAM) {
-            throw new EnrolmentException("Not yet supported", EnrolmentException::UNEXPECTED_PAYMENT_MODE);
-        } else if ($paymentMode == PaymentMode::MOLLIE) {
-            $message = "Unexpected confirmation for payment mode ($paymentMode)";
-            $this->logger->warn($message);
-            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-        } else {
-            $message = "Unsupported payment mode ($paymentMode)";
-            $this->logger->warn($message);
-            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
         }
+        $user->state = UserState::ACTIVE;
+        $user->save();
+
+        $mailMgr = new MailManager();
+        $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
     }
 
     /**
