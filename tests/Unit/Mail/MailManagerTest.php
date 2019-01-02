@@ -124,28 +124,7 @@ final class MailManagerTest extends TestCase
         $user->membership_end_date = date('Y-m-d');
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
-        $result = $mailmgr->sendRenewal($user);
-        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
-        $this->assertTrue($result);
-        $get_sent = $mailer->get_sent(0);
-        $this->assertNotNull($get_sent);
-        $this->assertEquals("Klusbib lidmaatschap", $get_sent->subject);
-        print_r($get_sent->body);
-    }
-    public function testSendRenewalReminder()
-    {
-        $user = new UserTest();
-        $user->email = "info@klusbib.be";
-        $user->firstname = "mijnNaam";
-        $user->lastname = "mijnFamilieNaam";
-        $user->membership_end_date = date('Y-m-d');
-        $user->membership_end_date = new DateTime();
-        $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
-
-        $token = "mytoken1234567890";
-        $mailer = new PHPMailerMock ();
-        $mailmgr = new MailManager($mailer);
-        $result = $mailmgr->sendRenewalReminder($user, $token);
+        $result = $mailmgr->sendRenewal($user, -7, 'mytoken');
         $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
         $this->assertTrue($result);
         $get_sent = $mailer->get_sent(0);

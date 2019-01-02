@@ -5,8 +5,6 @@ use Api\Model\Payment;
 use Api\Model\UserState;
 use Api\Mail\MailManager;
 use Api\Enrolment\EnrolmentManager;
-use DateTime;
-use DateInterval;
 use Api\Authorisation;
 use Api\AccessType;
 

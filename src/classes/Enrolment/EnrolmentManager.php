@@ -96,7 +96,7 @@ class EnrolmentManager
 //        }
 //        $hostname = $_SERVER['HTTP_HOST'];
 
-        return $this->initiateMolliePayment($orderId, \Api\Settings::ENROLMENT_AMOUNT_STRING, $redirectUrl,
+        return $this->initiateMolliePayment($orderId, \Api\Settings::RENEWAL_AMOUNT_STRING, $redirectUrl,
             $requestedPaymentMean, $requestUri->getHost(), $requestUri->getScheme(), Product::RENEWAL, $membershipEndDate);
     }
 

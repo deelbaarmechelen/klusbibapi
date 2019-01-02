@@ -2,14 +2,21 @@
 
 {% block body %}
 Beste {{ user.firstname }},<br><br>
-<p>Op {{ user.membership_end_date | date("j-n-Y") }} loopt je lidmaatschap bij de Klusbib ten einde.<br>
+<p>Op {{ user.membership_end_date | date("j-n-Y") }} {%  if user.membership_end_date < currentDate %}liep{% else %}loopt{% endif %} je lidmaatschap bij de Klusbib ten einde.<br>
 We willen je alvast bedanken voor je vertrouwen en hopen dat je veel genot mocht hebben aan je lidmaatschap.
+</p><p>
+Wil je graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, verleng dan vandaag nog<br>
+<ul><li>
+hetzij online <a href='{{ profileLink }}'>{{ profileLink }}</a>
+</li><li>
+hetzij via overschrijving: stort {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b>
+met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>
+</li></ul>
 </p>
-<p>
-Wil je graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, stort dan {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b>
-met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.
-</p><br>
-<p>
+{%  if daysToExpiry < 0 %}<p>
+Kies je toch om niet te verlengen laat ons dan hier in nog geen 5 seconden weten waarom<br>
+<a href='{{ evaluationLink }}'>Evaluatieformulier</a> (anoniem)
+</p>{% endif %}<p>
 Met vriendelijke groeten<br>
 Het Klusbib-team<br>
 E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>

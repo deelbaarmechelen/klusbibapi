@@ -113,35 +113,29 @@ class MailManager {
         return $this->sendTwigTemplate($user->email, 'enrolment_confirm_payment', $parameters);
     }
 
-    public function sendRenewal($user) {
+    /**
+     * @param $user the user to which a renewal reminder should be sent
+     * @param $daysToExpiry number of days before this users membership will expire.
+     *          if negative, the membership has already expired
+     * @param $token temporary token to access user profile without login
+     * @return bool TRUE if message successfully sent
+     */
+    public function sendRenewal($user, $daysToExpiry, $token) {
         $membership_year = $this->getMembershipYear($user->membership_end_date);
+        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
         $parameters = array('user' => $user,
+            'profileLink' => $link,
             'amount' => Settings::RENEWAL_AMOUNT,
             'account' => Settings::ACCOUNT_NBR,
+            'currentDate' => date('Y-m-d'),
             'emailLink' => Settings::EMAIL_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
-            'membership_year' => $membership_year);
+            'evaluationLink' => Settings::EVALUATION_LINK,
+            'membership_year' => $membership_year,
+            'daysToExpiry' => $daysToExpiry);
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
-//    public function sendRenewalReminder($user, $token) {
-//        echo "Renewal reminder called with token $token\n";
-//        $membership_year = $this->getMembershipYear($user->membership_end_date);
-//        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
-//        $parameters = array('user' => $user,
-//            'link' => $link,
-//            'amount' => Settings::RENEWAL_AMOUNT,
-//            'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
-//            'enrolmentLink' => Settings::ENROLMENT_LINK,
-//            'account' => Settings::ACCOUNT_NBR,
-//            'currentDate' => date('Y-m-d'),
-//            'emailLink' => Settings::EMAIL_LINK,
-//            'webpageLink' => Settings::WEBPAGE_LINK,
-//            'facebookLink' => Settings::FACEBOOK_LINK,
-//            'evaluationLink' => Settings::EVALUATION_LINK,
-//            'membership_year' => $membership_year);
-//        return $this->sendTwigTemplate($user->email, 'renewal_reminder', $parameters);
-//    }
     public function sendResumeEnrolmentReminder($user, $token) {
         echo "Resume enrolment reminder called with token $token\n";
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
@@ -256,12 +250,18 @@ class MailManager {
      */
     protected function getMembershipYear($startDateMembership): string
     {
-        $endDate = DateTime::createFromFormat('Y-m-d', $startDateMembership);
-        $pivotDate = DateTime::createFromFormat('Y-m-d', date('Y') . '-07-01');
-        $membership_year = $endDate->format('Y');
-        if ($endDate > $pivotDate) {
-            $nextYear = $endDate->add(new DateInterval('P1Y'));
-            $membership_year = $membership_year . '-' . $nextYear->format('Y');
+        $startDate = DateTime::createFromFormat('Y-m-d', $startDateMembership);
+        $pivotDate = DateTime::createFromFormat('Y-m-d', $startDate->format('Y') . '-07-01');
+        $membership_year = $startDate->format('Y');
+
+        if ($startDate > $pivotDate) {
+            $nextYear = $startDate->add(new DateInterval('P1Y'));
+            $pivotDateEOY = DateTime::createFromFormat('Y-m-d', $startDate->format('Y') . '-12-15');
+            if ($startDate > $pivotDateEOY) {
+                $membership_year = $nextYear->format('Y');
+            } else {
+                $membership_year = $membership_year . '-' . $nextYear->format('Y');
+            }
         }
         return $membership_year;
     }
