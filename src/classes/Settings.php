@@ -6,8 +6,8 @@ namespace Api;
 class Settings
 {
     const ACCOUNT_NBR = 'BE79 5230 8088 4133';
-    const ENROLMENT_AMOUNT = 20;
-    const ENROLMENT_AMOUNT_STRING = "20.00";
+    const ENROLMENT_AMOUNT = 30;
+    const ENROLMENT_AMOUNT_STRING = "30.00";
     const RENEWAL_AMOUNT = 20;
     const RENEWAL_AMOUNT_STRING = "20.00";
     const MOLLIE_LOCALE = "nl_BE";

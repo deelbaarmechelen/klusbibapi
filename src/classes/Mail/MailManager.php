@@ -124,24 +124,24 @@ class MailManager {
             'membership_year' => $membership_year);
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
-    public function sendRenewalReminder($user, $token) {
-        echo "Renewal reminder called with token $token\n";
-        $membership_year = $this->getMembershipYear($user->membership_end_date);
-        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
-        $parameters = array('user' => $user,
-            'link' => $link,
-            'amount' => Settings::RENEWAL_AMOUNT,
-            'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
-            'enrolmentLink' => Settings::ENROLMENT_LINK,
-            'account' => Settings::ACCOUNT_NBR,
-            'currentDate' => date('Y-m-d'),
-            'emailLink' => Settings::EMAIL_LINK,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'facebookLink' => Settings::FACEBOOK_LINK,
-            'evaluationLink' => Settings::EVALUATION_LINK,
-            'membership_year' => $membership_year);
-        return $this->sendTwigTemplate($user->email, 'renewal_reminder', $parameters);
-    }
+//    public function sendRenewalReminder($user, $token) {
+//        echo "Renewal reminder called with token $token\n";
+//        $membership_year = $this->getMembershipYear($user->membership_end_date);
+//        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
+//        $parameters = array('user' => $user,
+//            'link' => $link,
+//            'amount' => Settings::RENEWAL_AMOUNT,
+//            'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
+//            'enrolmentLink' => Settings::ENROLMENT_LINK,
+//            'account' => Settings::ACCOUNT_NBR,
+//            'currentDate' => date('Y-m-d'),
+//            'emailLink' => Settings::EMAIL_LINK,
+//            'webpageLink' => Settings::WEBPAGE_LINK,
+//            'facebookLink' => Settings::FACEBOOK_LINK,
+//            'evaluationLink' => Settings::EVALUATION_LINK,
+//            'membership_year' => $membership_year);
+//        return $this->sendTwigTemplate($user->email, 'renewal_reminder', $parameters);
+//    }
     public function sendResumeEnrolmentReminder($user, $token) {
         echo "Resume enrolment reminder called with token $token\n";
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
