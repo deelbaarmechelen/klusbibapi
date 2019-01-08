@@ -298,7 +298,7 @@ class EnrolmentManager
                 $payment->amount = $paymentMollie->amount->value;
                 $payment->currency = $paymentMollie->amount->currency;
             };
-
+            $currentPaymentState = $payment->state;
             if ($paymentMollie->isPaid() && !$paymentMollie->hasRefunds() && !$paymentMollie->hasChargebacks()) {
                 /*
                  * The payment is paid and isn't refunded or charged back.
@@ -345,6 +345,10 @@ class EnrolmentManager
             }
             $this->logger->info("Saving payment for orderId $orderId with state $payment->state (Mollie payment id=$paymentId / Internal payment id = $payment->payment_id)");
             $payment->save();
+            if ($currentPaymentState == $payment->state) {
+                // no change in state -> no need to reprocess Mollie payment (and avoid to resend notifications)
+                return;
+            }
 
             // Lookup user and update state
             $user = \Api\Model\User::find($userId);
