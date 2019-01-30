@@ -13,7 +13,7 @@ $settings = require __DIR__ . '/../src/settings.php';
 echo "Start renewal cron\n";
 $mailmgr = new MailManager();
 
-echo "Renewal in 1 week\n";
+echo "Renewal in 2 weeks\n";
 $fromDate = date('Y-m-d' . ' 00:00:00', strtotime("+2 weeks"));
 $toDate   = date('Y-m-d' . ' 23:59:59', strtotime("+2 weeks"));
 

@@ -14,7 +14,7 @@
 		}
 	],
 	"require" : {
-		"php" : "~7.0.0",
+		"php" : "~7.2.0",
 		"slim/slim" : "^3.1",
 		"slim/php-view" : "^2.0",
 		"monolog/monolog" : "^1.17",
@@ -38,7 +38,7 @@
 		"slim/twig-view": "^2.4"
 	},
 	"require-dev" : {
-		"heroku/heroku-buildpack-php": "v147",
+		"heroku/heroku-buildpack-php": "*",
 		"phpunit/phpunit" : ">=5.7 < 6.0",
 		"there4/slim-test-helpers": "v2.1.1",
 		"fzaninotto/faker" : "~1.4"
