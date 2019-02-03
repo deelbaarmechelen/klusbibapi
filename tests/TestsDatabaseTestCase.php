@@ -12,7 +12,7 @@ use PDO;
  * @author bernard
  */
 // FIXME: class obsolete??
-abstract class TestsDatabaseTestCase extends \PHPUnit_Extensions_Database_TestCase 
+abstract class TestsDatabaseTestCase extends \PHPUnit\DbUnit\TestCase
 //PHPUnit_Framework_TestCase
 {
     // only instantiate pdo once for test clean-up/fixture load

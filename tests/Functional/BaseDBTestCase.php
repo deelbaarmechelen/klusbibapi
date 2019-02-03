@@ -8,7 +8,7 @@ use Tests\DbUnitArrayDataSet;
  * This is an example class that shows how you could set up a method that
  * runs the application.
  */
-abstract class BaseDBTestCase extends PHPUnit_Extensions_Database_TestCase {
+abstract class BaseDBTestCase extends \PHPUnit\DbUnit\TestCase {
 
 	use BaseTestCaseTrait;
 	

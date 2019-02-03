@@ -58,7 +58,7 @@ $app->get('/users', function ($request, $response, $args) {
 		$perPage = '1000';
 	}
 	$users = Capsule::table('users')->orderBy($sortfield, $sortdir)->get();
-	$users_page = array_slice($users, ($page - 1) * $perPage, $perPage);
+	$users_page = array_slice($users->all(), ($page - 1) * $perPage, $perPage);
 	$data = array();
 	foreach ($users_page as $user) {
 		array_push($data, UserMapper::mapUserToArray($user));

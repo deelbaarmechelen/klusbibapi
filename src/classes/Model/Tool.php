@@ -19,6 +19,6 @@ class Tool extends Model
 	}
 	public function reservations()
 	{
-		return $this->hasMany('Api\Model\Reservation');
+		return $this->hasMany('Api\Model\Reservation', 'tool_id');
 	}
 }

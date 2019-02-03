@@ -325,7 +325,7 @@ $app->get('/payments', function ($request, $response, $args) {
             ->where('order_id', $orderId);
     }
     $payments = $builder->orderBy($sortfield, $sortdir)->get();
-    $payments_page = array_slice($payments, ($page - 1) * $perPage, $perPage);
+    $payments_page = array_slice($payments->all(), ($page - 1) * $perPage, $perPage);
     $data = array();
     foreach ($payments_page as $payment) {
         array_push($data, PaymentMapper::mapPaymentToArray($payment));

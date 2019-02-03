@@ -23,11 +23,11 @@ class Reservation extends Model
 	 */
 	public function user()
 	{
-		return $this->belongsTo('Api\Model\User');
+		return $this->belongsTo('Api\Model\User', 'user_id');
 	}
 	public function tool()
 	{
-		return $this->belongsTo('Api\Model\Tool');
+		return $this->belongsTo('Api\Model\Tool', 'tool_id');
 	}
 	
 }

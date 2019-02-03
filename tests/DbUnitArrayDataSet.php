@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-class DbUnitArrayDataSet extends \PHPUnit_Extensions_Database_DataSet_AbstractDataSet
+class DbUnitArrayDataSet extends \PHPUnit\DbUnit\DataSet\AbstractDataSet
 {
     /**
      * @var array
@@ -19,8 +19,8 @@ class DbUnitArrayDataSet extends \PHPUnit_Extensions_Database_DataSet_AbstractDa
                 $columns = array_keys($rows[0]);
             }
 
-            $metaData = new \PHPUnit_Extensions_Database_DataSet_DefaultTableMetaData($tableName, $columns);
-            $table = new \PHPUnit_Extensions_Database_DataSet_DefaultTable($metaData);
+            $metaData = new \PHPUnit\DbUnit\DataSet\DefaultTableMetadata($tableName, $columns);
+            $table = new \PHPUnit\DbUnit\DataSet\DefaultTable($metaData);
 
             foreach ($rows AS $row) {
                 $table->addRow($row);
@@ -31,7 +31,7 @@ class DbUnitArrayDataSet extends \PHPUnit_Extensions_Database_DataSet_AbstractDa
 
     protected function createIterator($reverse = FALSE)
     {
-        return new \PHPUnit_Extensions_Database_DataSet_DefaultTableIterator($this->tables, $reverse);
+        return new \PHPUnit\DbUnit\DataSet\DefaultTableIterator($this->tables, $reverse);
     }
 
     public function getTable($tableName)

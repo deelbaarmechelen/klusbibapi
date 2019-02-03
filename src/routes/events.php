@@ -30,7 +30,7 @@ $app->get('/events', function ($request, $response, $args) {
         $perPage = '1000';
     }
     $events = Capsule::table('events')->orderBy($sortfield, $sortdir)->get();
-    $events_page = array_slice($events, ($page - 1) * $perPage, $perPage);
+    $events_page = array_slice($events->all(), ($page - 1) * $perPage, $perPage);
     $data = array();
     foreach ($events_page as $event) {
         array_push($data, EventMapper::mapEventToArray($event));

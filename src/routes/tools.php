@@ -44,7 +44,7 @@ $app->get('/tools', function ($request, $response, $args) {
         $builder = $builder->where('category', $category);
     }
     $tools = $builder->orderBy($sortfield, $sortdir)->get();
-	$tools_page = array_slice($tools, ($page - 1) * $perPage, $perPage);
+	$tools_page = array_slice($tools->all(), ($page - 1) * $perPage, $perPage);
 	
 	$data = array();
 	foreach ($tools_page as $tool) {

@@ -31,7 +31,7 @@ class User extends Model
 	
 	public function reservations()
 	{
-		return $this->hasMany('Api\Model\Reservation');
+		return $this->hasMany('Api\Model\Reservation', 'user_id');
 	}
 	
 	public function isAdmin() {

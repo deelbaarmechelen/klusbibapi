@@ -36,7 +36,7 @@ $app->get('/reservations', function ($request, $response, $args) {
 	    $querybuilder->whereIn('state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
     }
 	$reservations = $querybuilder->orderBy($sortfield, $sortdir)->get();
-	$reservations_page = array_slice($reservations, ($page - 1) * $perPage, $perPage);
+	$reservations_page = array_slice($reservations->all(), ($page - 1) * $perPage, $perPage);
 	
 	$data = array();
 	foreach ($reservations_page as $reservation) {

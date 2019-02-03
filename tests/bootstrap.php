@@ -55,14 +55,10 @@ class LocalDbWebTestCase extends WebDbTestCase {
 	public $settings;
 	private $dependencies;
 	
-	function __construct() {
-		$this->settings = require __DIR__ . '/test_settings.php';
-// 		$this->settings = $settings["settings"];
-	}
-	
 	// Run for each unit test to setup our slim app environment
 	public function setup($dependencies = null, WebTestClient $client = NULL)
 	{
+        $this->settings = require __DIR__ . '/test_settings.php';
 		$this->dependencies = $dependencies;
 		parent::setUp();
 	
