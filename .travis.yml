@@ -7,7 +7,7 @@ addons:
       - mysql-server
       - mysql-client
 php:
-- '7.0'
+- '7.2'
 env:
 - TEST_DATABASE_URL=mysql://root:@127.0.0.1:3306/klusbibapi JWT_SECRET=dummy
 services:
