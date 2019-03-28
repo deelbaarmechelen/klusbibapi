@@ -10,6 +10,8 @@ use There4\Slim\Test\WebDbTestCase;
 use Tests\DbUnitArrayDataSet;
 use Api\Token;
 use Tuupola\Base62;
+use Api\User\UserManager;
+use Api\User\UserController;
 
 define('PROJECT_ROOT', realpath(__DIR__ . '/..'));
 
@@ -207,6 +209,10 @@ class LocalDbWebTestCase extends WebDbTestCase {
     	}
     	$container = $this->app->getContainer();
     	$container["token"] = $this->generateToken($sub, $scopes);
+    	// also update userController as it uses the token
+        $logger = $container['logger'];
+        $inventory = $container['Api\Inventory'];
+    	$container['Api\User\UserController'] = new UserController($logger, new UserManager($inventory, $logger),$container["token"]);
     }
     
     private function generateToken($sub, $scopes) {

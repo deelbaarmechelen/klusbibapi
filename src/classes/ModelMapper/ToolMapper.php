@@ -2,6 +2,8 @@
 namespace Api\ModelMapper;
 
 use \Api\Model\Tool;
+use Api\Model\ToolCategory;
+use Api\Model\ToolState;
 
 class ToolMapper
 {
@@ -95,4 +97,144 @@ class ToolMapper
 		}
 		
 	}
+
+    static public function mapAssetToTool($asset) {
+	    $tool = new Tool();
+        $tool->tool_id = $asset->id;
+        $tool->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
+        $tool->description = $asset->notes;
+        $tool->code = $asset->asset_tag;
+//        $tool->owner_id = $data["owner_id"]; // FIXME: should match supplier??
+//        $tool->reception_date = $data["reception_date"];
+        $tool->category = self::mapAssetCategoryToToolCategory($asset);
+        $tool->brand = html_entity_decode ($asset->manufacturer->name);
+        $tool->type = $asset->model_number;
+        $tool->serial = $asset->serial;
+//        $tool->manufacturing_year = $data["manufacturing_year"];
+//        $tool->manufacturer_url = $data["manufacturer_url"];
+        $tool->img = $asset->image;
+        if (isset($asset->custom_fields) && !empty($asset->custom_fields)) {
+            $tool->replacement_value = $asset->custom_fields->replacement_value->value; // FIXME: derive from depreciation rules?
+            $tool->experience_level = $asset->custom_fields->experience_level->value;
+            $tool->safety_risk = $asset->custom_fields->safety_risk->value;
+            // FIXME: not accessible without login!
+            $tool->doc_url = $asset->custom_fields->doc_url->value;
+        }
+        $tool->state = self::mapAssertStateToToolState($asset);
+        $tool->visible = self::isVisible($asset);
+        //$tool->reservations ???
+	    return $tool;
+    }
+
+    protected static function isVisible($asset) {
+        if ($asset->status_label->status_type == "archived") {
+            return false;
+        }
+	    // no visibility info in asset -> all tools visible
+	    return true;
+    }
+
+    protected static function mapAssertStateToToolState($asset) {
+        $status_type = $asset->status_label->status_type;
+        $status_meta = $asset->status_label->status_meta;
+	    if ($status_type == "deployable") {
+	        if ($status_meta == "deployed") {
+                return ToolState::IN_USE;
+            }
+	        return ToolState::READY;
+        } else if ($status_type == "archived") {
+	        return ToolState::DISPOSED;
+	    } else if ($status_type == "pending") {
+            return ToolState::MAINTENANCE;
+        }
+	    return $asset->status_label->status_type;
+    }
+    /**
+     * @param $asset
+     * @return mixed
+     */
+    protected static function mapAssetCategoryToToolCategory($asset)
+    {
+        if (isset($asset->custom_fields) && isset($asset->custom_fields->group)
+            && isset($asset->custom_fields->group->value)) {
+            if (in_array(strtolower($asset->custom_fields->group->value),
+                array(ToolCategory::CONSTRUCTION,
+                    ToolCategory::CAR,
+                    ToolCategory::GARDEN,
+                    ToolCategory::GENERAL,
+                    ToolCategory::TECHNICS,
+                    ToolCategory::WOOD)))
+            return strtolower($asset->custom_fields->group->value);
+        }
+        $assetCategory = strtolower($asset->category->name);
+        if ($assetCategory == 'boorhamer'
+         || $assetCategory == 'klopboormachine'
+         || $assetCategory == 'slijpmolen'
+         || $assetCategory == 'slijpschijf'
+         || $assetCategory == 'tegelsnijder'
+         || $assetCategory == 'accu boormachine'
+         || $assetCategory == 'boormachine') {
+            return ToolCategory::CONSTRUCTION;
+        }
+        if ($assetCategory == 'sneeuwketting'
+         || $assetCategory == 'hydrolische krik') {
+            return ToolCategory::CAR;
+        }
+        if ($assetCategory == 'bladblazer'
+         || $assetCategory == 'steekspade'
+         || $assetCategory == 'kettingzaag'
+         || $assetCategory == 'snoeischaar'
+         || $assetCategory == 'kantenmaaier'
+         || $assetCategory == 'bosmaaier'
+         || $assetCategory == 'boomzaag'
+         || $assetCategory == 'hogedrukreiniger'
+         || $assetCategory == 'tuinslang'
+         || $assetCategory == 'heggenschaar'
+         || $assetCategory == 'bosmaaier+haagschaar+boomzaag'
+         || $assetCategory == 'haagschaar') {
+            return ToolCategory::GARDEN;
+        }
+        if ($assetCategory == 'soldeerbout'
+         || $assetCategory == 'soldeerbout') {
+            return ToolCategory::TECHNICS;
+        }
+        if ($assetCategory == 'cirkelzaag'
+            || $assetCategory == 'decoupeerzaag'
+            || $assetCategory == 'bovenfrees'
+            || $assetCategory == 'wipzaag'
+            || $assetCategory == 'houtschaafmachine'
+            || $assetCategory == 'bandschuurmachine'
+            || $assetCategory == 'vlakschuurmachine'
+            || $assetCategory == 'puntschuurmachine'
+            || $assetCategory == 'multischuurmachine'
+            || $assetCategory == 'deltaschuurmachine'
+            || $assetCategory == 'afkortzaag'
+            || $assetCategory == 'krokodilzaag') {
+            return ToolCategory::WOOD;
+        }
+
+        return ToolCategory::GENERAL;
+    }
 }
+//    {
+//        "tool_id": null,
+//        "name": "",
+//        "description": null,
+//        "code": "KB-000-17-002",
+//        "owner_id": null,
+//        "reception_date": null,
+//        "category": "Bouw",
+//        "brand": null,
+//        "type": null,
+//        "serial": null,
+//        "manufacturing_year": null,
+//        "manufacturer_url": null,
+//        "doc_url": null,
+//        "img": null,
+//        "replacement_value": null,
+//        "experience_level": null,
+//        "safety_risk": null,
+//        "state": null,
+//        "visible": false,
+//        "reservations": []
+//    },

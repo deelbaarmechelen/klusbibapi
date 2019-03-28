@@ -1,10 +1,16 @@
 <?php
 // DIC configuration
-use Api\Token;
 use Slim\Middleware\JwtAuthentication;
 use Slim\Middleware\HttpBasicAuthentication;
 use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Api\Token;
 use Api\Mail\MailManager;
+use Api\User\UserController;
+use Api\Tool\ToolController;
+use Api\User\UserManager;
+use Api\Tool\ToolManager;
+use Api\Inventory\Inventory;
+use Api\Inventory\SnipeitInventory;
 use Mollie\Api\MollieApiClient;
 
 // Fetch DI Container
@@ -108,4 +114,22 @@ $container["JwtAuthentication"] = function ($container) {
 
 $container["enrolmentFactory"] = function ($container) {
     return new \Api\Enrolment\EnrolmentFactory(new MailManager(), new MollieApiClient());
+};
+$container["Api\Inventory"] = function ($container) {
+    $logger = $container->get("logger"); // retrieve the 'logger' from the container
+    return SnipeitInventory::instance($logger);
+};
+
+$container['Api\User\UserController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $token = $c->get("token"); // retrieve the 'token' from the container
+    $inventory = $c->get("Api\Inventory");
+    return new UserController($logger, new UserManager($inventory, $logger),$token);
+};
+
+$container['Api\Tool\ToolController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $token = $c->get("token"); // retrieve the 'token' from the container
+    $inventory = $c->get("Api\Inventory");
+    return new ToolController($logger, new ToolManager($inventory),$token);
 };

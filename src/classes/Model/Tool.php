@@ -21,4 +21,5 @@ class Tool extends Model
 	{
 		return $this->hasMany('Api\Model\Reservation', 'tool_id');
 	}
+
 }

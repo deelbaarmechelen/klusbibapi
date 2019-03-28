@@ -6,6 +6,12 @@ use Slim\Middleware\HttpBasicAuthentication;
 use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Tuupola\Base62;
 use Api\Mail\MailManager;
+use Api\User\UserController;
+use Api\User\UserManager;
+use Api\Tool\ToolManager;
+use Api\Tool\ToolController;
+use Api\Inventory\Inventory;
+use Tests\Mock\InventoryMock;
 use Tests\Mock\PHPMailerMock;
 use Tests\Mock\MollieApiClientMock;
 
@@ -134,4 +140,22 @@ $container["JwtAuthentication"] = function ($container) {
 
 $container["enrolmentFactory"] = function ($container) {
     return new \Api\Enrolment\EnrolmentFactory(new MailManager(new PHPMailerMock()), new MollieApiClientMock());
+};
+$container["Api\Inventory"] = function ($container) {
+    $logger = $container->get("logger"); // retrieve the 'logger' from the container
+    return new InventoryMock(null, null, $logger);
+};
+
+$container['Api\User\UserController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $token = $c->get("token"); // retrieve the 'token' from the container
+    $inventory = $c->get("Api\Inventory");
+    return new UserController($logger, new UserManager($inventory, $logger),$token);
+};
+
+$container['Api\Tool\ToolController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $token = $c->get("token"); // retrieve the 'token' from the container
+    $inventory = $c->get("Api\Inventory");
+    return new ToolController($logger, new ToolManager($inventory), $token);
 };

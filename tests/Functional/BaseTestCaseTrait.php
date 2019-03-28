@@ -105,7 +105,7 @@ trait BaseTestCaseTrait
         $app = new App($settings);
 
         // Set up dependencies
-        require __DIR__ . '/../../src/dependencies.php';
+        require __DIR__ . '/../dependencies.php';
 
         // Register middleware
         if ($this->withMiddleware) {

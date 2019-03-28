@@ -323,6 +323,7 @@ class EnrolmentTest extends LocalDbWebTestCase
         $scopes = array("users.all");
         $this->setToken(null, $scopes);
         $bodyGetUser = $this->client->get('/users/' . $userId);
+        print_r($bodyGetUser);
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $user = json_decode($bodyGetUser);
         return $user;

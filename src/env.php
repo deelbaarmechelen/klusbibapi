@@ -37,3 +37,5 @@ if (!defined('ENROLMENT_NOTIF_EMAIL')) define("ENROLMENT_NOTIF_EMAIL", getenv('E
 if (!defined('RESERVATION_NOTIF_EMAIL')) define("RESERVATION_NOTIF_EMAIL", getenv('RESERVATION_NOTIF_EMAIL'));
 
 if (!defined('MOLLIE_API_KEY')) define("MOLLIE_API_KEY", getenv('MOLLIE_API_KEY'));
+if (!defined('INVENTORY_API_KEY')) define("INVENTORY_API_KEY", getenv('INVENTORY_API_KEY'));
+if (!defined('INVENTORY_URL')) define("INVENTORY_URL", getenv('INVENTORY_URL'));

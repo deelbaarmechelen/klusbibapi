@@ -8,6 +8,7 @@ class UserMapper
 	static public function mapUserToArray($user) {
 	
 		$userArray = array("user_id" => $user->user_id,
+				"user_ext_id" => $user->user_ext_id,
 				"state" => $user->state,
 				"firstname" => $user->firstname,
 				"lastname" => $user->lastname,
@@ -95,4 +96,5 @@ class UserMapper
 			$user->accept_terms_date = $data["accept_terms_date"];
 		}
 	}
+
 }
