@@ -23,13 +23,13 @@ class ToolManager
 
     public function getAll($showAll = false, $category = null, $sortfield = "code", $sortdir = "asc",
         $page=1, $perPage = 1000) {
-//        $tools = $this->getAllFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage);
-        $tools = $this->getAllFromDatabase($showAll, $category, $sortfield, $sortdir);
+        $tools = $this->getAllFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage);
+//        $tools = $this->getAllFromDatabase($showAll, $category, $sortfield, $sortdir);
         return $tools;
     }
     public function getById($id) {
-//        $tool = $this->getByIdFromInventory($id);
-        $tool = \Api\Model\Tool::find($id);
+        $tool = $this->getByIdFromInventory($id);
+//        $tool = \Api\Model\Tool::find($id);
 
         return $tool;
     }
