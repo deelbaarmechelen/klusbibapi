@@ -47,7 +47,7 @@ class SnipeitInventory implements Inventory
             $tools->add($tool);
         }
 
-        return $assets;
+        return $tools;
     }
 
     public function getToolById($id) : ?Tool
