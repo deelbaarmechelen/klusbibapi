@@ -37,15 +37,19 @@ class UserManager
      */
     function getById($id) {
         $user = User::find($id);
-        if (isset($user->user_ext_id)) {
-            $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
-            if (!$this->inventoryUpToDate($user, $inventoryUser)) {
-                $this->updateInventory($user);
+        try {
+            if (isset($user->user_ext_id)) {
+                $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
+                if (!$this->inventoryUpToDate($user, $inventoryUser)) {
+                    $this->updateInventory($user);
+                }
+            } else {
+                $inventoryUser = $this->inventory->postUser($user);
+                $user->user_ext_id = $inventoryUser->user_ext_id;
+                $user->save();
             }
-        } else {
-            $inventoryUser = $this->inventory->postUser($user);
-            $user->user_ext_id = $inventoryUser->user_ext_id;
-            $user->save();
+        } catch (\Exception $ex) {
+            $this->logger("Problem while syncing user with id $id: " . $ex->getMessage());
         }
         return $user;
     }
