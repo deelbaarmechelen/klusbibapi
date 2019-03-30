@@ -49,7 +49,7 @@ class UserManager
                 $user->save();
             }
         } catch (\Exception $ex) {
-            $this->logger("Problem while syncing user with id $id: " . $ex->getMessage());
+            $this->logger->error("Problem while syncing user with id $id: " . $ex->getMessage());
         }
         return $user;
     }
