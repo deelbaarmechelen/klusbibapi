@@ -69,7 +69,7 @@ $app->post('/auth/verifyemail', function ($request, $response, $args) {
 	if (null == $user) {
 		return $response->withStatus(404);
 	}
-	if ($user->email_state != EmailState::CONFIRM_EMAIL) {
+	if ($user->email_state == EmailState::CONFIRMED) {
 		$data["status"] = "error";
 		$data["message"] = "No email confirmation required for user";
 		return $response->withStatus(412)
