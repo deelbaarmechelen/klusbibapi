@@ -120,7 +120,7 @@ $app->get('/auth/confirm/{userId}', function ($request, $response, $args) {
     $user->save();
 
 	// Render index view
-	return $this->view->render($response, 'confirm_email',  [
+	return $this->view->render($response, 'confirm_email.phtml',  [
 			'userId' => $args['userId']
 	]);
 });
