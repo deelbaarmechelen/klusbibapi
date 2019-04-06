@@ -3,6 +3,8 @@
 namespace Api\Inventory;
 
 use Api\ModelMapper\ToolMapper;
+use Api\Tool\NotFoundException;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\RequestOptions;
 use Api\Model\User;
 use Api\Model\Tool;
@@ -40,7 +42,7 @@ class SnipeitInventory implements Inventory
     public function getTools($offset = 0, $limit=1000)
     {
         $tools = new Collection();
-        $assets = $this->get('hardware?offset=' . $offset . '&limit=' . $limit);
+        $assets = $this->get('hardware?offset=' . $offset . '&limit=' . $limit . '&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
 
         foreach ($assets->rows as $asset) {
             $tool = ToolMapper::mapAssetToTool($asset);
@@ -48,6 +50,19 @@ class SnipeitInventory implements Inventory
         }
 
         return $tools;
+    }
+
+    public function getToolByCode($code) : ?Tool
+    {
+        $assets = $this->get('hardware/?search=' . $code . '&limit=5&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
+        if ($assets->total == 1) {
+            $asset = $assets->rows[0];
+            return ToolMapper::mapAssetToTool($asset);
+        } else if ($assets->total == 0) {
+          throw new \Api\Exception\NotFoundException();
+        }
+        $this->logger->error("Multiple tools found in inventory with same code (asset tag): $code");
+        return null; // multiple values found...
     }
 
     public function getToolById($id) : ?Tool
@@ -195,11 +210,25 @@ class SnipeitInventory implements Inventory
             $options[RequestOptions::JSON] = $data;
         }
         $this->logger->info("Inventory request: $method; $target; " . json_encode($data));
-        $res = $this->client->request($method, $target, $options);
-//        [
-//            'json' => ['foo' => 'bar']
-//        ]);
+        try {
+            $res = $this->client->request($method, $target, $options);
+        } catch (ClientException $clientException) {
+            if ($clientException->hasResponse()) {
+                $response = $clientException->getResponse();
+                $statusCode = $response->getStatusCode();
+            }
+            if (isset($statusCode) && ($statusCode == 404 || $statusCode == 403)) {
+                // access forbidden is considered as not found (can be an asset or user from another company)
+                throw new \Api\Exception\NotFoundException();
+            }
+
+        }
+
         if ($res->getStatusCode() >= 400){
+            if ($res->getStatusCode() == 404) {
+                throw new \Api\Exception\NotFoundException();
+            }
+            $this->logger->error('Inventory request to "' . $target . '" failed with status code ' . $res->getStatusCode());
             throw new \RuntimeException('Inventory request to "' . $target . '" failed with status code ' . $res->getStatusCode());
         }
         $contentType = $res->getHeader('content-type')[0];

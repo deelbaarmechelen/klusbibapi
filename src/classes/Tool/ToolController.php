@@ -2,6 +2,7 @@
 
 namespace Api\Tool;
 
+use Api\Exception\NotFoundException;
 use Api\Inventory\Inventory;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\ModelMapper\ToolMapper;
@@ -75,7 +76,11 @@ class ToolController
     function getById($request, $response, $args) {
         $this->logger->info("Klusbib GET '/tools/id' route");
 
-        $tool = $this->toolManager->getById($args['toolid']);
+        try {
+            $tool = $this->toolManager->getById($args['toolid']);
+        } catch (NotFoundException $nfe) {
+            return $response->withStatus(404);
+        }
 
         if (null == $tool) {
             return $response->withStatus(404);

@@ -101,6 +101,7 @@ class ToolMapper
     static public function mapAssetToTool($asset) {
 	    $tool = new Tool();
         $tool->tool_id = $asset->id;
+        $tool->tool_ext_id = $asset->id;
         $tool->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
         $tool->description = $asset->notes;
         $tool->code = $asset->asset_tag;

@@ -157,5 +157,5 @@ $container['Api\Tool\ToolController'] = function($c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
-    return new ToolController($logger, new ToolManager($inventory), $token);
+    return new ToolController($logger, new ToolManager($inventory, $logger), $token);
 };

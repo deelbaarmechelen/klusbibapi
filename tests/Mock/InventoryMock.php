@@ -100,4 +100,9 @@ class InventoryMock implements Inventory
     {
         // TODO: Implement deleteUser() method.
     }
+
+    public function getToolByCode($code): ?Tool
+    {
+        // TODO: Implement getToolByCode() method.
+    }
 }

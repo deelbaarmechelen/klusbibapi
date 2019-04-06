@@ -11,6 +11,7 @@ use Api\Model\Tool;
  */
 interface Inventory {
     public function getTools($offset = 0, $limit=1000);
+    public function getToolByCode($code) : ?Tool;
     public function getToolById($id) : ?Tool;
 
     public function postUser(User $user);

@@ -9,16 +9,19 @@ use Illuminate\Database\Eloquent\Collection;
 
 class ToolManager
 {
-    public static function instance() {
-        return new ToolManager(SnipeitInventory::instance());
+    public static function instance($logger = null) {
+        return new ToolManager(SnipeitInventory::instance(), $logger);
     }
     private $inventory;
+    private $logger;
+
     /**
      * ToolManager constructor.
      */
-    public function __construct(Inventory $inventory)
+    public function __construct(Inventory $inventory, $logger)
     {
         $this->inventory = $inventory;
+        $this->logger = $logger;
     }
 
     public function getAll($showAll = false, $category = null, $sortfield = "code", $sortdir = "asc",
@@ -31,12 +34,27 @@ class ToolManager
         $tool = $this->getByIdFromInventory($id);
 //        $tool = \Api\Model\Tool::find($id);
 
+        // TODO: create or update corresponding tool in local db??
+        // needed to store mutliple images and handle reservations
         return $tool;
     }
 
     protected function getByIdFromInventory($id) {
         return $this->inventory->getToolById($id);
     }
+
+//    protected function getByIdFromInventory($id) {
+//        $tool = \Api\Model\Tool::find($id);
+//        $this->logger->info(json_encode($tool));
+//        if (isset($tool->tool_ext_id)) {
+//            return $this->inventory->getToolById($tool->tool_ext_id);
+//        } else {
+//            $inventoryTool = $this->inventory->getToolByCode($tool->code);
+//            $tool->tool_ext_id = $inventoryTool->tool_ext_id;
+//            return $inventoryTool;
+//        }
+//
+//    }
     /**
      * @param $showAll
      * @param $categoryFilter

@@ -150,6 +150,9 @@ class EnrolmentManager
     public static function getMembershipEndDate($startDateMembership): string
     {
         $startDate = DateTime::createFromFormat('Y-m-d', $startDateMembership);
+        if ($startDate == false) {
+            throw new \InvalidArgumentException("Invalid date format (expecting 'YYY-MM-DD'): " . $startDateMembership);
+        }
         $pivotDate = new DateTime('first day of december this year');
         $membershipEndDate = $startDate->add(new DateInterval('P1Y')); //$endDate->format('Y');
         $currentDate = new DateTime();

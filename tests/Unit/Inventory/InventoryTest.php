@@ -19,7 +19,7 @@ class InventoryTest extends TestCase
         $logger = $this->createMock(Logger::class);
         SnipeitInventory::instance($logger)->getTools();
     }
-    public function testGetAssets() {
+    public function testGetTools() {
         // Create a mock and queue responses.
         $body = '{"total":1,"rows":[
         {"id":2,"name":"","asset_tag":"KB-000-17-002","serial":"","model":{"id":1,"name":"Boorhamer"},
@@ -40,11 +40,11 @@ class InventoryTest extends TestCase
 
         $logger = $this->createMock(Logger::class);
         $inventory = new SnipeitInventory($client,"DUMMY_KEY", $logger);
-        $assets = $inventory->getTools();
-        $this->assertNotNull($assets);
-//        var_dump($assets);
-        $this->assertEquals(1, count($assets->rows));
-        $this->assertEquals('KB-000-17-002', $assets->rows[0]->asset_tag);
+        $tools = $inventory->getTools();
+        $this->assertNotNull($tools);
+//        var_dump($tools[0]);
+        $this->assertEquals(1, count($tools));
+        $this->assertEquals('KB-000-17-002', $tools[0]->code);
     }
 
     public function testGetUserByEmail() {
