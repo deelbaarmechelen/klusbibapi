@@ -60,7 +60,9 @@ class UserMapper
 			}
 			$user->hash = password_hash($data["password"], PASSWORD_DEFAULT);
 		}
-		if (!empty($data["membership_start_date"]) && $isAdmin) {
+		if (!empty($data["membership_start_date"])
+            && ($isAdmin || empty($user->membership_end_date))) {
+		    // Once set, only admins can change end_date. Check for empty to allow set of initial value (defaults to 1 year membership)
 			$user->membership_start_date = $data["membership_start_date"];
 			if (!empty($data["membership_end_date"])) {
 				$user->membership_end_date = $data["membership_end_date"];

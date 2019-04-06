@@ -148,6 +148,7 @@ class UsersTest extends LocalDbWebTestCase
 		);
 		$body = $this->client->post('/users', $data);
 		$this->assertEquals(201, $this->client->response->getStatusCode());
+		echo "$body";
 		$user = json_decode($body);
 		$this->assertNotNull($user->user_id);
 
@@ -164,6 +165,8 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals(UserState::CHECK_PAYMENT, $user->state); // state should be forced to check payment
 		$this->assertEquals(EmailState::CONFIRM_EMAIL, $user->email_state); // email state should be forced to confirm email
 		$this->assertNotNull($user->accept_terms_date);
+		$this->assertTrue(isset($user->membership_start_date));
+		$this->assertTrue(isset($user->membership_end_date));
 	}
 	
 	public function testPostUsersAlreadyExists()
