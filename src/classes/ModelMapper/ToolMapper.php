@@ -131,8 +131,14 @@ class ToolMapper
         if ($asset->status_label->status_type == "archived") {
             return false;
         }
-	    // no visibility info in asset -> all tools visible
-	    return true;
+        if ($asset->status_label->status_type == "pending") {
+            return true;
+        }
+        if ($asset->status_label->status_type == "deployable") {
+            return true;
+        }
+        // no visibility info in asset -> tools not visible by default
+	    return false;
     }
 
     protected static function mapAssertStateToToolState($asset) {
