@@ -7,4 +7,5 @@ abstract class ReservationState
 	const CONFIRMED = "CONFIRMED";
 	const CANCELLED = "CANCELLED";
 	const CLOSED = "CLOSED";
+    const DELETED = "DELETED";
 }
