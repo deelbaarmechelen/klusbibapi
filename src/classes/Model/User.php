@@ -2,6 +2,7 @@
 namespace Api\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Api\Model\UserRole;
 
 class User extends Model
 {
@@ -44,12 +45,12 @@ class User extends Model
 	// Query helpers
     public function scopeMembers($query)
     {
-        return $query->where('role', '=', 'member')
-            ->orWhere('role', '=', 'admin');
+        return $query->where('role', '=', UserRole::MEMBER)
+            ->orWhere('role', '=', UserRole::ADMIN);
     }
     public function scopeSupporters($query)
     {
-        return $query->where('role', '=', 'supporter');
+        return $query->where('role', '=', UserRole::SUPPORTER);
     }
     public function scopeActive($query)
     {
@@ -65,10 +66,10 @@ class User extends Model
     }
     public function scopeAdmin($query)
     {
-        return $query->where('role', '=', 'admin');
+        return $query->where('role', '=', UserRole::ADMIN);
     }
     public function scopeNotAdmin($query)
     {
-        return $query->where('role', '<>', 'admin');
+        return $query->where('role', '<>', UserRole::ADMIN);
     }
 }

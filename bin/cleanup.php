@@ -2,6 +2,8 @@
 <?php
 
 use Api\Model\ReservationState;
+use Api\Model\UserState;
+use Api\Model\UserRole;
 
 # Deny access from the web
 if (isset($_SERVER['REMOTE_ADDR'])) die('Permission denied.');
@@ -68,12 +70,20 @@ foreach ($users as $user) {
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
     echo "email: " . $user->email . "\n";
-    $user->state = 'DELETED';
+    $toolsCount = \Api\Model\Tool::where('owner_id' , '=', $user->user_id)->count();
+    if ($toolsCount > 0) {
+        // User donated tool(s) -> keep user active but switch role to supporter
+        echo "Donated tools: " . $toolsCount . "\n";
+        $user->state = UserState::ACTIVE;
+        $user->role = UserRole::SUPPORTER;
+    } else {
+        $user->state = UserState::DELETED;
+    }
     $user->save();
 }
 $activeCount = \Api\Model\User::active()->members()->count();
-$expiredCount = \Api\Model\User::where('state', 'EXPIRED')->count();
-$deletedCount = \Api\Model\User::where('state', 'DELETED')->count();
+$expiredCount = \Api\Model\User::where('state', UserState::EXPIRED)->count();
+$deletedCount = \Api\Model\User::where('state', UserState::DELETED)->count();
 echo "Active users: $activeCount\n";
 echo "Expired users: $expiredCount\n";
 echo "Deleted users: $deletedCount\n";
