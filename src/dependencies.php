@@ -89,8 +89,8 @@ $container["JwtAuthentication"] = function ($container) {
 			"passthrough" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/auth/reset", "/auth/verifyemail"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
-			"secure" => false, // FIXME: enable HTTPS and switch this to true
-			"relaxed" => ["admin", "klusbib.deeleco"], // list hosts allowed without HTTPS for DEV
+			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
+			"relaxed" => ["admin"], // list hosts allowed without HTTPS for DEV
 			"error" => function ($request, $response, $arguments) {
 				$data = array("error" => array( "status" => 401, "message" => $arguments["message"]));
 				return $response

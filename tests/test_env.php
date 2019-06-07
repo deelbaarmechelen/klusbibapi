@@ -20,6 +20,7 @@ $passtst = $dsntst->pass;
 $porttst = $dsntst->port;
 
 defined('PROJECT_HOME') or define("PROJECT_HOME",getenv('PROJECT_HOME'));
+defined('APP_ENV') or define("APP_ENV",'development');
 
 defined('MAIL_PORT') or define("MAIL_PORT", "26"); // smtp port number
 defined('MAIL_USERNAME') or define("MAIL_USERNAME", "myUser"); // smtp username

@@ -23,6 +23,10 @@ else {
 	$port = getenv('DB_PORT');
 }
 
+if (!defined('APP_ENV')) {
+    $appEnv = getenv('APP_ENV');
+    define('APP_ENV',(isset($appEnv) ? $appEnv : 'production') ); // defaults to production
+}
 if (!defined('PROJECT_HOME')) define("PROJECT_HOME",getenv('PROJECT_HOME'));
 
 if (!defined('MAIL_PORT')) define("MAIL_PORT", getenv('MAIL_PORT')); // smtp port number

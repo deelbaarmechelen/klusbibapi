@@ -15,6 +15,8 @@ class InventoryMock implements Inventory
     private $apiKey;
     private $logger;
 
+    private static $users = array();
+
     /**
      * InventoryMock constructor.
      * @param $client HttpClient to call inventory
@@ -26,6 +28,20 @@ class InventoryMock implements Inventory
         $this->client = $client;
         $this->apiKey = $apikey;
         $this->logger = $logger;
+    }
+
+    public static function addUser(User $user) {
+        array_push(InventoryMock::$users, $user);
+    }
+    public static function removeUser(User $user) {
+        $key = array_search($user, InventoryMock::$users);
+        if ($key) {
+            unset($key);
+        }
+    }
+
+    public static function clearUsers() {
+        InventoryMock::$users = array();
     }
     public function getTools($offset = 0, $limit = 1000)
     {
@@ -53,6 +69,7 @@ class InventoryMock implements Inventory
     {
         $newuser = new User();
         $newuser->user_ext_id = 1;
+        array_push(InventoryMock::$users, $newuser);
         return $newuser;
     }
 
@@ -63,7 +80,12 @@ class InventoryMock implements Inventory
      */
     public function getUserByExtId($id): ?User
     {
-        // TODO: Implement getUserByExtId() method.
+        foreach (InventoryMock::$users as $user) {
+            if ($user->user_ext_id = $id) {
+                return $user;
+            }
+        }
+        return null;
     }
 
     /**
@@ -73,7 +95,12 @@ class InventoryMock implements Inventory
      */
     public function getUserByEmail($email): ?User
     {
-        // TODO: Implement getUserByEmail() method.
+        foreach (InventoryMock::$users as $user) {
+            if ($user->email = $email) {
+                return $user;
+            }
+        }
+        return null;
     }
 
     /**
@@ -83,7 +110,11 @@ class InventoryMock implements Inventory
      */
     public function userExists(User $user): bool
     {
-        // TODO: Implement userExists() method.
+        $key = array_search($user, InventoryMock::$users);
+        if ($key) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -98,7 +129,11 @@ class InventoryMock implements Inventory
 
     public function deleteUser($id): bool
     {
-        // TODO: Implement deleteUser() method.
+        foreach (InventoryMock::$users as $user) {
+            if ($user->user_ext_id = $id) {
+                unset($user);
+            }
+        }
     }
 
     public function getToolByCode($code): ?Tool

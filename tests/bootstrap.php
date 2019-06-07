@@ -62,6 +62,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
 	{
         $this->settings = require __DIR__ . '/test_settings.php';
 		$this->dependencies = $dependencies;
+		\Tests\Mock\InventoryMock::clearUsers();
 		parent::setUp();
 	
 		if (isset($client)) {

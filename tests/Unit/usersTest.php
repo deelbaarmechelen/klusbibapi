@@ -116,7 +116,6 @@ class UsersTest extends LocalDbWebTestCase
 				"role" => "member"
 		);
 		$body = $this->client->post('/users', $data, $header);
-// 		print_r($body);
 		$this->assertEquals(201, $this->client->response->getStatusCode());
 		$user = json_decode($body);
 		$this->assertNotNull($user->user_id);
@@ -125,6 +124,7 @@ class UsersTest extends LocalDbWebTestCase
 		$scopes = array("users.all");
 		$this->setToken(null, $scopes);
 		$bodyGet = $this->client->get('/users/' . $user->user_id);
+        print_r($bodyGet);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$user = json_decode($bodyGet);
 		$this->assertEquals($data["firstname"], $user->firstname);

@@ -3,9 +3,15 @@
 {% block body %}
 <div>
     <p>Beste,</p>
-    <p>Via de website werd een nieuw lidmaatschap geregistreerd, maar er trad een probleem op bij de verwerking van de betaling<br/>
+    <p>Via de website werd een {% if isRenewal %}lidmaatschap hernieuwing{% else %}nieuw lidmaatschap{% endif %} geregistreerd,
+        maar er trad een probleem op bij de verwerking van de betaling<br/>
+        {% if isRenewal %}
+        Gebruiker {{ newUser.firstname }} {{ newUser.lastname }} probeerde zijn lidmaatschap te verlengen
+        en heeft nu status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )
+        {% else %}
         Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
-        aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
+        aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )
+        {% endif %}<br/>
         Deze gebruiker koos ervoor om te betalen via {{ newUser.payment_mode }}  <br/>
     </p>
     <p>
