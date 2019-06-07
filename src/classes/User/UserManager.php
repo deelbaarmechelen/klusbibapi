@@ -41,12 +41,13 @@ class UserManager
         try {
             if (isset($user->user_ext_id)) {
                 $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
-                if (!$this->inventoryUpToDate($user, $inventoryUser)) {
+                if ($inventoryUser == null) {
+                    $this->addToInventory($user);
+                } elseif (!$this->inventoryUpToDate($user, $inventoryUser)) {
                     $this->updateInventory($user);
                 }
             } else {
                 $this->addToInventory($user);
-                $user->save();
             }
         } catch (\Exception $ex) {
             $this->logger->error("Problem while syncing user with id $id: " . $ex->getMessage());

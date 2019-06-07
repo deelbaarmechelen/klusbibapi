@@ -2,6 +2,7 @@
 
 namespace Api\Inventory;
 
+use Api\Exception\InventoryException;
 use Api\ModelMapper\ToolMapper;
 use Api\Tool\NotFoundException;
 use GuzzleHttp\Exception\ClientException;
@@ -79,7 +80,18 @@ class SnipeitInventory implements Inventory
      */
     public function getUserByExtId($id) : ?User
     {
-        $inventoryUser = $this->get('users/' . $id);
+        try {
+            $inventoryUser = $this->get('users/' . $id);
+            SnipeitInventory::mapInventoryUserToApiUser($inventoryUser);
+        } catch (InventoryException $ex) {
+            // no user or invalid user
+            $this->logger->error($ex->getMessage());
+            if (InventoryException::USER_NOT_FOUND == $ex->getCode()
+            || InventoryException::INVALID_USER == $ex->getCode()) {
+                return null;
+            }
+            throw $ex; // other errors: rethrow
+        }
         return SnipeitInventory::mapInventoryUserToApiUser($inventoryUser);
     }
 
@@ -258,12 +270,16 @@ class SnipeitInventory implements Inventory
      * @return User converted user
      */
     static public function mapInventoryUserToApiUser($inventoryUser) : User {
+        if (!isset($inventoryUser->id) ||
+            !isset($inventoryUser->username) ) {
+            throw new InventoryException("Invalid user, id and/or username not set!", InventoryException::INVALID_USER);
+        }
         $user = new User();
         $user->user_ext_id = $inventoryUser->id;
-        $user->firstname = $inventoryUser->first_name;
-        $user->lastname = $inventoryUser->last_name;
         $user->email = $inventoryUser->username;
-        $user->user_id = $inventoryUser->employee_num;
+        $user->firstname = (isset($inventoryUser->first_name) ? $inventoryUser->first_name : "");
+        $user->lastname = (isset($inventoryUser->last_name) ? $inventoryUser->last_name  : "");
+        $user->user_id = (isset($inventoryUser->employee_num) ? $inventoryUser->employee_num : "");
         return $user;
     }
 }
