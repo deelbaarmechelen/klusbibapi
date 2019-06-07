@@ -1,6 +1,7 @@
 <?php
 namespace Api;
 
+use Api\Exception\ForbiddenException;
 use Firebase\JWT\JWT;
 use Tuupola\Base62;
 
@@ -28,10 +29,15 @@ class Token
 	
 	static private function generatePayload($scopes, $sub, $future = null) {
 		$now = new \DateTime();
-		if (is_null($future)) {
+		if (is_null($future)) { // default token validiy of 2 hours
             $future = new \DateTime("now +2 hours");
+        } else {
+		    $maxValidity = new \DateTime("now +1 month");
+		    if ($future > $maxValidity) {
+		        throw new ForbiddenException("Token validity exceeds max validity (1 month)");
+            }
         }
-
+        // FIXME: update email verification email to add link for recovery in case token is expired (or redirect from webpage?)
 		$jti = Base62::encode(random_bytes(16));
 		
 		$payload = [
@@ -56,8 +62,8 @@ class Token
 		return $token;
 	}
 	
-	static public function generateToken($scopes, $sub) {
-		$payload = Token::generatePayload($scopes, $sub);
+	static public function generateToken($scopes, $sub, $future = null) {
+		$payload = Token::generatePayload($scopes, $sub, $future);
 		
 		$secret = getenv("JWT_SECRET");
 		return JWT::encode($payload, $secret, "HS256");

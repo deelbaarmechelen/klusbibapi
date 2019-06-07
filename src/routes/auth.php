@@ -79,8 +79,9 @@ $app->post('/auth/verifyemail', function ($request, $response, $args) {
 	$mailmgr = new MailManager();
 	$sub = $user->user_id;
 	$scopes = ["auth.confirm"];
+    $future = new \DateTime("now +2 weeks");
 	$result = $mailmgr->sendEmailVerification($user->user_id, $user->firstname, $user->email,
-			Token::generateToken($scopes, $sub));
+			Token::generateToken($scopes, $sub, $future));
 	$message = $mailmgr->getLastMessage();
 	$this->logger->info('Sending email verification result: ' . $message);
 
