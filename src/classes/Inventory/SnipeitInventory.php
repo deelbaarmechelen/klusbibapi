@@ -5,6 +5,7 @@ namespace Api\Inventory;
 use Api\ModelMapper\ToolMapper;
 use Api\Tool\NotFoundException;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\RequestOptions;
 use Api\Model\User;
 use Api\Model\Tool;
@@ -211,7 +212,14 @@ class SnipeitInventory implements Inventory
         }
         $this->logger->info("Inventory request: $method; $target; " . json_encode($data));
         try {
+            $time_start = microtime(true);
+
             $res = $this->client->request($method, $target, $options);
+
+            $time_end = microtime(true);
+            $execution_time = ($time_end - $time_start);
+            $this->logger->info("Inventory request duration: $execution_time secs");
+
         } catch (ClientException $clientException) {
             if ($clientException->hasResponse()) {
                 $response = $clientException->getResponse();
@@ -221,7 +229,12 @@ class SnipeitInventory implements Inventory
                 // access forbidden is considered as not found (can be an asset or user from another company)
                 throw new \Api\Exception\NotFoundException();
             }
+            else if (isset($statusCode) && ($statusCode >= 500)) {
+                throw new \Api\Exception\InventoryException("Unable to access inventory", null, $clientException);
+            }
 
+        } catch (ServerException $serverException) {
+            throw new \Api\Exception\InventoryException("Inventory unavailable", null, $serverException);
         }
 
         if ($res->getStatusCode() >= 400){
