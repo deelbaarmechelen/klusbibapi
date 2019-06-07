@@ -89,7 +89,8 @@ $container["JwtAuthentication"] = function ($container) {
 			"passthrough" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/auth/reset", "/auth/verifyemail"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
-			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
+//			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
+			"secure" => false, // disable -> scheme not always correctly set on request!
 			"relaxed" => ["admin"], // list hosts allowed without HTTPS for DEV
 			"error" => function ($request, $response, $arguments) {
 				$data = array("error" => array( "status" => 401, "message" => $arguments["message"]));
