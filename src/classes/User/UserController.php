@@ -125,8 +125,25 @@ class UserController
         $isAdmin = false;
         $user = new User;
         $authorised = Authorisation::checkUserAccess($this->token, "create", null);
-        if (!$authorised) {
-            // Web enrolment
+        if ($authorised) {
+            // check if authenticated user is also admin
+            $currentUser = User::find($this->token->getSub());
+            if (!isset($currentUser)) {
+                $this->logger->warn("No user found for token " + $this->token->getSub());
+                return $response->withStatus(403);
+            }
+            if ($currentUser->isAdmin()) {
+                $isAdmin = true;
+            }
+            // disable notifications for user creations by admin
+            $sendNotification = FALSE;
+            $sendEmailVerification = FALSE;
+        }
+        $webEnrolment = false;
+        if (!$authorised || isset($data["webenrolment"])) {
+            $webEnrolment = true;
+        }
+        if ($webEnrolment) {
             $user->state = UserState::CHECK_PAYMENT;
             if (!isset($data["payment_mode"])) {
                 $data["payment_mode"] = \Api\Model\PaymentMode::UNKNOWN;
@@ -145,17 +162,6 @@ class UserController
             $mailmgr = new MailManager();
             $sendNotification = TRUE;
             $sendEmailVerification = TRUE;
-        } else {
-            $currentUser = User::find($this->token->getSub());
-            if (!isset($currentUser)) {
-                $this->logger->warn("No user found for token " + $this->token->getSub());
-                return $response->withStatus(403);
-            }
-            if ($currentUser->isAdmin()) {
-                $isAdmin = true;
-            }
-            $sendNotification = FALSE;
-            $sendEmailVerification = FALSE;
         }
         if (isset($data["email"])) {
             $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
@@ -182,7 +188,8 @@ class UserController
             }
         }
         UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
-        $user->save();
+        $this->userManager->create($user);
+
         if ($sendEmailVerification) {
             $sub = $user->user_id;
             $scopes = ["auth.confirm"];

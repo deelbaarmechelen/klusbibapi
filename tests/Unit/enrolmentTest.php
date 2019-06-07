@@ -55,12 +55,93 @@ class EnrolmentTest extends LocalDbWebTestCase
                     'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
                     'membership_end_date' => $this->expiredEndDate->format('Y-m-d')
                 ),
-			),
+                array('user_id' => 5, 'firstname' => 'an', 'lastname' => 'ErvarenLetser',
+                    'role' => 'member', 'email' => 'an@klusbib.be', 'state' => 'ACTIVE',
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
+                    'membership_end_date' => $this->expiredEndDate->format('Y-m-d')
+                ),
+            ),
             'payments' => array(
             )
         ));
 	}
 
+    public function testPostEnrolmentVolunteer()
+    {
+        echo "test POST enrolment volunteer\n";
+        $userId = "3";
+        $orderId = $userId . "_20181202120000";
+        $data = array("paymentMode" => PaymentMode::PAYCONIQ,
+            "userId" => $userId,
+            "orderId" => $orderId
+        );
+        $scopes = array("users.create");
+        $sub = "1";
+        $token = Token::generateToken($scopes, $sub);
+        $header = array('HTTP_AUTHORIZATION' => "bearer " . $token);
+        $body = $this->client->post('/enrolment', $data, $header);
+        print_r($body);
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $response_data = json_decode($body);
+        $this->assertNotNull($response_data);
+        $this->assertEquals(PaymentMode::PAYCONIQ, $response_data->paymentMode);
+        $this->assertEquals(PaymentState::SUCCESS, $response_data->paymentState);
+
+        // check payment has properly been created
+        $this->checkPayment($orderId, $userId);
+    }
+    public function testPostRenewalVolunteer()
+    {
+        echo "test POST enrolment volunteer (renewal)\n";
+        $userId = "5";
+        $orderId = $userId . "_20181202120000";
+        $data = array("paymentMode" => PaymentMode::LETS,
+            "userId" => $userId,
+            "orderId" => $orderId,
+            "renewal" => true
+        );
+        $scopes = array("users.create");
+        $sub = "1";
+        $token = Token::generateToken($scopes, $sub);
+        $header = array('HTTP_AUTHORIZATION' => "bearer " . $token);
+        $body = $this->client->post('/enrolment', $data, $header);
+        print_r($body);
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $response_data = json_decode($body);
+        $this->assertNotNull($response_data);
+        $this->assertEquals(PaymentMode::LETS, $response_data->paymentMode);
+        $this->assertEquals(PaymentState::SUCCESS, $response_data->paymentState);
+
+        // check payment has properly been created
+        $this->checkPayment($orderId, $userId);
+    }
+    public function testPostEnrolmentVolunteerNonAdmin()
+    {
+        echo "test POST enrolment volunteer non admin\n";
+        $userId = "3";
+        $orderId = $userId . "_20181202120000";
+        $data = array("paymentMode" => PaymentMode::PAYCONIQ,
+            "userId" => $userId,
+            "orderId" => $orderId
+        );
+
+        // Decline if no authorization header
+        $body = $this->client->post('/enrolment', $data);
+        $this->assertEquals(401, $this->client->response->getStatusCode());
+
+        // Decline if invalid authorization header
+        $header = array('HTTP_AUTHORIZATION' => "bearer INVALID");
+        $body = $this->client->post('/enrolment', $data, $header);
+        $this->assertEquals(401, $this->client->response->getStatusCode());
+
+        $scopes = array("users.create");
+        $sub = "4"; // regular member
+        $token = Token::generateToken($scopes, $sub);
+        $header = array('HTTP_AUTHORIZATION' => "bearer " . $token);
+        $body = $this->client->post('/enrolment', $data, $header);
+        $this->assertEquals(403, $this->client->response->getStatusCode());
+    }
 	public function testPostEnrolmentTransfer()
 	{
 		echo "test POST enrolment\n";
@@ -77,15 +158,10 @@ class EnrolmentTest extends LocalDbWebTestCase
 		$this->assertEquals(PaymentMode::TRANSFER, $response_data->paymentMode);
 		$this->assertEquals(PaymentState::OPEN, $response_data->paymentState);
 
-
 		// check payment has properly been created
 		$scopes = array("payments.all");
 		$this->setToken(null, $scopes);
-		$bodyGet = $this->client->get('/payments?orderId=' . $orderId);
-		$this->assertEquals(200, $this->client->response->getStatusCode());
-		$payments = json_decode($bodyGet);
-		$this->assertCount(1, $payments);
-		$this->assertEquals($userId, $payments[0]->user_id);
+        $this->checkPayment($orderId, $userId);
 	}
 	public function testPostRenewalTransfer()
 	{
@@ -327,6 +403,19 @@ class EnrolmentTest extends LocalDbWebTestCase
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $user = json_decode($bodyGetUser);
         return $user;
+    }
+
+    /**
+     * @param $orderId
+     * @param $userId
+     */
+    protected function checkPayment($orderId, $userId): void
+    {
+        $bodyGet = $this->client->get('/payments?orderId=' . $orderId);
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $payments = json_decode($bodyGet);
+        $this->assertCount(1, $payments);
+        $this->assertEquals($userId, $payments[0]->user_id);
     }
 
 }

@@ -3,7 +3,7 @@
 namespace Api\Exception;
 
 
-class NotFoundException extends \RuntimeException
+class InventoryException extends \RuntimeException
 {
 
 }

@@ -77,15 +77,17 @@ class MailManager {
             'newUser' => $newUser);
         return $this->sendTwigTemplate($userEmail, 'enrolment_new_notif', $parameters);
     }
-    public function sendEnrolmentSuccessNotification($userEmail, $newUser) {
-        $parameters = array(
-            'newUser' => $newUser);
-        return $this->sendTwigTemplate($userEmail, 'enrolment_success_notif', $parameters);
-    }
-    public function sendEnrolmentFailedNotification($userEmail, $newUser, $payment) {
+    public function sendEnrolmentSuccessNotification($userEmail, $newUser, $isRenewal = false) {
         $parameters = array(
             'newUser' => $newUser,
-            'payment' => $payment);
+            'isRenewal' => $isRenewal);
+        return $this->sendTwigTemplate($userEmail, 'enrolment_success_notif', $parameters);
+    }
+    public function sendEnrolmentFailedNotification($userEmail, $newUser, $payment, $isRenewal = false) {
+        $parameters = array(
+            'newUser' => $newUser,
+            'payment' => $payment,
+            'isRenewal' => $isRenewal);
         return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
     }
 

@@ -30,6 +30,7 @@ class UserManager
         $this->logger = $logger;
     }
 
+    // FIXME: catch Inventory exceptions to make it non blocking and avoid exposing internals to caller
     /**
      * retrieve the local user and check synchronisation with inventory
      * @param $id
@@ -44,8 +45,7 @@ class UserManager
                     $this->updateInventory($user);
                 }
             } else {
-                $inventoryUser = $this->inventory->postUser($user);
-                $user->user_ext_id = $inventoryUser->user_ext_id;
+                $this->addToInventory($user);
                 $user->save();
             }
         } catch (\Exception $ex) {
@@ -107,11 +107,13 @@ class UserManager
             }
         } else {
             // lookup user_ext_id
-            $userInventory = $this->inventory->getUserByEmail($user->email);
-            $user->user_ext_id = $userInventory->id;
+            $inventoryUser = $this->inventory->getUserByEmail($user->email);
+            $user->user_ext_id = $inventoryUser->id;
             $this->inventory->updateUser($user);
         }
-        $user->user_ext_id = $inventoryUser->id;
+
+        $user->user_ext_id = $inventoryUser->user_ext_id;
+        $user->save();
     }
     protected function updateInventory($user) {
         $this->inventory->updateUser($user);

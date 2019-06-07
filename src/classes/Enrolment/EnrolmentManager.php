@@ -5,6 +5,7 @@ namespace Api\Enrolment;
 
 use Api\Exception\EnrolmentException;
 use Api\Mail\MailManager;
+use Api\Model\PaymentState;
 use Api\Model\Product;
 use Api\Model\User;
 use Api\Model\PaymentMode;
@@ -37,6 +38,40 @@ class EnrolmentManager
         }
     }
 
+    function enrolmentByVolunteer($orderId, $paymentMode){
+        $this->checkUserStateEnrolment();
+        $this->user->payment_mode = $paymentMode;
+        $this->user->save();
+        $payment = $this->lookupPayment($orderId);
+
+        if ($payment == null) {
+            $payment = $this->createNewPayment($orderId, $paymentMode, PaymentState::SUCCESS,
+                \Api\Settings::ENROLMENT_AMOUNT, "EUR");
+        };
+        // TODO: immediately confirm payment, but avoid too much extra mails!
+        // + customize email message based on payment mode
+        $this->confirmPayment($paymentMode, $this->user);
+        $this->mailMgr->sendEnrolmentConfirmation($this->user, $paymentMode);
+        return $payment;
+    }
+
+    function renewalByVolunteer($orderId, $paymentMode) {
+        $this->checkUserStateRenewal();
+        $this->user->payment_mode = $paymentMode;
+        $payment = $this->lookupPayment($orderId);
+
+        if ($payment == null) {
+            $payment = $this->createNewPayment($orderId,$paymentMode, PaymentState::SUCCESS,
+                \Api\Settings::RENEWAL_AMOUNT, "EUR");
+        };
+        // TODO: immediately confirm payment, but avoid too much extra mails!
+        // + customize email message based on payment mode
+        $this->confirmPayment($paymentMode, $this->user);
+        $this->mailMgr->sendRenewalConfirmation($this->user, $paymentMode);
+        $this->user->save();
+        return $payment;
+    }
+
     function enrolmentByTransfer($orderId){
         $this->checkUserStateEnrolment();
         $this->user->payment_mode = PaymentMode::TRANSFER;
@@ -56,7 +91,8 @@ class EnrolmentManager
         $payment = $this->lookupPayment($orderId);
 
         if ($payment == null) {
-            $payment = $this->createNewPayment($orderId,PaymentMode::TRANSFER, "OPEN",\Api\Settings::RENEWAL_AMOUNT, "EUR");
+            $payment = $this->createNewPayment($orderId,PaymentMode::TRANSFER, PaymentState::OPEN,
+                \Api\Settings::RENEWAL_AMOUNT, "EUR");
         };
         $this->mailMgr->sendRenewalConfirmation($this->user, PaymentMode::TRANSFER);
         $this->user->save();
@@ -101,17 +137,20 @@ class EnrolmentManager
     }
 
     function confirmPayment($paymentMode, $user) {
-        if ($paymentMode == PaymentMode::LETS ||
-            $paymentMode == PaymentMode::OVAM) {
-            throw new EnrolmentException("Not yet supported", EnrolmentException::UNEXPECTED_PAYMENT_MODE);
-        }
         if ($paymentMode == PaymentMode::MOLLIE) {
             $message = "Unexpected confirmation for payment mode ($paymentMode)";
             $this->logger->warn($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
         }
         if ($paymentMode != PaymentMode::CASH &&
-            $paymentMode != PaymentMode::TRANSFER) {
+            $paymentMode != PaymentMode::TRANSFER &&
+            $paymentMode != PaymentMode::MBON &&
+            $paymentMode != PaymentMode::SPONSORING &&
+            $paymentMode != PaymentMode::LETS &&
+            $paymentMode != PaymentMode::PAYCONIQ &&
+            $paymentMode != PaymentMode::OTHER &&
+            $paymentMode != PaymentMode::OVAM
+        ) {
             $message = "Unsupported payment mode ($paymentMode)";
             $this->logger->warn($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
@@ -137,9 +176,10 @@ class EnrolmentManager
         }
         $user->state = UserState::ACTIVE;
         $user->save();
-
-        $mailMgr = new MailManager();
-        $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
+        if ($paymentMode == PaymentMode::TRANSFER) {
+            $mailMgr = new MailManager();
+            $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
+        }
     }
 
     /**
@@ -369,7 +409,7 @@ class EnrolmentManager
                         // send confirmation to new member
                         $mailmgr->sendEnrolmentConfirmation($user, PaymentMode::MOLLIE);
                         // send notification to Klusbib team
-                        $mailmgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user);
+                        $mailmgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user, false);
                     }
                 } else if ($payment->state == "FAILED"
                     || $payment->state == "EXPIRED"
@@ -377,7 +417,7 @@ class EnrolmentManager
                     || $payment->state == "REFUND"
                     || $payment->state == "CHARGEBACK") {
                     // Permanent failure, or special case -> send notification for manual follow up
-                    $mailmgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment);
+                    $mailmgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment, false);
                 }
             } else if ($productId == \Api\Model\Product::RENEWAL) {
                 if ($payment->state == "SUCCESS") {
@@ -390,7 +430,7 @@ class EnrolmentManager
                         // send confirmation to new member
                         $mailmgr->sendRenewalConfirmation($user, PaymentMode::MOLLIE);
                         // send notification to Klusbib team
-                        $mailmgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user);
+                        $mailmgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user, true);
                     }
                 } else if ($payment->state == "FAILED"
                     || $payment->state == "EXPIRED"
@@ -398,7 +438,7 @@ class EnrolmentManager
                     || $payment->state == "REFUND"
                     || $payment->state == "CHARGEBACK") {
                     // Permanent failure, or special case -> send notification for manual follow up
-                    $mailmgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment);
+                    $mailmgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment, true);
                 }
             }
 

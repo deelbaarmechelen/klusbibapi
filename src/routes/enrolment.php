@@ -7,6 +7,7 @@ use Api\Mail\MailManager;
 use Api\Enrolment\EnrolmentManager;
 use Api\Authorisation;
 use Api\AccessType;
+use Api\Model\User;
 
 /**
  * Launches the enrolment operation
@@ -136,6 +137,83 @@ $app->post('/enrolment', function ($request, $response, $args) {
             }
         }
     }
+    // manual enrolment (cash or lets or ..., arranged with volunteer in klusbib)
+    if ($paymentMode == PaymentMode::CASH
+        || $paymentMode == PaymentMode::PAYCONIQ
+        || $paymentMode == PaymentMode::LETS
+        || $paymentMode == PaymentMode::OVAM
+        || $paymentMode == PaymentMode::MBON
+        || $paymentMode == PaymentMode::SPONSORING
+        || $paymentMode == PaymentMode::OTHER
+    ) { // those payment modes require admin rights
+        // we still need to do authentication, as this is skipped for /enrolement route
+        $JwtAuthentication = $this->JwtAuthentication;
+        /* If token cannot be found return with 401 Unauthorized. */
+        if (false === $token = $JwtAuthentication->fetchToken($request)) {
+            return $JwtAuthentication->error($request, $response->withStatus(401), [
+                "message" => $JwtAuthentication->getMessage()
+            ]);
+        }
+
+        /* If token cannot be decoded return with 401 Unauthorized. */
+        if (false === $decoded = $JwtAuthentication->decodeToken($token)) {
+            return $JwtAuthentication->error($request, $response->withStatus(401), [
+                "message" => $JwtAuthentication->getMessage(),
+                "token" => $token
+            ]);
+        }
+        $this->logger->info("Authentication ok for token: " . json_encode($decoded));
+        $this->token->hydrate($decoded);
+
+        $currentUser = User::find($this->token->getSub());
+        if (!isset($currentUser)) {
+            $this->logger->warn("No user found for token " . $this->token->getSub());
+            return $response->withStatus(403)
+                ->withJson("{ message: 'Not allowed, please login with an admin user'}");
+        }
+        if (!$currentUser->isAdmin()) {
+            $this->logger->warn("Enrolment attempt for payment mode $paymentMode by user "
+                . $currentUser->firstName ." " . $currentUser->lastName . "("
+                . $this->token->getSub() . ")");
+            return $response->withStatus(403)
+                ->withJson("{ message: 'Not allowed, please login with an admin user'}");
+        }
+        try {
+            if ($renewal) {
+                $payment = $enrolmentManager->renewalByVolunteer($orderId, $paymentMode);
+            } else {
+                $payment = $enrolmentManager->enrolmentByVolunteer($orderId, $paymentMode);
+            }
+            $data = array();
+            $data["orderId"] = $orderId;
+            $data["paymentMode"] = $payment->mode;
+            $data["paymentState"] = $payment->state;
+            return $response->withStatus(200)
+                ->withHeader("Content-Type", "application/json")
+                ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+
+        } catch (\Api\Exception\EnrolmentException $e) {
+            if ($e->getCode() == \Api\Exception\EnrolmentException::ALREADY_ENROLLED) {
+                $response_data = array("message" => $e->getMessage(),
+                    membership_end_date => $user->membership_end_date);
+                return $response->withStatus(208) // 208 = Already Reported
+                ->withHeader("Content-Type", "application/json")
+                    ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+            } else if ($e->getCode() == \Api\Exception\EnrolmentException::NOT_ENROLLED) {
+                $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
+                return $response->withStatus(403)
+                    ->withHeader("Content-Type", "application/json")
+                    ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+            } else if ($e->getCode() == \Api\Exception\EnrolmentException::UNSUPPORTED_STATE) {
+                $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
+                return $response->withStatus(501)
+                    ->withHeader("Content-Type", "application/json")
+                    ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+            }
+        }
+
+    }
+
     $message = "Unsupported payment mode ($paymentMode)";
     $this->logger->warn("Invalid POST request on /enrolment received: $message");
     return $response->withStatus(400) // Bad request
