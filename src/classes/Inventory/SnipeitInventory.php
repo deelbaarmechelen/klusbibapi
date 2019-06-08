@@ -105,7 +105,7 @@ class SnipeitInventory implements Inventory
         if (!isset($email)) {
             return null;
         }
-        $response = $this->get('users/?search=' . $email . '&limit=5');
+        $response = $this->get('users?search=' . $email . '&limit=5');
         if ($response->total == 0){
             return null;
         }
@@ -179,6 +179,7 @@ class SnipeitInventory implements Inventory
             'last_name' => $user->lastname,
             'username' => $user->email,
             'password' => $password, // user not allowed to login
+            'password_confirmation' => $password,
             'employee_num' => $user->user_id,
             'company_id' => SnipeitInventory::COMPANY_ID_KLUSBIB];
         return SnipeitInventory::mapInventoryUserToApiUser($this->post('users', $data));
@@ -196,6 +197,8 @@ class SnipeitInventory implements Inventory
         } else {
             $ex = new \RuntimeException('Inventory request to create user failed: status="' . $response->status
                 . '"; messages=' . json_encode($response->messages));
+            $this->logger->error('HTTP response ok, but declined by inventory. Do you have a syntax error? '
+                . '(status=' . $response->status . ';messages=' . json_encode($response->messages) . ')');
             throw $ex;
         }
     }
@@ -257,7 +260,7 @@ class SnipeitInventory implements Inventory
             throw new \RuntimeException('Inventory request to "' . $target . '" failed with status code ' . $res->getStatusCode());
         }
         $contentType = $res->getHeader('content-type')[0];
-        $this->logger->debug($res->getBody());
+        $this->logger->debug("Response body message=" . $res->getBody());
         if (strpos($contentType, 'application/json') !== false ) {
             return \GuzzleHttp\json_decode($res->getBody());
         }

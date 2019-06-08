@@ -30,27 +30,11 @@ class UserController
         $this->logger->info("Klusbib GET on '/users' route");
 
         $authorised = Authorisation::checkUserAccess($this->token, "list", null);
-        if (!$authorised) {
-            if (Authorisation::checkUserAccess($this->token, "read.state", null)) {
-                // Allow read of state to resume enrolment
-                $email = $request->getQueryParam('email');
-                if (!isset($email)) {
-                    return $response->withStatus(400)
-                        ->withJson(array(message => "Missing email parameter"));
-                }
-                $user = Capsule::table('users')->where('email', $email)->first();
-                if (!isset($user)) {
-                    return $response->withStatus(404)
-                        ->withJson(array(message => "Unknown email"));
-                }
-
-                return $response->withJson(array("user_id" => $user->user_id,
-                    "state" => $user->state,
-                    "membership_end_date" => $user->membership_end_date
-                ));
-            }
-            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()) );
-            return $response->withStatus(403);
+        $email = $request->getQueryParam('email');
+        if (!$authorised || isset($email)) {
+            // Not authorised? Only allow getUserState
+            // email param present? Only interested in state of user with that specific email address
+            return $this->getUserState($request, $response, $email);
         }
         $sortdir = $request->getQueryParam('_sortDir');
         if (!isset($sortdir)) {
@@ -250,6 +234,35 @@ class UserController
         }
         $this->userManager->delete($user);
         return $response->withStatus(200);
+    }
+
+    /**
+     * @param $request
+     * @param $response
+     * @return mixed
+     */
+    protected function getUserState($request, $response, $email)
+    {
+        if (Authorisation::checkUserAccess($this->token, "read.state", null)) {
+            // Allow read of state to resume enrolment
+            $email = $request->getQueryParam('email');
+            if (!isset($email)) {
+                return $response->withStatus(400)
+                    ->withJson(array(message => "Missing email parameter"));
+            }
+            $user = Capsule::table('users')->where('email', $email)->first();
+            if (!isset($user)) {
+                return $response->withStatus(404)
+                    ->withJson(array(message => "Unknown email"));
+            }
+
+            return $response->withJson(array("user_id" => $user->user_id,
+                "state" => $user->state,
+                "membership_end_date" => $user->membership_end_date
+            ));
+        }
+        $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+        return $response->withStatus(403);
     }
 
 }
