@@ -6,6 +6,13 @@ use Api\Model\User;
 use Api\Model\Tool;
 use Api\Model\Reservation;
 use Api\Inventory\SnipeitInventory;
+use Doctrine\Common\Cache\FilesystemCache;
+use GuzzleHttp\HandlerStack;
+use Kevinrob\GuzzleCache\CacheMiddleware;
+use Kevinrob\GuzzleCache\Storage\DoctrineCacheStorage;
+use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
+use Kevinrob\GuzzleCache\Strategy;
+use Api\Inventory\InventoryAssetsRequestMatcher;
 
 require_once __DIR__ . '/../test_env.php';
 
@@ -24,7 +31,24 @@ final class InventoryIntegration extends TestCase
     protected function setUp()
     {
         $this->logger = $this->createMock('\Psr\Log\LoggerInterface');
-        $this->inventory = new SnipeitInventory(new \GuzzleHttp\Client(['base_uri' => TEST_INVENTORY_URL . '/api/v1/']),
+        $stack = HandlerStack::create();
+
+        $strategy = new Strategy\Delegate\DelegatingCacheStrategy($defaultStrategy = new Strategy\NullCacheStrategy());
+        $strategy->registerRequestMatcher(new InventoryAssetsRequestMatcher(),
+            new Strategy\GreedyCacheStrategy(
+                new DoctrineCacheStorage(
+                    new FilesystemCache('/tmp/snipeit-cache')
+                ),
+                1800 // the TTL in seconds -> 30min
+            )
+        );
+
+        // Add this middleware to the top with `push`
+        $stack->push(new CacheMiddleware($strategy), 'cache');
+        $this->inventory = new SnipeitInventory(new \GuzzleHttp\Client([
+                'base_uri' => TEST_INVENTORY_URL . '/api/v1/',
+                'handler' => $stack
+            ]),
             TEST_INVENTORY_API_KEY, $this->logger);
     }
 
@@ -49,6 +73,11 @@ final class InventoryIntegration extends TestCase
         $this->assertNull($user);
     }
 
+    public function testGetTools() {
+        $tools = $this->inventory->getTools();
+        $this->assertNotNull($tools);
+        $this->assertEquals(1, count($tools));
+    }
     /**
      * lookup all tools assigned to this user
      * @param $userId

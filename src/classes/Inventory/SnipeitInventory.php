@@ -6,12 +6,17 @@ use Api\Exception\InventoryException;
 use Api\Model\ToolState;
 use Api\Inventory\SnipeitToolMapper;
 use Api\Tool\NotFoundException;
+use Doctrine\Common\Cache\FilesystemCache;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RequestOptions;
 use Api\Model\User;
 use Api\Model\Tool;
 use Illuminate\Database\Eloquent\Collection;
+use Kevinrob\GuzzleCache\CacheMiddleware;
+use Kevinrob\GuzzleCache\Storage\DoctrineCacheStorage;
+use Kevinrob\GuzzleCache\Strategy;
 
 /**
  * Inventory implementation for Snipeit
@@ -21,8 +26,26 @@ class SnipeitInventory implements Inventory
 {
     const COMPANY_ID_KLUSBIB = 1;
     public static function instance($logger = null) {
-        return new SnipeitInventory(new \GuzzleHttp\Client(['base_uri' => INVENTORY_URL . '/api/v1/']),
-            INVENTORY_API_KEY, $logger);
+        // Create default HandlerStack
+        $stack = HandlerStack::create();
+
+        $strategy = new Strategy\Delegate\DelegatingCacheStrategy($defaultStrategy = new Strategy\NullCacheStrategy());
+        $strategy->registerRequestMatcher(new InventoryAssetsRequestMatcher(),
+            new Strategy\GreedyCacheStrategy(
+                new DoctrineCacheStorage(
+                    new FilesystemCache('/tmp/snipeit-cache')
+                ),
+                1800 // the TTL in seconds -> 30min
+            )
+        );
+
+        // Add this middleware to the top with `push`
+        $stack->push(new CacheMiddleware($strategy), 'cache');
+
+        return new SnipeitInventory(new \GuzzleHttp\Client([
+                'base_uri' => INVENTORY_URL . '/api/v1/',
+              'handler' => $stack
+            ]),INVENTORY_API_KEY, $logger);
     }
 
     private $client;
