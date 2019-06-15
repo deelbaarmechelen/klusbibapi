@@ -3,7 +3,8 @@
 namespace Api\Inventory;
 
 use Api\Exception\InventoryException;
-use Api\ModelMapper\ToolMapper;
+use Api\Model\ToolState;
+use Api\Inventory\SnipeitToolMapper;
 use Api\Tool\NotFoundException;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
@@ -47,7 +48,23 @@ class SnipeitInventory implements Inventory
         $assets = $this->get('hardware?offset=' . $offset . '&limit=' . $limit . '&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
 
         foreach ($assets->rows as $asset) {
-            $tool = ToolMapper::mapAssetToTool($asset);
+            $tool = SnipeitToolMapper::mapAssetToTool($asset);
+            $tools->add($tool);
+        }
+
+        return $tools;
+    }
+
+
+    public function getToolsByState(string $state, $offset = 0, $limit = 1000)
+    {
+        $tools = new Collection();
+        $assetState = SnipeitToolMapper::mapToolStateToAssetState($state);
+        $assets = $this->get('hardware?offset=' . $offset . 'status_id=' . $assetState->id
+            . '&limit=' . $limit . '&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
+
+        foreach ($assets->rows as $asset) {
+            $tool = SnipeitToolMapper::mapAssetToTool($asset);
             $tools->add($tool);
         }
 
@@ -59,7 +76,7 @@ class SnipeitInventory implements Inventory
         $assets = $this->get('hardware/?search=' . $code . '&limit=5&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
         if ($assets->total == 1) {
             $asset = $assets->rows[0];
-            return ToolMapper::mapAssetToTool($asset);
+            return SnipeitToolMapper::mapAssetToTool($asset);
         } else if ($assets->total == 0) {
           throw new \Api\Exception\NotFoundException();
         }
@@ -70,7 +87,7 @@ class SnipeitInventory implements Inventory
     public function getToolById($id) : ?Tool
     {
         $asset = $this->get('hardware/' . $id);
-        return ToolMapper::mapAssetToTool($asset);
+        return SnipeitToolMapper::mapAssetToTool($asset);
     }
 
     /**
@@ -82,7 +99,7 @@ class SnipeitInventory implements Inventory
     {
         try {
             $inventoryUser = $this->get('users/' . $id);
-            SnipeitInventory::mapInventoryUserToApiUser($inventoryUser);
+            SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
         } catch (InventoryException $ex) {
             // no user or invalid user
             $this->logger->error($ex->getMessage());
@@ -92,7 +109,7 @@ class SnipeitInventory implements Inventory
             }
             throw $ex; // other errors: rethrow
         }
-        return SnipeitInventory::mapInventoryUserToApiUser($inventoryUser);
+        return SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
     }
 
     /**
@@ -114,12 +131,12 @@ class SnipeitInventory implements Inventory
             $users = $response->rows;
             foreach ($users as $user) {
                 if ($user->username == $email) {
-                    return SnipeitInventory::mapInventoryUserToApiUser($user);
+                    return SnipeitUserMapper::mapInventoryUserToApiUser($user);
                 }
             }
 //            throw new RuntimeException("Database inconsistency: multiple users with same email found (email=" . $email . ")");
         } else {
-            return SnipeitInventory::mapInventoryUserToApiUser($response->rows[0]);
+            return SnipeitUserMapper::mapInventoryUserToApiUser($response->rows[0]);
         }
         throw new \RuntimeException("Unexpected reponse received: " . $response);
     }
@@ -146,6 +163,30 @@ class SnipeitInventory implements Inventory
             return true;
         }
         return false;
+    }
+
+    /**
+     * lookup all tools assigned to this user
+     * @param $userId
+     * @param int $offset paging offset
+     * @param int $limit max number of tools to return
+     * @return mixed
+     */
+    public function getUserTools($userExtId)
+    {
+        if (!isset($userExtId)) {
+            return null;
+        }
+        $response = $this->get('users/' . $userExtId . '/assets');
+        if ($response->total == 0){
+            return null;
+        }
+        $tools = array();
+        foreach ($response->rows as $row) {
+            array_push($tools, SnipeitToolMapper::mapAssetToTool($row));
+
+        }
+        return $tools;
     }
 
     public function updateUser(User $user) {
@@ -182,7 +223,7 @@ class SnipeitInventory implements Inventory
             'password_confirmation' => $password,
             'employee_num' => $user->user_id,
             'company_id' => SnipeitInventory::COMPANY_ID_KLUSBIB];
-        return SnipeitInventory::mapInventoryUserToApiUser($this->post('users', $data));
+        return SnipeitUserMapper::mapInventoryUserToApiUser($this->post('users', $data));
     }
 
     private function get($target) {
@@ -265,24 +306,5 @@ class SnipeitInventory implements Inventory
             return \GuzzleHttp\json_decode($res->getBody());
         }
         return $res->getBody();
-    }
-
-    /**
-     * Converts a user as known in inventory to a local user
-     * @param $inventoryUser original inventory user
-     * @return User converted user
-     */
-    static public function mapInventoryUserToApiUser($inventoryUser) : User {
-        if (!isset($inventoryUser->id) ||
-            !isset($inventoryUser->username) ) {
-            throw new InventoryException("Invalid user, id and/or username not set!", InventoryException::INVALID_USER);
-        }
-        $user = new User();
-        $user->user_ext_id = $inventoryUser->id;
-        $user->email = $inventoryUser->username;
-        $user->firstname = (isset($inventoryUser->first_name) ? $inventoryUser->first_name : "");
-        $user->lastname = (isset($inventoryUser->last_name) ? $inventoryUser->last_name  : "");
-        $user->user_id = (isset($inventoryUser->employee_num) ? $inventoryUser->employee_num : "");
-        return $user;
     }
 }

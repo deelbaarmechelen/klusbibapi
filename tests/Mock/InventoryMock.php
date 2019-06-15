@@ -4,6 +4,7 @@ namespace Tests\Mock;
 
 use Api\Inventory\Inventory;
 use Api\Model\Tool;
+use Api\Model\ToolState;
 use Api\Model\User;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
@@ -139,5 +140,20 @@ class InventoryMock implements Inventory
     public function getToolByCode($code): ?Tool
     {
         // TODO: Implement getToolByCode() method.
+    }
+
+    /**
+     * lookup all tools assigned to this user
+     * @param $userId
+     * @return mixed
+     */
+    public function getUserTools($userId)
+    {
+        // TODO: Implement getUserTools() method.
+    }
+
+    public function getToolsByState(string $state, $offset = 0, $limit = 1000)
+    {
+        // TODO: Implement getToolsByState() method.
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace Api\Inventory;
 
+use Api\Model\ToolState;
 use Api\Model\User;
 use Api\Model\Tool;
 
@@ -11,6 +12,7 @@ use Api\Model\Tool;
  */
 interface Inventory {
     public function getTools($offset = 0, $limit=1000);
+    public function getToolsByState(string $state, $offset = 0, $limit=1000); // available, in use, maintenance, ...
     public function getToolByCode($code) : ?Tool;
     public function getToolById($id) : ?Tool;
 
@@ -29,6 +31,13 @@ interface Inventory {
      * @return User the user or null if not found
      */
     public function getUserByEmail($email) : ?User;
+
+    /**
+     * lookup all tools assigned to this user
+     * @param $userExtId external user id (id as known in external inventory system)
+     * @return mixed
+     */
+    public function getUserTools($userExtId);
 
     /**
      * check user exists in inventory (check based on user_ext_id and email)
