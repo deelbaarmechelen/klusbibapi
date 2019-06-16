@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tool extends Model
 {
-	protected $primaryKey = "tool_id";
+    protected $primaryKey = "tool_id";
 	static protected $fieldArray = ['tool_id', 'name', 'description', 'category', 'img', 'created_at', 'updated_at', 
 			'brand', 'type', 'serial', 'manufacturing_year', 'manufacturer_url', 'doc_url', 'code', 'owner_id', 'reception_date',
 			'state', 'visible'
@@ -21,5 +21,11 @@ class Tool extends Model
 	{
 		return $this->hasMany('Api\Model\Reservation', 'tool_id');
 	}
+
+    // Query helpers
+    public function scopeAll($query)
+    {
+        return $query->where('state', '<>', ToolState::DISPOSED);
+    }
 
 }

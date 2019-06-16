@@ -1,6 +1,7 @@
 <?php
 
 use Api\Upload\UploadHandler;
+use Api\Statistics\StatController;
 
 // handle options requests to return CORS headers
 // See https://www.slimframework.com/docs/cookbook/enable-cors.html
@@ -34,4 +35,7 @@ require __DIR__ . '/routes/consumers.php';
 require __DIR__ . '/routes/reservations.php';
 require __DIR__ . '/routes/payments.php';
 require __DIR__ . '/routes/events.php';
+
+$app->get('/stats/monthly', StatController::class . ':monthly');
+$app->get('/stats/yearly', StatController::class . ':yearly');
 

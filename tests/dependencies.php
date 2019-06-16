@@ -11,6 +11,8 @@ use Api\User\UserManager;
 use Api\Tool\ToolManager;
 use Api\Tool\ToolController;
 use Api\Inventory\Inventory;
+use Api\Inventory\SnipeitInventory;
+use Api\Statistics\StatController;
 use Tests\Mock\InventoryMock;
 use Tests\Mock\PHPMailerMock;
 use Tests\Mock\MollieApiClientMock;
@@ -158,4 +160,10 @@ $container['Api\Tool\ToolController'] = function($c) {
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
     return new ToolController($logger, new ToolManager($inventory, $logger), $token);
+};
+
+$container['Api\Statistics\StatController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $inventory = $c->get("Api\Inventory");
+    return new StatController($inventory, $logger);
 };

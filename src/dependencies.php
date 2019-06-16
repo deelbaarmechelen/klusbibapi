@@ -11,6 +11,7 @@ use Api\User\UserManager;
 use Api\Tool\ToolManager;
 use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
+use Api\Statistics\StatController;
 use Mollie\Api\MollieApiClient;
 
 // Fetch DI Container
@@ -86,7 +87,8 @@ $container["HttpBasicAuthentication"] = function ($container) {
 $container["JwtAuthentication"] = function ($container) {
 	return new JwtAuthentication([
 			"path" => "/",
-			"passthrough" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/auth/reset", "/auth/verifyemail"],
+			"passthrough" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
+                "/auth/reset", "/auth/verifyemail"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
 //			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
@@ -133,4 +135,9 @@ $container['Api\Tool\ToolController'] = function($c) {
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
     return new ToolController($logger, new ToolManager($inventory, $logger),$token);
+};
+$container['Api\Statistics\StatController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $inventory = $c->get("Api\Inventory");
+    return new StatController($inventory, $logger);
 };
