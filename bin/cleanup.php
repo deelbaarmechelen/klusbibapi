@@ -61,26 +61,14 @@ echo "Deleted reservations: $deletedCount\n";
 // Delete users when membership expired for more than 1 year
 echo "selecting expired users for more than 1 year (on $lastYear)\n";
 $users = \Api\Model\User::expired()->notAdmin()->whereDate('membership_end_date' , '<', $lastYear)->get();
-echo "selected users: " . count($users) . "\n";
+echo "selected expired users: " . count($users) . "\n";
+markAsDeleted($users);
 
-foreach ($users as $user) {
-    echo "Removal required for user $user->user_id\n";
-    echo "name: " . $user->firstname . " " . $user->lastname . "\n";
-    echo "state: " . $user->state . "\n";
-    echo "membership start: " . $user->membership_start_date . "\n";
-    echo "membership end: " . $user->membership_end_date . "\n";
-    echo "email: " . $user->email . "\n";
-    $toolsCount = \Api\Model\Tool::where('owner_id' , '=', $user->user_id)->count();
-    if ($toolsCount > 0) {
-        // User donated tool(s) -> keep user active but switch role to supporter
-        echo "Donated tools: " . $toolsCount . "\n";
-        $user->state = UserState::ACTIVE;
-        $user->role = UserRole::SUPPORTER;
-    } else {
-        $user->state = UserState::DELETED;
-    }
-    $user->save();
-}
+echo "selecting pending users for more than 1 year (on $lastYear)\n";
+$pending_users = \Api\Model\User::pending()->notAdmin()->whereDate('membership_end_date' , '<', $lastYear)->get();
+echo "selected pending users: " . count($pending_users) . "\n";
+markAsDeleted($pending_users);
+
 $activeCount = \Api\Model\User::active()->members()->count();
 $expiredCount = \Api\Model\User::where('state', UserState::EXPIRED)->count();
 $deletedCount = \Api\Model\User::where('state', UserState::DELETED)->count();
@@ -101,3 +89,29 @@ if ($delete) {
     }
 }
 echo "End of cleanup cron\n";
+
+/**
+ * @param $users
+ * @return nothing
+ */
+function markAsDeleted($users)
+{
+    foreach ($users as $user) {
+        echo "Removal required for user $user->user_id\n";
+        echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+        echo "state: " . $user->state . "\n";
+        echo "membership start: " . $user->membership_start_date . "\n";
+        echo "membership end: " . $user->membership_end_date . "\n";
+        echo "email: " . $user->email . "\n";
+        $toolsCount = \Api\Model\Tool::where('owner_id', '=', $user->user_id)->count();
+        if ($toolsCount > 0) {
+            // User donated tool(s) -> keep user active but switch role to supporter
+            echo "Donated tools: " . $toolsCount . "\n";
+            $user->state = UserState::ACTIVE;
+            $user->role = UserRole::SUPPORTER;
+        } else {
+            $user->state = UserState::DELETED;
+        }
+        $user->save();
+    }
+}
