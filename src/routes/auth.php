@@ -112,7 +112,12 @@ $app->get('/auth/confirm/{userId}', function ($request, $response, $args) {
 		// not allowed to verify address for another user
 		return $response->withStatus(403);
 	}
-	$user = \Api\Model\User::find($token->getSub());
+	try {
+        $user = \Api\Model\User::findOrFail($token->getSub());
+    } catch (Illuminate\Database\Eloquent\ModelNotFoundException $modelNotFoundException) {
+	    return $response->withStatus(404)
+            ->write('User with id ' . $token->getSub() . ' could not be found. Make sure to register first or contact us in case of problems.');
+    }
 
     if ($user->state === "CONFIRM_EMAIL") {
         $user->state = UserState::CHECK_PAYMENT;

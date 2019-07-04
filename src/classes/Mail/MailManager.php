@@ -1,6 +1,8 @@
 <?php
 namespace Api\Mail;
 
+use Api\Model\User;
+use Api\Token;
 use PHPMailer;
 use Twig_Environment;
 use DateTime;
@@ -91,7 +93,10 @@ class MailManager {
         return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
     }
 
-    public function sendEnrolmentConfirmation($user, $paymentMode) {
+    public function sendEnrolmentConfirmation(User $user, $paymentMode) {
+        $scopes = ["auth.confirm"];
+        $token = Token::generateToken($scopes, $user->user_id);
+        $link = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
         $parameters = array(
             'user' => $user,
@@ -99,6 +104,8 @@ class MailManager {
             'account' => Settings::ACCOUNT_NBR,
             'amount' => Settings::ENROLMENT_AMOUNT,
             'membership_year' => $membership_year,
+            'confirmEmail' => !$user->isEmailConfirmed(),
+            'link' => $link,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
             'emailLink' => Settings::EMAIL_LINK);

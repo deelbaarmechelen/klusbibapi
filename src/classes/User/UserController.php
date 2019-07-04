@@ -145,7 +145,7 @@ class UserController
             }
             $mailmgr = new MailManager();
             $sendNotification = TRUE;
-            $sendEmailVerification = TRUE;
+            $sendEmailVerification = FALSE;
         }
         if (isset($data["email"])) {
             $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');

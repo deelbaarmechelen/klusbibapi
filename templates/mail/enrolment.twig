@@ -11,6 +11,12 @@ Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount }}
 met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.<br>
 Van zodra we je betaling ontvangen zullen we je account activeren.
 </p>{% endif %}
+{% if confirmEmail %}<p>
+Mogen we je vragen om te bevestigen voor ontvangst door op onderstaande link te klikken:<br>
+<a href='{{ link }}'>{{ link }}</a><br>
+Zo weten wij zeker dat er geen fout geslopen is in je email adres<br>
+</p>{% endif %}
+
 <p>
 Om van de laatste nieuwtjes op de hoogte te blijven kan je ons ook volgen via onze <a href="{{ facebookLink }}">facebook pagina</a>.<br>
 Mocht je nog vragen of bedenkingen hebben dan horen we het graag. Enkel hierdoor kunnen wij onze werking verder uitbouwen.<br>

@@ -42,6 +42,13 @@ class User extends Model
 		return false;
 	}
 
+	public function isEmailConfirmed() {
+        if ($this->email_state == EmailState::CONFIRMED) {
+            return true;
+        }
+        return false;
+    }
+
 	// Query helpers
     public function scopeMembers($query)
     {
