@@ -15,7 +15,7 @@ use Api\Mail\MailManager;
 use Api\Authorisation;
 use Api\Token;
 
-class UserController
+class UserController implements UserControllerInterface
 {
     protected $logger;
     protected $userManager;

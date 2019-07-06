@@ -11,7 +11,7 @@ use Api\ModelMapper\ReservationMapper;
 use Api\Authorisation;
 use Api\Upload\UploadHandler;
 
-class ToolController
+class ToolController implements ToolControllerInterface
 {
     protected $logger;
     protected $toolManager;
