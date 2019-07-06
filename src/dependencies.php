@@ -141,3 +141,9 @@ $container['Api\Statistics\StatController'] = function($c) {
     $inventory = $c->get("Api\Inventory");
     return new StatController($inventory, $logger);
 };
+$container['Api\Consumer\ConsumerController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $inventory = $c->get("Api\Inventory");
+    $token = $c->get("token"); // retrieve the 'token' from the container
+    return new \Api\Consumer\ConsumerController($inventory, $logger, $token);
+};
