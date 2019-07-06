@@ -136,14 +136,23 @@ $container['Api\Tool\ToolController'] = function($c) {
     $inventory = $c->get("Api\Inventory");
     return new ToolController($logger, new ToolManager($inventory, $logger),$token);
 };
-$container['Api\Statistics\StatController'] = function($c) {
-    $logger = $c->get("logger"); // retrieve the 'logger' from the container
-    $inventory = $c->get("Api\Inventory");
-    return new StatController($inventory, $logger);
-};
 $container['Api\Consumer\ConsumerController'] = function($c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $inventory = $c->get("Api\Inventory");
     $token = $c->get("token"); // retrieve the 'token' from the container
     return new \Api\Consumer\ConsumerController($inventory, $logger, $token);
+};
+$container['Api\Statistics\StatController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $inventory = $c->get("Api\Inventory");
+    return new StatController($inventory, $logger);
+};
+$container['Api\Authentication\PasswordResetController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $renderer = $c->get("renderer");
+    return new \Api\Authentication\PasswordResetController($logger, $renderer);
+};
+$container['Api\Authentication\VerifyEmailController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    return new \Api\Authentication\VerifyEmailController($logger);
 };

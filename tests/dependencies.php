@@ -173,3 +173,11 @@ $container['Api\Consumer\ConsumerController'] = function($c) {
     $token = $c->get("token"); // retrieve the 'token' from the container
     return new \Api\Consumer\ConsumerController($inventory, $logger, $token);
 };
+$container['Api\Authentication\PasswordResetController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    return new \Api\Authentication\PasswordResetController($logger);
+};
+$container['Api\Authentication\VerifyEmailController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    return new \Api\Authentication\VerifyEmailController($logger);
+};
