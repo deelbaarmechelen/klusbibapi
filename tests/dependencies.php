@@ -191,3 +191,8 @@ $container['Api\Enrolment\EnrolmentController'] = function(ContainerInterface $c
     $token = $c->get("token");
     return new \Api\Enrolment\EnrolmentController($logger, $enrolmentFactory, $jwtAuthentication, $token);
 };
+$container['Api\Events\EventsController'] = function(ContainerInterface $c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $token = $c->get("token");
+    return new \Api\Events\EventsController($logger, $token);
+};
