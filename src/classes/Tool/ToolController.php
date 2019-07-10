@@ -3,7 +3,9 @@
 namespace Api\Tool;
 
 use Api\Exception\NotFoundException;
+use Api\Exception\NotImplementedException;
 use Api\Inventory\Inventory;
+use Api\Product\ProductControllerInterface;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\ModelMapper\ToolMapper;
 use Api\Model\Tool;
@@ -11,7 +13,7 @@ use Api\ModelMapper\ReservationMapper;
 use Api\Authorisation;
 use Api\Upload\UploadHandler;
 
-class ToolController implements ToolControllerInterface
+class ToolController implements ProductControllerInterface
 {
     protected $logger;
     protected $toolManager;
@@ -23,7 +25,7 @@ class ToolController implements ToolControllerInterface
         $this->token = $token;
     }
 
-    function get($request, $response, $args) {
+    function getAll($request, $response, $args) {
 
         $this->logger->info("Klusbib GET '/tools' route");
         $sortdir = $request->getQueryParam('_sortDir');
@@ -112,7 +114,7 @@ class ToolController implements ToolControllerInterface
         $tool->save();
         return $response->withJson(ToolMapper::mapToolToArray($tool));
     }
-    function uploadToolImage($request, $response, $args) {
+    function uploadProductImage($request, $response, $args) {
         $this->logger->info("Klusbib POST '/tools/{toolid}/upload' route");
         /* Check if token has needed scope. */
         Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.update"]);
@@ -163,5 +165,27 @@ class ToolController implements ToolControllerInterface
         }
         $tool->delete();
         return $response->withStatus(200);
+    }
+
+    function add($request, $response, $args)
+    {
+        // TODO: Implement getDisabledDates() method.
+        throw new NotImplementedException("Not supported in this version. Did you intend to use create()?");
+    }
+
+    /**
+     * @deprecated
+     * Use delete($request, $response, $args) instead
+     */
+    function deleteByID($request, $response, $args)
+    {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        return $this->delete($request, $response, $args);
+    }
+
+    function getDisabledDates($request, $response, $args)
+    {
+        // TODO: Implement getDisabledDates() method.
+        throw new NotImplementedException("Not supported in this version");
     }
 }

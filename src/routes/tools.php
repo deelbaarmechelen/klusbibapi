@@ -8,7 +8,7 @@ use Api\Tool\ToolController;
 use Api\ModelMapper\ReservationMapper;
 use Api\Upload\UploadHandler;
 
-$app->get('/tools', ToolController::class . ':get');
+$app->get('/tools', ToolController::class . ':getAll');
 //$app->get('/tools', function ($request, $response, $args) {
 //
 //	$this->logger->info("Klusbib GET '/tools' route");
@@ -99,7 +99,7 @@ $app->post('/tools', ToolController::class . ':create');
 //	$tool->save();
 //	return $response->withJson(ToolMapper::mapToolToArray($tool));
 //});
-$app->post('/tools/{toolid}/upload', ToolController::class . ':uploadToolImage');
+$app->post('/tools/{toolid}/upload', ToolController::class . ':uploadProductImage');
 //$app->post('/tools/{toolid}/upload', function ($request, $response, $args) {
 //    $this->logger->info("Klusbib POST '/tools/{toolid}/upload' route");
 //    /* Check if token has needed scope. */

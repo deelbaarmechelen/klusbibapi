@@ -26,7 +26,7 @@ class UserController implements UserControllerInterface
         $this->token = $token;
     }
 
-    function get ($request, $response, $args) {
+    function getAll ($request, $response, $args) {
         $this->logger->info("Klusbib GET on '/users' route");
 
         $authorised = Authorisation::checkUserAccess($this->token, "list", null);
@@ -90,6 +90,9 @@ class UserController implements UserControllerInterface
         }
         $userArray["reservations"] = $reservationsArray;
         return $response->withJson($userArray);
+    }
+    function add($request, $response, $args){
+        return $this->create($request, $response, $args);
     }
     function create($request, $response, $args)
     {

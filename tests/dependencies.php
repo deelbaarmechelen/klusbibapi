@@ -181,3 +181,7 @@ $container['Api\Authentication\VerifyEmailController'] = function($c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     return new \Api\Authentication\VerifyEmailController($logger);
 };
+$container['Api\Enrolment\EnrolmentController'] = function($c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    return new \Api\Enrolment\EnrolmentController($logger);
+};
