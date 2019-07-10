@@ -2,7 +2,7 @@
 
 namespace Api\Payment;
 
-use Api\Token;
+use Api\Token\Token;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Model\PaymentMode;
 use Api\Model\Payment;

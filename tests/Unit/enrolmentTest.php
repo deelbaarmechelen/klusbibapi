@@ -1,5 +1,5 @@
 <?php
-use Api\Token;
+use Api\Token\Token;
 use Tests\DbUnitArrayDataSet;
 use Api\Model\PaymentState;
 use Api\Model\PaymentMode;

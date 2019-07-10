@@ -1,57 +1,9 @@
 <?php
 
-use Api\Token;
-use Illuminate\Database\Capsule\Manager as Capsule;
-use Api\Mail\MailManager;
+use Api\Token\TokenController;
 
-$app->post("/token", function ($request, $response, $arguments) use ($app) {
-	$this->logger->info("Klusbib POST '/token' route");
-	$valid_scopes = Token::validScopes();
-		
-	$container = $app->getContainer();
-	$user = Capsule::table('users')->where('email', $container["user"])->first();
-	if (null == $user) {
-		return $response->withStatus(404);
-	}
-	if ('ACTIVE' != $user->state) {
-		return $response->withStatus(403);
-	}
-	$sub = $user->user_id;
-	$requested_scopes = Token::allowedScopes($user->role);
-	$scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
-		return in_array($needle, $valid_scopes);
-	});
-	$token = Token::generateToken($scopes, $sub); 
-	$this->logger->info("Token generated with scopes " . json_encode($scopes) . " and sub " .  json_encode($sub));
-	
-	$data["status"] = "ok";
-	$data["token"] = $token;
-
-	return $response->withStatus(201)
-		->withHeader("Content-Type", "application/json")
-		->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-});
-
-$app->post("/token/guest", function ($request, $response, $arguments) use ($app) {
-	$this->logger->info("Klusbib POST '/token/guest' route");
-	$valid_scopes = Token::validScopes();
-
-	$container = $app->getContainer();
-	$requested_scopes = Token::allowedScopes('guest');
-	$scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
-		return in_array($needle, $valid_scopes);
-	});
-	$sub = -1; // guest uses sub -1
-	$token = Token::generateToken($scopes, $sub); 
-	$this->logger->info("Token generated with scopes " . json_encode($scopes) . " and sub " .  json_encode($sub));
-
-	$data["status"] = "ok";
-	$data["token"] = $token;
-
-	return $response->withStatus(201)
-		->withHeader("Content-Type", "application/json")
-		->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-});
+$app->post("/token", TokenController::class . ':create');
+$app->post("/token/guest", TokenController::class . ':createForGuest');
 	
 /* This is just for debugging, not usefull in real life. */
 $app->get("/dump", function ($request, $response, $arguments) {

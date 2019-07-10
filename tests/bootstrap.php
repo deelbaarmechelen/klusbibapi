@@ -8,7 +8,7 @@ date_default_timezone_set('UTC');
 use There4\Slim\Test\WebTestCase;
 use There4\Slim\Test\WebDbTestCase;
 use Tests\DbUnitArrayDataSet;
-use Api\Token;
+use Api\Token\Token;
 use Tuupola\Base62;
 use Api\User\UserManager;
 use Api\User\UserController;
@@ -56,12 +56,15 @@ class LocalDbWebTestCase extends WebDbTestCase {
 	static private $pdo = null;
 	public $settings;
 	private $dependencies;
+	private $useMiddleware = false;
 	
 	// Run for each unit test to setup our slim app environment
-	public function setup($dependencies = null, WebTestClient $client = NULL)
+	public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false)
 	{
         $this->settings = require __DIR__ . '/test_settings.php';
 		$this->dependencies = $dependencies;
+		$this->useMiddleware = $useMiddleware;
+
 		\Tests\Mock\InventoryMock::clearUsers();
 		parent::setUp();
 	
@@ -243,9 +246,10 @@ class LocalDbWebTestCase extends WebDbTestCase {
     	require __DIR__ . '/dependencies.php';
     	 
     	// Register middleware
-    	// Middleware load is of no use as not called by client
-//     	require PROJECT_ROOT . '/src/middleware.php';
-    
+        if ($this->useMiddleware) {
+            require PROJECT_ROOT . '/src/middleware.php';
+        }
+
     	// Register routes
     	require PROJECT_ROOT . '/src/routes.php';
     	 

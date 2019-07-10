@@ -2,7 +2,7 @@
 
 namespace Api\Authentication;
 
-use Api\Token;
+use Api\Token\Token;
 use Api\Model\UserState;
 use Api\Model\EmailState;
 use Api\Mail\MailManager;

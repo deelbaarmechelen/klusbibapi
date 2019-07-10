@@ -73,6 +73,8 @@ class InventoryTest extends TestCase
         $this->assertNotNull($user);
         $this->assertEquals($extId, $user->user_ext_id);
     }
+    // TODO: add test case for deleted user in inventory (returns ok but no user data?)
+
     public function testPostUser() {
         $user = new User();
         $user->id = 1;

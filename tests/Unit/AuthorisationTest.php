@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 use Api\Authorisation;
-use Api\Token;
+use Api\Token\Token;
 
 class AuthorisationTest extends TestCase
 {

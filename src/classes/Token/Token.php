@@ -1,5 +1,5 @@
 <?php
-namespace Api;
+namespace Api\Token;
 
 use Api\Exception\ForbiddenException;
 use Firebase\JWT\JWT;

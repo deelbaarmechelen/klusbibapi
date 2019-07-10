@@ -1,11 +1,12 @@
 <?php
-use Api\Token;
+use Api\Token\Token;
 use Tests\DbUnitArrayDataSet;
 
 class TokenTest extends LocalDbWebTestCase
 {
 	private $startdate;
 	private $enddate;
+
 	/**
 	 * @return PHPUnit_Extensions_Database_DataSet_IDataSet
 	 */
@@ -41,10 +42,10 @@ class TokenTest extends LocalDbWebTestCase
 				),
 		));
 	}
-	
-	public function testPostToken()
+
+    public function testPostToken()
 	{
-		echo "test POST token\n";
+		echo "test POST /token\n";
 		
 		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0"	);
 		$this->setUser('admin@klusbib.be');
@@ -52,10 +53,18 @@ class TokenTest extends LocalDbWebTestCase
 // 		print_r($body);
 		$this->assertEquals(201, $this->client->response->getStatusCode());
 	}
-	
+    public function testPostTokenGuest()
+	{
+		echo "test POST /token/guest\n";
+
+		$body = $this->client->post('/token/guest');
+// 		print_r($body);
+		$this->assertEquals(201, $this->client->response->getStatusCode());
+	}
+
 	public function testPostToken_inactiveUser()
 	{
-		echo "test POST token\n";
+		echo "test POST /token (inactive user)\n";
 	
 		$header = array('Authorization' => "Basic YWRtaW5Aa2x1c2JpYi5iZTp0ZXN0"	);
 		$this->setUser('daniel@klusbib.be');

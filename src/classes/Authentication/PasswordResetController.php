@@ -1,7 +1,7 @@
 <?php
 
 namespace Api\Authentication;
-use Api\Token;
+use Api\Token\Token;
 use Api\Mail\MailManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
 

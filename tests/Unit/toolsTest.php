@@ -1,5 +1,5 @@
 <?php
-use Api\Token;
+use Api\Token\Token;
 use Tests\DbUnitArrayDataSet;
 
 class ToolsTest extends LocalDbWebTestCase

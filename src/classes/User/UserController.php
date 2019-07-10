@@ -13,12 +13,13 @@ use Api\Validator\UserValidator;
 use Api\Exception\ForbiddenException;
 use Api\Mail\MailManager;
 use Api\Authorisation;
-use Api\Token;
+use Api\Token\Token;
 
 class UserController implements UserControllerInterface
 {
     protected $logger;
     protected $userManager;
+    protected $token;
 
     public function __construct($logger, UserManager $userManager, $token) {
         $this->logger = $logger;
@@ -26,7 +27,7 @@ class UserController implements UserControllerInterface
         $this->token = $token;
     }
 
-    function getAll ($request, $response, $args) {
+    public function getAll ($request, $response, $args) {
         $this->logger->info("Klusbib GET on '/users' route");
 
         $authorised = Authorisation::checkUserAccess($this->token, "list", null);

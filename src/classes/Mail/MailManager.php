@@ -2,7 +2,7 @@
 namespace Api\Mail;
 
 use Api\Model\User;
-use Api\Token;
+use Api\Token\Token;
 use PHPMailer;
 use Twig_Environment;
 use DateTime;

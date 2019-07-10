@@ -3,7 +3,7 @@
 use Slim\Middleware\JwtAuthentication;
 use Slim\Middleware\HttpBasicAuthentication;
 use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
-use Api\Token;
+use Api\Token\Token;
 use Api\Mail\MailManager;
 use Api\User\UserController;
 use Api\Tool\ToolController;
@@ -183,4 +183,9 @@ $container['Api\Reservation\ReservationController'] = function(ContainerInterfac
     $token = $c->get("token");
     $mailManager = new MailManager();
     return new \Api\Reservation\ReservationController($logger, $token, $mailManager);
+};
+$container['Api\Token\TokenController'] = function(ContainerInterface $c) {
+    $logger = $c->get("logger");
+    $token = $c->get("token");
+    return new \Api\Token\TokenController($logger, $token, $c);
 };
