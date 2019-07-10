@@ -35,6 +35,7 @@ require __DIR__ . '/routes/consumers.php';
 require __DIR__ . '/routes/reservations.php';
 require __DIR__ . '/routes/payments.php';
 require __DIR__ . '/routes/events.php';
+require __DIR__ . '/routes/lendings.php';
 
 $app->get('/stats/monthly', StatController::class . ':monthly');
 $app->get('/stats/yearly', StatController::class . ':yearly');

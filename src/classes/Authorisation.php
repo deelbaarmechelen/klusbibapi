@@ -130,6 +130,20 @@ class Authorisation {
                 return AccessType::NO_ACCESS;
         }
     }
+    static function checkLendingAccess ($token, $operation) {
+        if (!isset($token)) {
+            return AccessType::NO_ACCESS;
+        }
+        switch ($operation) {
+            case "list":
+                if ($token->hasScope(["lendings.all", "lendings.list"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            default:
+                return AccessType::NO_ACCESS;
+        }
+    }
     /**
      *
      * @param Token $token
