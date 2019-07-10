@@ -178,3 +178,9 @@ $container['Api\Payment\PaymentController'] = function(ContainerInterface $c) {
     $mollieClient->setApiKey(MOLLIE_API_KEY);
     return new \Api\Payment\PaymentController($logger, $token, $mailManager, $mollieClient);
 };
+$container['Api\Reservation\ReservationController'] = function(ContainerInterface $c) {
+    $logger = $c->get("logger");
+    $token = $c->get("token");
+    $mailManager = new MailManager();
+    return new \Api\Reservation\ReservationController($logger, $token, $mailManager);
+};
