@@ -1,7 +1,7 @@
 #!/app/.heroku/php/bin/php
 <?php
 use Api\Mail\MailManager;
-use Api\Token;
+use Api\Token\Token;
 use Api\Model\User;
 
 # Deny access from the web

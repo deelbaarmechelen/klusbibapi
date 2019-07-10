@@ -1,6 +1,6 @@
 <?php
 use Api\Mail\MailManager;
-use Api\Token;
+use Api\Token\Token;
 //Aanpassing Klusbib afspraken / privacy verklaring voor GDPR
 //Dit is in principe enkel van belang voor de actieve leden
 //=> mailtje naar alle actieve leden met verwijzing naar nieuwe afspraken?
