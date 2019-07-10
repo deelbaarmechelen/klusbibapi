@@ -196,3 +196,11 @@ $container['Api\Events\EventsController'] = function(ContainerInterface $c) {
     $token = $c->get("token");
     return new \Api\Events\EventsController($logger, $token);
 };
+$container['Api\Payment\PaymentController'] = function(ContainerInterface $c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $token = $c->get("token");
+    $mailManager = new MailManager(new PHPMailerMock());
+    $mollieClient = new MollieApiClientMock();
+    $mollieClient->setApiKey(MOLLIE_API_KEY);
+    return new \Api\Payment\PaymentController($logger, $token, $mailManager, $mollieClient);
+};
