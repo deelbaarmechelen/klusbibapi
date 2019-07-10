@@ -9,16 +9,18 @@ use Api\User\UserController;
 use Api\Tool\ToolController;
 use Api\User\UserManager;
 use Api\Tool\ToolManager;
-use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
 use Api\Statistics\StatController;
 use Mollie\Api\MollieApiClient;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 // Fetch DI Container
 $container = $app->getContainer();
 
 // Register Twig View helper
-$container['view'] = function ($c) {
+$container['view'] = function (ContainerInterface $c) {
     $view = new \Slim\Views\Twig(__DIR__ . '/../templates', [
         'cache' => __DIR__ . '/../cache'
     ]);
@@ -32,13 +34,13 @@ $container['view'] = function ($c) {
 };
 
 // view renderer
-$container['renderer'] = function ($c) {
+$container['renderer'] = function (ContainerInterface $c) {
     $settings = $c->get('settings')['renderer'];
     return new Slim\Views\PhpRenderer($settings['template_path']);
 };
 
 // monolog
-$container['logger'] = function ($c) {
+$container['logger'] = function (ContainerInterface $c) {
     $settings = $c->get('settings')['logger'];
     $logger = new Monolog\Logger($settings['name']);
     $logger->pushProcessor(new Monolog\Processor\UidProcessor());
@@ -47,7 +49,7 @@ $container['logger'] = function ($c) {
 };
 
 // PDO
-$container['db'] = function ($c) {
+$container['db'] = function (ContainerInterface $c) {
 	$db = $c['settings']['db'];
 	$pdo = new PDO("mysql:host=" . $db['host'] . ";dbname=" . $db['dbname'],
 			$db['user'], $db['pass']);
@@ -56,15 +58,15 @@ $container['db'] = function ($c) {
 	return $pdo;
 };
 
-$container["token"] = function ($container) {
+$container["token"] = function (ContainerInterface $container) {
 	return new Token;
 };
 
-$container["user"] = function ($container) {
+$container["user"] = function (ContainerInterface $container) {
 	return "";
 };
 
-$container["HttpBasicAuthentication"] = function ($container) {
+$container["HttpBasicAuthentication"] = function (ContainerInterface $container) {
 	return new HttpBasicAuthentication([
 			"path" => "/token",
 			"passthrough" => "/token/guest",
@@ -76,7 +78,7 @@ $container["HttpBasicAuthentication"] = function ($container) {
 					"user" => "email",
 					"hash" => "hash"
 			]),
-			"callback" => function ($request, $response, $arguments) use ($container) {
+			"callback" => function (ServerRequestInterface $request, ResponseInterface $response, $arguments) use ($container) {
 				$container["user"] = $arguments["user"];
 // 				print_r($arguments);
 // 				print_r($container["user"]);
@@ -84,7 +86,7 @@ $container["HttpBasicAuthentication"] = function ($container) {
 	]);
 };
 
-$container["JwtAuthentication"] = function ($container) {
+$container["JwtAuthentication"] = function (ContainerInterface $container) {
 	return new JwtAuthentication([
 			"path" => "/",
 			"passthrough" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
@@ -94,7 +96,7 @@ $container["JwtAuthentication"] = function ($container) {
 //			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
 			"secure" => false, // disable -> scheme not always correctly set on request!
 			"relaxed" => ["admin"], // list hosts allowed without HTTPS for DEV
-			"error" => function ($request, $response, $arguments) {
+			"error" => function (ServerRequestInterface $request, ResponseInterface $response, $arguments) {
 				$data = array("error" => array( "status" => 401, "message" => $arguments["message"]));
 				return $response
 					->withHeader("Content-Type", "application/json")
@@ -108,55 +110,58 @@ $container["JwtAuthentication"] = function ($container) {
 							"passthrough" => ["OPTIONS"]
 					])
 			],
-			"callback" => function ($request, $response, $arguments) use ($container) {
+			"callback" => function (ServerRequestInterface $request, ResponseInterface $response, $arguments) use ($container) {
 				$container['logger']->debug("Authentication ok for token: " . json_encode($arguments["decoded"]));
 				$container["token"]->hydrate($arguments["decoded"]);
 			}
 	]);
 };
 
-$container["enrolmentFactory"] = function ($container) {
+$container["Api\Enrolment\EnrolmentFactory"] = function (ContainerInterface $container) {
     return new \Api\Enrolment\EnrolmentFactory(new MailManager(), new MollieApiClient());
 };
-$container["Api\Inventory"] = function ($container) {
+$container["Api\Inventory"] = function (ContainerInterface $container) {
     $logger = $container->get("logger"); // retrieve the 'logger' from the container
     return SnipeitInventory::instance($logger);
 };
 
-$container['Api\User\UserController'] = function($c) {
+$container['Api\User\UserController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
     return new UserController($logger, new UserManager($inventory, $logger),$token);
 };
 
-$container['Api\Tool\ToolController'] = function($c) {
+$container['Api\Tool\ToolController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
     return new ToolController($logger, new ToolManager($inventory, $logger),$token);
 };
-$container['Api\Consumer\ConsumerController'] = function($c) {
+$container['Api\Consumer\ConsumerController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $inventory = $c->get("Api\Inventory");
     $token = $c->get("token"); // retrieve the 'token' from the container
     return new \Api\Consumer\ConsumerController($inventory, $logger, $token);
 };
-$container['Api\Statistics\StatController'] = function($c) {
+$container['Api\Statistics\StatController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $inventory = $c->get("Api\Inventory");
     return new StatController($inventory, $logger);
 };
-$container['Api\Authentication\PasswordResetController'] = function($c) {
+$container['Api\Authentication\PasswordResetController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $renderer = $c->get("renderer");
     return new \Api\Authentication\PasswordResetController($logger, $renderer);
 };
-$container['Api\Authentication\VerifyEmailController'] = function($c) {
+$container['Api\Authentication\VerifyEmailController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     return new \Api\Authentication\VerifyEmailController($logger);
 };
-$container['Api\Enrolment\EnrolmentController'] = function($c) {
+$container['Api\Enrolment\EnrolmentController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
-    return new \Api\Enrolment\EnrolmentController($logger);
+    $jwtAuthentication = $c->get("JwtAuthentication");
+    $enrolmentFactory = $c->get("Api\Enrolment\EnrolmentFactory");
+    $token = $c->get("token");
+    return new \Api\Enrolment\EnrolmentController($logger, $enrolmentFactory, $jwtAuthentication, $token);
 };

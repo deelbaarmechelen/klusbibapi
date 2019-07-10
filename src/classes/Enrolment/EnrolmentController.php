@@ -8,16 +8,26 @@ use Api\Model\Payment;
 use Api\Model\UserState;
 use Api\Mail\MailManager;
 use Api\Enrolment\EnrolmentManager;
+use Api\Enrolment\EnrolmentFactory;
 use Api\Authorisation;
 use Api\AccessType;
 use Api\Model\User;
+use Api\Exception\EnrolmentException;
+use Slim\Middleware\JwtAuthentication;
 
 class EnrolmentController
 {
     protected $logger;
+    protected $enrolmentFactory;
+    protected $jwtAuthentication;
+    protected $token;
 
-    public function __construct($logger) {
+    public function __construct($logger, EnrolmentFactory $enrolmentFactory, JwtAuthentication $jwtAuthentication,
+        $token) {
         $this->logger = $logger;
+        $this->enrolmentFactory = $enrolmentFactory;
+        $this->jwtAuthentication = $jwtAuthentication;
+        $this->token = $token;
     }
 
     /**
@@ -62,11 +72,7 @@ class EnrolmentController
             return $response->withStatus(400)
                 ->withJson("No user found with id $userId");;
         }
-        if ($this->has("enrolmentFactory")) {
-            $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
-        } else {
-            $enrolmentManager = new EnrolmentManager($this->logger, $user);
-        }
+        $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         // Check payment mode
         if ($paymentMode == PaymentMode::TRANSFER) {
             try {
@@ -124,25 +130,25 @@ class EnrolmentController
                 return $response->withStatus(200)
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-            } catch (\Api\Exception\EnrolmentException $e) {
-                if ($e->getCode() == \Api\Exception\EnrolmentException::ALREADY_ENROLLED) {
+            } catch (EnrolmentException $e) {
+                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
                     $response_data = array("message" => $e->getMessage(),
                         membership_end_date => $user->membership_end_date,
                         orderId => $orderId);
                     return $response->withStatus(208)// 208 = Already Reported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == \Api\Exception\EnrolmentException::NOT_ENROLLED) {
+                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
                     $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
                     return $response->withStatus(403)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == \Api\Exception\EnrolmentException::UNSUPPORTED_STATE) {
+                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
                     $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
                     return $response->withStatus(501)// Unsupported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == \Api\Exception\EnrolmentException::MOLLIE_EXCEPTION) {
+                } else if ($e->getCode() == EnrolmentException::MOLLIE_EXCEPTION) {
                     return $response->withStatus(500)// Internal error
                     ->withJson($e->getMessage());
                 }
@@ -157,19 +163,18 @@ class EnrolmentController
             || $paymentMode == PaymentMode::SPONSORING
             || $paymentMode == PaymentMode::OTHER
         ) { // those payment modes require admin rights
-            // we still need to do authentication, as this is skipped for /enrolement route
-            $JwtAuthentication = $this->JwtAuthentication;
+            // we still need to do authentication, as this is skipped for /enrolment route
             /* If token cannot be found return with 401 Unauthorized. */
-            if (false === $token = $JwtAuthentication->fetchToken($request)) {
-                return $JwtAuthentication->error($request, $response->withStatus(401), [
-                    "message" => $JwtAuthentication->getMessage()
+            if (false === $token = $this->jwtAuthentication->fetchToken($request)) {
+                return $this->jwtAuthentication->error($request, $response->withStatus(401), [
+                    "message" => $this->jwtAuthentication->getMessage()
                 ]);
             }
 
             /* If token cannot be decoded return with 401 Unauthorized. */
-            if (false === $decoded = $JwtAuthentication->decodeToken($token)) {
-                return $JwtAuthentication->error($request, $response->withStatus(401), [
-                    "message" => $JwtAuthentication->getMessage(),
+            if (false === $decoded = $this->jwtAuthentication->decodeToken($token)) {
+                return $this->jwtAuthentication->error($request, $response->withStatus(401), [
+                    "message" => $this->jwtAuthentication->getMessage(),
                     "token" => $token
                 ]);
             }
@@ -203,19 +208,19 @@ class EnrolmentController
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
-            } catch (\Api\Exception\EnrolmentException $e) {
-                if ($e->getCode() == \Api\Exception\EnrolmentException::ALREADY_ENROLLED) {
+            } catch (EnrolmentException $e) {
+                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
                     $response_data = array("message" => $e->getMessage(),
                         membership_end_date => $user->membership_end_date);
                     return $response->withStatus(208) // 208 = Already Reported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == \Api\Exception\EnrolmentException::NOT_ENROLLED) {
+                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
                     $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
                     return $response->withStatus(403)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == \Api\Exception\EnrolmentException::UNSUPPORTED_STATE) {
+                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
                     $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
                     return $response->withStatus(501)
                         ->withHeader("Content-Type", "application/json")
@@ -258,24 +263,20 @@ class EnrolmentController
                 ->withJson("No user found with id $userId");;
         }
 
-        if ($this->has("enrolmentFactory")) {
-            $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
-        } else {
-            $enrolmentManager = new EnrolmentManager($this->logger, $user);
-        }
+        $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         try {
             $enrolmentManager->confirmPayment($paymentMode,$user);
             $data = array();
             return $response->withStatus(200)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-        } catch (\Api\Exception\EnrolmentException $e) {
-            if ($e->getCode() == \Api\Exception\EnrolmentException::UNEXPECTED_PAYMENT_MODE) {
+        } catch (EnrolmentException $e) {
+            if ($e->getCode() == EnrolmentException::UNEXPECTED_PAYMENT_MODE) {
                 $message = "Unsupported payment mode ($paymentMode)";
                 $this->logger->warn("Invalid POST request on /enrolment/confirm received: $message");
                 return $response->withStatus(400) // Bad request
                 ->withJson($message);
-            } else if ($e->getCode() == \Api\Exception\EnrolmentException::UNEXPECTED_CONFIRMATION) {
+            } else if ($e->getCode() == EnrolmentException::UNEXPECTED_CONFIRMATION) {
                 $message = "Unexpected confirmation for payment mode ($paymentMode)";
                 return $response->withStatus(400)// Bad request
                 ->withJson($message);
@@ -305,20 +306,16 @@ class EnrolmentController
             return $response->withStatus(400) // Bad request
             ->withJson("Missing or empty paymentId");
         }
-        if ($this->has("enrolmentFactory")) {
             // FIXME: remove $user from EnrolmentManager constructor
-            $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger);
-        } else {
-            $enrolmentManager = new EnrolmentManager($this->logger);
-        }
+        $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger);
         try {
             $enrolmentManager->processMolliePayment($paymentId);
-        } catch (\Api\Exception\EnrolmentException $e) {
+        } catch (EnrolmentException $e) {
 
-            if ($e->getCode() == \Api\Exception\EnrolmentException::UNKNOWN_USER) {
+            if ($e->getCode() == EnrolmentException::UNKNOWN_USER) {
                 return $response->withStatus(400)
                     ->withJson($e->getMessage());;
-            } elseif ($e->getCode() == \Api\Exception\EnrolmentException::MOLLIE_EXCEPTION) {
+            } elseif ($e->getCode() == EnrolmentException::MOLLIE_EXCEPTION) {
                 return $response->withStatus(500)// Internal error
                 ->withJson($e->getMessage());
             }

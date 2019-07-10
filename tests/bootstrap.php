@@ -209,31 +209,32 @@ class LocalDbWebTestCase extends WebDbTestCase {
      		];
     	}
     	$container = $this->app->getContainer();
-    	$container["token"] = $this->generateToken($sub, $scopes);
-    	// also update userController as it uses the token
-        $logger = $container['logger'];
-        $inventory = $container['Api\Inventory'];
-    	$container['Api\User\UserController'] = new UserController($logger, new UserManager($inventory, $logger),$container["token"]);
+    	$decoded = json_decode(json_encode($this->generatePayload($sub, $scopes)));
+        $container["token"]->hydrate($decoded);
     }
-    
-    private function generateToken($sub, $scopes) {
-    	$token = new Token;
-    	$now = new \DateTime();
-    	$future = new \DateTime("now +2 hours");
-    	
-    	$jti = Base62::encode(random_bytes(16));
 
-    	$payload = [
-    			"iat" => $now->getTimeStamp(), 		// issued at
-    			"exp" => $future->getTimeStamp(),	// expiration
-    			"jti" => $jti,						// JWT ID
-    			"sub" => $sub,
-    			"scope" => $scopes
-    	];
-    	$token->decoded = json_decode(json_encode($payload));
-    	return $token;
+    /**
+     * @param $sub
+     * @param $scopes
+     * @return array
+     */
+    private function generatePayload($sub, $scopes): array
+    {
+        $now = new \DateTime();
+        $future = new \DateTime("now +2 hours");
+
+        $jti = Base62::encode(random_bytes(16));
+
+        $payload = [
+            "iat" => $now->getTimeStamp(),        // issued at
+            "exp" => $future->getTimeStamp(),    // expiration
+            "jti" => $jti,                        // JWT ID
+            "sub" => $sub,
+            "scope" => $scopes
+        ];
+        return $payload;
     }
-    
+
     public function getSlimInstance() {
     	$app = new \Slim\App($this->settings);
     
@@ -250,6 +251,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
     	 
     	return $app;
     }
-    
+
+
 }
 /* End of file bootstrap.php */
