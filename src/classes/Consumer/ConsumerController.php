@@ -21,7 +21,7 @@ class ConsumerController implements ConsumerControllerInterface
         $this->token = $token;
     }
 
-    public function get($request, $response, $args) {
+    public function getAll($request, $response, $args) {
         $this->logger->info("Klusbib '/consumers' route");
         $consumers = Capsule::table('consumers')
             ->orderBy('category', 'asc')
