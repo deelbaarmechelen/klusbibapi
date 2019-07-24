@@ -156,4 +156,19 @@ class InventoryMock implements Inventory
     {
         // TODO: Implement getToolsByState() method.
     }
+
+    public function getActivity($offset = 0, $limit = 1000)
+    {
+        // TODO: Implement getActivity() method.
+    }
+
+    public function getActivityCheckout($offset = 0, $limit = 1000)
+    {
+        // TODO: Implement getActivityCheckout() method.
+    }
+
+    public function getLendings($offset = 0, $limit = 1000)
+    {
+        // TODO: Implement getLendings() method.
+    }
 }

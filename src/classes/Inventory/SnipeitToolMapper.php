@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dev
- * Date: 12/06/19
- * Time: 10:28
- */
 
 namespace Api\Inventory;
 

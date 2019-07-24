@@ -111,6 +111,8 @@ class Token
             "users.all",
             "payments.all",
             "payments.list",
+            "lendings.all",
+            "lendings.list",
             "auth.confirm",
             "enrolment.confirm"
 		];
@@ -140,6 +142,7 @@ class Token
 				"users.all",
                 "events.all",
                 "payments.all",
+                "lendings.all",
                 "users.read.owner", // need to be added for check against emailLinkScopes
                 "users.update.password", // need to be added for check against resetPwdScopes, emailLinkScopes
                 "users.update.owner", // need to be added for check against emailLinkScopes
