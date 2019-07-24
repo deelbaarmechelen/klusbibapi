@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<title>Confirm Email</title>
+    </head>
+    <body>
+    	<h1>Klusbib</h1>
+    {% if result == "SUCCESS" %}
+        <p>Beste {{ userName }},<br>
+        Je email adres is nu bevestigd !
+    {% endif %}
+    {% if result == "MISSING_TOKEN_OR_EMAIL" %}
+        Ongeldige aanvraag: ontbrekende parameters!
+    {% endif %}
+    {% if result == "INVALID_TOKEN" %}
+        Ongeldige token: gelieve opnieuw te proberen
+    {% endif %}
+    {% if result == "UNAUTHORIZED" %}
+        Je bent niet gemachtigd om dit email adres te bevestigen.<br>
+        Neem contact met ons op als je denkt dat dit een fout is <a href="mailto:info@klusbib.be">info@klusbib.be</a>
+    {% endif %}
+    {% if result == "UNKNOWN_USER" %}
+        Geen gebruiker gevonden voor dit email adres.<br>
+        Indien je dit onlangs wijzigde, gelieve dan een nieuwe email bevestiging te starten. <br>
+        Blijft het probleem zich voordoen, neem dan contact met ons op via <a href="mailto:info@klusbib.be">info@klusbib.be</a>
+    {% endif %}
+        </p>
+        <p>Terug naar <a href="//www.klusbib.be">Klusbib</a>
+        </p>
+    </body>
+</html>    

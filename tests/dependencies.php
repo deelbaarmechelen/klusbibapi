@@ -22,6 +22,20 @@ use Psr\Http\Message\ServerRequestInterface;
 
 $container = $app->getContainer();
 
+// Register Twig View helper
+$container['view'] = function (ContainerInterface $c) {
+    $view = new \Slim\Views\Twig(__DIR__ . '/../templates', [
+        'cache' => __DIR__ . '/../cache'
+    ]);
+
+    // Instantiate and add Slim specific extension
+    $router = $c->get('router');
+    $uri = \Slim\Http\Uri::createFromEnvironment(new \Slim\Http\Environment($_SERVER));
+    $view->addExtension(new \Slim\Views\TwigExtension($router, $uri));
+
+    return $view;
+};
+
 // view renderer
 $container['renderer'] = function (ContainerInterface $c) {
     $settings = $c->get('settings')['renderer'];
@@ -117,7 +131,8 @@ $container["HttpBasicAuthentication"] = function (ContainerInterface $container)
 $container["JwtAuthentication"] = function (ContainerInterface $container) {
 	return new JwtAuthentication([
 			"path" => "/",
-			"passthrough" => ["/token", "/welcome", "/upload", "/auth/reset"],
+			"passthrough" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
+                "/auth/reset", "/auth/verifyemail"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container["logger"],
 			"secure" => false, // FIXME: enable HTTPS and switch this to true
@@ -138,6 +153,7 @@ $container["JwtAuthentication"] = function (ContainerInterface $container) {
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			},
 			"callback" => function (ServerRequestInterface $request, ResponseInterface $response, $arguments) use ($container) {
+                $container['logger']->debug("Authentication ok for token: " . json_encode($arguments["decoded"]));
 // 				$container["token"]->hydrate($arguments["decoded"]);
 			}
 	]);
@@ -182,8 +198,11 @@ $container['Api\Authentication\PasswordResetController'] = function(ContainerInt
 };
 $container['Api\Authentication\VerifyEmailController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
-    return new \Api\Authentication\VerifyEmailController($logger);
+    $jwtAuthentication = $c->get("JwtAuthentication");
+    $view = $c-> get("view");
+    return new \Api\Authentication\VerifyEmailController($logger, $jwtAuthentication, $view);
 };
+
 $container['Api\Enrolment\EnrolmentController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $jwtAuthentication = $c->get("JwtAuthentication");

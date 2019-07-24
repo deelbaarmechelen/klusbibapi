@@ -156,7 +156,9 @@ $container['Api\Authentication\PasswordResetController'] = function(ContainerInt
 };
 $container['Api\Authentication\VerifyEmailController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
-    return new \Api\Authentication\VerifyEmailController($logger);
+    $jwtAuthentication = $c->get("JwtAuthentication");
+    $view = $c-> get("view");
+    return new \Api\Authentication\VerifyEmailController($logger, $jwtAuthentication, $view);
 };
 $container['Api\Enrolment\EnrolmentController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container

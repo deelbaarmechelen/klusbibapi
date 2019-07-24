@@ -7,14 +7,19 @@ use Api\Model\UserState;
 use Api\Model\EmailState;
 use Api\Mail\MailManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Slim\Middleware\JwtAuthentication;
 
 class VerifyEmailController
 {
     protected $logger;
     protected $toolManager;
+    protected $jwtAuthentication;
+    protected $view;
 
-    public function __construct($logger) {
+    public function __construct($logger, JwtAuthentication $jwtAuthentication,$view) {
         $this->logger = $logger;
+        $this->jwtAuthentication = $jwtAuthentication;
+        $this->view = $view;
     }
 
     /**
@@ -70,36 +75,47 @@ class VerifyEmailController
      * @param $request is expected to contain token as query param
      * @param $response
      * @param $args is expected to contain userId as path argument
-     * @return mixed basic HTML confirmation page
-     *  400 if token or user id is missing
-     *  401 if token is not valid
-     *  403 if user is not authorised to verify this email
-     *  404 if no user can be found for the given email
+     * @return mixed basic HTML confirmation page. Possible errors:
+     *  - token or user id is missing
+     *  - token is not valid
+     *  - user is not authorised to verify this email
+     *  - no user can be found for the given email
      */
     public function confirmEmail($request, $response, $args) {
         $token = $request->getQueryParam("token", $default = null);
         if (is_null($token)) {
             $this->logger->warn("Missing token or user id in email confirmation");
-            return $response->withStatus(400);
+            return $this->view->render($response, 'confirm_email.twig', [
+                'userId' => $args['userId'],
+                'result' => "MISSING_TOKEN_OR_EMAIL"
+            ]);
         }
 
         // Check token
-        $decoded = $this->JwtAuthentication->decodeToken($token);
+        $decoded = $this->jwtAuthentication->decodeToken($token);
         $this->logger->debug("decoded token=" . json_encode($decoded));
         if (false === $decoded) {
-            return $response->withStatus(401);
+            return $this->view->render($response, 'confirm_email.twig', [
+                'userId' => $args['userId'],
+                'result' => "INVALID_TOKEN"
+            ]);
         }
         $token = new Token();
         $token->hydrate($decoded);
         if ($args["userId"] != $token->getSub()) {
             // not allowed to verify address for another user
-            return $response->withStatus(403);
+            return $this->view->render($response, 'confirm_email.twig', [
+                'userId' => $args['userId'],
+                'result' => "UNAUTHORIZED"
+            ]);
         }
         try {
             $user = \Api\Model\User::findOrFail($token->getSub());
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $modelNotFoundException) {
-            return $response->withStatus(404)
-                ->write('User with id ' . $token->getSub() . ' could not be found. Make sure to register first or contact us in case of problems.');
+            return $this->view->render($response, 'confirm_email.twig', [
+                'userId' => $args['userId'],
+                'result' => "UNKNOWN_USER"
+            ]);
         }
 
         // for backward compatibility (CONFIRM_EMAIL user state is deprecated)
@@ -109,9 +125,11 @@ class VerifyEmailController
         $user->email_state = EmailState::CONFIRMED;
         $user->save();
 
-        // Render index view
-        return $this->view->render($response, 'confirm_email.phtml',  [
-            'userId' => $args['userId']
+        // Render email confirmation view
+        return $this->view->render($response, 'confirm_email.twig', [
+            'userId' => $args['userId'],
+            'userName' => $user->firstname,
+            'result' => "SUCCESS"
         ]);
     }
 }
