@@ -9,9 +9,9 @@ require_once __DIR__ . '/../../test_env.php';
 
 final class ReservationValidatorTest extends LocalDbWebTestCase
 {
-    public function setup($dependencies = null, WebTestClient $client = NULL)
+    public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false)
     {
-        parent::setUp($dependencies, $client);
+        parent::setUp($dependencies, $client, $useMiddleware);
     }
 
     /**
