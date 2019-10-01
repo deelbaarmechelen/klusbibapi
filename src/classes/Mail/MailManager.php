@@ -95,7 +95,7 @@ class MailManager {
 
     public function sendEnrolmentConfirmation(User $user, $paymentMode) {
         $scopes = ["auth.confirm"];
-        $token = Token::generateToken($scopes, $user->user_id);
+        $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"));
         $link = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
         $parameters = array(
