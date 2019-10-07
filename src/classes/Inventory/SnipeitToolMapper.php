@@ -18,7 +18,7 @@ abstract class SnipeitToolMapper
         $tool->tool_id = $asset->id;
         $tool->tool_ext_id = $asset->id;
         $tool->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
-        $tool->description = $asset->notes;
+//        $tool->description = $asset->notes;
         $tool->code = $asset->asset_tag;
 //        $tool->owner_id = $data["owner_id"]; // FIXME: should match supplier??
 //        $tool->reception_date = $data["reception_date"];
