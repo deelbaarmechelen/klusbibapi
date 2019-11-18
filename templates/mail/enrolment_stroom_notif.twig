@@ -1,0 +1,17 @@
+{% block subject 'Inschrijving via STROOM project' %}
+
+{% block body %}
+<p>Beste,</p>
+<p>De nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }} gaf aan in te schrijven via het STROOM project<br/>
+    Gelieve te verifiëren of deze gebruiker aan alle voorwaarden voldoet (adres binnen STROOM wijk) en manueel de inschrijving te bevestigen<br/>
+    Huidige status: '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
+</p>
+<p>
+    Groetjes,<br/>
+    Admin.
+</p>
+{% endblock %}
+
+
+
+

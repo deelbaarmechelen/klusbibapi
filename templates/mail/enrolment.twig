@@ -11,8 +11,14 @@ Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount }}
 met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.<br>
 Van zodra we je betaling ontvangen zullen we je account activeren.
 </p><br>{% endif %}
+{% if paymentMode == 'STROOM' %}<p>
+Je gaf aan in te schrijven via het Stroom project.<br>
+Wij nemen contact voor je op met de project verantwoordelijke om je inschrijving verder te verwerken, zelf dien je hier niets voor te doen<br>
+Van zodra je inschrijving bevestigd is zullen we je account activeren en krijg je hiervan een bericht.<br>
+Mocht je echter niets meer vernemen binnen de komende 2 weken, dan liep er waarschijnlijk iets mis en kan je best opnieuw contact met ons opnemen of met de project verantwoordelijke
+</p><br>{% endif %}
 {% if confirmEmail %}<p>
-Mogen we je vragen om te bevestigen voor ontvangst door op onderstaande link te klikken:<br>
+Mogen we je vragen om alvast te bevestigen voor ontvangst door op onderstaande link te klikken:<br>
 <a href='{{ link }}'>{{ link }}</a> (geldig gedurende 48u)<br>
 Zo weten wij zeker dat er geen fout geslopen is in je email adres<br>
 </p><br>{% endif %}

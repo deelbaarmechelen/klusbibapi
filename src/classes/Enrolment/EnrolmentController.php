@@ -230,6 +230,44 @@ class EnrolmentController
 
         }
 
+        // enrolment in STROOM project
+        if ($paymentMode == PaymentMode::STROOM) {
+            try {
+                if ($renewal) {
+                    $payment = $enrolmentManager->renewalByStroom($orderId);
+                } else {
+                    $payment = $enrolmentManager->enrolmentByStroom($orderId);
+                }
+                $data = array();
+                $data["orderId"] = $orderId;
+                $data["paymentMode"] = $payment->mode;
+                $data["paymentState"] = $payment->state;
+                return $response->withStatus(200)
+                    ->withHeader("Content-Type", "application/json")
+                    ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+
+            } catch (EnrolmentException $e) {
+                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
+                    $response_data = array("message" => $e->getMessage(),
+                        membership_end_date => $user->membership_end_date);
+                    return $response->withStatus(208) // 208 = Already Reported
+                    ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
+                    $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
+                    return $response->withStatus(403)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
+                    $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
+                    return $response->withStatus(501)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                }
+            }
+
+        }
+
         $message = "Unsupported payment mode ($paymentMode)";
         $this->logger->warn("Invalid POST request on /enrolment received: $message");
         return $response->withStatus(400) // Bad request

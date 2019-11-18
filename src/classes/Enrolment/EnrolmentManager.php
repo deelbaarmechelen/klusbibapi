@@ -71,6 +71,35 @@ class EnrolmentManager
         $this->user->save();
         return $payment;
     }
+    function enrolmentByStroom($orderId){
+        $this->checkUserStateEnrolment();
+        $this->user->payment_mode = PaymentMode::STROOM;
+        $this->user->save();
+        $payment = $this->lookupPayment($orderId);
+
+        if ($payment == null) {
+            $payment = $this->createNewPayment($orderId, PaymentMode::STROOM, PaymentState::SUCCESS,
+                \Api\Settings::ENROLMENT_AMOUNT, "EUR");
+        };
+        $this->mailMgr->sendEnrolmentConfirmation($this->user, PaymentMode::STROOM);
+        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
+        return $payment;
+    }
+
+    function renewalByStroom($orderId) {
+        $this->checkUserStateRenewal();
+        $this->user->payment_mode = PaymentMode::STROOM;
+        $this->user->save();
+        $payment = $this->lookupPayment($orderId);
+
+        if ($payment == null) {
+            $payment = $this->createNewPayment($orderId,PaymentMode::STROOM, PaymentState::SUCCESS,
+                \Api\Settings::RENEWAL_AMOUNT, "EUR");
+        };
+        $this->mailMgr->sendRenewalConfirmation($this->user, PaymentMode::STROOM);
+        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
+        return $payment;
+    }
 
     function enrolmentByTransfer($orderId){
         $this->checkUserStateEnrolment();
@@ -88,6 +117,7 @@ class EnrolmentManager
     function renewalByTransfer($orderId) {
         $this->checkUserStateRenewal();
         $this->user->payment_mode = PaymentMode::TRANSFER;
+        $this->user->save();
         $payment = $this->lookupPayment($orderId);
 
         if ($payment == null) {
@@ -95,7 +125,6 @@ class EnrolmentManager
                 \Api\Settings::RENEWAL_AMOUNT, "EUR");
         };
         $this->mailMgr->sendRenewalConfirmation($this->user, PaymentMode::TRANSFER);
-        $this->user->save();
         return $payment;
     }
 
@@ -149,6 +178,7 @@ class EnrolmentManager
             $paymentMode != PaymentMode::LETS &&
             $paymentMode != PaymentMode::PAYCONIQ &&
             $paymentMode != PaymentMode::OTHER &&
+            $paymentMode != PaymentMode::STROOM &&
             $paymentMode != PaymentMode::OVAM
         ) {
             $message = "Unsupported payment mode ($paymentMode)";
@@ -177,6 +207,10 @@ class EnrolmentManager
         $user->state = UserState::ACTIVE;
         $user->save();
         if ($paymentMode == PaymentMode::TRANSFER) {
+            $mailMgr = new MailManager();
+            $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
+        }
+        if ($paymentMode == PaymentMode::STROOM) {
             $mailMgr = new MailManager();
             $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
         }

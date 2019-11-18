@@ -79,6 +79,11 @@ class MailManager {
             'newUser' => $newUser);
         return $this->sendTwigTemplate($userEmail, 'enrolment_new_notif', $parameters);
     }
+    public function sendEnrolmentStroomNotification($userEmail, $newUser) {
+        $parameters = array(
+            'newUser' => $newUser);
+        return $this->sendTwigTemplate($userEmail, 'enrolment_new_notif', $parameters);
+    }
     public function sendEnrolmentSuccessNotification($userEmail, $newUser, $isRenewal = false) {
         $parameters = array(
             'newUser' => $newUser,

@@ -13,4 +13,5 @@ abstract class PaymentMode
 	const LETS = "LETS";
     const MBON = "MBON";
 	const PAYCONIQ = "PAYCONIQ";
+	const STROOM = "STROOM";
 }
