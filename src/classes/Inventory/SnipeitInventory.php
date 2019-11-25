@@ -202,13 +202,14 @@ class SnipeitInventory implements Inventory
         }
         $response = $this->get('users/' . $userExtId . '/assets');
         if ($response->total == 0){
-            return null;
+            return array();
         }
         $tools = array();
         foreach ($response->rows as $row) {
             array_push($tools, SnipeitToolMapper::mapAssetToTool($row));
 
         }
+        // TODO: also get accessories!
         return $tools;
     }
 
@@ -228,6 +229,16 @@ class SnipeitInventory implements Inventory
         }
         return $this->patch('users/' . $user->user_ext_id, $data);
     }
+    public function updateUserState(User $user)
+    {
+        return $this->updateUserAvatar($user);
+    }
+    private function updateUserAvatar(User $user) {
+        $this->logger->info("Updating user avatar: $user->user_id / $user->user_ext_id / $user->state; " . json_encode($user));
+        $data = array();
+        $data['status'] = $user->state;
+        return $this->put('klusbib/users/avatar/'. $user->user_ext_id, $data);
+    }
 
     public function deleteUser($id) : bool {
         $response = $this->delete('users/' . $id);
@@ -246,9 +257,35 @@ class SnipeitInventory implements Inventory
             'password_confirmation' => $password,
             'employee_num' => $user->user_id,
             'company_id' => SnipeitInventory::COMPANY_ID_KLUSBIB];
-        return SnipeitUserMapper::mapInventoryUserToApiUser($this->post('users', $data));
+        $updatedUser = SnipeitUserMapper::mapInventoryUserToApiUser($this->post('users', $data));
+        $this->updateUserAvatar($updatedUser);
+        return $updatedUser;
     }
 
+
+    // Activity
+    // TODO: to be completed
+    public function getActivity($offset = 0, $limit=1000) {
+        return $this->get('reports/activity?offset=' . $offset . '&limit=' . $limit);
+    }
+    public function getActivityCheckout($offset = 0, $limit=1000) {
+        return $this->get('reports/activity?action_type=checkout&offset=' . $offset . '&limit=' . $limit);
+    }
+    public function getActivityCheckin($offset = 0, $limit=1000) {
+        return $this->get('reports/activity?action_type=checkin from&offset=' . $offset . '&limit=' . $limit);
+    }
+    public function getLendings($offset = 0, $limit=1000) {
+        $checkouts = $this->getActivityCheckout($offset, $limit);
+        $checkins = $this->getActivityCheckin($offset, $limit);
+        $lendings = array();
+        foreach($checkouts as $checkout) {
+            $lending = SnipeitActivityMapper::mapActivityToLending($checkout, $checkins);
+            array_push($lendings, $lending);
+        }
+        return $lendings;
+    }
+
+    // helper methods
     private function get($target) {
         return $this->request('GET', $target);
     }

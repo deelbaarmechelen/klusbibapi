@@ -81,6 +81,7 @@ class EnrolmentManager
             $payment = $this->createNewPayment($orderId, PaymentMode::STROOM, PaymentState::SUCCESS,
                 \Api\Settings::ENROLMENT_AMOUNT, "EUR");
         };
+//        $this->confirmPayment(PaymentMode::STROOM, $this->user);
         $this->mailMgr->sendEnrolmentConfirmation($this->user, PaymentMode::STROOM);
         $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
         return $payment;
@@ -168,7 +169,7 @@ class EnrolmentManager
     function confirmPayment($paymentMode, $user) {
         if ($paymentMode == PaymentMode::MOLLIE) {
             $message = "Unexpected confirmation for payment mode ($paymentMode)";
-            $this->logger->warn($message);
+            $this->logger->warning($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
         }
         if ($paymentMode != PaymentMode::CASH &&
@@ -182,14 +183,14 @@ class EnrolmentManager
             $paymentMode != PaymentMode::OVAM
         ) {
             $message = "Unsupported payment mode ($paymentMode)";
-            $this->logger->warn($message);
+            $this->logger->warning($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
         }
         if ($user->state != UserState::CHECK_PAYMENT &&
             $user->state != UserState::ACTIVE &&
             $user->state != UserState::EXPIRED) {
             $message = "Unexpected confirmation for user state ($user->state)";
-            $this->logger->warn($message);
+            $this->logger->warning($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
         }
         $user->payment_mode = $paymentMode;
@@ -225,7 +226,7 @@ class EnrolmentManager
     {
         $startDate = DateTime::createFromFormat('Y-m-d', $startDateMembership);
         if ($startDate == false) {
-            throw new \InvalidArgumentException("Invalid date format (expecting 'YYY-MM-DD'): " . $startDateMembership);
+            throw new \InvalidArgumentException("Invalid date format (expecting 'YYYY-MM-DD'): " . $startDateMembership);
         }
         $pivotDate = new DateTime('first day of december this year');
         $membershipEndDate = $startDate->add(new DateInterval('P1Y')); //$endDate->format('Y');

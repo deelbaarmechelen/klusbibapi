@@ -52,5 +52,11 @@ interface Inventory {
      * @return mixed
      */
     public function updateUser(User $user);
+    public function updateUserState(User $user);
     public function deleteUser($id) : bool;
-}
+
+//    public function getActivity($offset = 0, $limit=1000);
+//    public function getActivityCheckout($offset = 0, $limit=1000);
+//    public function getLendings($offset = 0, $limit=1000);
+
+    }

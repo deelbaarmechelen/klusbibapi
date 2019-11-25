@@ -11,6 +11,7 @@ namespace Api\Inventory;
 
 use Api\Exception\InventoryException;
 use Api\Model\User;
+use Api\Model\UserState;
 
 abstract class SnipeitUserMapper
 {
@@ -30,6 +31,13 @@ abstract class SnipeitUserMapper
         $user->firstname = (isset($inventoryUser->first_name) ? $inventoryUser->first_name : "");
         $user->lastname = (isset($inventoryUser->last_name) ? $inventoryUser->last_name  : "");
         $user->user_id = (isset($inventoryUser->employee_num) ? $inventoryUser->employee_num : "");
+        // Snipe IT has no inventory but we use avatar to reflect ok/nok state
+        if ($inventoryUser->avatar == "\/uploads\/avatars\/DBM_avatar_ok.png") {
+            $user->state = UserState::ACTIVE;
+        }
+        if ($inventoryUser->avatar == "\/uploads\/avatars\/DBM_avatar_nok.png") {
+            $user->state = "INACTIVE"; // fake state regrouping all non ACTIVE states
+        }
         return $user;
     }
 }

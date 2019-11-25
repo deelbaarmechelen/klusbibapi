@@ -4,6 +4,7 @@ namespace Api\User;
 
 use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
+use Api\Model\UserState;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
 use Api\Model\User;
@@ -38,6 +39,7 @@ class UserManager
      */
     function getById($id) {
         $user = User::find($id);
+        $this->logger->debug("Get user by ID $id and sync with inventory: " . json_encode($user));
         try {
             if (isset($user->user_ext_id)) {
                 $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
@@ -69,6 +71,7 @@ class UserManager
      * @param $user the user to be updated
      */
     function update(User $user) {
+        $this->logger->debug("Update user: " . json_encode($user));
         $this->updateInventory($user);
         $user->save();
     }
@@ -97,9 +100,15 @@ class UserManager
         || $user->user_ext_id != $inventoryUser->user_ext_id) {
             return false;
         }
+        if ( !(   ($user->state == UserState::ACTIVE && $inventoryUser->state == UserState::ACTIVE)
+               || ($user->state != UserState::ACTIVE && $inventoryUser->state == "INACTIVE") )
+           ) {
+            return false;
+        }
         return true;
     }
     protected function addToInventory($user) {
+        $this->logger->debug("Add user to inventory: " . json_encode($user));
         $inventoryUser = null;
         if (!$this->inventory->userExists($user)) {
             $inventoryUser = $this->inventory->postUser($user);
@@ -109,15 +118,23 @@ class UserManager
         } else {
             // lookup user_ext_id
             $inventoryUser = $this->inventory->getUserByEmail($user->email);
-            $user->user_ext_id = $inventoryUser->id;
-            $this->inventory->updateUser($user);
+            $user->user_ext_id = $inventoryUser->user_ext_id;
+            $this->updateInventory($user); // update user_ext_id
         }
 
         $user->user_ext_id = $inventoryUser->user_ext_id;
         $user->save();
     }
+
+    /**
+     * Update inventory based on $user
+     * Make sure $user->user_ext_id is correctly set
+     * @param $user
+     */
     protected function updateInventory($user) {
+        $this->logger->debug("Inventory update requested for user " . json_encode($user));
         $this->inventory->updateUser($user);
+        $this->inventory->updateUserState($user);
     }
     protected function getByIdFromInventory($id) {
         return $this->inventory->getUserByExtId($id);
