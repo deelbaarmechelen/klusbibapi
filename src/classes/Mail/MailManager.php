@@ -185,7 +185,8 @@ class MailManager {
     public function sendUsersReport($active_users, $expired_users, $pending_users) {
 	    $reportEmail = 'info@klusbib.be';
 	    $current_day = date('Y-m-d');
-        $parameters = array('active_users' => $active_users,
+        $parameters = array('users_count' => count($active_users) + count($expired_users),
+            'active_users' => $active_users,
             'expired_users' => $expired_users,
             'pending_users' => $pending_users,
             'current_day' => $current_day);

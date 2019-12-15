@@ -1,7 +1,9 @@
 {% block subject 'Overzicht Klusbib leden' %}
 
 {% block body %}
-<h1>Overzicht actieve leden (totaal:{{ active_users | length }}) </h1>
+<h1>Klusbib leden  </h1>
+<p>Totaal:{{ users_count }}</p>
+<h2>Overzicht actieve leden (totaal:{{ active_users | length }}) </h2>
 <br>
 <table>
     <tr>
@@ -31,7 +33,7 @@
         </tr>
     {% endfor %}
 </table>
-<h1>Overzicht lidmaatschap vervallen (totaal:{{ expired_users | length }})</h1>
+<h2>Overzicht lidmaatschap vervallen (totaal:{{ expired_users | length }})</h2>
 <br>
 <table>
     <tr>
@@ -61,7 +63,7 @@
         </tr>
     {% endfor %}
 </table>
-<h1>Overzicht niet-afgeronde inschrijvingen (totaal:{{ pending_users | length }})</h1>
+<h2>Overzicht niet-afgeronde inschrijvingen (totaal:{{ pending_users | length }})</h2>
 <br>
 <table>
     <tr>
