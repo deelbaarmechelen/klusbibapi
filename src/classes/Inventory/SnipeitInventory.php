@@ -348,7 +348,7 @@ class SnipeitInventory implements Inventory
             else if (isset($statusCode) && ($statusCode >= 500)) {
                 throw new \Api\Exception\InventoryException("Unable to access inventory", null, $clientException);
             }
-
+            throw new \Api\Exception\InventoryException("Unexpected client exception!!", null, $clientException);
         } catch (ServerException $serverException) {
             throw new \Api\Exception\InventoryException("Inventory unavailable", null, $serverException);
         }
