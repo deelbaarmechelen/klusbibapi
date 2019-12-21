@@ -237,6 +237,10 @@ class SnipeitInventory implements Inventory
         $this->logger->info("Updating user avatar: $user->user_id / $user->user_ext_id / $user->state; " . json_encode($user));
         $data = array();
         $data['status'] = $user->state;
+        if (!isset($user->user_ext_id)) {
+            $this->logger->error("Unable to update avatar: no user ext id for user with id " . $user->user_id);
+            return null;
+        }
         return $this->put('klusbib/users/avatar/'. $user->user_ext_id, $data);
     }
 
