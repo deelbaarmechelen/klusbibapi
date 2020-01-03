@@ -206,14 +206,16 @@ class EnrolmentManager
             }
         }
         $user->state = UserState::ACTIVE;
+        if ($paymentMode == PaymentMode::STROOM) {
+            $user->addToStroomProject();
+        }
         $user->save();
         if ($paymentMode == PaymentMode::TRANSFER) {
-            $mailMgr = new MailManager();
-            $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
+            $this->mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
         }
         if ($paymentMode == PaymentMode::STROOM) {
-            $mailMgr = new MailManager();
-            $mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
+            echo "sending enrolment confirmation";
+            $this->mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
         }
     }
 

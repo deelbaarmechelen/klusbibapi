@@ -116,6 +116,23 @@ final class MailManagerTest extends TestCase
         $this->assertEquals("Klusbib inschrijving", $get_sent->subject);
         print_r($get_sent->body);
     }
+    public function testSendEnrolmentPaymentConfirmationTransfer()
+    {
+        $user = new UserTest();
+        $user->email = "info@klusbib.be";
+        $user->firstname = "tester";
+        $user->lastname = "de mock";
+        $user->membership_end_date = date('Y-m-d');
+        $mailer = new PHPMailerMock ();
+        $mailmgr = new MailManager($mailer);
+        $result = $mailmgr->sendEnrolmentPaymentConfirmation($user, \Api\Model\PaymentMode::TRANSFER);
+        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
+        $this->assertTrue($result);
+        $get_sent = $mailer->get_sent(0);
+        $this->assertNotNull($get_sent);
+        $this->assertEquals("Klusbib bevestiging inschrijving", $get_sent->subject);
+        print_r($get_sent->body);
+    }
     public function testSendRenewal()
     {
         $user = new UserTest();
@@ -180,103 +197,114 @@ final class MailManagerTest extends TestCase
     }
 }
 
-class UserTest extends User {
-    //['user_id', 'state', 'firstname', 'lastname', 'role', 'email',
-    //'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
-    //'phone', 'mobile', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
-    public $user_id = 999;
-    public $firstname;
-    public $lastname;
-    public $role;
-    public $email;
-    public $membership_start_date;
-    public $membership_end_date;
+if (!class_exists('UserTest')) {
+    // FIXME: to be replaced by User::find() call? (cfr EnrolmentManagerTest)
+    class UserTest extends User {
+        protected $table = 'users';
+        public $incrementing = false;
+        //['user_id', 'state', 'firstname', 'lastname', 'role', 'email',
+        //'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
+        //'phone', 'mobile', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
+        public $user_id = 999;
+        public $firstname;
+        public $lastname;
+        public $role;
+        public $email;
+        public $membership_start_date;
+        public $membership_end_date;
 
-    /**
-     * Get the connection of the entity.
-     *
-     * @return string|null
-     */
-    public function getQueueableConnection()
-    {
-        // TODO: Implement getQueueableConnection() method.
-    }
+        /**
+         * Get the connection of the entity.
+         *
+         * @return string|null
+         */
+        public function getQueueableConnection()
+        {
+            // TODO: Implement getQueueableConnection() method.
+        }
 
-    /**
-     * Retrieve the model for a bound value.
-     *
-     * @param  mixed $value
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function resolveRouteBinding($value)
-    {
-        // TODO: Implement resolveRouteBinding() method.
-    }
-}
-class ToolTest extends Tool {
-    //	'tool_id', 'name', 'description', 'category', 'img', 'created_at', 'updated_at',
-    //	'brand', 'type', 'serial', 'manufacturing_year', 'manufacturer_url', 'doc_url', 'code', 'owner_id', 'reception_date',
-    //	'state', 'visible'
-    public $tool_id = 456;
-    public $name;
-    public $description;
-    public $category;
-    public $img;
-    public $brand;
-    public $type;
-    public $code;
-
-    /**
-     * Get the connection of the entity.
-     *
-     * @return string|null
-     */
-    public function getQueueableConnection()
-    {
-        // TODO: Implement getQueueableConnection() method.
-    }
-
-    /**
-     * Retrieve the model for a bound value.
-     *
-     * @param  mixed $value
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function resolveRouteBinding($value)
-    {
-        // TODO: Implement resolveRouteBinding() method.
+        /**
+         * Retrieve the model for a bound value.
+         *
+         * @param  mixed $value
+         * @return \Illuminate\Database\Eloquent\Model|null
+         */
+        public function resolveRouteBinding($value)
+        {
+            // TODO: Implement resolveRouteBinding() method.
+        }
     }
 }
-class ReservationTest extends Reservation {
-    //'reservation_id', 'user_id', 'tool_id', 'state', 'startsAt', 'endsAt',
-    //'type', 'comment', 'created_at', 'updated_at'
-    public $reservation_id = 999;
-    public $user_id;
-    public $tool_id;
-    public $state;
-    public $startsAt;
-    public $endsAt;
-    public $type;
-    public $comment;
-
-    /**
-     * Get the connection of the entity.
-     *
-     * @return string|null
-     */
-    public function getQueueableConnection()
+if (!class_exists('ToolTest')) {
+    class ToolTest extends Tool
     {
-        // TODO: Implement getQueueableConnection() method.
+        //	'tool_id', 'name', 'description', 'category', 'img', 'created_at', 'updated_at',
+        //	'brand', 'type', 'serial', 'manufacturing_year', 'manufacturer_url', 'doc_url', 'code', 'owner_id', 'reception_date',
+        //	'state', 'visible'
+        public $tool_id = 456;
+        public $name;
+        public $description;
+        public $category;
+        public $img;
+        public $brand;
+        public $type;
+        public $code;
+
+        /**
+         * Get the connection of the entity.
+         *
+         * @return string|null
+         */
+        public function getQueueableConnection()
+        {
+            // TODO: Implement getQueueableConnection() method.
+        }
+
+        /**
+         * Retrieve the model for a bound value.
+         *
+         * @param  mixed $value
+         * @return \Illuminate\Database\Eloquent\Model|null
+         */
+        public function resolveRouteBinding($value)
+        {
+            // TODO: Implement resolveRouteBinding() method.
+        }
     }
-
-    /**
-     * Retrieve the model for a bound value.
-     *
-     * @param  mixed $value
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function resolveRouteBinding($value)
+}
+if (!class_exists('ReservationTest')) {
+    class ReservationTest extends Reservation
     {
-        // TODO: Implement resolveRouteBinding() method.
+        //'reservation_id', 'user_id', 'tool_id', 'state', 'startsAt', 'endsAt',
+        //'type', 'comment', 'created_at', 'updated_at'
+        public $reservation_id = 999;
+        public $user_id;
+        public $tool_id;
+        public $state;
+        public $startsAt;
+        public $endsAt;
+        public $type;
+        public $comment;
+
+        /**
+         * Get the connection of the entity.
+         *
+         * @return string|null
+         */
+        public function getQueueableConnection()
+        {
+            // TODO: Implement getQueueableConnection() method.
+        }
+
+        /**
+         * Retrieve the model for a bound value.
+         *
+         * @param  mixed $value
+         * @return \Illuminate\Database\Eloquent\Model|null
+         */
+        public function resolveRouteBinding($value)
+        {
+            // TODO: Implement resolveRouteBinding() method.
+        }
     }
 }

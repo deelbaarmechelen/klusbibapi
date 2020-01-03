@@ -171,4 +171,8 @@ class InventoryMock implements Inventory
     {
         // TODO: Implement getLendings() method.
     }
+    public function updateUserState(User $user)
+    {
+        // TODO: Implement updateUser() method.
+    }
 }
