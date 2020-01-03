@@ -75,6 +75,12 @@ class InventoryTest extends TestCase
     }
     // TODO: add test case for deleted user in inventory (returns ok but no user data?)
 
+    /**
+     * Test Post of user to Inventory
+     * The inventory is called twice:
+     * - first for the POST itself
+     * - then to update the user avatar with a PUT request
+     */
     public function testPostUser() {
         $user = new User();
         $user->id = 1;
@@ -88,7 +94,13 @@ class InventoryTest extends TestCase
             . $this->createUserRow(10, $user->firstname . ' ' . $user->lastname, $user->firstname, $user->lastname,
             $user->email, $user->id)
             . '}';
-        $client = $this->mockHttpClient($body);
+        $bodyPutAvatar = '{
+            "status": "success",
+            "messages": "Gebruiker succesvol bijgewerkt.",
+            "payload": ""'
+        . '}';
+        $client = $this->mockHttpClient($body, 200,
+            new Response(200, ['Content-Type' => 'application/json'], $bodyPutAvatar));
         $logger = $this->createMock(Logger::class);
         $inventory = new SnipeitInventory($client,"DUMMY_KEY", $logger);
 
@@ -166,13 +178,17 @@ class InventoryTest extends TestCase
      * @param $statusCode response statusCode to be sent by the mock upon http request
      * @return Client
      */
-    protected function mockHttpClient($body, $statusCode = 200): Client
+    protected function mockHttpClient($body, $statusCode = 200, ...$extraResponses): Client
     {
-        $mock = new MockHandler([
+        $responses = [
             new Response($statusCode, ['Content-Type' => 'application/json'], $body)
 //            new Response(202, ['Content-Length' => 0]),
 //            new RequestException("Error Communicating with Server", new Request('GET', 'test'))
-        ]);
+            ];
+        foreach ($extraResponses as $extraResponse) {
+            array_push($responses, $extraResponse);
+        }
+        $mock = new MockHandler($responses);
 
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
