@@ -79,9 +79,21 @@ class MailManager {
             'newUser' => $newUser);
         return $this->sendTwigTemplate($userEmail, 'enrolment_new_notif', $parameters);
     }
-    public function sendEnrolmentStroomNotification($userEmail, $newUser) {
+
+    /**
+     * @param $userEmail email adres the notification should be sent to
+     * @param $newUser newly created user in enrolment
+     * @param null $token generated token to allow confirmation
+     * @return bool
+     */
+    public function sendEnrolmentStroomNotification($userEmail, $newUser, $token = null) {
+//        $link = PROJECT_HOME . "enrolment_confirm/" . $userId . "?token=" . $token . "&name=" . $userName;
         $parameters = array(
-            'newUser' => $newUser);
+            'newUser' => $newUser,
+//            'confirmLink' => $link
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'facebookLink' => Settings::FACEBOOK_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
         return $this->sendTwigTemplate($userEmail, 'enrolment_stroom_notif', $parameters);
     }
     public function sendEnrolmentSuccessNotification($userEmail, $newUser, $isRenewal = false) {
@@ -111,10 +123,11 @@ class MailManager {
             'membership_year' => $membership_year,
             'confirmEmail' => !$user->isEmailConfirmed(),
             'link' => $link,
+            'enqueteLink' => Settings::ENQUETE_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
             'emailLink' => Settings::EMAIL_LINK);
-        return $this->sendTwigTemplate($user->email, 'enrolment', $parameters);
+        return $this->sendTwigTemplate($user->email, 'enrolment_confirmation', $parameters);
     }
     public function sendEnrolmentPaymentConfirmation($user, $paymentMode) {
         $parameters = array(

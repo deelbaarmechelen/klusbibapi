@@ -40,7 +40,7 @@ return [
         'logger' => [
             'name' => 'klusbibapi',
             'path' => __DIR__ . '/../logs/app.log',
-            'level' => \Monolog\Logger::INFO,
+            'level' => \Monolog\Logger::DEBUG,
         ],
     
     	// Database settings

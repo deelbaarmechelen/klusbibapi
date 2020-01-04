@@ -216,7 +216,6 @@ class EnrolmentManager
             $this->mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
         }
         if ($paymentMode == PaymentMode::STROOM) {
-            echo "sending enrolment confirmation";
             $this->mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
         }
     }

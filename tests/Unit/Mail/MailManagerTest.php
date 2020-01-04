@@ -116,6 +116,23 @@ final class MailManagerTest extends TestCase
         $this->assertEquals("Klusbib inschrijving", $get_sent->subject);
         print_r($get_sent->body);
     }
+    public function testSendEnrolmentConfirmationStroom()
+    {
+        $user = new UserTest();
+        $user->email = "info@klusbib.be";
+        $user->firstname = "tester";
+        $user->lastname = "de mock";
+        $user->membership_end_date = date('Y-m-d');
+        $mailer = new PHPMailerMock ();
+        $mailmgr = new MailManager($mailer);
+        $result = $mailmgr->sendEnrolmentConfirmation($user, \Api\Model\PaymentMode::STROOM);
+        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
+        $this->assertTrue($result);
+        $get_sent = $mailer->get_sent(0);
+        $this->assertNotNull($get_sent);
+        $this->assertEquals("Klusbib inschrijving", $get_sent->subject);
+        print_r($get_sent->body);
+    }
     public function testSendEnrolmentPaymentConfirmationTransfer()
     {
         $user = new UserTest();
@@ -169,6 +186,30 @@ final class MailManagerTest extends TestCase
         $get_sent = $mailer->get_sent(0);
         $this->assertNotNull($get_sent);
         $this->assertEquals("Aanpassing Klusbib afspraken", $get_sent->subject);
+        print_r($get_sent->body);
+    }
+
+    public function testSendEnrolmentStroomNotification()
+    {
+        $user = new UserTest();
+        $user->email = "info@klusbib.be";
+        $user->firstname = "mijnNaam";
+        $user->lastname = "mijnFamilieNaam";
+        $user->state = \Api\Model\UserState::CHECK_PAYMENT;
+        $user->address = "Mijnthuisstraat 123";
+        $user->postal_code = "2800";
+        $user->city = "Mechelen";
+        $user->membership_end_date = new DateTime();
+        $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
+
+        $mailer = new PHPMailerMock ();
+        $mailmgr = new MailManager($mailer);
+        $result = $mailmgr->sendEnrolmentStroomNotification('stroom@klusbib.be', $user);
+        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
+        $this->assertTrue($result);
+        $get_sent = $mailer->get_sent(0);
+        $this->assertNotNull($get_sent);
+        $this->assertEquals("Inschrijving via STROOM project", $get_sent->subject);
         print_r($get_sent->body);
     }
 

@@ -22,6 +22,11 @@ Mogen we je vragen om alvast te bevestigen voor ontvangst door op onderstaande l
 <a href='{{ link }}'>{{ link }}</a> (geldig gedurende 48u)<br>
 Zo weten wij zeker dat er geen fout geslopen is in je email adres<br>
 </p><br>{% endif %}
+{% if paymentMode == 'STROOM' %}<p>
+Ook vernemen we graag welk gereedschap je naar op zoek bent, zodat we gericht ons aanbod kunnen aanvullen.<br>
+Neem je even de tijd om onderstaande enquete in te vullen?<br>
+<a href="{{ enqueteLink }}" >{{ enqueteLink }}</a>
+</p><br>{% endif %}
 
 <p>
 Om van de laatste nieuwtjes op de hoogte te blijven kan je ons ook volgen via onze <a href="{{ facebookLink }}">facebook pagina</a>.<br>

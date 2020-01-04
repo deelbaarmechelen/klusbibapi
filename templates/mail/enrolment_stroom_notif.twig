@@ -2,14 +2,27 @@
 
 {% block body %}
 <p>Beste,</p>
-<p>De nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }} gaf aan in te schrijven via het STROOM project<br/>
-    Gelieve te verifiëren of deze gebruiker aan alle voorwaarden voldoet (adres binnen STROOM wijk) en manueel de inschrijving te bevestigen<br/>
-    Huidige status: '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
-    Adres: {{ newUser.address }}, {{ newUser.postal_code }} {{ newUser.city }}
+<p>
+De nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }} gaf aan in te schrijven via het STROOM project<br/>
+Gelieve te verifiëren of deze gebruiker aan alle voorwaarden voldoet (adres binnen STROOM wijk) en manueel de inschrijving te bevestigen<br/>
+Huidige status: '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
+Adres: {{ newUser.address }}, {{ newUser.postal_code }} {{ newUser.city }}
 </p>
 <p>
-    Groetjes,<br/>
-    Admin.
+Stuur deze mail door naar {{ emailLink }} met vermelding of de gebruiker al dan niet in aanmerking komt voor deelname aan STROOM project,
+dan zorgen wij dat zijn lidmaatschap geactiveerd wordt zodat hij/zij materiaal kan ontlenen.
+</p>
+
+<!-- TODO: add link to trigger POST on API
+-> confirm user enrolment with stroom payment mode and using a temporary token in Authorization Bearer header (2 weeks validity?)
+needs jquery?? possible in email??
+Or add link to page to confirm or deny enrolment? -->
+
+<p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
 </p>
 {% endblock %}
 
