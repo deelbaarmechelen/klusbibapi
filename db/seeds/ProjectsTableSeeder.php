@@ -1,13 +1,9 @@
 <?php
 
 use Phinx\Seed\AbstractSeed;
-use Illuminate\Database\Seeder;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-
-class DatabaseSeeder extends AbstractSeed
+class ProjectsTableSeeder extends AbstractSeed
 {
     /**
      * Run Method.
@@ -19,8 +15,11 @@ class DatabaseSeeder extends AbstractSeed
      */
     public function run()
     {
-    	echo "Running DatabaseSeeder";
-        $this->call(ToolsTableSeeder::class);
-    	$this->call(ReservationTableSeeder::class);
+        $project_count = Capsule::table('projects')->where('name', '=', 'STROOM')->count();
+        if ($project_count == 0) {
+            Capsule::table('projects')->insert([
+                'name' => 'STROOM '
+            ]);
+        }
     }
 }

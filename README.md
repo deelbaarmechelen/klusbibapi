@@ -25,7 +25,10 @@ OR
 * docker exec -ti <containerName> /bin/bash (e.g. api.web.1)
 * cd /app
 * /app/.heroku/php/bin/php /app/vendor/robmorgan/phinx/bin/phinx migrate -e dokku
-* Optionally also run seeder: /app/.heroku/php/bin/php /app/vendor/robmorgan/phinx/bin/phinx seed:run -e dokku -s UsersTableSeeder
+* Run project seeder to create STROOM project
+* /app/.heroku/php/bin/php /app/vendor/robmorgan/phinx/bin/phinx seed:run -e dokku -s ProjectsTableSeeder
+* Optionally also run other seeders (Users, Tools, Reservations):
+* /app/.heroku/php/bin/php /app/vendor/robmorgan/phinx/bin/phinx seed:run -e dokku -s UsersTableSeeder
 
 ## Install cron jobs
 
@@ -96,3 +99,62 @@ sudo ln -s ../sites-available/001-klusbibapi.conf
 sudo a2enmod rewrite
 sudo systemctl restart apache2
 ** restart apache service: sudo service apache2 restart
+
+* xdebug
+** sudo apt install php7.2-dev (install phpize)
+** (sudo pecl channel-update pecl.php.net)
+** sudo pecl install xdebug
+** update php.ini file (/etc/php/7.2/apache2 and /etc/php/7.2/cli) to add following line:
+   zend_extension=/usr/lib/php/20170718/xdebug.so
+
+
+## Inventory install (Snipe-IT)
+* See instruction on 
+
+* php artisan passport:install
+* php artisan migrate
+* create api role and user
+* create api token
+* install api token on klusbibapi .env file as INVENTORY_API_KEY
+
+* setup git local repository and remote host repository
+See e.g. neostrada documentation: 
+https://documentation.cpanel.net/display/CKB/Guide+to+Git+-+How+to+Set+Up+Deployment
+
+
+## Deploy
+* backup on remote host (e.g. neostrada)
+tar --exclude 'inventory.deelbaarmechelen.be/vendor' -czvf inventory.tar.gz inventory.deelbaarmechelen.be/
+
+* upgrade inventory
+** git pull github master
+** php upgrade.php
+** git push origin master
+Should trigger an automatic deploy based on .cpanel.yml. For manual migration:
+** login to remote host
+** cd into remote git repo
+** update to pushed changes
+git reset --hard HEAD 
+** copy changes to deploy dir
+rsync -anv --exclude '.git' --exclude '.github' --exclude '.*' --exclude 'tests' --exclude 'storage' snipe/ inventory.deelbaarmechelen.be 
+** restore access rights
+chmod 775 ~/inventory.deelbaarmechelen.be
+** cd ~/inventory.deelbaarmechelen.be
+** php upgrade.php
+** php composer.phar install --no-dev --prefer-source
+**  php composer.phar dump-autoload
+**  php artisan migrate
+**  php artisan config:clear
+**  php artisan config:cache
+** Check PHP version (in composer.json) and upgrade if required
+
+## Test tools
+* curl: this command line tool can be used to send requests to inventory or api (to be updated with inventory urls)
+** Get the Bearer token using cURL and jq
+TOKEN=$(curl -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"username":"{username}","password":"{password}","rememberMe":false}' https://{hostname}/api/authenticate | jq -r '.id_token')
+In this example the API expects a POST body with “username”, “password” and “rememberMe” fields. Adapt according to your own needs.
+
+jq is used to parse the JSON response, which contains the token in a field called “id_token”.
+
+** Pass the Bearer token in the Authorization header
+curl -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" https://{hostname}/api/myresource
