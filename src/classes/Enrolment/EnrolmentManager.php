@@ -84,6 +84,7 @@ class EnrolmentManager
 //        $this->confirmPayment(PaymentMode::STROOM, $this->user);
         $this->mailMgr->sendEnrolmentConfirmation($this->user, PaymentMode::STROOM);
         $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
+        $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user);
         return $payment;
     }
 
@@ -99,6 +100,7 @@ class EnrolmentManager
         };
         $this->mailMgr->sendRenewalConfirmation($this->user, PaymentMode::STROOM);
         $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
+        $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user);
         return $payment;
     }
 
