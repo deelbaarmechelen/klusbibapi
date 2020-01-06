@@ -19,8 +19,9 @@ class MailManager {
 	private $message;
 	private $mailer;
     private $twig;
+    private $logger;
 
-    function __construct(PHPMailer $mailer = null, Twig_Environment $twig = null) {
+    function __construct(PHPMailer $mailer = null, Twig_Environment $twig = null, $logger = null) {
 		if (is_null($mailer)) {
 			$this->mailer = new PHPMailer ();
 		} else {
@@ -33,6 +34,11 @@ class MailManager {
                 'cache' => __DIR__ . '/../../../public/cache/twig_compilations',
                 'auto_reload' => true
             ));
+        }
+        if (is_null($logger)) {
+            $this->logger = FALSE;
+        } else {
+            $this->logger = $logger;
         }
     }
 
@@ -260,9 +266,15 @@ class MailManager {
 
         if (!$this->mailer->Send()) {
             $this->message = 'Problem in Sending Email. Mailer Error: ' . $this->mailer->ErrorInfo;
+            if ($this->logger) {
+                $this->logger->error($this->message);
+            }
             return FALSE;
         } else {
             $this->message = 'Email verstuurd!';
+            if ($this->logger) {
+                $this->logger->info("Message successfully sent to " . $to . " (subject=" . $subject . ")");
+            }
             return TRUE;
         }
     }

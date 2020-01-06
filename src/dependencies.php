@@ -118,7 +118,8 @@ $container["JwtAuthentication"] = function (ContainerInterface $container) {
 };
 
 $container["Api\Enrolment\EnrolmentFactory"] = function (ContainerInterface $container) {
-    return new \Api\Enrolment\EnrolmentFactory(new MailManager(), new MollieApiClient());
+    $logger = $container->get("logger"); // retrieve the 'logger' from the container
+    return new \Api\Enrolment\EnrolmentFactory(new MailManager(null, null, $logger), new MollieApiClient());
 };
 $container["Api\Inventory"] = function (ContainerInterface $container) {
     $logger = $container->get("logger"); // retrieve the 'logger' from the container

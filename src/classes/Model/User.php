@@ -22,6 +22,10 @@ class User extends Model
         }
         $this->attributes['email'] = $value;
     }
+
+    public function getFullNameAttribute() {
+        return "{$this->firstname} {$this->lastname}";
+    }
     // public methods
 	public static function canBeSortedOn($field) {
 		if (!isset($field)) {

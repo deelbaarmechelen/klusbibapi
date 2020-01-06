@@ -27,7 +27,7 @@ class EnrolmentManager
         $this->user = $user;
         $this->logger = $logger;
         if (is_null($mailMgr)) {
-            $this->mailMgr = new MailManager();
+            $this->mailMgr = new MailManager(null, null, $logger);
         } else {
             $this->mailMgr = $mailMgr;
         }
@@ -82,8 +82,11 @@ class EnrolmentManager
                 \Api\Settings::ENROLMENT_AMOUNT, "EUR");
         };
 //        $this->confirmPayment(PaymentMode::STROOM, $this->user);
+        $this->logger->info("Sending enrolment confirmation for user " . $this->user->user_id . ": " . $this->user->full_name);
         $this->mailMgr->sendEnrolmentConfirmation($this->user, PaymentMode::STROOM);
+        $this->logger->info("Sending enrolment notification to " . ENROLMENT_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
         $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
+        $this->logger->info("Sending enrolment notification to " . STROOM_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
         $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user);
         return $payment;
     }
