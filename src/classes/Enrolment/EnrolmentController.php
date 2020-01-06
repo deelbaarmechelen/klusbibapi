@@ -232,6 +232,7 @@ class EnrolmentController
 
         // enrolment in STROOM project
         if ($paymentMode == PaymentMode::STROOM) {
+            $this->logger->info("enrolment for STROOM project; user=" . \json_encode($user) . ";orderId=" . $orderId);
             try {
                 if ($renewal) {
                     $payment = $enrolmentManager->renewalByStroom($orderId);
