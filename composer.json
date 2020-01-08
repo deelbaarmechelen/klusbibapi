@@ -32,7 +32,7 @@
 		"ad7six/dsn" : "0.4.*",
 		"ext-gd": "*",
 		"doctrine/dbal": "^2.6",
-		"phpmailer/phpmailer": "^5.2",
+		"phpmailer/phpmailer": "^6.0",
 		"twig/twig":"^2.0",
 		"mollie/mollie-api-php": "^2.0",
 		"slim/twig-view": "^2.4",

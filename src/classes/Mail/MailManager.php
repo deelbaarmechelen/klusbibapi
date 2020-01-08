@@ -3,7 +3,10 @@ namespace Api\Mail;
 
 use Api\Model\User;
 use Api\Token\Token;
-use PHPMailer;
+use PHPMailer\PHPMailer\OAuth;
+use PHPMailer\PHPMailer\PHPMailer;
+use League\OAuth2\Client\Provider\Google;
+use PHPMailer\PHPMailer\SMTP;
 use Twig_Environment;
 use DateTime;
 use DateInterval;
@@ -318,16 +321,58 @@ class MailManager {
         $this->mailer->clearCustomHeaders();
         $this->mailer->setLanguage('nl');
 
+        //Tell PHPMailer to use SMTP
         $this->mailer->IsSMTP();
-        $this->mailer->SMTPDebug = 0;
-        // 		$this->mailer->SMTPDebug = \SMTP::DEBUG_SERVER;
+        //Enable SMTP debugging
+        // SMTP::DEBUG_OFF = off (for production use)
+        // SMTP::DEBUG_CLIENT = client messages
+        // SMTP::DEBUG_SERVER = client and server messages
+        $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
+        //Whether to use SMTP authentication
         $this->mailer->SMTPAuth = TRUE;
-        $this->mailer->SMTPSecure = "tls";
-        $this->mailer->Port = MAIL_PORT;
-        $this->mailer->Username = MAIL_USERNAME;
-        $this->mailer->Password = MAIL_PASSWORD;
+        //Set AuthType to use XOAUTH2
+        $this->mailer->AuthType = 'XOAUTH2';
+        //Set the encryption mechanism to use - STARTTLS or SMTPS
+        $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        //Set the hostname of the mail server
         $this->mailer->Host = MAIL_HOST;
-        $this->mailer->Mailer = MAILER;
+        //Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
+        $this->mailer->Port = MAIL_PORT;
+//        $this->mailer->Username = MAIL_USERNAME;
+//        $this->mailer->Password = MAIL_PASSWORD;
+//        $this->mailer->Mailer = MAILER;
+
+        //Pass the OAuth provider instance to PHPMailer
+        $this->mailer->setOAuth($this->getOAuth());
+
+    }
+
+    private function getOAuth() : OAuth {
+        //Fill in authentication details here
+        //Either the gmail account owner, or the user that gave consent
+        $email = SENDER_EMAIL;
+        $clientId = OAUTH_CLIENT_ID;
+        $clientSecret = OAUTH_CLIENT_SECRET;
+        //Obtained by configuring and running get_oauth_token.php
+        //after setting up an app in Google Developer Console.
+        $refreshToken = OAUTH_TOKEN;
+
+        //Create a new OAuth2 provider instance
+        $provider = new Google(
+            [
+                'clientId' => $clientId,
+                'clientSecret' => $clientSecret,
+            ]
+        );
+        return new OAuth(
+                [
+                    'provider' => $provider,
+                    'clientId' => $clientId,
+                    'clientSecret' => $clientSecret,
+                    'refreshToken' => $refreshToken,
+                    'userName' => $email,
+                ]
+        );
     }
 
 }
