@@ -266,6 +266,9 @@ class MailManager {
      */
     private function realSend($subject, $body, $to): bool
     {
+        if ($this->logger) {
+            $this->logger->info("real send");
+        }
         $this->mailer->SetFrom(SENDER_EMAIL, SENDER_NAME);
         $this->mailer->AddReplyTo(SENDER_EMAIL, SENDER_NAME);
         $this->mailer->ReturnPath = SENDER_EMAIL;
@@ -274,13 +277,23 @@ class MailManager {
         $this->mailer->MsgHTML($body);
         $this->mailer->IsHTML(true);
 
+        if ($this->logger) {
+            $this->logger->info("real send - before send");
+        }
         if (!$this->mailer->Send()) {
+            if ($this->logger) {
+                $this->logger->info("real send - error");
+            }
+
             $this->message = 'Problem in Sending Email. Mailer Error: ' . $this->mailer->ErrorInfo;
             if ($this->logger) {
                 $this->logger->error($this->message);
             }
             return FALSE;
         } else {
+            if ($this->logger) {
+                $this->logger->info("real send - success");
+            }
             $this->message = 'Email verstuurd!';
             if ($this->logger) {
                 $this->logger->info("Message successfully sent to " . $to . " (subject=" . $subject . ")");
