@@ -16,7 +16,7 @@
 namespace League\OAuth2\Client\Provider;
 
 require __DIR__ . '/../../vendor/autoload.php';
-
+require_once __DIR__ . '/../../src/env.php';
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
@@ -29,8 +29,12 @@ $redirectUri = isset($_SERVER['HTTPS']) ? 'https://' : 'http://' . $_SERVER['HTT
 //$redirectUri = 'http://localhost/phpmailer/get_oauth_token.php';
 
 //These details obtained are by setting up app in Google developer console.
-$clientId = 'RANDOMCHARS-----duv1n2.apps.googleusercontent.com';
-$clientSecret = 'RANDOMCHARS-----lGyjPcRtvP';
+//$clientId = 'RANDOMCHARS-----duv1n2.apps.googleusercontent.com';
+//$clientSecret = 'RANDOMCHARS-----lGyjPcRtvP';
+
+//$redirectUri = 'https://api.klusbib.be/test/get_oauth_token.php';
+$clientId = OAUTH_CLIENT_ID;
+$clientSecret = OAUTH_CLIENT_SECRET;
 
 class Google extends AbstractProvider
 {
