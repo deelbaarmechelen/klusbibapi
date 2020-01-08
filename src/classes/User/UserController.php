@@ -147,7 +147,7 @@ class UserController implements UserControllerInterface
                 // set date on which terms were accepted
                 $user->accept_terms_date = date('Y-m-d');
             }
-            $mailmgr = new MailManager();
+            $mailmgr = new MailManager(null, null, $this->logger);
             $sendNotification = TRUE;
             $sendEmailVerification = FALSE;
         }

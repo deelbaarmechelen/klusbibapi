@@ -321,6 +321,9 @@ class MailManager {
      */
     private function resetMailer()
     {
+        if ($this->logger) {
+            $this->logger->info("reset mailer");
+        }
         $this->message = '';
 
         $this->mailer->clearAllRecipients();
@@ -330,6 +333,9 @@ class MailManager {
 
         //Tell PHPMailer to use SMTP
         $this->mailer->IsSMTP();
+        if ($this->logger) {
+            $this->logger->info("reset mailer smtp debug");
+        }
         //Enable SMTP debugging
         // SMTP::DEBUG_OFF = off (for production use)
         // SMTP::DEBUG_CLIENT = client messages
@@ -339,6 +345,9 @@ class MailManager {
         $this->mailer->SMTPAuth = TRUE;
         //Set AuthType to use XOAUTH2
         $this->mailer->AuthType = 'XOAUTH2';
+        if ($this->logger) {
+            $this->logger->info("reset mailer stmp secure");
+        }
         //Set the encryption mechanism to use - STARTTLS or SMTPS
         $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         //Set the hostname of the mail server
@@ -349,12 +358,17 @@ class MailManager {
 //        $this->mailer->Password = MAIL_PASSWORD;
 //        $this->mailer->Mailer = MAILER;
 
-        //Pass the OAuth provider instance to PHPMailer
+        if ($this->logger) {
+            $this->logger->info("reset mailer set oauth");
+        }        //Pass the OAuth provider instance to PHPMailer
         $this->mailer->setOAuth($this->getOAuth());
 
     }
 
     private function getOAuth() : OAuth {
+        if ($this->logger) {
+            $this->logger->info("get oauth");
+        }
         //Fill in authentication details here
         //Either the gmail account owner, or the user that gave consent
         $email = SENDER_EMAIL;
@@ -364,6 +378,9 @@ class MailManager {
         //after setting up an app in Google Developer Console.
         $refreshToken = OAUTH_TOKEN;
 
+        if ($this->logger) {
+            $this->logger->info($email . ";" . $clientId . ";" . $clientSecret . ";" . $refreshToken);
+        }
         //Create a new OAuth2 provider instance
         $provider = new Google(
             [
@@ -371,6 +388,9 @@ class MailManager {
                 'clientSecret' => $clientSecret,
             ]
         );
+        if ($this->logger) {
+            $this->logger->info("get oauth - return");
+        }
         return new OAuth(
                 [
                     'provider' => $provider,
