@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Mock;
 
-use \PHPMailer;
+use PHPMailer\PHPMailer\PHPMailer;
 // require_once( ABSPATH . '/wp-includes/class-phpmailer.php' );
 
 class PHPMailerMock extends PHPMailer {

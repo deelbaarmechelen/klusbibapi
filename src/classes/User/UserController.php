@@ -177,8 +177,9 @@ class UserController implements UserControllerInterface
         }
         UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
         $this->userManager->create($user);
-
+        $this->logger->info("User created!");
         if ($sendEmailVerification) {
+            $this->logger->info("Sending email verification");
             $sub = $user->user_id;
             $scopes = ["auth.confirm"];
             $result = $mailmgr->sendEmailVerification($user->user_id, $user->firstname, $user->email,
@@ -186,6 +187,7 @@ class UserController implements UserControllerInterface
             $this->logger->info('Sending email verification result: ' . $mailmgr->getLastMessage());
         }
         if ($sendNotification) {
+            $this->logger->info("Sending email notification - user created");
             // Notification to be sent to Klusbib team of new enrolment
             $result = $mailmgr->sendEnrolmentNotification(ENROLMENT_NOTIF_EMAIL, $user);
             $this->logger->info('Sending enrolment notification result: ' . $mailmgr->getLastMessage());
