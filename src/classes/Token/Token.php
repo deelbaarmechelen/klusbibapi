@@ -111,6 +111,7 @@ class Token
             "users.all",
             "payments.all",
             "payments.list",
+            "payments.delete",
             "lendings.all",
             "lendings.list",
             "auth.confirm",

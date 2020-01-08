@@ -352,4 +352,23 @@ class PaymentController implements PaymentControllerInterface
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode([], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     }
+
+    public function delete($request, $response, $args) {
+        $this->logger->info("Klusbib DELETE '/payments' route (" . $args['paymentId'] . ")");
+        // FIXME: no token scopes due to passthrough settings?
+        $this->logger->info("token: " . \json_encode($this->token));
+//            $authorised = Authorisation::checkPaymentAccess($this->token, "delete", $args['paymentId']);
+//            if (!$authorised) {
+//                $this->logger->warn("Access denied on payment delete with id " . $args['paymentId']);
+//                return $response->withStatus(403);
+//            }
+        $payment = \Api\Model\Payment::find($args['paymentId']);
+        if (empty($payment)) {
+            return $response->withStatus(404) // Not found
+            ->withJson(array(message => "No payment found for provided paymentId"));
+        }
+        $payment->delete();
+        return $response->withStatus(200);
+
+    }
 }

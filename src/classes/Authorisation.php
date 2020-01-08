@@ -47,6 +47,8 @@ class Authorisation {
 				return false;
 			case "delete":
 				return $token->hasScope(["users.all", "users.delete"]);
+            default:
+                return AccessType::NO_ACCESS;
 		}
 		
 	}
@@ -96,6 +98,8 @@ class Authorisation {
 					return AccessType::OWNER_ACCESS;
 				}
 				return AccessType::NO_ACCESS;
+            default:
+                return AccessType::NO_ACCESS;
 		}
 	}
 
@@ -109,6 +113,13 @@ class Authorisation {
                 if ($token->hasScope(["payments.all", "payments.list"])) {
                     return AccessType::FULL_ACCESS;
                 }
+                return AccessType::NO_ACCESS;
+            case "delete":
+                if ($token->hasScope(["payments.all", "payments.delete"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            default:
                 return AccessType::NO_ACCESS;
         }
     }
@@ -127,6 +138,8 @@ class Authorisation {
                 if ($token->hasScope(["events.all", "events.create"])) {
                     return AccessType::FULL_ACCESS;
                 }
+                return AccessType::NO_ACCESS;
+            default:
                 return AccessType::NO_ACCESS;
         }
     }

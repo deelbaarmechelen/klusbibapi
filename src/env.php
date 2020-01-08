@@ -36,6 +36,7 @@ if (!defined('MAIL_HOST')) define("MAIL_HOST", getenv('MAIL_HOST')); // smtp hos
 if (!defined('MAILER')) define("MAILER", getenv('MAILER'));
 if (!defined('OAUTH_CLIENT_ID')) define("OAUTH_CLIENT_ID", getenv('OAUTH_CLIENT_ID'));
 if (!defined('OAUTH_CLIENT_SECRET')) define("OAUTH_CLIENT_SECRET", getenv('OAUTH_CLIENT_SECRET'));
+if (!defined('OAUTH_TOKEN')) define("OAUTH_TOKEN", getenv('OAUTH_TOKEN'));
 
 if (!defined('SENDER_NAME')) define("SENDER_NAME", getenv('SENDER_NAME'));
 if (!defined('SENDER_EMAIL')) define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
