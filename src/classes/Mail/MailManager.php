@@ -46,7 +46,11 @@ class MailManager {
     }
 
 	public function sendEmailVerification($userId, $userName, $to, $token) {
-		$link = PROJECT_HOME . "auth/confirm/" . $userId . "?token=" . $token . "&email=" . $to . "&name=" . $userName;
+        if ($this->logger) {
+            $this->logger->info("Sending email verification " . $to . " (user name=" . $userName . "; id=" . $userId . ")");
+        }
+
+        $link = PROJECT_HOME . "auth/confirm/" . $userId . "?token=" . $token . "&email=" . $to . "&name=" . $userName;
 		$body = "<h1>Welkom bij Klusbib</h1>"
 				. "<div>Beste " . $userName . ",<br><br>"
 				. "<p>Om uw inschrijving te vervolledigen dien je dit email adres te bevestigen door op onderstaande link te klikken:<br>"
@@ -226,6 +230,9 @@ class MailManager {
         return $this->sendTwigTemplate($user->email, 'changed_general_conditions_notification', $parameters, $attachments);
     }
 	protected function sendTwigTemplate($to, $identifier, $parameters = array(), $attachments = array()) {
+        if ($this->logger) {
+            $this->logger->info("Sending email with twig template to " . $to . " (identifier=" . $identifier . ")");
+        }
         setlocale(LC_ALL, 'nl_BE');
         $template = $this->twig->loadTemplate('/mail/'.$identifier.'.twig');
         $subject  = $template->renderBlock('subject',   $parameters);
