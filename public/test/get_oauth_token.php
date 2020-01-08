@@ -32,7 +32,7 @@ $redirectUri = isset($_SERVER['HTTPS']) ? 'https://' : 'http://' . $_SERVER['HTT
 //$clientId = 'RANDOMCHARS-----duv1n2.apps.googleusercontent.com';
 //$clientSecret = 'RANDOMCHARS-----lGyjPcRtvP';
 
-//$redirectUri = 'https://api.klusbib.be/test/get_oauth_token.php';
+$redirectUri = 'https://api.klusbib.be/test/get_oauth_token.php';
 $clientId = OAUTH_CLIENT_ID;
 $clientSecret = OAUTH_CLIENT_SECRET;
 
