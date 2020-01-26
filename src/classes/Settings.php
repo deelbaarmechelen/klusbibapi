@@ -6,10 +6,13 @@ namespace Api;
 class Settings
 {
     const ACCOUNT_NBR = 'BE79 5230 8088 4133';
+
     const ENROLMENT_AMOUNT = 30;
     const ENROLMENT_AMOUNT_STRING = "30.00";
     const RENEWAL_AMOUNT = 20;
     const RENEWAL_AMOUNT_STRING = "20.00";
+    const STROOM_ENROLMENT_AMOUNT = 0;
+    const STROOM_RENEWAL_AMOUNT = 0;
     const MOLLIE_LOCALE = "nl_BE";
 
     const EMAIL_LINK = 'info@klusbib.be';

@@ -79,15 +79,13 @@ class EnrolmentManager
 
         if ($payment == null) {
             $payment = $this->createNewPayment($orderId, PaymentMode::STROOM, PaymentState::SUCCESS,
-                \Api\Settings::ENROLMENT_AMOUNT, "EUR");
+                \Api\Settings::STROOM_ENROLMENT_AMOUNT, "EUR");
         };
 //        $this->confirmPayment(PaymentMode::STROOM, $this->user);
         $this->logger->info("Sending enrolment confirmation for user " . $this->user->user_id . ": " . $this->user->full_name);
         $this->mailMgr->sendEnrolmentConfirmation($this->user, PaymentMode::STROOM);
-        // FIXME: disable second notification as temp workaround: each email takes 20 secs to send,
-        //        so 3 mails take more than 60secs and trigger http client timeout
-//        $this->logger->info("Sending enrolment notification to " . ENROLMENT_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
-//        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
+        $this->logger->info("Sending enrolment notification to " . ENROLMENT_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
+        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
         $this->logger->info("Sending enrolment notification to " . STROOM_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
         $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user);
         return $payment;
@@ -101,7 +99,7 @@ class EnrolmentManager
 
         if ($payment == null) {
             $payment = $this->createNewPayment($orderId,PaymentMode::STROOM, PaymentState::SUCCESS,
-                \Api\Settings::RENEWAL_AMOUNT, "EUR");
+                \Api\Settings::STROOM_RENEWAL_AMOUNT, "EUR");
         };
         $this->mailMgr->sendRenewalConfirmation($this->user, PaymentMode::STROOM);
         $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);

@@ -47,7 +47,7 @@ class MailManager {
 
 	public function sendEmailVerification($userId, $userName, $to, $token) {
         if ($this->logger) {
-            $this->logger->info("Sending email verification " . $to . " (user name=" . $userName . "; id=" . $userId . ")");
+            $this->logger->debug("Sending email verification " . $to . " (user name=" . $userName . "; id=" . $userId . ")");
         }
 
         $link = PROJECT_HOME . "auth/confirm/" . $userId . "?token=" . $token . "&email=" . $to . "&name=" . $userName;
@@ -231,7 +231,7 @@ class MailManager {
     }
 	protected function sendTwigTemplate($to, $identifier, $parameters = array(), $attachments = array()) {
         if ($this->logger) {
-            $this->logger->info("Sending email with twig template to " . $to . " (identifier=" . $identifier . ")");
+            $this->logger->debug("Sending email with twig template to " . $to . " (identifier=" . $identifier . ")");
         }
         setlocale(LC_ALL, 'nl_BE');
         $template = $this->twig->loadTemplate('/mail/'.$identifier.'.twig');
@@ -266,9 +266,6 @@ class MailManager {
      */
     private function realSend($subject, $body, $to): bool
     {
-        if ($this->logger) {
-            $this->logger->info("real send");
-        }
         $this->mailer->SetFrom(SENDER_EMAIL, SENDER_NAME);
         $this->mailer->AddReplyTo(SENDER_EMAIL, SENDER_NAME);
         $this->mailer->ReturnPath = SENDER_EMAIL;
@@ -277,14 +274,8 @@ class MailManager {
         $this->mailer->MsgHTML($body);
         $this->mailer->IsHTML(true);
 
-        if ($this->logger) {
-            $this->logger->info("real send - before send");
-        }
         try {
             if (!$this->mailer->Send()) {
-                if ($this->logger) {
-                    $this->logger->info("real send - error");
-                }
 
                 $this->message = 'Problem in Sending Email. Mailer Error: ' . $this->mailer->ErrorInfo;
                 if ($this->logger) {
@@ -292,9 +283,6 @@ class MailManager {
                 }
                 return FALSE;
             } else {
-                if ($this->logger) {
-                    $this->logger->info("real send - success");
-                }
                 $this->message = 'Email verstuurd!';
                 if ($this->logger) {
                     $this->logger->info("Message successfully sent to " . $to . " (subject=" . $subject . ")");
@@ -304,7 +292,14 @@ class MailManager {
 
         } catch (\Exception $ex) {
             if ($this->logger) {
-                $this->logger->info("real send - exception: " . $ex->getMessage());
+                $token_expired_msg = "If you get an invalid_grant exception, the OAUTH token might be expired. This can happen if:\n"
+                    . "The user has revoked your app's access.\n"
+                    . "The refresh token has not been used for six months.\n"
+                    . "The user changed passwords and the refresh token contains Gmail scopes.\n"
+                    . "The user account has exceeded a maximum number of granted (live) refresh tokens.\n"
+                    . "\nGenerate a new refresh token with /test/get_oauth_token.php to resolve this issue.\n"
+                    . "See also https://developers.google.com/identity/protocols/OAuth2";
+                $this->logger->error("Send exception: " . $ex->getMessage() . "\n" . $token_expired_msg);
             }
             throw $ex;
         }
@@ -342,9 +337,6 @@ class MailManager {
      */
     private function resetMailer()
     {
-        if ($this->logger) {
-            $this->logger->info("reset mailer");
-        }
         $this->message = '';
 
         $this->mailer->clearAllRecipients();
@@ -354,9 +346,6 @@ class MailManager {
 
         //Tell PHPMailer to use SMTP
         $this->mailer->IsSMTP();
-        if ($this->logger) {
-            $this->logger->info("reset mailer smtp debug");
-        }
         //Enable SMTP debugging
         // SMTP::DEBUG_OFF = off (for production use)
         // SMTP::DEBUG_CLIENT = client messages
@@ -366,30 +355,18 @@ class MailManager {
         $this->mailer->SMTPAuth = TRUE;
         //Set AuthType to use XOAUTH2
         $this->mailer->AuthType = 'XOAUTH2';
-        if ($this->logger) {
-            $this->logger->info("reset mailer stmp secure");
-        }
         //Set the encryption mechanism to use - STARTTLS or SMTPS
         $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         //Set the hostname of the mail server
         $this->mailer->Host = MAIL_HOST;
         //Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
         $this->mailer->Port = MAIL_PORT;
-//        $this->mailer->Username = MAIL_USERNAME;
-//        $this->mailer->Password = MAIL_PASSWORD;
-//        $this->mailer->Mailer = MAILER;
 
-        if ($this->logger) {
-            $this->logger->info("reset mailer set oauth");
-        }        //Pass the OAuth provider instance to PHPMailer
         $this->mailer->setOAuth($this->getOAuth());
 
     }
 
     private function getOAuth() : OAuth {
-        if ($this->logger) {
-            $this->logger->info("get oauth");
-        }
         //Fill in authentication details here
         //Either the gmail account owner, or the user that gave consent
         $email = SENDER_EMAIL;
@@ -399,9 +376,6 @@ class MailManager {
         //after setting up an app in Google Developer Console.
         $refreshToken = OAUTH_TOKEN;
 
-        if ($this->logger) {
-            $this->logger->info($email . ";" . $clientId . ";" . $clientSecret . ";" . $refreshToken);
-        }
         //Create a new OAuth2 provider instance
         $provider = new Google(
             [
@@ -409,9 +383,6 @@ class MailManager {
                 'clientSecret' => $clientSecret,
             ]
         );
-        if ($this->logger) {
-            $this->logger->info("get oauth - return");
-        }
         return new OAuth(
                 [
                     'provider' => $provider,
