@@ -241,7 +241,7 @@ class SnipeitInventory implements Inventory
             $this->logger->error("Unable to update avatar: no user ext id for user with id " . $user->user_id);
             return null;
         }
-        return $this->put('klusbib/users/avatar/'. $user->user_ext_id, $data);
+        return $this->put('klusbib/users/'. $user->user_ext_id . '/avatar', $data);
     }
 
     public function deleteUser($id) : bool {
