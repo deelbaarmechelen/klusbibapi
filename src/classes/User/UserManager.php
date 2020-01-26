@@ -38,9 +38,14 @@ class UserManager
      * @return mixed
      */
     function getById($id) {
-        $user = User::find($id);
-        $this->logger->debug("Get user by ID $id and sync with inventory: " . json_encode($user));
+        $this->logger->debug("UserManager.getById: Get user by ID $id");
+
         try {
+            $user = User::find($id);
+            if ($user == null) {
+                return null;
+            }
+            $this->logger->debug("UserManager.getById: Get user by ID $id and sync with inventory: " . json_encode($user));
             if (isset($user->user_ext_id)) {
                 $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
                 if ($inventoryUser == null) {
@@ -52,7 +57,7 @@ class UserManager
                 $this->addToInventory($user);
             }
         } catch (\Exception $ex) {
-            $this->logger->error("Problem while syncing user with id $id: " . $ex->getMessage());
+            $this->logger->error("UserManager.getById: Problem while syncing user with id $id: " . $ex->getMessage());
         }
         return $user;
     }
@@ -122,6 +127,7 @@ class UserManager
             $this->updateInventory($user); // update user_ext_id
         }
 
+        $this->logger->debug("User added to inventory: " . json_encode($user));
         $user->user_ext_id = $inventoryUser->user_ext_id;
         $user->save();
     }

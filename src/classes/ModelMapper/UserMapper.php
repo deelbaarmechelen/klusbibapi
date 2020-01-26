@@ -33,7 +33,7 @@ class UserMapper
 		return $userArray;
 	}
 	static public function mapArrayToUser($data, $user, $isAdmin = false, $logger = null) {
-		if (isset($data["user_id"]) && $isAdmin) {
+		if (isset($data["user_id"]) && !empty($data["user_id"]) && $isAdmin) {
 			$user->user_id= $data["user_id"];
 		}
 		if (isset($data["state"]) && $isAdmin) {

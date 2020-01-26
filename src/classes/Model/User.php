@@ -106,6 +106,14 @@ class User extends Model
     {
         return $query->where('state', '=', UserState::EXPIRED);
     }
+    public function scopeDeleted($query)
+    {
+        return $query->where('state', '=', UserState::DELETED);
+    }
+    public function scopeNotDeleted($query)
+    {
+        return $query->where('state', '<>', UserState::DELETED);
+    }
     public function scopePending($query)
     {
         return $query->where('state', '=', UserState::CHECK_PAYMENT);
@@ -117,5 +125,12 @@ class User extends Model
     public function scopeNotAdmin($query)
     {
         return $query->where('role', '<>', UserRole::ADMIN);
+    }
+    public function scopeSearchName($query, $search)
+    {
+        if ($search) {
+            $query->where('firstname', 'LIKE', '%'.$search.'%' )
+                  ->orWhere('lastname', 'LIKE', '%'.$search.'%' );
+        }
     }
 }

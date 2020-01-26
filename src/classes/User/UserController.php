@@ -14,6 +14,8 @@ use Api\Exception\ForbiddenException;
 use Api\Mail\MailManager;
 use Api\Authorisation;
 use Api\Token\Token;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
 class UserController implements UserControllerInterface
 {
@@ -27,9 +29,9 @@ class UserController implements UserControllerInterface
         $this->token = $token;
     }
 
-    public function getAll ($request, $response, $args) {
-        $this->logger->info("Klusbib GET on '/users' route");
-
+    public function getAll (Request $request, Response $response, $args) {
+        $this->logger->info("Klusbib GET on '/users' route (params=" . \json_encode($request->getQueryParams()) . ")");
+        // query params snipe: deleted=false&company_id=&search=&sort=state&order=desc&offset=0&limit=500
         $authorised = Authorisation::checkUserAccess($this->token, "list", null);
         $email = $request->getQueryParam('email');
         if (!$authorised || isset($email)) {
@@ -53,7 +55,13 @@ class UserController implements UserControllerInterface
         if (!isset($perPage)) {
             $perPage = '1000';
         }
-        $users = Capsule::table('users')->orderBy($sortfield, $sortdir)->get();
+        $query = $request->getQueryParam('_query');
+//        $userQuery = Capsule::table('users');
+        $userQuery = User::notDeleted();
+        if (isset($query)) {
+            $userQuery->searchName($query);
+        }
+        $users = $userQuery->orderBy($sortfield, $sortdir)->get();
         $users_page = array_slice($users->all(), ($page - 1) * $perPage, $perPage);
         $data = array();
         foreach ($users_page as $user) {
@@ -71,6 +79,10 @@ class UserController implements UserControllerInterface
             $this->logger->warn("Access denied for user " . $args['userid']);
             return $response->withStatus(403);
         }
+        if (!is_numeric($args['userid'])) {
+            $this->logger->warn("Invalid value provided for user id " . $args['userid']);
+            return $response->withStatus(400);
+        }
         // FIXME: restrict access to owner only for users.read.owner
         try {
             $user = $this->userManager->getById($args['userid']);
@@ -79,6 +91,7 @@ class UserController implements UserControllerInterface
             }
             $userArray = UserMapper::mapUserToArray($user);
         } catch (\Exception $ex) {
+            $this->logger->error('Unexpected error on GET for user ' . $args['userid'] . ': ' . $ex->getMessage());
             return $response->withStatus(500)
                 ->withJson(array('error' => $ex->getMessage()));
         }
@@ -159,6 +172,8 @@ class UserController implements UserControllerInterface
                 return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
                     ->withStatus(409);
             }
+            $this->logger->debug('No user found with email ' . $data["email"]);
+
         }
         // TODO: else : check user exists based on name? or registration id?
 
@@ -166,6 +181,12 @@ class UserController implements UserControllerInterface
             $max_user_id = Capsule::table('users')->max('user_id');
             $user->user_id = $max_user_id + 1;
             $this->logger->info("New user will be assigned id " . $user->user_id);
+        } else {
+            // check user_id is numeric
+            if (!is_numeric($data["user_id"])) {
+                return $response->withStatus(400)
+                    ->withJson(array('error' => array('status' => 400, 'message' => "user_id is not numeric")));
+            }
         }
         if (!empty($data["membership_start_date"])) {
             $user->membership_start_date = $data["membership_start_date"];
@@ -176,6 +197,8 @@ class UserController implements UserControllerInterface
             }
         }
         UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
+        $this->logger->debug('Creating user ' . \json_encode($user));
+
         $this->userManager->create($user);
         $this->logger->info("User created!");
         if ($sendEmailVerification) {
