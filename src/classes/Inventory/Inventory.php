@@ -16,6 +16,13 @@ interface Inventory {
     public function getToolByCode($code) : ?Tool;
     public function getToolById($id) : ?Tool;
 
+    /**
+     * check tool exists in inventory
+     * @param $toolId
+     * @return bool true if the user exists in inventory
+     */
+    public function toolExists($toolId) : bool;
+
     public function postUser(User $user);
 
     /**

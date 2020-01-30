@@ -4,8 +4,13 @@ namespace Api;
 use Api\Exception\ForbiddenException;
 
 class Authorisation {
-	
-	static function checkAccessByToken($token, $allowedScopes) {
+
+    public const OPERATION_READ = "read";
+    public const OPERATION_LIST = "list";
+    public const OPERATION_CREATE = "create";
+    public const OPERATION_UPDATE = "update";
+
+    static function checkAccessByToken($token, $allowedScopes) {
 		if (false === $token->hasScope($allowedScopes)) {
 			throw new ForbiddenException("Missing authorisation for scopes " . json_encode($allowedScopes), 403);
 		}
@@ -23,11 +28,11 @@ class Authorisation {
 		}
 // 		echo "$token set";
 		switch ($operation) {
-			case "list":
+			case self::OPERATION_LIST:
 				return $token->hasScope(["users.all", "users.list"]);
             case "read.state":
                 return $token->hasScope(["users.all", "users.list", "users.read.state"]);
-            case "read":
+            case self::OPERATION_READ:
 				if ($token->hasScope(["users.all", "users.read"])) {
 					return true;
 				}
@@ -35,9 +40,9 @@ class Authorisation {
 					return true;
 				}
 				return false;
-			case "create":
+			case self::OPERATION_CREATE:
 				return $token->hasScope(["users.all", "users.create"]);
-			case "update":
+			case self::OPERATION_UPDATE:
 				if ($token->hasScope(["users.all", "users.update"])) {
 					return true;
 				}
@@ -58,17 +63,17 @@ class Authorisation {
 			return AccessType::NO_ACCESS;
 		}
 		switch ($operation) {
-			case "list":
+			case self::OPERATION_LIST:
 				if ($token->hasScope(["reservations.all", "reservations.list"])) {
 					return AccessType::FULL_ACCESS;
 				}
 				return AccessType::NO_ACCESS;
-			case "read":
+			case self::OPERATION_READ:
 				if ($token->hasScope(["reservations.all", "reservations.read"])) {
 					return AccessType::FULL_ACCESS;
 				}
 				return AccessType::NO_ACCESS;
-			case "create":
+			case self::OPERATION_CREATE:
 				if ($token->hasScope(["reservations.all", "reservations.create"])) {
 					return AccessType::FULL_ACCESS;
 				}
@@ -82,7 +87,7 @@ class Authorisation {
 							return AccessType::TOOL_OWNER_ACCESS;
 				}
 				return AccessType::NO_ACCESS;
-			case "update":
+			case self::OPERATION_UPDATE:
 				if ($token->hasScope(["reservations.all", "reservations.update"])) {
 					return AccessType::FULL_ACCESS;
 				}
@@ -109,7 +114,7 @@ class Authorisation {
             return AccessType::NO_ACCESS;
         }
         switch ($operation) {
-            case "list":
+            case self::OPERATION_LIST:
                 if ($token->hasScope(["payments.all", "payments.list"])) {
                     return AccessType::FULL_ACCESS;
                 }
@@ -129,12 +134,12 @@ class Authorisation {
             return AccessType::NO_ACCESS;
         }
         switch ($operation) {
-            case "list":
+            case self::OPERATION_LIST:
                 if ($token->hasScope(["events.all", "events.list"])) {
                     return AccessType::FULL_ACCESS;
                 }
                 return AccessType::NO_ACCESS;
-            case "create":
+            case self::OPERATION_CREATE:
                 if ($token->hasScope(["events.all", "events.create"])) {
                     return AccessType::FULL_ACCESS;
                 }
@@ -148,8 +153,23 @@ class Authorisation {
             return AccessType::NO_ACCESS;
         }
         switch ($operation) {
-            case "list":
+            case self::OPERATION_LIST:
                 if ($token->hasScope(["lendings.all", "lendings.list"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            case self::OPERATION_READ:
+                if ($token->hasScope(["lendings.all", "lendings.read"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            case self::OPERATION_CREATE:
+                if ($token->hasScope(["lendings.all", "lendings.create"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            case self::OPERATION_UPDATE:
+                if ($token->hasScope(["lendings.all", "lendings.update"])) {
                     return AccessType::FULL_ACCESS;
                 }
                 return AccessType::NO_ACCESS;

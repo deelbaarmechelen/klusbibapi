@@ -2,6 +2,7 @@
 
 namespace Api\Reservation;
 
+use Api\Tool\ToolManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Exception\ForbiddenException;
 use Api\ModelMapper\ReservationMapper;
@@ -18,11 +19,13 @@ class ReservationController implements ReservationControllerInterface
     protected $logger;
     protected $token;
     protected $mailManager;
+    protected $toolManager;
 
-    public function __construct($logger, $token, MailManager $mailManager) {
+    public function __construct($logger, $token, MailManager $mailManager, ToolManager $toolManager) {
         $this->logger = $logger;
         $this->token = $token;
         $this->mailManager = $mailManager;
+        $this->toolManager = $toolManager;
     }
 
     public function getAll($request, $response, $args) {
@@ -74,9 +77,10 @@ class ReservationController implements ReservationControllerInterface
         Authorisation::checkAccessByToken($this->token,
             ["reservations.all", "reservations.create", "reservations.create.owner", "reservations.create.owner.donation_only"]);
         $data = $request->getParsedBody();
-        if (!ReservationValidator::isValidReservationData($data, $this->logger)) {
+        if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager)) {
             return $response->withStatus(400); // Bad request
         }
+        $this->logger->info("Reservation request is valid");
         $reservation = new \Api\Model\Reservation();
         // 	$reservation->name = filter_var($data['name'], FILTER_SANITIZE_STRING);
         // TODO: check restricted reservation periods for this tool
@@ -88,9 +92,13 @@ class ReservationController implements ReservationControllerInterface
         }
         if (isset($data["type"])) {
             $reservation->type = $data["type"];
+        } else {
+            $reservation->type = "reservation";
         }
         if (isset($data["state"])) {
             $reservation->state = $data["state"];
+        } else {
+            $reservation->state = ReservationState::REQUESTED;
         }
         if (isset($data["startsAt"])) {
             // TODO: if not admin, only allow future dates
@@ -110,6 +118,7 @@ class ReservationController implements ReservationControllerInterface
         }
         // 	$this->logger->debug('tool =' . json_encode($reservation->tool));
         $access = Authorisation::checkReservationAccess($this->token, "create", $reservation, $reservation->tool->owner_id);
+        $this->logger->info("Reservation access check: " . $access);
         if ($access === AccessType::NO_ACCESS) {
             return $response->withStatus(403); // Unauthorized
         }
@@ -147,7 +156,7 @@ class ReservationController implements ReservationControllerInterface
         }
         $data = $request->getParsedBody();
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
-        if (!ReservationValidator::isValidReservationData($data, $this->logger)) {
+        if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager)) {
             return $response->withStatus(400); // Bad request
         }
         $access = Authorisation::checkReservationAccess($this->token, "update", $reservation, $reservation->tool->owner_id);

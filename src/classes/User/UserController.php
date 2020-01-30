@@ -2,6 +2,7 @@
 
 namespace Api\User;
 
+use Api\Tool\ToolManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
 use Api\Model\User;
@@ -21,11 +22,13 @@ class UserController implements UserControllerInterface
 {
     protected $logger;
     protected $userManager;
+    protected $toolManager;
     protected $token;
 
-    public function __construct($logger, UserManager $userManager, $token) {
+    public function __construct($logger, UserManager $userManager, ToolManager $toolManager, $token) {
         $this->logger = $logger;
         $this->userManager = $userManager;
+        $this->toolManager = $toolManager;
         $this->token = $token;
     }
 
@@ -100,7 +103,13 @@ class UserController implements UserControllerInterface
         $reservations = $user->reservations;
         $reservationsArray = array();
         foreach ($reservations as $reservation) {
-            array_push($reservationsArray, ReservationMapper::mapReservationToArray($reservation));
+            $reservationData = ReservationMapper::mapReservationToArray($reservation);
+            $tool = $this->toolManager->getById($reservationData['tool_id']);
+            $reservationData['tool_code'] = $tool->code;
+            $reservationData['tool_name'] = $tool->name;
+            $reservationData['tool_brand'] = $tool->brand;
+            $reservationData['tool_type'] = $tool->type;
+            array_push($reservationsArray, $reservationData);
         }
         $userArray["reservations"] = $reservationsArray;
         return $response->withJson($userArray);

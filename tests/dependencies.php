@@ -171,7 +171,7 @@ $container['Api\User\UserController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
-    return new UserController($logger, new UserManager($inventory, $logger),$token);
+    return new UserController($logger, new UserManager($inventory, $logger),new ToolManager($inventory, $logger),$token);
 };
 
 $container['Api\Tool\ToolController'] = function(ContainerInterface $c) {
@@ -227,7 +227,9 @@ $container['Api\Reservation\ReservationController'] = function(ContainerInterfac
     $logger = $c->get("logger");
     $token = $c->get("token");
     $mailManager = new MailManager(new PHPMailerMock());
-    return new \Api\Reservation\ReservationController($logger, $token, $mailManager);
+    $inventory = $c->get("Api\Inventory");
+    $toolManager =  new ToolManager($inventory, $logger);
+    return new \Api\Reservation\ReservationController($logger, $token, $mailManager, $toolManager);
 };
 $container['Api\Token\TokenController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");

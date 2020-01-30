@@ -3,10 +3,11 @@ namespace Api\Validator;
 
 use Api\Model\ReservationState;
 use Api\Model\Tool;
+use Api\Tool\ToolManager;
 
 class ReservationValidator 
 {
-	static function isValidReservationData($reservation, $logger) {
+	static function isValidReservationData($reservation, $logger, ToolManager $toolManager) {
 		if (empty($reservation)) {
 			return false;
 		}
@@ -22,11 +23,12 @@ class ReservationValidator
 			$logger->info("Inexistant user " . $reservation["user_id"]);
 			return false;
 		}
-		if (!self::toolExists($reservation["tool_id"], $logger)) {
+//		if (!self::toolExists($reservation["tool_id"], $logger)) {
+		if (!$toolManager->toolExists($reservation["tool_id"])) {
 			$logger->info("Inexistant tool " . $reservation["tool_id"]);
 			return false;
 		}
-		if (isset($reservation["startsAt"]) && 
+		if (isset($reservation["startsAt"]) &&
 				(FALSE == ReservationValidator::cnvStrToDateTime($reservation["startsAt"], $logger))) {
 			$logger->info("End date (". $reservation["startsAt"] . " has invalid date format (expected YYYY-MM-DD)");
 			return false;

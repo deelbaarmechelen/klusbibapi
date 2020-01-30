@@ -4,6 +4,7 @@ namespace Api\Tool;
 
 use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
+use Api\Model\Tool;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -29,6 +30,10 @@ class ToolManager
         $tools = $this->getAllFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage);
 //        $tools = $this->getAllFromDatabase($showAll, $category, $sortfield, $sortdir);
         return $tools;
+    }
+    public function toolExists($toolId)
+    {
+        return $this->inventory->toolExists($toolId);
     }
     public function getById($id) {
         $tool = $this->getByIdFromInventory($id);

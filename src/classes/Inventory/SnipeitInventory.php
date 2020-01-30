@@ -113,6 +113,18 @@ class SnipeitInventory implements Inventory
         return SnipeitToolMapper::mapAssetToTool($asset);
     }
 
+    public function toolExists($toolId) : bool {
+        if (isset($this->logger)) {
+            $this->logger->debug('check tool exists in inventory');
+        }
+        if (isset($toolId)) {
+            $inventoryTool = $this->getToolById($toolId);
+            if (isset($inventoryTool)) {
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * Lookup user in inventory based on external id
      * @param $id the user_ext_id aka snipeIt Person.id
