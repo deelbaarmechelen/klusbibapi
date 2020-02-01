@@ -17,6 +17,7 @@ class InventoryMock implements Inventory
     private $logger;
 
     private static $users = array();
+    private static $tools = array();
 
     /**
      * InventoryMock constructor.
@@ -135,6 +136,17 @@ class InventoryMock implements Inventory
                 unset($user);
             }
         }
+    }
+
+    public function toolExists($toolId): bool
+    {
+        if (isset($toolId)) {
+            $inventoryTool = $this->getToolById($toolId);
+            if (isset($inventoryTool)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getToolByCode($code): ?Tool

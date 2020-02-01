@@ -27,6 +27,9 @@ defined('MAIL_USERNAME') or define("MAIL_USERNAME", "myUser"); // smtp username
 defined('MAIL_PASSWORD') or define("MAIL_PASSWORD", "myPassword"); // smtp password
 defined('MAIL_HOST') or define("MAIL_HOST", "localhost"); // smtp host
 defined('MAILER') or define("MAILER", "sendmail");
+defined('OAUTH_CLIENT_ID') or define("OAUTH_CLIENT_ID", "oauthclientid");
+defined('OAUTH_CLIENT_SECRET') or define("OAUTH_CLIENT_SECRET", "oauthsecret");
+defined('OAUTH_TOKEN') or define("OAUTH_TOKEN", "oauthtoken");
 
 defined('SENDER_NAME') or define("SENDER_NAME", "Unit tester");
 defined('SENDER_EMAIL') or define("SENDER_EMAIL", "test@klusbib.be");

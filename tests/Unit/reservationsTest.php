@@ -7,7 +7,7 @@ require_once __DIR__ . '/../test_env.php';
 class ReservationsTest extends LocalDbWebTestCase
 {
 	// Run for each unit test to setup our slim app environment
-	public function setup($dependencies = null, WebTestClient $client = NULL)
+	public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false)
 	{
 // 		if (!defined("RESERVATION_NOTIF_EMAIL")) {
 // 			define("RESERVATION_NOTIF_EMAIL", "ut@klusbib.be");
@@ -124,7 +124,7 @@ class ReservationsTest extends LocalDbWebTestCase
 	{
 		echo "test GET reservations\n";
 		$body = $this->client->get('/reservations');
-		print_r($body);
+//		print_r($body);
 		echo "\n";
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$reservations = json_decode($body);
@@ -151,7 +151,7 @@ class ReservationsTest extends LocalDbWebTestCase
     {
         echo "test GET reservations\n";
         $body = $this->client->get('/reservations?isOpen=true');
-        print_r($body);
+//        print_r($body);
         echo "\n";
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $reservations = json_decode($body);
@@ -174,7 +174,8 @@ class ReservationsTest extends LocalDbWebTestCase
 				"type" => "reservation"
 		);
 		$body = $this->client->post('/reservations', $data);
-		$this->assertEquals(201, $this->client->response->getStatusCode());
+//        print_r($body);
+        $this->assertEquals(201, $this->client->response->getStatusCode());
 		$reservation = json_decode($body);
 		$this->assertNotNull($reservation->reservation_id);
 		
@@ -233,7 +234,7 @@ class ReservationsTest extends LocalDbWebTestCase
 				"type" => "reservation"
 		);
 		$body = $this->client->post('/reservations', $data);
-		print_r($body);
+//		print_r($body);
 		echo "\n";
 		$this->assertEquals(201, $this->client->response->getStatusCode());
 	}
@@ -249,7 +250,7 @@ class ReservationsTest extends LocalDbWebTestCase
 				"type" => "reservation"
 		);
 		$body = $this->client->post('/reservations', $data);
-		print_r($body);
+//		print_r($body);
 		echo "\n";
 		$this->assertEquals(403, $this->client->response->getStatusCode());
 	}
@@ -265,8 +266,8 @@ class ReservationsTest extends LocalDbWebTestCase
 				"type" => "reservation"
 		);
 		$body = $this->client->post('/reservations', $data);
-		print_r($body);
-		echo "\n";
+//		print_r($body);
+//		echo "\n";
 		$this->assertEquals(201, $this->client->response->getStatusCode());
 
 		// reservation on tool owned by someone else
@@ -275,8 +276,8 @@ class ReservationsTest extends LocalDbWebTestCase
 				"type" => "reservation"
 		);
 		$body = $this->client->post('/reservations', $data);
-		print_r($body);
-		echo "\n";
+//		print_r($body);
+//		echo "\n";
 		$this->assertEquals(403, $this->client->response->getStatusCode());
 	}
 	

@@ -212,6 +212,7 @@ class UsersTest extends LocalDbWebTestCase
 				"lastname" =>"my new lastname",
 				"email" =>"newemail@klusbib.be",
 				"role" => "new admin");
+
 		$header = array();
 		$this->setToken("1", null);
 		$this->client->put('/users/1', $data, $header);
@@ -221,6 +222,7 @@ class UsersTest extends LocalDbWebTestCase
 		$bodyGet = $this->client->get('/users/1');
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$user = json_decode($bodyGet);
+//		echo $bodyGet;
 		$this->assertEquals($data["firstname"], $user->firstname);
 		$this->assertEquals($data["lastname"], $user->lastname);
 		$this->assertEquals($data["email"], $user->email);

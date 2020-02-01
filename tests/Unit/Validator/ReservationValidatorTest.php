@@ -71,7 +71,12 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
 //		$this->markTestSkipped();
 		$logger = $this->loggerDummy();
 		$reservation = array("user_id" => 1, "tool_id" => 1);
-		$result = ReservationValidator::isValidReservationData($reservation, $logger);
+        $toolManager = $this->createMock(\Api\Tool\ToolManager::class);
+
+        // Configure the stub.
+        $toolManager->method('toolExists')
+            ->willReturn(true);
+		$result = ReservationValidator::isValidReservationData($reservation, $logger, $toolManager);
 		$this->assertTrue($result);
 	}
 
@@ -79,7 +84,10 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
     {
         $logger = $this->loggerDummy();
         $reservation = array("user_id" => 99, "tool_id" => 1);
-        $result = ReservationValidator::isValidReservationData($reservation, $logger);
+        $toolManager = $this->createMock(\Api\Tool\ToolManager::class);
+        $toolManager->method('toolExists')
+            ->willReturn(true);
+        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager);
         $this->assertFalse($result);
     }
 
@@ -87,7 +95,10 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
     {
         $logger = $this->loggerDummy();
         $reservation = array("user_id" => 1, "tool_id" => 99);
-        $result = ReservationValidator::isValidReservationData($reservation, $logger);
+        $toolManager = $this->createMock(\Api\Tool\ToolManager::class);
+        $toolManager->method('toolExists')
+            ->willReturn(false);
+        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager);
         $this->assertFalse($result);
     }
 
@@ -95,7 +106,10 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
     {
         $logger = $this->loggerDummy();
         $reservation = array("user_id" => 1, "tool_id" => 1, "state" => "INVALID");
-        $result = ReservationValidator::isValidReservationData($reservation, $logger);
+        $toolManager = $this->createMock(\Api\Tool\ToolManager::class);
+        $toolManager->method('toolExists')
+            ->willReturn(true);
+        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager);
         $this->assertFalse($result);
     }
 

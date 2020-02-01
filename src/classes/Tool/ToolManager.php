@@ -31,7 +31,7 @@ class ToolManager
 //        $tools = $this->getAllFromDatabase($showAll, $category, $sortfield, $sortdir);
         return $tools;
     }
-    public function toolExists($toolId)
+    public function toolExists($toolId) : bool
     {
         return $this->inventory->toolExists($toolId);
     }

@@ -105,10 +105,12 @@ class UserController implements UserControllerInterface
         foreach ($reservations as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
             $tool = $this->toolManager->getById($reservationData['tool_id']);
-            $reservationData['tool_code'] = $tool->code;
-            $reservationData['tool_name'] = $tool->name;
-            $reservationData['tool_brand'] = $tool->brand;
-            $reservationData['tool_type'] = $tool->type;
+            if (isset($tool)) {
+                $reservationData['tool_code'] = $tool->code;
+                $reservationData['tool_name'] = $tool->name;
+                $reservationData['tool_brand'] = $tool->brand;
+                $reservationData['tool_type'] = $tool->type;
+            }
             array_push($reservationsArray, $reservationData);
         }
         $userArray["reservations"] = $reservationsArray;
