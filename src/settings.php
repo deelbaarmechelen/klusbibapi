@@ -25,10 +25,10 @@ $capsule->setAsGlobal();
 
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();
-
+$displayErrorDetails = APP_ENV != 'production' ? true : false;
 return [
     'settings' => [
-        'displayErrorDetails' => true, // set to false in production
+        'displayErrorDetails' => $displayErrorDetails,
         'addContentLengthHeader' => false, // Allow the web server to send the content-length header
 
         // Renderer settings
