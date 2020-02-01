@@ -60,9 +60,12 @@ $container['db'] = function (ContainerInterface $c) {
 
 // Configure error handler
 $container['errorHandler'] = function (ContainerInterface $container) {
-    return function ($request, $response, $exception) use ($container) {
+    return function (\Slim\Http\Request $request, \Slim\Http\Response $response, $exception) use ($container) {
         $logger = $container->get("logger"); // retrieve the 'logger' from the container
-        $logger->debug($exception);
+        $logger->error("Unexpected error on request " . $request->getMethod() . " " . $request->getRequestTarget()
+            . ". Body: " . $request->getBody()->read(100)
+            . ($request->getBody()->getSize() > 100 ? "..." : ""));
+        $logger->error($exception);
         return $response->withStatus(500)
             ->withHeader('Content-Type', 'text/html')
             ->write('Something went wrong!');
@@ -208,5 +211,6 @@ $container['Api\Token\TokenController'] = function(ContainerInterface $c) {
 $container['Api\Lending\LendingController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
-    return new \Api\Lending\LendingController($logger, $token, $c);
+    $toolManager = new ToolManager($c->get("Api\Inventory"), $logger);
+    return new \Api\Lending\LendingController($logger, $token, $toolManager);
 };

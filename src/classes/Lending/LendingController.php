@@ -4,6 +4,7 @@ namespace Api\Lending;
 
 use Api\Model\Lending;
 use Api\ModelMapper\LendingMapper;
+use Api\Validator\LendingValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Authorisation;
 use Slim\Http\Request;
@@ -13,15 +14,17 @@ class LendingController implements LendingControllerInterface
 {
     protected $logger;
     protected $token;
+    protected $toolManager;
 
-    public function __construct($logger, $token)
+    public function __construct($logger, $token, $toolManager)
     {
         $this->logger = $logger;
         $this->token = $token;
+        $this->toolManager = $toolManager;
     }
 
     public function getAll(Request $request, Response $response, $args){
-        $this->logger->info("Klusbib GET '/lending' route");
+        $this->logger->info("Klusbib GET '/lendings' route");
 
         $authorised = Authorisation::checkLendingAccess($this->token, "list");
         if (!$authorised) {
@@ -72,7 +75,9 @@ class LendingController implements LendingControllerInterface
 
     public function create(Request $request, Response $response, $args)
     {
-        $this->logger->info("Klusbib POST '/lendings' route");
+        $this->logger->info("Klusbib " . $request->getMethod() . " " . $request->getRequestTarget()
+            . " route. Body: " . $request->getBody()->read(100)
+            . ($request->getBody()->getSize() > 100 ? "..." : ""));
 
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_CREATE);
         if (!$authorised) {
@@ -80,10 +85,10 @@ class LendingController implements LendingControllerInterface
             return $response->withStatus(403);
         }
         $data = $request->getParsedBody();
-//        if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
-//            return $response->withStatus(400); // Bad request
-//        }
-//        $this->logger->info("Leding request is valid");
+        if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
+            return $response->withStatus(400); // Bad request
+        }
+        $this->logger->info("Lending request is valid");
         $lending = new Lending();
         $lending->tool_id = $data["tool_id"];
         $lending->user_id = $data["user_id"];
@@ -110,7 +115,9 @@ class LendingController implements LendingControllerInterface
     }
     public function update(Request $request, Response $response, $args)
     {
-        $this->logger->info("Klusbib PUT '/lendings/id' route");
+        $this->logger->info("Klusbib " . $request->getMethod() . " " . $request->getRequestTarget()
+            . " route. Body: " . $request->getBody()->read(100)
+            . ($request->getBody()->getSize() > 100 ? "..." : ""));
 
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_UPDATE);
         if (!$authorised) {
@@ -122,10 +129,10 @@ class LendingController implements LendingControllerInterface
             return $response->withStatus(404);
         }
         $data = $request->getParsedBody();
-//        if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
-//            return $response->withStatus(400); // Bad request
-//        }
-//        $this->logger->info("Leding request is valid");
+        if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
+            return $response->withStatus(400); // Bad request
+        }
+        $this->logger->info("Lending request is valid");
         if (isset($data["start_date"])) {
             $lending->start_date = $data["start_date"];
         }
