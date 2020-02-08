@@ -3,33 +3,50 @@ namespace Api\Validator;
 
 use Api\Model\ReservationState;
 use Api\Model\Tool;
+use Api\Model\ToolType;
 use Api\Tool\ToolManager;
 
 class LendingValidator
 {
-	static function isValidLendingData($lendingData, $logger, ToolManager $toolManager) {
+	static function isValidLendingData($lendingData, $logger, ToolManager $toolManager, bool $new = true) {
 		if (empty($lendingData)) {
 			return false;
 		}
-		if (empty($lendingData["user_id"])) {
+		if (empty($lendingData["user_id"]) && $new) {
 			$logger->info("Missing user_id");
 			return false;
 		}
-		if (empty($lendingData["tool_id"])) {
+		if (empty($lendingData["tool_id"]) && $new) {
 			$logger->info("Missing tool_id");
 			return false;
 		}
-		if (!UserValidator::userExists($lendingData["user_id"], $logger)) {
+		if (empty($lendingData["tool_type"]) && $new) {
+			$logger->info("Missing tool_type");
+			return false;
+		}
+        if (!empty($lendingData["tool_type"]) && !ToolType::isValid($lendingData["tool_type"])) {
+            $logger->info("Invalid tool_type: " . $lendingData["tool_type"]);
+            return false;
+        }
+		if (!empty($lendingData["user_id"]) && !UserValidator::userExists($lendingData["user_id"], $logger)) {
 			$logger->info("Inexistant user " . $lendingData["user_id"]);
 			return false;
 		}
-		if (!$toolManager->toolExists($lendingData["tool_id"])) {
+		if (!empty($lendingData["tool_id"])
+            && (empty($lendingData["tool_type"]) || $lendingData["tool_type"] == "TOOL")
+            && !$toolManager->toolExists($lendingData["tool_id"])) {
 			$logger->info("Inexistant tool " . $lendingData["tool_id"]);
 			return false;
 		}
-		if (isset($lendingData["start_date"]) &&
+        if (!empty($lendingData["tool_id"])
+            && ($lendingData["tool_type"] == "ACCESSORY")
+            && !$toolManager->accessoryExists($lendingData["tool_id"])) {
+            $logger->info("Inexistant accessory " . $lendingData["tool_id"]);
+            return false;
+        }
+        if (isset($lendingData["start_date"]) &&
 				(FALSE == self::cnvStrToDateTime($lendingData["start_date"], $logger))) {
-			$logger->info("End date (". $lendingData["start_date"] . " has invalid date format (expected YYYY-MM-DD)");
+			$logger->info("Start date (". $lendingData["start_date"] . " has invalid date format (expected YYYY-MM-DD)");
 			return false;
 		}
 		if (isset($lendingData["due_date"]) &&

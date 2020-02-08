@@ -6,6 +6,7 @@ namespace Api;
 class Settings
 {
     const ACCOUNT_NBR = 'BE79 5230 8088 4133';
+    const DEFAULT_LOAN_DAYS = 7;
 
     const ENROLMENT_AMOUNT = 30;
     const ENROLMENT_AMOUNT_STRING = "30.00";

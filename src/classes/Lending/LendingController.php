@@ -3,7 +3,9 @@
 namespace Api\Lending;
 
 use Api\Model\Lending;
+use Api\Model\ToolType;
 use Api\ModelMapper\LendingMapper;
+use Api\Settings;
 use Api\Validator\LendingValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Authorisation;
@@ -24,7 +26,7 @@ class LendingController implements LendingControllerInterface
     }
 
     public function getAll(Request $request, Response $response, $args){
-        $this->logger->info("Klusbib GET '/lendings' route");
+        $this->logger->info("Klusbib GET '/lendings' route (params=" . \json_encode($request->getQueryParams()) . ")");
 
         $authorised = Authorisation::checkLendingAccess($this->token, "list");
         if (!$authorised) {
@@ -47,12 +49,35 @@ class LendingController implements LendingControllerInterface
         if (!isset($perPage)) {
             $perPage = '1000';
         }
-        $lendings = Capsule::table('lendings')->orderBy($sortfield, $sortdir)->get();
+        $query = Lending::valid();
+        $userId = $request->getQueryParam('user_id');
+        $toolId = $request->getQueryParam('tool_id');
+        $toolType = $request->getQueryParam('tool_type');
+        $startDate = $request->getQueryParam('start_date');
+        $active = $request->getQueryParam('active');
+        if (isset($userId)) {
+            $query = $query->withUser($userId);
+        }
+        if (isset($toolId)) {
+            if (isset($toolType)) {
+                $query = $query->withTool($toolId, $toolType);
+            } else {
+                $query = $query->withTool($toolId); // defaults to type TOOL
+            }
+        }
+        if (isset($startDate)) {
+            $query = $query->withStartDate($startDate);
+        }
+        if (isset($active)) {
+            $query = $query->active($active);
+        }
+        $lendings = $query->orderBy($sortfield, $sortdir)->get();
         $lendings_page = array_slice($lendings->all(), ($page - 1) * $perPage, $perPage);
         $data = array();
         foreach ($lendings_page as $lending) {
             array_push($data, LendingMapper::mapLendingToArray($lending));
         }
+        $this->logger->info(count($lendings) . ' lending(s) found!');
         return $response->withJson($data)
             ->withHeader('X-Total-Count', count($lendings));
     }
@@ -70,6 +95,7 @@ class LendingController implements LendingControllerInterface
         if (null == $lending) {
             return $response->withStatus(404);
         }
+        $this->logger->info('lending found for id ' . $lending->lending_id);
         return $response->withJson(LendingMapper::mapLendingToArray($lending));
     }
 
@@ -91,14 +117,20 @@ class LendingController implements LendingControllerInterface
         $this->logger->info("Lending request is valid");
         $lending = new Lending();
         $lending->tool_id = $data["tool_id"];
+        $lending->tool_type = $data["tool_type"];
         $lending->user_id = $data["user_id"];
-        if (isset($data["start_date"])) {
+        if (!empty($data["start_date"])) {
+            $this->logger->info("Start date is set to " . $data["start_date"]);
             $lending->start_date = $data["start_date"];
-            if (isset($data["due_date"])) {
-                $lending->due_date = $data["due_date"];
-            } else {
-                $lending->due_date = $lending->start_date; // FIXME: add 1 week
-            }
+        } else {
+            $lending->start_date = date('Y-m-d'); // default to current date
+        }
+        if (isset($data["due_date"])) {
+            $lending->due_date = $data["due_date"];
+        } else {
+            $dueDate = strtotime($lending->start_date);
+            $dueDate = strtotime("+" . Settings::DEFAULT_LOAN_DAYS . " day", $dueDate);
+            $lending->due_date = date('Y-m-d', $dueDate);
         }
         if (isset($data["comments"])) {
             $lending->comments = $data["comments"];
@@ -108,8 +140,18 @@ class LendingController implements LendingControllerInterface
         }
         if (isset($data["returned_date"])) {
             $lending->returned_date = $data["returned_date"];
+        } else {
+            // creating an active lending -> make sure no other active lending exists for this tool
+            $activeLendings = Lending::active()->withTool($lending->tool_id, $lending->tool_type)->count();
+            if ($activeLendings> 0 && $lending->tool_type == ToolType::TOOL) {
+                $this->logger->info('An active lending for tool with id ' . $lending->tool_id . ' already exists');
+                return $response->withJson(array('error' => array('status' => 400, 'message' => 'An active lending for that tool already exists')))
+                    ->withStatus(400);
+            }
         }
         $lending->save();
+        $this->logger->info('New lending for user with id ' . $lending->user_id .
+            ' and tool with id/type ' . $lending->tool_id . '/' . $lending->tool_type . ' successfully saved');
         return $response->withJson(LendingMapper::mapLendingToArray($lending))
             ->withStatus(201);
     }
@@ -129,7 +171,7 @@ class LendingController implements LendingControllerInterface
             return $response->withStatus(404);
         }
         $data = $request->getParsedBody();
-        if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
+        if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager, false)) {
             return $response->withStatus(400); // Bad request
         }
         $this->logger->info("Lending request is valid");

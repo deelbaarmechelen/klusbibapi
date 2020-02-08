@@ -1,6 +1,7 @@
 <?php
 namespace Api\Inventory;
 
+use Api\Model\Accessory;
 use Api\Model\ToolState;
 use Api\Model\User;
 use Api\Model\Tool;
@@ -15,13 +16,15 @@ interface Inventory {
     public function getToolsByState(string $state, $offset = 0, $limit=1000); // available, in use, maintenance, ...
     public function getToolByCode($code) : ?Tool;
     public function getToolById($id) : ?Tool;
-
+    public function getAccessories($offset = 0, $limit=1000);
+    public function getAccessoryById($id) : ?Accessory;
     /**
      * check tool exists in inventory
      * @param $toolId
      * @return bool true if the user exists in inventory
      */
     public function toolExists($toolId) : bool;
+    public function accessoryExists($accessoryId) : bool;
 
     public function postUser(User $user);
 

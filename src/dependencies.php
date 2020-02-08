@@ -153,6 +153,13 @@ $container['Api\Tool\ToolController'] = function(ContainerInterface $c) {
     $inventory = $c->get("Api\Inventory");
     return new ToolController($logger, new ToolManager($inventory, $logger),$token);
 };
+$container['Api\Tool\AccessoryController'] = function(ContainerInterface $c) {
+    $logger = $c->get("logger"); // retrieve the 'logger' from the container
+    $token = $c->get("token"); // retrieve the 'token' from the container
+    $logger->debug("creating accessory controller");
+    $inventory = $c->get("Api\Inventory");
+    return new \Api\Tool\AccessoryController($logger, new ToolManager($inventory, $logger),$token);
+};
 $container['Api\Consumer\ConsumerController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $inventory = $c->get("Api\Inventory");

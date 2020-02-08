@@ -3,6 +3,7 @@
 namespace Api\Inventory;
 
 use Api\Exception\InventoryException;
+use Api\Model\Accessory;
 use Api\Model\ToolState;
 use Api\Inventory\SnipeitToolMapper;
 use Api\Tool\NotFoundException;
@@ -125,6 +126,38 @@ class SnipeitInventory implements Inventory
         }
         return false;
     }
+
+    public function getAccessories($offset = 0, $limit=1000)
+    {
+        $accessories = new Collection();
+        $snipeAccessories = $this->get('accessories?offset=' . $offset . '&limit=' . $limit . '&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
+
+        foreach ($snipeAccessories->rows as $snipeAccessory) {
+            $accessory = SnipeitToolMapper::mapSnipeAccessoryToAccessory($snipeAccessory);
+            $accessories->add($accessory);
+        }
+
+        return $accessories;
+    }
+
+    public function getAccessoryById($id) : ?Accessory
+    {
+        $accessory = $this->get('accessories/' . $id);
+        return SnipeitToolMapper::mapSnipeAccessoryToAccessory($accessory);
+    }
+    public function accessoryExists($accessoryId) : bool {
+        if (isset($this->logger)) {
+            $this->logger->debug('check accessory exists in inventory');
+        }
+        if (isset($accessoryId)) {
+            $inventoryAccessory = $this->getAccessoryById($accessoryId);
+            if (isset($inventoryAccessory)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Lookup user in inventory based on external id
      * @param $id the user_ext_id aka snipeIt Person.id

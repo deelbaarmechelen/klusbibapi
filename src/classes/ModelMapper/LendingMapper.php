@@ -12,6 +12,7 @@ class LendingMapper
             "due_date" => $lending->due_date,
             "returned_date" => $lending->returned_date,
             "tool_id" => $lending->tool_id,
+            "tool_type" => $lending->tool_type,
             "user_id" => $lending->user_id,
             "comments" => $lending->comments,
             "active" => $lending->active,

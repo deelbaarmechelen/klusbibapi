@@ -3,6 +3,7 @@
 namespace Tests\Mock;
 
 use Api\Inventory\Inventory;
+use Api\Model\Accessory;
 use Api\Model\Tool;
 use Api\Model\ToolState;
 use Api\Model\User;
@@ -186,5 +187,20 @@ class InventoryMock implements Inventory
     public function updateUserState(User $user)
     {
         // TODO: Implement updateUser() method.
+    }
+
+    public function getAccessories($offset = 0, $limit = 1000)
+    {
+        // TODO: Implement getAccessories() method.
+    }
+
+    public function getAccessoryById($id): ?Accessory
+    {
+        // TODO: Implement getAccessoryById() method.
+    }
+
+    public function accessoryExists($accessoryId): bool
+    {
+        // TODO: Implement accessoryExists() method.
     }
 }

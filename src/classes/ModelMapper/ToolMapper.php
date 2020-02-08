@@ -98,27 +98,16 @@ class ToolMapper
 		
 	}
 
-
+    static public function mapAccessoryToArray($toolAccessory)
+    {
+        if ($toolAccessory->visible == 1) {
+            $visible = true;
+        } else {
+            $visible = false;
+        }
+        $accessoryArray = array("accessory_id" => $toolAccessory->accessory_id,
+            "name" => $toolAccessory->name,
+            "visible" => $visible);
+		return $accessoryArray;
+   }
 }
-//    {
-//        "tool_id": null,
-//        "name": "",
-//        "description": null,
-//        "code": "KB-000-17-002",
-//        "owner_id": null,
-//        "reception_date": null,
-//        "category": "Bouw",
-//        "brand": null,
-//        "type": null,
-//        "serial": null,
-//        "manufacturing_year": null,
-//        "manufacturer_url": null,
-//        "doc_url": null,
-//        "img": null,
-//        "replacement_value": null,
-//        "experience_level": null,
-//        "safety_risk": null,
-//        "state": null,
-//        "visible": false,
-//        "reservations": []
-//    },

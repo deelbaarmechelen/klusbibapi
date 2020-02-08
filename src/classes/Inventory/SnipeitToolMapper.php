@@ -3,6 +3,7 @@
 namespace Api\Inventory;
 
 
+use Api\Model\Accessory;
 use Api\Model\Tool;
 use Api\Model\ToolCategory;
 use Api\Model\ToolState;
@@ -41,7 +42,25 @@ abstract class SnipeitToolMapper
         //$tool->reservations ???
         return $tool;
     }
-    
+    /**
+     * @param $snipeAccessory asset to be converted to a tool
+     * @return Tool the converted tool
+     */
+    static public function mapSnipeAccessoryToAccessory($snipeAccessory) : ?Accessory {
+        if ($snipeAccessory == null || $snipeAccessory->id == null) {
+            return null;
+        }
+        $accessory = new Accessory();
+        $accessory->accessory_id = $snipeAccessory->id;
+        $accessory->name = !empty($snipeAccessory->name) ? html_entity_decode ($snipeAccessory->name) : html_entity_decode ($snipeAccessory->category->name);
+        $accessory->description = $snipeAccessory->notes;
+//        $accessory->category = self::mapAssetCategoryToToolCategory($snipeAccessory); // from response: category":{"id":3,"name":"Handgereedschap"},
+        $accessory->brand = html_entity_decode ($snipeAccessory->manufacturer->name);
+        $accessory->img = $snipeAccessory->image;
+        $accessory->visible = self::isVisible($snipeAccessory);
+        return $accessory;
+    }
+
     protected static function isVisible($asset) {
         if ($asset->status_label->status_type == "archived") {
             return false;

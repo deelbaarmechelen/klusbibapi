@@ -31,9 +31,18 @@ class ToolManager
 //        $tools = $this->getAllFromDatabase($showAll, $category, $sortfield, $sortdir);
         return $tools;
     }
+    public function getAllAccessories($showAll = false, $category = null, $sortfield = "code", $sortdir = "asc",
+        $page=1, $perPage = 1000) {
+        $accessories = $this->getAllAccessoriesFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage);
+        return $accessories;
+    }
     public function toolExists($toolId) : bool
     {
         return $this->inventory->toolExists($toolId);
+    }
+    public function accessoryExists($accessoryId) : bool
+    {
+        return $this->inventory->accessoryExists($accessoryId);
     }
     public function getById($id) {
         $tool = $this->getByIdFromInventory($id);
@@ -43,23 +52,18 @@ class ToolManager
         // needed to store mutliple images and handle reservations
         return $tool;
     }
+    public function getAccessoryById($id) {
+        $accessory = $this->getAccessoryByIdFromInventory($id);
+        return $accessory;
+    }
 
     protected function getByIdFromInventory($id) {
         return $this->inventory->getToolById($id);
     }
+    protected function getAccessoryByIdFromInventory($id) {
+        return $this->inventory->getAccessoryById($id);
+    }
 
-//    protected function getByIdFromInventory($id) {
-//        $tool = \Api\Model\Tool::find($id);
-//        $this->logger->info(json_encode($tool));
-//        if (isset($tool->tool_ext_id)) {
-//            return $this->inventory->getToolById($tool->tool_ext_id);
-//        } else {
-//            $inventoryTool = $this->inventory->getToolByCode($tool->code);
-//            $tool->tool_ext_id = $inventoryTool->tool_ext_id;
-//            return $inventoryTool;
-//        }
-//
-//    }
     /**
      * @param $showAll
      * @param $categoryFilter
@@ -84,6 +88,32 @@ class ToolManager
             return $tools->sortByDesc($sortfield);
         } else {
             return $tools->sortBy($sortfield);
+        }
+    }
+    /**
+     * @param $showAll
+     * @param $categoryFilter
+     * @param $sortfield
+     * @param $sortdir
+     * @return mixed
+     */
+    protected function getAllAccessoriesFromInventory($showAll, $categoryFilter, $sortfield = 'accessory_id', $sortdir = 'asc', $page, $perPage)
+    {
+        $accessories = new Collection();
+        $inventoryAccessories = $this->inventory->getAccessories();
+        // only apply pagination if filter can be applied directly to assets
+//        $assets = $this->inventory->getAssets(($page - 1) * $perPage, $perPage);
+
+        foreach ($inventoryAccessories as $inventoryAccessory) {
+//            if ( ($this->isVisible($showAll, $tool))
+//                && $this->applyCategoryFilter($categoryFilter, $tool)) {
+                $accessories->add($inventoryAccessory);
+//            }
+        }
+        if ($sortdir == 'desc') {
+            return $accessories->sortByDesc($sortfield);
+        } else {
+            return $accessories->sortBy($sortfield);
         }
     }
     /**
