@@ -5,6 +5,7 @@ namespace Api\Lending;
 use Api\Model\Lending;
 use Api\Model\ToolType;
 use Api\ModelMapper\LendingMapper;
+use Api\ModelMapper\ToolMapper;
 use Api\Settings;
 use Api\Validator\LendingValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -75,7 +76,17 @@ class LendingController implements LendingControllerInterface
         $lendings_page = array_slice($lendings->all(), ($page - 1) * $perPage, $perPage);
         $data = array();
         foreach ($lendings_page as $lending) {
-            array_push($data, LendingMapper::mapLendingToArray($lending));
+            $lendingData = LendingMapper::mapLendingToArray($lending);
+            // lookup tool and add it to data
+            $tool = $this->toolManager->getByIdAndType($lending->tool_id, $lending->tool_type);
+            if (isset($tool)) {
+                if ($tool->tool_type = ToolType::TOOL) {
+                    $lendingData['tool'] = ToolMapper::mapToolToArray($tool);
+                } else if ($tool->tool_type = ToolType::ACCESSORY) {
+                    $lendingData['tool'] = ToolMapper::mapAccessoryToArray($tool);
+                }
+            }
+            array_push($data, $lendingData);
         }
         $this->logger->info(count($lendings) . ' lending(s) found!');
         return $response->withJson($data)

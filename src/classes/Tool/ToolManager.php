@@ -5,6 +5,7 @@ namespace Api\Tool;
 use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
 use Api\Model\Tool;
+use Api\Model\ToolType;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -26,8 +27,8 @@ class ToolManager
     }
 
     public function getAll($showAll = false, $category = null, $sortfield = "code", $sortdir = "asc",
-        $page=1, $perPage = 1000) {
-        $tools = $this->getAllFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage);
+        $page=1, $perPage = 1000, $query = null) {
+        $tools = $this->getAllFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage, $query);
 //        $tools = $this->getAllFromDatabase($showAll, $category, $sortfield, $sortdir);
         return $tools;
     }
@@ -43,6 +44,15 @@ class ToolManager
     public function accessoryExists($accessoryId) : bool
     {
         return $this->inventory->accessoryExists($accessoryId);
+    }
+    public function getByIdAndType($id, $type)
+    {
+        if ($type == ToolType::TOOL) {
+            return $this->getById($id);
+        }
+        if ($type == ToolType::ACCESSORY) {
+            return $this->getAccessoryById($id);
+        }
     }
     public function getById($id) {
         $tool = $this->getByIdFromInventory($id);
@@ -71,7 +81,8 @@ class ToolManager
      * @param $sortdir
      * @return mixed
      */
-    protected function getAllFromInventory($showAll, $categoryFilter, $sortfield = 'code', $sortdir = 'asc', $page, $perPage)
+    protected function getAllFromInventory($showAll, $categoryFilter, $sortfield = 'code', $sortdir = 'asc',
+                                           $page, $perPage, $query)
     {
         $tools = new Collection();
         $inventoryTools = $this->inventory->getTools();
@@ -80,7 +91,8 @@ class ToolManager
 
         foreach ($inventoryTools as $tool) {
             if ( ($this->isVisible($showAll, $tool))
-                && $this->applyCategoryFilter($categoryFilter, $tool)) {
+                && $this->applyCategoryFilter($categoryFilter, $tool)
+                && $this->applyQueryFilter($query, $tool)) {
                 $tools->add($tool);
             }
         }
@@ -160,6 +172,13 @@ class ToolManager
             return TRUE;
         }
         return $this->isInCategory($categoryFilter, $tool);
+    }
+    protected function applyQueryFilter($query, $tool): bool
+    {
+        if (!isset($query) || empty($query)) {
+            return TRUE;
+        }
+        return (strpos(strtoupper($tool->name), strtoupper($query)) !== false);
     }
     protected function isInCategory($category, $tool) {
         if (!isset($category) || empty($category)) {

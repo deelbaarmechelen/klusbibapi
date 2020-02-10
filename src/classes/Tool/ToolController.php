@@ -50,8 +50,9 @@ class ToolController implements ProductControllerInterface
         } else {
             $showAll = false;
         }
+        $query = $request->getQueryParam('_query');
         $category = $request->getQueryParam('category');
-        $tools = $this->toolManager->getAll($showAll, $category, $sortfield, $sortdir, $page, $perPage);
+        $tools = $this->toolManager->getAll($showAll, $category, $sortfield, $sortdir, $page, $perPage, $query);
 
         // TODO: if not admin, filter non visible tools
     //    if ($showAll === true) {
