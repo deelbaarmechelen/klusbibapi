@@ -55,7 +55,7 @@ abstract class SnipeitToolMapper
         $accessory->name = !empty($snipeAccessory->name) ? html_entity_decode ($snipeAccessory->name) : html_entity_decode ($snipeAccessory->category->name);
         $accessory->description = $snipeAccessory->notes;
 //        $accessory->category = self::mapAssetCategoryToToolCategory($snipeAccessory); // from response: category":{"id":3,"name":"Handgereedschap"},
-        $accessory->brand = html_entity_decode ($snipeAccessory->manufacturer->name);
+        $accessory->brand = !empty($snipeAccessory->manufacturer) ? html_entity_decode ($snipeAccessory->manufacturer->name) : "";
         $accessory->state = self::mapAccessoryStateToToolState($snipeAccessory);
         $accessory->img = $snipeAccessory->image;
         $accessory->visible = true;
@@ -63,7 +63,6 @@ abstract class SnipeitToolMapper
     }
 
     protected static function isVisible($asset) {
-        // FIXME: Undefined property: stdClass::$status_label in <b>/app/src/classes/Inventory/SnipeitToolMapper.php</b> on line <b>65</b><br />
         if ($asset->status_label->status_type == "archived") {
             return false;
         }
