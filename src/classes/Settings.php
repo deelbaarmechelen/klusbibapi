@@ -17,7 +17,7 @@ class Settings
     const MOLLIE_LOCALE = "nl_BE";
 
     const EMAIL_LINK = 'info@klusbib.be';
-    const RESERVATION_EMAIL = 'reservation@klusbib.be';
+    const RESERVATION_EMAIL = 'reservatie@klusbib.be';
     const WEBPAGE_LINK = 'https://www.klusbib.be';
     const ENROLMENT_LINK = self::WEBPAGE_LINK . '/#!/lid-worden/form';
     const FACEBOOK_LINK = 'http://www.facebook.com/Klusbib';
