@@ -1,6 +1,7 @@
 <?php
 namespace Api\Model;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Api\Model\UserRole;
 
@@ -132,5 +133,11 @@ class User extends Model
             $query->where('firstname', 'LIKE', '%'.$search.'%' )
                   ->orWhere('lastname', 'LIKE', '%'.$search.'%' );
         }
+    }
+    public function scopeStroom($query)
+    {
+        return $query->whereHas('projects', function (Builder $query) {
+            $query->where('name', '=', 'STROOM');
+        });
     }
 }

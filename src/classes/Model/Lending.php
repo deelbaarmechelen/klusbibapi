@@ -2,6 +2,7 @@
 
 namespace Api\Model;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Lending extends Model
@@ -13,7 +14,7 @@ class Lending extends Model
      * @var string
      */
 //    protected $dateFormat = 'Y-m-d'; -> creates InvalidArgumentException in Carbon lib on created_at / updated_at fields
-    static protected $fieldArray = ['lending_id', 'start_date', 'due_date', 'returned_date', 'tool_id',
+    static protected $fieldArray = ['lending_id', 'start_date', 'due_date', 'returned_date', 'tool_id', 'tool_type',
         'user_id', 'comments', 'created_by', 'created_at', 'updated_at'
     ];
 
@@ -23,6 +24,31 @@ class Lending extends Model
         }
         return in_array($field, Tool::$fieldArray);
     }
+
+    /**
+     * Get the user that owns the lending.
+     */
+    public function user()
+    {
+        return $this->belongsTo('Api\Model\User', 'user_id');
+    }
+
+    /**
+     * Get the tool that owns the lending. (not tested yet)
+     */
+    private function tool()
+    {
+        return $this->belongsTo('Api\Model\Tool', 'tool_id')->where('tool_type', '=', ToolType::TOOL);
+    }
+
+    /**
+     * Get the accessory that owns the lending. (not tested yet)
+     */
+    private function accessory()
+    {
+        return $this->belongsTo('Api\Model\Accessory', 'tool_id')->where('tool_type', '=', ToolType::ACCESSORY);
+    }
+
     public function scopeValid($query)
     {
         return $query->whereNotNull('user_id')
@@ -84,5 +110,13 @@ class Lending extends Model
     public function scopeReturnedInYear($query, $year)
     {
         return $query->whereYear('returned_date', '=', $year);
+    }
+    public function scopeStroom($query)
+    {
+        return $query->whereHas('user', function (Builder $query) {
+            $query->whereHas('projects', function (Builder $query) {
+                $query->where('name', '=', 'STROOM');
+            });
+        });
     }
 }

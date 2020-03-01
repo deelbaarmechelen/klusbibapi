@@ -39,22 +39,53 @@ class StatController
      * @param $args
      */
     function monthly(Request $request, Response $response, $args) {
+        $data = array();
+
         // if month param given, lookup stat for that month, else stat of current month
         // also support period? from and to params for start and end month?
+
+        // user stats
+        $userStats = $this->getUserStats();
+        $data["user-statistics"] = $userStats;
+
+        // tool stats
+        $toolStats = $this->getToolStats();
+        $data["tool-statistics"] = $toolStats;
+
+        // accessory stats
+        $accessoryStats = array();
+        $accessoryStats = $this->getAccessoryStats($accessoryStats);
+        $data["accessory-statistics"] = $accessoryStats;
+
+        // activity stats
+        $activityStats = $this->getLendingStats();
+        $data["activity-statistics"] = $activityStats;
+
+        return $response->withJson($data);
+    }
+
+    function yearly($request, $response, $args) {
+
+    }
+
+    /**
+     * @param $startLastMonth
+     * @param $startThisMonth
+     * @return array
+     */
+    private function getUserStats(): array
+    {
         $utc = new \DateTimeZone("UTC");
         $startLastMonth = new DateTime('first day of last month', $utc);
         $startThisMonth = new DateTime('first day of this month', $utc);
-//        echo $startThisMonth;
 
-        // user stats
         $activeCount = \Api\Model\User::active()->members()->count();
         $expiredCount = \Api\Model\User::where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCount = \Api\Model\User::where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCount = \Api\Model\User::members()->where('created_at','>', new DateTime('first day of this month'))->count();
+        $newUsersCurrMonthCount = \Api\Model\User::members()->where('created_at', '>', new DateTime('first day of this month'))->count();
         $newUsersPrevMonthCount = \Api\Model\User::members()
-            ->where('created_at','>', $startLastMonth)
-            ->where('created_at','<', $startThisMonth)->count();
-        $data = array();
+            ->where('created_at', '>', $startLastMonth)
+            ->where('created_at', '<', $startThisMonth)->count();
         $userStats = array();
         $userStats["total-count"] = $activeCount + $expiredCount;
         $userStats["active-count"] = $activeCount;
@@ -62,9 +93,33 @@ class StatController
         $userStats["deleted-count"] = $deletedCount;
         $userStats["new-users-curr-month-count"] = $newUsersCurrMonthCount;
         $userStats["new-users-prev-month-count"] = $newUsersPrevMonthCount;
-        $data["user-statistics"] = $userStats;
 
-        // tool stats
+        // Stroom
+        $activeCountStroom = \Api\Model\User::stroom()->count();
+        $expiredCountStroom = \Api\Model\User::stroom()->where('state', \Api\Model\UserState::EXPIRED)->count();
+        $deletedCountStroom = \Api\Model\User::stroom()->where('state', \Api\Model\UserState::DELETED)->count();
+        $newUsersCurrMonthCountStroom = \Api\Model\User::stroom()->members()->where('created_at', '>', new DateTime('first day of this month'))->count();
+        $newUsersPrevMonthCountStroom = \Api\Model\User::stroom()
+            ->where('created_at', '>', $startLastMonth)
+            ->where('created_at', '<', $startThisMonth)->count();
+        $stroomStats = array();
+        $stroomStats["total-count"] = $activeCountStroom + $expiredCountStroom;
+        $stroomStats["active-count"] = $activeCountStroom;
+        $stroomStats["expired-count"] = $expiredCountStroom;
+        $stroomStats["deleted-count"] = $deletedCountStroom;
+        $stroomStats["new-users-curr-month-count"] = $newUsersCurrMonthCountStroom;
+        $stroomStats["new-users-prev-month-count"] = $newUsersPrevMonthCountStroom;
+
+        $userStats["stroom"] = $stroomStats; //count($stroomUsers)
+
+        return $userStats;
+    }
+
+    /**
+     * @return array
+     */
+    private function getToolStats(): array
+    {
         $tools = $this->inventory->getTools();
 
 //        $toolCount = Tool::all()->count();
@@ -90,39 +145,61 @@ class StatController
             return $value->state === ToolState::DISPOSED;
         });
         $toolStats["archived-count"] = count($archivedTools);
-        $data["tool-statistics"] = $toolStats;
+        return $toolStats;
+    }
 
-        // accessory stats
-        $accessoryStats = array();
+    /**
+     * @param $accessoryStats
+     * @return mixed
+     */
+    private function getAccessoryStats($accessoryStats)
+    {
         $accessories = $this->inventory->getAccessories();
 
         $accessoryStats["total-count"] = count($accessories);
-        $data["accessory-statistics"] = $accessoryStats;
+        return $accessoryStats;
+    }
 
-//        $checkoutPrevMonthCount = Lending::startFrom($startLastMonth)->startBefore($startThisMonth)->count();
-//        $checkoutCurrMonthCount = Lending::startFrom($startThisMonth)->count();
-        $currYear = date("Y");
-        $currMonth = date("M");
-        $prevYear = date("Y");
+    /**
+     * @param $startLastMonth
+     * @param $startThisMonth
+     * @return array
+     */
+    private function getLendingStats(): array
+    {
+        $utc = new \DateTimeZone("UTC");
+        $startLastMonth = new DateTime('first day of last month', $utc);
+        $startThisMonth = new DateTime('first day of this month', $utc);
+
         $checkoutPrevMonthCount = Lending::inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
         $checkoutCurrMonthCount = Lending::inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
         $checkinPrevMonthCount = Lending::returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
         $checkinCurrMonthCount = Lending::returnedInYear($startThisMonth->format("Y"))->returnedInMonth($startThisMonth->format("m"))->count();
         $activityStats = array();
+        $activityStats["total-count"] = Lending::count();
+        $activityStats["active-count"] = Lending::active()->count();
+        $activityStats["overdue-count"] = Lending::overdue()->count();
         $activityStats["checkout-prev-month-count"] = $checkoutPrevMonthCount;
         $activityStats["checkout-curr-month-count"] = $checkoutCurrMonthCount;
         $activityStats["checkin-prev-month-count"] = $checkinPrevMonthCount;
         $activityStats["checkin-curr-month-count"] = $checkinCurrMonthCount;
-        $activityStats["active"] = Lending::active()->count();
-        $activityStats["overdue"] = Lending::overdue()->count();
 
-        $data["activity-statistics"] = $activityStats;
+        // Stroom
+        $stroomStats = array();
+        $stroomStats["total-count"] = Lending::stroom()->count();
+        $stroomStats["active-count"] = Lending::stroom()->active()->count();
+        $stroomStats["overdue-count"] = Lending::stroom()->overdue()->count();
 
+        $checkoutPrevMonthCountStroom = Lending::stroom()->inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
+        $checkoutCurrMonthCountStroom = Lending::stroom()->inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
+        $checkinPrevMonthCountStroom = Lending::stroom()->returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
+        $checkinCurrMonthCountStroom = Lending::stroom()->returnedInYear($startThisMonth->format("Y"))->returnedInMonth($startThisMonth->format("m"))->count();
 
-        return $response->withJson($data);
-    }
-
-    function yearly($request, $response, $args) {
-
+        $stroomStats["checkout-prev-month-count"] = $checkoutPrevMonthCountStroom;
+        $stroomStats["checkout-curr-month-count"] = $checkoutCurrMonthCountStroom;
+        $stroomStats["checkin-prev-month-count"] = $checkinPrevMonthCountStroom;
+        $stroomStats["checkin-curr-month-count"] = $checkinCurrMonthCountStroom;
+        $activityStats["stroom"] = $stroomStats;
+        return $activityStats;
     }
 }
