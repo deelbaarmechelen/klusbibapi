@@ -1,7 +1,7 @@
 {% block subject 'Nieuwe reservatie' %}
 
 {% block body %}
-Beste {{ user.firstname }},<br><br>
+Beste,<br><br>
 <p>Via de website werd een aanvraag voor een reservatie geregistreerd<br>
 Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
 wenst toestel {{ toolCode }} te reserveren van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}

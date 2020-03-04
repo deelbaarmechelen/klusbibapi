@@ -75,15 +75,19 @@ class MailManager {
 	}
 	public function sendReservationRequest($to, $user, $tool, $reservation) {
 		if (empty($tool->code)) {
-			$toolCode = "zonder code (Naam/beschrijving/merk/type: "
+			$toolCode = "zonder code"
 					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
 		} else {
 			$toolCode = "met code " . $tool->code;
 		}
+		$toolCode .= " (Naam/beschrijving/merk/type: " . $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
         $parameters = array(
             'user' => $user,
             'toolCode' => $toolCode,
-            'reservation' => $reservation);
+            'reservation' => $reservation,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
+
         return $this->sendTwigTemplate($to, 'reservation_request', $parameters);
 	}
     // Send notification to Klusbib team

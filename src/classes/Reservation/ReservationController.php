@@ -135,8 +135,9 @@ class ReservationController implements ReservationControllerInterface
         if ($reservation->state === ReservationState::REQUESTED) {
             // Send notification to confirm the reservation
             $this->logger->info('Sending notification for new reservation ' . json_encode($reservation));
+            $tool = $this->toolManager->getById($reservation["tool_id"]);
             $isSendSuccessful = $this->mailManager->sendReservationRequest(RESERVATION_NOTIF_EMAIL,
-                $reservation->user, $reservation->tool, $reservation);
+                $reservation->user, $tool, $reservation);
             if ($isSendSuccessful) {
                 $this->logger->info('notification email sent successfully to ' . RESERVATION_NOTIF_EMAIL);
             } else {
