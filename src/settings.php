@@ -40,6 +40,7 @@ return [
         'logger' => [
             'name' => 'klusbibapi',
             'path' => __DIR__ . '/../logs/app.log',
+            'maxFiles' => 0, // 0 means unlimited
             'level' => \Monolog\Logger::DEBUG,
         ],
     
