@@ -21,6 +21,7 @@ class UsersTableSeeder extends AbstractSeed
     	$enddate = clone $startdate;
     	$enddate->add(new DateInterval('P7D'));
     	Capsule::table('users')->insert([
+    			'user_id' => 1,
     			'firstname' => 'admin',
     			'lastname' => 'admin',
     			'role' => 'admin', 
