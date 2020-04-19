@@ -23,10 +23,14 @@ foreach ($users as $user) {
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
     $newMembershipEnd = DateTime::createFromFormat('Y-m-d', $user->membership_end_date);
-    $newMembershipEnd->add(new DateInterval('P1M'));
-    $user->membership_end_date = $newMembershipEnd->format('Y-m-d');
-    echo "membership new end: " . $user->membership_end_date . "\n\n";
-//    $user->save();
+    if ($newMembershipEnd != FALSE) {
+        $newMembershipEnd->add(new DateInterval('P1M'));
+        $user->membership_end_date = $newMembershipEnd->format('Y-m-d');
+        echo "membership new end: " . $user->membership_end_date . "\n\n";
+        $user->save();
+    } else {
+        echo "No membership end update needed!\n\n";
+    }
 }
 $users = \Api\Model\User::expired()->members()->whereDate('membership_end_date', '<=', date('Y-m-d'))->get();
 foreach ($users as $user) {
