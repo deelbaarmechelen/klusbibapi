@@ -77,8 +77,9 @@ class ReservationController implements ReservationControllerInterface
         Authorisation::checkAccessByToken($this->token,
             ["reservations.all", "reservations.create", "reservations.create.owner", "reservations.create.owner.donation_only"]);
         $data = $request->getParsedBody();
-        if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager)) {
-            return $response->withStatus(400); // Bad request
+        $errors = array();
+        if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
+            return $response->withStatus(400)->withJson($errors); // Bad request
         }
         $this->logger->info("Reservation request is valid");
         $reservation = new \Api\Model\Reservation();
@@ -150,7 +151,7 @@ class ReservationController implements ReservationControllerInterface
             ->withStatus(201);
     }
     public function update($request, $response, $args) {
-        $this->logger->info("Klusbib PUT '/reservations/id' route");
+        $this->logger->info("Klusbib PUT '/reservations/id' route" . $args['reservationid']);
         Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.update", "reservations.update.owner"]);
         $reservation = \Api\Model\Reservation::find($args['reservationid']);
         if (null == $reservation) {
@@ -158,10 +159,12 @@ class ReservationController implements ReservationControllerInterface
         }
         $data = $request->getParsedBody();
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
-        if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager)) {
-            return $response->withStatus(400); // Bad request
+        $errors = array();
+        if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
+            return $response->withStatus(400)->withJson($errors); // Bad request
         }
-        $access = Authorisation::checkReservationAccess($this->token, "update", $reservation, $reservation->tool->owner_id);
+        $toolOwnerId = isset($reservation->tool) ? $reservation->tool->owner_id : null;
+        $access = Authorisation::checkReservationAccess($this->token, "update", $reservation, $toolOwnerId, $this->logger);
         if ($access === AccessType::NO_ACCESS) {
             return $response->withStatus(403); // Unauthorized
         }

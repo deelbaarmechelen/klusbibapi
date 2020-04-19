@@ -58,7 +58,10 @@ class Authorisation {
 		
 	}
 	
-	static function checkReservationAccess($token, $operation, $reservation, $toolOwner = NULL) {
+	static function checkReservationAccess($token, $operation, $reservation, $toolOwner = NULL, $logger = NULL) {
+        if (isset($logger)) {
+            $logger->info("Check reservation access for operation $operation");
+        }
 		if (!isset($token)) {
 			return AccessType::NO_ACCESS;
 		}
@@ -83,7 +86,8 @@ class Authorisation {
 				}
 				if ($token->hasScope(["reservations.create.owner.donation_only"])
 						&& ($reservation->user_id == $token->decoded->sub)
-						&& ($toolOwner == $token->decoded->sub)) {
+						&& isset($toolOwner)
+                        && ($toolOwner == $token->decoded->sub)) {
 							return AccessType::TOOL_OWNER_ACCESS;
 				}
 				return AccessType::NO_ACCESS;

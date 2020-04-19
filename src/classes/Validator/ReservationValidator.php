@@ -7,47 +7,63 @@ use Api\Tool\ToolManager;
 
 class ReservationValidator 
 {
-	static function isValidReservationData($reservation, $logger, ToolManager $toolManager) {
-		if (empty($reservation)) {
+	static function isValidReservationData($reservation, $logger, ToolManager $toolManager, &$errors) {
+        if (empty($reservation)) {
 			return false;
 		}
 		if (!isset($reservation["user_id"])) {
-			$logger->info("Missing user_id");
+            $message = "Missing user_id";
+			$logger->info($message);
+            array_push($errors, $message);
 			return false;
 		}
 		if (empty($reservation["tool_id"])) {
-			$logger->info("Missing tool_id");
+            $message = "Missing tool_id";
+            $logger->info($message);
+            array_push($errors, $message);
 			return false;
 		}
-		if (!UserValidator::userExists($reservation["user_id"], $logger)) {
-			$logger->info("Inexistant user " . $reservation["user_id"]);
+        if (!UserValidator::userExists($reservation["user_id"], $logger)) {
+            $message = "Inexistant user " . $reservation["user_id"];
+            $logger->info($message);
+            array_push($errors, $message);
 			return false;
 		}
 //		if (!self::toolExists($reservation["tool_id"], $logger)) {
 		if (!$toolManager->toolExists($reservation["tool_id"])) {
-			$logger->info("Inexistant tool " . $reservation["tool_id"]);
+            $message = "Inexistant tool " . $reservation["tool_id"];
+            $logger->info($message);
+            array_push($errors, $message);
 			return false;
 		}
 		if (isset($reservation["startsAt"]) &&
 				(FALSE == ReservationValidator::cnvStrToDateTime($reservation["startsAt"], $logger))) {
-			$logger->info("End date (". $reservation["startsAt"] . " has invalid date format (expected YYYY-MM-DD)");
+            $message = "End date (". $reservation["startsAt"] . " has invalid date format (expected YYYY-MM-DD)";
+            $logger->info($message);
+            array_push($errors, $message);
 			return false;
 		}
-		if (isset($reservation["endsAt"]) && 
+		if (isset($reservation["endsAt"]) &&
 				(FALSE == ReservationValidator::cnvStrToDateTime($reservation["endsAt"], $logger))) {
-			$logger->info("End date (". $reservation["endsAt"] . " has invalid date format (expected YYYY-MM-DD)");
+            $message = "End date (". $reservation["endsAt"] . " has invalid date format (expected YYYY-MM-DD)";
+            $logger->info($message);
+            array_push($errors, $message);
 			return false;
 		}
 		if (isset($reservation["startsAt"]) && isset($reservation["endsAt"]) 
 				&& new \DateTime($reservation["endsAt"]) < new \DateTime($reservation["startsAt"])) {
-			$logger->info("End date (". $reservation["endsAt"] . " cannot be smaller than start date (" . $reservation["startsAt"] . ")");
+            $message = "End date (". $reservation["endsAt"] . " cannot be smaller than start date (" . $reservation["startsAt"] . ")";
+            $logger->info($message);
+            array_push($errors, $message);
 			return false;
 		}
         if (isset($reservation["state"]) &&
             (FALSE == ReservationValidator::isValidState($reservation["state"], $logger))) {
-            $logger->info("State (". $reservation["state"] . " is invalid (expected "
+            $message = "State (". $reservation["state"] . " is invalid (expected "
                 . ReservationState::REQUESTED . "," . ReservationState::CANCELLED . ", "
-                . ReservationState::CONFIRMED . "," . ReservationState::CLOSED . ")");
+                . ReservationState::CONFIRMED . "," . ReservationState::CLOSED . ")";
+            $logger->info($message);
+            array_push($errors, $message);
             return false;
         }
 		return true;
