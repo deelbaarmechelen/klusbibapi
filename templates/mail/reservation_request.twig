@@ -1,14 +1,17 @@
 {% block subject 'Nieuwe reservatie' %}
 
 {% block body %}
-Beste,<br><br>
-<p>Via de website werd een aanvraag voor een reservatie geregistreerd<br>
-Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
-wenst toestel {{ toolCode }} te reserveren van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}
+Beste {{ user.firstname }},<br><br>
+<p>
+Wij hebben jou reservatieaanvraag voor toestel {{ toolCode }} goed ontvangen.
+Je wenst dit toestel te ontlenen van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}
+</p>
+<p>
+Wij bekijken of dit toestel beschikbaar is en sturen je nog een bevestiging van zodra deze voor jou klaar staat
 </p>
 <p>
 Met vriendelijke groeten<br>
-Admin<br>
+Het Klusbib-team<br>
 E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
 W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
 </p>

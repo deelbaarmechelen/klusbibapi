@@ -1,0 +1,25 @@
+{% block subject 'Annulatie van reservatie' %}
+
+{% block body %}
+Beste,<br><br>
+<p>Via de website werd een reservatie geannuleerd<br>
+Indien het toestel met code {{ toolCode }} reeds klaar stond voor ontlening kan dit nu terug beschikbaar gesteld worden voor andere gebruikers
+</p>
+<p>
+Indien we zelf deze annulatie doorvoerden is het aangewezen de gebruiker te contacteren
+om hem/haar hiervan op de hoogte te brengen alsook de reden van annulatie toe te lichten. <br/>
+De reservatie stond op naam van {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }}) en
+liep van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}<br/>
+Contactgegevens:<br/>
+Adress: {{ user.address }} {{ user.postal_code}} {{ user.city }}<br/>
+Telefoon: {{ user.phone }}<br/>
+GSM: {{ user.mobile }}<br/>
+Email: {{ user.email }} ({{ user.email_state }})<br/>
+</p>
+<p>
+Met vriendelijke groeten<br>
+Admin<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}

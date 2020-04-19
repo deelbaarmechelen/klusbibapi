@@ -1,0 +1,15 @@
+{% block subject 'Bevestiging van reservatie' %}
+
+{% block body %}
+Beste {{ user.firstname }},<br><br>
+<p>
+Wij hebben toestel {{ toolCode }} voor jou klaar gezet.
+De reservatie loopt van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}
+</p>
+<p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}

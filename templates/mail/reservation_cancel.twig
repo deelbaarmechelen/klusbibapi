@@ -1,0 +1,19 @@
+{% block subject 'Annulatie van reservatie' %}
+
+{% block body %}
+Beste {{ user.firstname }},<br><br>
+{% if user.user_id != cancelledBy %}<p>
+Je plaatste een reservatie voor toestel {{ toolCode }}, maar dit is helaas niet beschikbaar op de gevraagde datum
+({{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }})<br/>
+We bekijken graag samen met jou of we je verder kunnen helpen met een ander toestel
+</p>{% endif %}
+{% if user.user_id == cancelledBy %}<p>
+Je reservatie voor toestel {{ toolCode }} werd geannuleerd
+</p>{% endif %}
+<p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}

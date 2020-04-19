@@ -1,0 +1,15 @@
+{% block subject 'Bevestiging van reservatie' %}
+
+{% block body %}
+Beste,<br><br>
+<p>Via de website werd een reservatie bevestigd<br>
+Gelieve toestel {{ toolCode }} klaar te zetten voor gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }}).
+De reservatie loopt van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}
+</p>
+<p>
+Met vriendelijke groeten<br>
+Admin<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}

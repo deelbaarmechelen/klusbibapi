@@ -73,7 +73,7 @@ class MailManager {
             'emailLink' => Settings::EMAIL_LINK);
         return $this->sendTwigTemplate($userEmail, 'password_recovery', $parameters);
 	}
-	public function sendReservationRequest($to, $user, $tool, $reservation) {
+	public function sendReservationRequest($to, $user, $tool, $reservation, $notifyTeamAddress) {
 		if (empty($tool->code)) {
 			$toolCode = "zonder code"
 					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
@@ -86,11 +86,67 @@ class MailManager {
             'toolCode' => $toolCode,
             'reservation' => $reservation,
             'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
-
+            'emailLink' => Settings::EMAIL_LINK,
+            'inventoryLink' => Settings::INVENTORY_LINK);
+        if (isset($notifyTeamAddress)) {
+            $this->sendTwigTemplate($notifyTeamAddress, 'reservation_request_notif', $parameters);
+        }
         return $this->sendTwigTemplate($to, 'reservation_request', $parameters);
 	}
-    // Send notification to Klusbib team
+	public function sendReservationConfirmation($to, $user, $tool, $reservation, $notifyTeamAddress) {
+		if (empty($tool->code)) {
+			$toolCode = "zonder code"
+					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
+		} else {
+			$toolCode = "met code " . $tool->code;
+		}
+		$toolCode .= " (Naam/beschrijving/merk/type: " . $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
+        $parameters = array(
+            'user' => $user,
+            'toolCode' => $toolCode,
+            'reservation' => $reservation,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK,
+            'inventoryLink' => Settings::INVENTORY_LINK);
+
+        if (isset($notifyTeamAddress)) {
+            $this->sendTwigTemplate($notifyTeamAddress, 'reservation_confirm_notif', $parameters);
+        }
+        return $this->sendTwigTemplate($to, 'reservation_confirmation', $parameters);
+	}
+
+    /**
+     * @param $to target email address
+     * @param $user the user this reservation is for
+     * @param $tool the reserved tool
+     * @param $reservation reservation itself
+     * @param $notifyTeamAddress email address of team for extra notification
+     * @param $cancelledBy user_id of cancellation requester
+     * @return bool
+     */
+	public function sendReservationCancellation($to, $user, $tool, $reservation, $notifyTeamAddress, $cancelledBy) {
+		if (empty($tool->code)) {
+			$toolCode = "zonder code"
+					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
+		} else {
+			$toolCode = "met code " . $tool->code;
+		}
+		$toolCode .= " (Naam/beschrijving/merk/type: " . $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
+        $parameters = array(
+            'user' => $user,
+            'toolCode' => $toolCode,
+            'reservation' => $reservation,
+            'cancelledBy' => $cancelledBy,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK,
+            'inventoryLink' => Settings::INVENTORY_LINK);
+
+        if (isset($notifyTeamAddress)) {
+            $this->sendTwigTemplate($notifyTeamAddress, 'reservation_cancel_notif', $parameters);
+        }
+        return $this->sendTwigTemplate($to, 'reservation_cancel', $parameters);
+	}
+    // Send enrolment notification to Klusbib team
     public function sendEnrolmentNotification($userEmail, $newUser) {
         $parameters = array(
             'newUser' => $newUser);

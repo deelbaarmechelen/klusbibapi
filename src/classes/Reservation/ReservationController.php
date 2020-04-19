@@ -135,12 +135,12 @@ class ReservationController implements ReservationControllerInterface
         $reservation->save();
         if ($reservation->state === ReservationState::REQUESTED) {
             // Send notification to confirm the reservation
-            $this->logger->info('Sending notification for new reservation ' . json_encode($reservation));
+            $this->logger->info('Sending notifications for new reservation ' . json_encode($reservation));
             $tool = $this->toolManager->getById($reservation["tool_id"]);
-            $isSendSuccessful = $this->mailManager->sendReservationRequest(RESERVATION_NOTIF_EMAIL,
-                $reservation->user, $tool, $reservation);
+            $isSendSuccessful = $this->mailManager->sendReservationRequest($reservation->user->email,
+                $reservation->user, $tool, $reservation, RESERVATION_NOTIF_EMAIL);
             if ($isSendSuccessful) {
-                $this->logger->info('notification email sent successfully to ' . RESERVATION_NOTIF_EMAIL);
+                $this->logger->info('notification email sent successfully to ' . $reservation->user->email);
             } else {
                 $message = $this->mailManager->getLastMessage();
                 $this->logger->warn('Problem sending reservation notification email: '. $message);
@@ -168,6 +168,8 @@ class ReservationController implements ReservationControllerInterface
         if ($access === AccessType::NO_ACCESS) {
             return $response->withStatus(403); // Unauthorized
         }
+        $confirmation = false;
+        $cancellation = false;
         if ($access === AccessType::FULL_ACCESS) {
             if (isset($data["tool_id"])) {
                 $this->logger->info("Klusbib PUT updating tool_id from " . $reservation->tool_id . " to " . $data["tool_id"]);
@@ -188,6 +190,14 @@ class ReservationController implements ReservationControllerInterface
         }
         if (isset($data["state"])) {
             $this->logger->info("Klusbib PUT updating state from " . $reservation->state . " to " . $data["state"]);
+            if ($reservation->state != ReservationState::CONFIRMED
+                && $data["state"] == ReservationState::CONFIRMED) {
+                $confirmation = true;
+            }
+            if ($reservation->state != ReservationState::CANCELLED
+                && $data["state"] == ReservationState::CANCELLED) {
+                $cancellation = true;
+            }
             $reservation->state = $data["state"];
         }
         if (isset($data["startsAt"])) {
@@ -203,6 +213,32 @@ class ReservationController implements ReservationControllerInterface
             $reservation->comment = $data["comment"];
         }
         $reservation->save();
+        if ($confirmation) {
+            // Send notification to confirm the reservation
+            $this->logger->info('Sending notification for confirmation of reservation ' . json_encode($reservation));
+            $tool = $this->toolManager->getById($reservation->tool_id);
+            $isSendSuccessful = $this->mailManager->sendReservationConfirmation($reservation->user->email,
+                $reservation->user, $tool, $reservation, RESERVATION_NOTIF_EMAIL);
+            if ($isSendSuccessful) {
+                $this->logger->info('confirm notification email sent successfully to ' . $reservation->user->email);
+            } else {
+                $message = $this->mailManager->getLastMessage();
+                $this->logger->warn('Problem sending confirm_reservation notification email: '. $message);
+            }
+        }
+        if ($cancellation) {
+            // Send notification to confirm the reservation
+            $this->logger->info('Sending notification for cancel of reservation ' . json_encode($reservation));
+            $tool = $this->toolManager->getById($reservation->tool_id);
+            $isSendSuccessful = $this->mailManager->sendReservationCancellation($reservation->user->email,
+                $reservation->user, $tool, $reservation, RESERVATION_NOTIF_EMAIL, $this->token->decoded->sub);
+            if ($isSendSuccessful) {
+                $this->logger->info('cancel notification email sent successfully to ' . $reservation->user->email);
+            } else {
+                $message = $this->mailManager->getLastMessage();
+                $this->logger->warn('Problem sending cancel_reservation notification email: '. $message);
+            }
+        }
         return $response->withJson(ReservationMapper::mapReservationToArray($reservation));
     }
     public function delete($request, $response, $args) {
