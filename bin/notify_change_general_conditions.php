@@ -32,5 +32,5 @@ foreach ($users as $user) {
         echo "Error from mail manager: $error";
     }
 }
-echo "End of renewal cron\n";
+echo "End of changed general conditions notifications\n";
 
