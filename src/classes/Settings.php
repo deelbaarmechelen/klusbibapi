@@ -20,7 +20,7 @@ class Settings
     const RESERVATION_EMAIL = 'reservatie@klusbib.be';
     const WEBPAGE_LINK = 'https://www.klusbib.be';
     const ENROLMENT_LINK = self::WEBPAGE_LINK . '/#!/lid-worden/form';
-    const FACEBOOK_LINK = 'http://www.facebook.com/Klusbib';
+    const FACEBOOK_LINK = 'http://www.facebook.com/DeelbaarMechelen';
     const PROFILE_LINK = self::WEBPAGE_LINK . '/#!/profile/';
     const ENQUETE_LINK = 'https://docs.google.com/forms/d/e/1FAIpQLSeXBVSBV-UOGZ7PVssWUe7jvAwAbdqJxrSJUs4GP5NtlQDoqA/viewform';
     const EVALUATION_LINK = 'https://docs.google.com/forms/d/e/1FAIpQLSegXexZqLtG0NvRxgJ7Y53iI530IcRtdvZMqKVc3PnEmRM01g/viewform';
