@@ -1,12 +1,12 @@
 {
-	"name" : "renardeau/klusbibapi",
+	"name" : "deelbaarmechelen/klusbibapi",
 	"description" : "A REST API to access work tool resources for use in a work tools library",
 	"keywords" : [
 		"klusbib",
 		"rest",
 		"api"
 	],
-	"homepage" : "http://github.com/renardeau/klusbibapi",
+	"homepage" : "http://github.com/deelbaarmechelen/klusbibapi",
 	"license" : "AGPL-3.0-or-later",
 	"authors" : [{
 			"name" : "Bernard Butaye",
