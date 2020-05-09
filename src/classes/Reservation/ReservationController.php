@@ -47,6 +47,7 @@ class ReservationController implements ReservationControllerInterface
         if (!isset($perPage)) {
             $perPage = '50';
         }
+        $query= $request->getQueryParam('_query');
         $querybuilder = Capsule::table('reservations')
             ->join('users', 'reservations.user_id', '=', 'users.user_id')
             ->select('reservations.*', 'users.firstname', 'users.lastname');
@@ -54,6 +55,11 @@ class ReservationController implements ReservationControllerInterface
         if (isset($isOpen) && $isOpen == 'true') {
             $querybuilder->whereIn('reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
         }
+        if (isset($query)) {
+            $querybuilder->where('users.firstname', 'LIKE', '%'.$query.'%' )
+                ->orWhere('users.lastname', 'LIKE', '%'.$query.'%' );
+        }
+
         if ($sortfield == "username") {
             $sortfield = 'users.firstname';
         } else {
