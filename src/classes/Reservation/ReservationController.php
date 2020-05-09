@@ -47,17 +47,26 @@ class ReservationController implements ReservationControllerInterface
         if (!isset($perPage)) {
             $perPage = '50';
         }
-        $querybuilder = Capsule::table('reservations');
+        $querybuilder = Capsule::table('reservations')
+            ->join('users', 'reservations.user_id', '=', 'users.user_id')
+            ->select('reservations.*', 'users.firstname', 'users.lastname');
         $isOpen = $request->getQueryParam('isOpen');
         if (isset($isOpen) && $isOpen == 'true') {
-            $querybuilder->whereIn('state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
+            $querybuilder->whereIn('reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
+        }
+        if ($sortfield == "username") {
+            $sortfield = 'users.firstname';
+        } else {
+            $sortfield = 'reservations.' . $sortfield;
         }
         $reservations = $querybuilder->orderBy($sortfield, $sortdir)->get();
         $reservations_page = array_slice($reservations->all(), ($page - 1) * $perPage, $perPage);
 
         $data = array();
         foreach ($reservations_page as $reservation) {
-            array_push($data, ReservationMapper::mapReservationToArray($reservation));
+            $reservationData = ReservationMapper::mapReservationToArray($reservation);
+            $reservationData["username"] = $reservation->firstname . " " . $reservation->lastname;
+            array_push($data, $reservationData);
         }
         return $response->withJson($data)
             ->withHeader('X-Total-Count', count($reservations));
@@ -114,8 +123,15 @@ class ReservationController implements ReservationControllerInterface
             $reservation->endsAt = clone $reservation->startsAt;
             $reservation->endsAt->add(new DateInterval('P7D'));
         }
-        if (isset($data["comment"])) {
-            $reservation->comment = $data["comment"];
+        if (isset($data["comment"]) || isset($data["cancel_reason"])) {
+            if (isset($data["comment"]) && !isset($data["cancel_reason"])) {
+                $newComment = $data["comment"];
+            } else if (!isset($data["comment"]) && isset($data["cancel_reason"])) {
+                $newComment = "Cancel reason: " . $data["cancel_reason"];
+            } else if (isset($data["comment"]) && isset($data["cancel_reason"])) {
+                $newComment = $data["comment"] . "\nCancel reason: " . $data["cancel_reason"];
+            }
+            $reservation->comment = $newComment;
         }
         // 	$this->logger->debug('tool =' . json_encode($reservation->tool));
         $toolOwnerId = isset($reservation->tool) ? $reservation->tool->owner_id : null;
@@ -208,9 +224,16 @@ class ReservationController implements ReservationControllerInterface
             $this->logger->info("Klusbib PUT updating endsAt from " . $reservation->endsAt . " to " . $data["endsAt"]);
             $reservation->endsAt = $data["endsAt"];
         }
-        if (isset($data["comment"])) {
-            $this->logger->info("Klusbib PUT updating comment from " . $reservation->comment . " to " . $data["comment"]);
-            $reservation->comment = $data["comment"];
+        if (isset($data["comment"]) || isset($data["cancel_reason"])) {
+            if (isset($data["comment"]) && !isset($data["cancel_reason"])) {
+                $newComment = $data["comment"];
+            } else if (!isset($data["comment"]) && isset($data["cancel_reason"])) {
+                $newComment = "Cancel reason: " . $data["cancel_reason"];
+            } else if (isset($data["comment"]) && isset($data["cancel_reason"])) {
+                $newComment = $data["comment"] . "\nCancel reason: " . $data["cancel_reason"];
+            }
+            $this->logger->info("Klusbib PUT updating comment from " . $reservation->comment . " to " . $newComment);
+            $reservation->comment = $newComment;
         }
         $reservation->save();
         if ($confirmation) {
