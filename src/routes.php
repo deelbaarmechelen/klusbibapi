@@ -30,6 +30,7 @@ require __DIR__ . '/routes/token.php';
 require __DIR__ . '/routes/auth.php';
 require __DIR__ . '/routes/enrolment.php';
 require __DIR__ . '/routes/tools.php';
+require __DIR__ . '/routes/deliveries.php';
 require __DIR__ . '/routes/users.php';
 require __DIR__ . '/routes/consumers.php';
 require __DIR__ . '/routes/reservations.php';

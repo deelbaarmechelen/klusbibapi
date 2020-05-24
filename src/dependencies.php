@@ -211,6 +211,10 @@ $container['Api\Reservation\ReservationController'] = function(ContainerInterfac
     $toolManager = new ToolManager($inventory, $logger);
     return new \Api\Reservation\ReservationController($logger, $token, $mailManager, $toolManager);
 };
+$container['Api\Reservation\DeliveryController'] = function(ContainerInterface $c) {
+    $logger = $c->get("logger");
+    return new \Api\Delivery\DeliveryController($logger);
+};
 $container['Api\Token\TokenController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
