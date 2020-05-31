@@ -123,6 +123,7 @@ class LendingController implements LendingControllerInterface
         }
         $data = $request->getParsedBody();
         if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
+            $this->logger->warn("Rejecting invalid lending (data: " . json_encode($data));
             return $response->withStatus(400); // Bad request
         }
         $this->logger->info("Lending request is valid");
