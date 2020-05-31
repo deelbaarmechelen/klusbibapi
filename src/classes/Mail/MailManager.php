@@ -112,7 +112,7 @@ class MailManager {
         if (isset($notifyTeamAddress)) {
             $this->sendTwigTemplate($notifyTeamAddress, 'reservation_confirm_notif', $parameters);
         }
-        return $this->sendTwigTemplate($to, 'reservation_confirmation', $parameters);
+        return $this->sendTwigTemplate($to, 'reservation_confirm', $parameters);
 	}
 
     /**
@@ -125,7 +125,8 @@ class MailManager {
      * @return bool
      */
 	public function sendReservationCancellation($to, $user, $tool, $reservation, $notifyTeamAddress, $cancelledBy) {
-		if (empty($tool->code)) {
+
+	    if (empty($tool->code)) {
 			$toolCode = "zonder code"
 					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
 		} else {
@@ -143,6 +144,12 @@ class MailManager {
 
         if (isset($notifyTeamAddress)) {
             $this->sendTwigTemplate($notifyTeamAddress, 'reservation_cancel_notif', $parameters);
+        }
+        if ($user->user_id == $cancelledBy) { // do not notify user if he/she requested the cancel
+            if ($this->logger) {
+                $this->logger->info("Send of reservation cancel notification has been skipped (user $user->firstname with id $cancelledBy requested cancel himself)");
+            }
+            return true;
         }
         return $this->sendTwigTemplate($to, 'reservation_cancel', $parameters);
 	}
