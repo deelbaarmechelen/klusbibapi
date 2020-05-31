@@ -2,6 +2,7 @@
 
 namespace Api\User;
 
+use Api\Model\PaymentMode;
 use Api\Tool\ToolManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
@@ -164,7 +165,7 @@ class UserController implements UserControllerInterface
             $user->role = 'member'; // only members can be created through web enrolment
             $data["membership_start_date"] = strftime('%Y-%m-%d', time());
             if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {
-                $this->logger->warn('user ' . $data["firstname"] . ' ' . $data["lastname"] . ' did not accept terms');
+                $this->logger->warn('user ' . $data["firstname"] . ' ' . $data["lastname"] . ' did not accept terms (accept_terms=' . $data["accept_terms"] . ')');
                 return $response->withStatus(400)
                     ->withJson(array('error' => array('status' => 400, 'message' => "user should accept terms")));
             } else {
@@ -177,14 +178,27 @@ class UserController implements UserControllerInterface
         }
         if (isset($data["email"])) {
             $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
-            $userExists = User::where('email', $data["email"])->count();
-            if ($userExists > 0) {
+            $userByEmail = User::where('email', $data["email"])->first();
+            if (isset($userByEmail)) {
                 $this->logger->info('user with email ' . $data["email"] . ' already exists');
-                return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
-                    ->withStatus(409);
+                // user already exists
+                if ($userByEmail->state == UserState::DELETED
+                  || $userByEmail->state == UserState::DISABLED
+                  || ($userByEmail->state == UserState::CHECK_PAYMENT
+                        && $userByEmail->payment_mode != PaymentMode::MOLLIE)
+                  || ($userByEmail->state == UserState::CHECK_PAYMENT
+                        && $userByEmail->payment_mode == PaymentMode::MOLLIE
+                        && strtotime($userByEmail->updated_at) < strtotime('-1 hour'))) {
+                    // just remove the user to allow enrolment to restart
+                    // For users that already initiated a Mollie payment, wait at least 1 hour until mollie payment is expired
+                    $userByEmail->delete();
+                } else {
+                    return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
+                        ->withStatus(409);
+                }
+            } else {
+                $this->logger->debug('No user found with email ' . $data["email"]);
             }
-            $this->logger->debug('No user found with email ' . $data["email"]);
-
         }
         // TODO: else : check user exists based on name? or registration id?
 
