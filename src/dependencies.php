@@ -198,7 +198,7 @@ $container['Api\Events\EventsController'] = function(ContainerInterface $c) {
 $container['Api\Payment\PaymentController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
-    $mailManager = new MailManager();
+    $mailManager = new MailManager(null, null, $logger);
     $mollieClient = new \Mollie\Api\MollieApiClient();
     $mollieClient->setApiKey(MOLLIE_API_KEY);
     return new \Api\Payment\PaymentController($logger, $token, $mailManager, $mollieClient);
@@ -206,7 +206,7 @@ $container['Api\Payment\PaymentController'] = function(ContainerInterface $c) {
 $container['Api\Reservation\ReservationController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
-    $mailManager = new MailManager();
+    $mailManager = new MailManager(null, null, $logger);
     $inventory = $c->get("Api\Inventory");
     $toolManager = new ToolManager($inventory, $logger);
     return new \Api\Reservation\ReservationController($logger, $token, $mailManager, $toolManager);
