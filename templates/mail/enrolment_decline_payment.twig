@@ -1,0 +1,29 @@
+{% block subject 'Klusbib: probleem bij inschrijving' %}
+
+{% block body %}
+Beste {{ user.firstname }},<br><br>
+
+<p>
+Onlangs schreef je jou in bij de Klusbib, waarvoor dank.
+</p>
+{% if paymentMode == 'STROOM'%}
+<p>
+Je koos hier om je in te schrijven via het project Stroom. Deze keuze is echter enkel beschikbaar voor inwoners van de wijk tussen de Auwegemvaart en de Winketkaai.
+Bij controle van de gegevens bleek dat je hier helaas geen gebruik van kan maken.
+</p><p>
+Wens je toch gebruik te maken van onze gereedschapsbibliotheek kan je jou opnieuw inschrijven maar hier dan te kiezen voor een van de betalingsmogelijkheden.<br>
+Het eerste jaar inschrijving bij de Klusbib kost je 30 euro, verleng je nadien aansluitend je lidmaatschap dan betaal je nog slechts 20 euro per jaar. (alle info: www.klusbib.be)<br>
+We verwelkomen je graag bij de Klusbib.
+</p>{% endif %}<p>
+Moest je nog vragen hebben, aarzel niet om ons even te contacteren.
+</p><p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}
+
+
+
+
