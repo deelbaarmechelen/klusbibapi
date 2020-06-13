@@ -77,6 +77,17 @@ echo "Expired users: $expiredCount\n";
 echo "Deleted users: $deletedCount\n";
 
 if ($delete) {
+    $reservationsToDelete = \Api\Model\Reservation::where('state', \Api\Model\ReservationState::DELETED)->get();
+    foreach ($reservationsToDelete as $reservation) {
+        echo "Real delete for reservation $reservation->reservation_id\n";
+        echo "state: " . $reservation->state . "\n";
+        echo "user_id: " . $reservation->user_id . "\n";
+        echo "tool_id: " . $reservation->tool_id . "\n";
+        echo "reservation start: " . $reservation->startsAt . "\n";
+        echo "reservation end: " . $reservation->endsAt . "\n";
+        echo "comment: " . $reservation->comment . "\n";
+        $reservation->delete();
+    }
     $usersToDelete = \Api\Model\User::where('state', '=', \Api\Model\UserState::DELETED)->get();
     foreach ($usersToDelete as $user) {
         echo "Real delete for user $user->user_id\n";
