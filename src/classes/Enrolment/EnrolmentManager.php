@@ -177,27 +177,8 @@ class EnrolmentManager
             $this->logger->warning($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
         }
-        if ($paymentMode != PaymentMode::CASH &&
-            $paymentMode != PaymentMode::TRANSFER &&
-            $paymentMode != PaymentMode::MBON &&
-            $paymentMode != PaymentMode::SPONSORING &&
-            $paymentMode != PaymentMode::LETS &&
-            $paymentMode != PaymentMode::PAYCONIQ &&
-            $paymentMode != PaymentMode::OTHER &&
-            $paymentMode != PaymentMode::STROOM &&
-            $paymentMode != PaymentMode::OVAM
-        ) {
-            $message = "Unsupported payment mode ($paymentMode)";
-            $this->logger->warning($message);
-            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
-        }
-        if ($user->state != UserState::CHECK_PAYMENT &&
-            $user->state != UserState::ACTIVE &&
-            $user->state != UserState::EXPIRED) {
-            $message = "Unexpected confirmation for user state ($user->state)";
-            $this->logger->warning($message);
-            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-        }
+        $this->checkPaymentMode($paymentMode);
+        $this->checkUserStateAtPayment($user);
         $user->payment_mode = $paymentMode;
         if ($user->state == UserState::CHECK_PAYMENT) {
             // end_date already set at enrolment initiation, no need to update it
@@ -222,7 +203,16 @@ class EnrolmentManager
             $this->mailMgr->sendEnrolmentPaymentConfirmation($user, $paymentMode);
         }
     }
-
+    function declinePayment($paymentMode, $user)
+    {
+        $this->checkPaymentMode($paymentMode);
+        $this->checkUserStateAtPayment($user);
+        $user->state = UserState::DELETED;
+        $user->save();
+        if ($paymentMode == PaymentMode::STROOM) {
+            $this->mailMgr->sendEnrolmentPaymentDecline($user, $paymentMode);
+        }
+    }
     /**
      * @param $startDateMembership
      * @return string
@@ -486,6 +476,43 @@ class EnrolmentManager
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
             echo "Webhook call failed: " . htmlspecialchars($e->getMessage());
             throw new EnrolmentException($e->getMessage(), EnrolmentException::MOLLIE_EXCEPTION);
+        }
+    }
+
+    /**
+     * @param $paymentMode
+     * @throws EnrolmentException
+     */
+    private function checkPaymentMode($paymentMode): void
+    {
+        if ($paymentMode != PaymentMode::CASH &&
+            $paymentMode != PaymentMode::TRANSFER &&
+            $paymentMode != PaymentMode::MBON &&
+            $paymentMode != PaymentMode::SPONSORING &&
+            $paymentMode != PaymentMode::LETS &&
+            $paymentMode != PaymentMode::PAYCONIQ &&
+            $paymentMode != PaymentMode::OTHER &&
+            $paymentMode != PaymentMode::STROOM &&
+            $paymentMode != PaymentMode::OVAM
+        ) {
+            $message = "Unsupported payment mode ($paymentMode)";
+            $this->logger->warning($message);
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
+        }
+    }
+
+    /**
+     * @param $user
+     * @throws EnrolmentException
+     */
+    private function checkUserStateAtPayment($user): void
+    {
+        if ($user->state != UserState::CHECK_PAYMENT &&
+            $user->state != UserState::ACTIVE &&
+            $user->state != UserState::EXPIRED) {
+            $message = "Unexpected confirmation for user state ($user->state)";
+            $this->logger->warning($message);
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
         }
     }
 }

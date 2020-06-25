@@ -195,6 +195,8 @@ class Authorisation {
         switch ($operation) {
             case "confirm":
                 return $token->hasScope(["enrolment.confirm"]);
+            case "decline":
+                return $token->hasScope(["enrolment.decline"]);
         }
         return AccessType::NO_ACCESS;
     }

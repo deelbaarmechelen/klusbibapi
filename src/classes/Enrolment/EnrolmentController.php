@@ -326,6 +326,56 @@ class EnrolmentController
         }
     }
 
+    public function postEnrolmentDecline($request, $response, $args)
+    {
+        $this->logger->info("Klusbib POST '/enrolment_decline' route");
+
+        $access = Authorisation::checkEnrolmentAccess($this->token, "decline");
+        if ($access === AccessType::NO_ACCESS) {
+            return $response->withStatus(403); // Unauthorized
+        }
+
+        // Get data
+        $data = $request->getParsedBody();
+        if (empty($data["paymentMode"]) || !isset($data["userId"])) {
+            $message = "no paymentMode and/or userId provided";
+            return $response->withStatus(400)// Bad request
+            ->withJson("Missing or invalid data: $message");
+        }
+        $paymentMode = $data["paymentMode"];
+        $userId = $data["userId"];
+        $user = \Api\Model\User::find($userId);
+        $renewal = false;
+        if (isset($data["renewal"]) && $data["renewal"] == true) {
+            $renewal = true;
+        }
+        if (null == $user) {
+            return $response->withStatus(400)
+                ->withJson("No user found with id $userId");;
+        }
+        $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
+        try {
+            $enrolmentManager->declinePayment($paymentMode,$user);
+            $data = array();
+            return $response->withStatus(200)
+                ->withHeader("Content-Type", "application/json")
+                ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        } catch (EnrolmentException $e) {
+            if ($e->getCode() == EnrolmentException::UNEXPECTED_PAYMENT_MODE) {
+                $message = "Unsupported payment mode ($paymentMode)";
+                $this->logger->warn("Invalid POST request on /enrolment/decline received: $message");
+                return $response->withStatus(400) // Bad request
+                ->withJson($message);
+            } else if ($e->getCode() == EnrolmentException::UNEXPECTED_CONFIRMATION) {
+                $message = "Unexpected (declined) confirmation for payment mode ($paymentMode)";
+                return $response->withStatus(400)// Bad request
+                ->withJson($message);
+            } else {
+                return $response->withStatus(500)// Internal error
+                ->withJson($e->getMessage());
+            }
+        }
+    }
     /**
      * Confirmation from payment processor (Mollie) on enrolment order
      */

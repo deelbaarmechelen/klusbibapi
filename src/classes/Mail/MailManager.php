@@ -209,6 +209,13 @@ class MailManager {
             'emailLink' => Settings::EMAIL_LINK);
         return $this->sendTwigTemplate($user->email, 'enrolment_confirmation', $parameters);
     }
+
+    /**
+     * @param $user
+     * @param $paymentMode
+     * @return bool
+     * @throws EnrolmentException
+     */
     public function sendEnrolmentPaymentConfirmation($user, $paymentMode) {
         $parameters = array(
             'user' => $user,
@@ -218,6 +225,15 @@ class MailManager {
             'facebookLink' => Settings::FACEBOOK_LINK,
             'emailLink' => Settings::EMAIL_LINK);
         return $this->sendTwigTemplate($user->email, 'enrolment_confirm_payment', $parameters);
+    }
+
+    public function sendEnrolmentPaymentDecline($user, $paymentMode) {
+        $parameters = array(
+            'user' => $user,
+            'paymentMode' => $paymentMode,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK);
+        return $this->sendTwigTemplate($user->email, 'enrolment_decline_payment', $parameters);
     }
 
     /**
@@ -410,26 +426,11 @@ class MailManager {
         $this->mailer->clearAttachments();
         $this->mailer->clearCustomHeaders();
         $this->mailer->setLanguage('nl');
-
-        //Tell PHPMailer to use SMTP
-        $this->mailer->IsSMTP();
-        //Enable SMTP debugging
-        // SMTP::DEBUG_OFF = off (for production use)
-        // SMTP::DEBUG_CLIENT = client messages
-        // SMTP::DEBUG_SERVER = client and server messages
-        $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
-        //Whether to use SMTP authentication
-        $this->mailer->SMTPAuth = TRUE;
-        //Set AuthType to use XOAUTH2
-        $this->mailer->AuthType = 'XOAUTH2';
-        //Set the encryption mechanism to use - STARTTLS or SMTPS
-        $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        //Set the hostname of the mail server
-        $this->mailer->Host = MAIL_HOST;
-        //Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
-        $this->mailer->Port = MAIL_PORT;
-
-        $this->mailer->setOAuth($this->getOAuth());
+        if (MAILER == "smtp") {
+            $this->initSmtpOAuth();
+        } else {
+            $this->initSendmail();
+        }
 
     }
 
@@ -461,4 +462,45 @@ class MailManager {
         );
     }
 
+    private function initSmtpOAuth(): void
+    {
+//Tell PHPMailer to use SMTP
+        $this->mailer->IsSMTP();
+        //Enable SMTP debugging
+        // SMTP::DEBUG_OFF = off (for production use)
+        // SMTP::DEBUG_CLIENT (1): show client -> server messages only. Don't use this - it's very unlikely to tell you anything useful
+        // SMTP::DEBUG_SERVER (2): show client -> server and server -> client messages - this is usually the setting you want
+        // SMTP::DEBUG_CONNECTION (3): As 2, but also show details about the initial connection; only use this if you're having trouble connecting (e.g. connection timing out)
+        // SMTP::DEBUG_LOWLEVEL (4): As 3, but also shows detailed low-level traffic. Only really useful for analyzing protocol-level bugs, very verbose, probably not what you need
+        $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
+//        $this->mailer->SMTPDebug = SMTP::DEBUG_CONNECTION;
+        //Whether to use SMTP authentication
+        $this->mailer->SMTPAuth = TRUE;
+        //Set AuthType to use XOAUTH2
+        $this->mailer->AuthType = 'XOAUTH2';
+        //Set the encryption mechanism to use - STARTTLS or SMTPS
+        $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $this->mailer->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]; // security issue -> only to be used for localhost dev
+        //Set the hostname of the mail server
+        $this->mailer->Host = MAIL_HOST;
+        //Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
+        $this->mailer->Port = MAIL_PORT;
+        $oauth = $this->getOAuth();
+        $this->mailer->setOAuth($oauth);
+    }
+    private function initSendmail(): void
+    {
+        $this->mailer->isSMTP();
+        //Enable SMTP debugging
+        // SMTP::DEBUG_OFF = off (for production use)
+        // SMTP::DEBUG_CLIENT (1): show client -> server messages only. Don't use this - it's very unlikely to tell you anything useful
+        // SMTP::DEBUG_SERVER (2): show client -> server and server -> client messages - this is usually the setting you want
+        // SMTP::DEBUG_CONNECTION (3): As 2, but also show details about the initial connection; only use this if you're having trouble connecting (e.g. connection timing out)
+        // SMTP::DEBUG_LOWLEVEL (4): As 3, but also shows detailed low-level traffic. Only really useful for analyzing protocol-level bugs, very verbose, probably not what you need
+        $this->mailer->SMTPDebug = SMTP::DEBUG_OFF;
+        //Set the hostname of the mail server
+        $this->mailer->Host = MAIL_HOST;
+        //Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
+        $this->mailer->Port = MAIL_PORT;
+    }
 }
