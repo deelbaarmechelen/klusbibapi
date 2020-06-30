@@ -2,6 +2,7 @@
 
 namespace Api\Token;
 
+use Api\Model\UserState;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Psr\Container\ContainerInterface;
 
@@ -43,7 +44,7 @@ class TokenController implements TokenControllerInterface
             if (null == $user) {
                 return $response->withStatus(404);
             }
-            if ('ACTIVE' != $user->state) {
+            if (UserState::ACTIVE != $user->state && UserState::EXPIRED != $user->state) {
                 return $response->withStatus(403);
             }
             $sub = $user->user_id;
