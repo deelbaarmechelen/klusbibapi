@@ -35,9 +35,10 @@ class UserManager
     /**
      * retrieve the local user and check synchronisation with inventory
      * @param $id
+     * @param $sync when true, sync user with inventory
      * @return mixed
      */
-    function getById($id) {
+    function getById($id, $sync = true) {
         $this->logger->debug("UserManager.getById: Get user by ID $id");
 
         try {
@@ -45,16 +46,18 @@ class UserManager
             if ($user == null) {
                 return null;
             }
-            $this->logger->debug("UserManager.getById: Get user by ID $id and sync with inventory: " . json_encode($user));
-            if (isset($user->user_ext_id)) {
-                $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
-                if ($inventoryUser == null) {
+            if ($sync) {
+                $this->logger->debug("UserManager.getById: Found user with ID $id and sync with inventory: " . json_encode($user));
+                if (isset($user->user_ext_id)) {
+                    $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
+                    if ($inventoryUser == null) {
+                        $this->addToInventory($user);
+                    } elseif (!$this->inventoryUpToDate($user, $inventoryUser)) {
+                        $this->updateInventory($user);
+                    }
+                } else {
                     $this->addToInventory($user);
-                } elseif (!$this->inventoryUpToDate($user, $inventoryUser)) {
-                    $this->updateInventory($user);
                 }
-            } else {
-                $this->addToInventory($user);
             }
         } catch (\Exception $ex) {
             $this->logger->error("UserManager.getById: Problem while syncing user with id $id: " . $ex->getMessage());

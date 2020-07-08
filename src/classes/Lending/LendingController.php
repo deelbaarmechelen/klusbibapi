@@ -6,7 +6,10 @@ use Api\Model\Lending;
 use Api\Model\ToolType;
 use Api\ModelMapper\LendingMapper;
 use Api\ModelMapper\ToolMapper;
+use Api\ModelMapper\UserMapper;
 use Api\Settings;
+use Api\Tool\ToolManager;
+use Api\User\UserManager;
 use Api\Validator\LendingValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Authorisation;
@@ -18,12 +21,14 @@ class LendingController implements LendingControllerInterface
     protected $logger;
     protected $token;
     protected $toolManager;
+    protected $userManager;
 
-    public function __construct($logger, $token, $toolManager)
+    public function __construct($logger, $token, ToolManager $toolManager, UserManager $userManager)
     {
         $this->logger = $logger;
         $this->token = $token;
         $this->toolManager = $toolManager;
+        $this->userManager = $userManager;
     }
 
     public function getAll(Request $request, Response $response, $args){
@@ -38,10 +43,10 @@ class LendingController implements LendingControllerInterface
         if (!isset($sortdir)) {
             $sortdir = 'desc';
         }
-//        $sortfield = $request->getQueryParam('_sortField');
-//    if (!User::canBeSortedOn($sortfield) ) {
-        $sortfield = 'created_at';
-//    }
+        $sortfield = $request->getQueryParam('_sortField');
+        if (!Lending::canBeSortedOn($sortfield) ) {
+            $sortfield = 'created_at';
+        }
         $page = $request->getQueryParam('_page');
         if (!isset($page)) {
             $page = '1';
@@ -85,6 +90,13 @@ class LendingController implements LendingControllerInterface
                 } else if ($tool->tool_type = ToolType::ACCESSORY) {
                     $lendingData['tool'] = ToolMapper::mapAccessoryToArray($tool);
                 }
+            }
+            $user = $this->userManager->getById($lending->user_id, false);
+
+            if (isset($user)) {
+                $this->logger->info('user found: ' . \json_encode($user));
+                $lendingData['user'] = UserMapper::mapUserToArray($user);
+                $this->logger->info(\json_encode($lendingData));
             }
             array_push($data, $lendingData);
         }

@@ -246,6 +246,8 @@ $container['Api\Token\TokenController'] = function(ContainerInterface $c) {
 $container['Api\Lending\LendingController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
-    $toolManager = new ToolManager($c->get("Api\Inventory"), $logger);
-    return new \Api\Lending\LendingController($logger, $token, $toolManager);
+    $inventory = $c->get("Api\Inventory");
+    $toolManager = new ToolManager($inventory, $logger);
+    $userManager = new UserManager($inventory, $logger);
+    return new \Api\Lending\LendingController($logger, $token, $toolManager, $userManager);
 };
