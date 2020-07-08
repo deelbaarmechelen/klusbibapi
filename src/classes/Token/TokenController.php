@@ -18,7 +18,7 @@ class TokenController implements TokenControllerInterface
         $this->container = $container;
     }
     public function create($request, $response, $args) {
-        $this->logger->info("Klusbib POST '/token' route");
+        $this->logger->info("Klusbib POST '/token' route (for user " . $this->container["user"] . ")");
         return $this->createToken($response, $this->container["user"]);
     }
     public function createForGuest($request, $response, $args) {
@@ -42,9 +42,11 @@ class TokenController implements TokenControllerInterface
             // lookup user
             $user = Capsule::table('users')->where('email', $userEmail)->first();
             if (null == $user) {
+                $this->logger->info("User with email $userEmail could not be found");
                 return $response->withStatus(404);
             }
             if (UserState::ACTIVE != $user->state && UserState::EXPIRED != $user->state) {
+                $this->logger->info("Token creation denied for user with state " . $user->state);
                 return $response->withStatus(403);
             }
             $sub = $user->user_id;
