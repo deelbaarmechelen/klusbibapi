@@ -110,6 +110,56 @@ class Authorisation {
             default:
                 return AccessType::NO_ACCESS;
 		}
+    }
+    
+    static function checkDeliveryAccess($token, $operation, $delivery, $logger = NULL) {
+        if (isset($logger)) {
+            $logger->info("Check delivery access for operation $operation");
+        }
+		if (!isset($token)) {
+			return AccessType::NO_ACCESS;
+		}
+		switch ($operation) {
+			case self::OPERATION_LIST:
+				if ($token->hasScope(["deliveries.all", "deliveries.list"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+			case self::OPERATION_READ:
+				if ($token->hasScope(["deliveries.all", "deliveries.read"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+			case self::OPERATION_CREATE:
+				if ($token->hasScope(["deliveries.all", "deliveries.create"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				if ($token->hasScope(["deliveries.create.owner"])
+						&& ($delivery->user_id == $token->decoded->sub)) {
+					return AccessType::OWNER_ACCESS;
+                }
+                
+                return AccessType::NO_ACCESS;
+                
+			case self::OPERATION_UPDATE:
+				if ($token->hasScope(["deliveries.all", "deliveries.update"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				if ($token->hasScope(["deliveries.update.owner"]) && ($delivery->user_id == $token->decoded->sub)) {
+					return AccessType::OWNER_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+			case "delete":
+				if ($token->hasScope(["deliveries.all", "deliveries.delete"])) {
+					return AccessType::FULL_ACCESS;
+				}
+				if ($token->hasScope(["deliveries.delete.owner"]) && ($delivery->user_id == $token->decoded->sub)) {
+					return AccessType::OWNER_ACCESS;
+				}
+				return AccessType::NO_ACCESS;
+            default:
+                return AccessType::NO_ACCESS;
+		}
 	}
 
     static function checkPaymentAccess($token, $operation)

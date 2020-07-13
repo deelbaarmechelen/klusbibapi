@@ -115,7 +115,16 @@ class Token
             "lendings.all",
             "lendings.list",
             "auth.confirm",
-            "enrolment.confirm"
+			"enrolment.confirm",
+			"deliveries.create",
+            "deliveries.create.owner",
+            "deliveries.read",
+            "deliveries.update",
+            "deliveries.update.owner",
+            "deliveries.delete",
+            "deliveries.delete.owner",
+            "deliveries.list",
+            "deliveries.all",
 		];
 		return $valid_scopes;
 	}
@@ -147,7 +156,8 @@ class Token
                 "users.read.owner", // need to be added for check against emailLinkScopes
                 "users.update.password", // need to be added for check against resetPwdScopes, emailLinkScopes
                 "users.update.owner", // need to be added for check against emailLinkScopes
-                "enrolment.confirm"
+				"enrolment.confirm",
+				"deliveries.all"
 			];
 		}
 		if ($role == 'member') {
@@ -163,7 +173,12 @@ class Token
 					"consumers.list",
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
-					"users.update.owner", // not allowed to update other users info
+					"users.update.owner",// not allowed to update other users info
+					"deliveries.create.owner",
+					"deliveries.read",
+					"deliveries.update.owner",
+					"deliveries.delete.owner",
+					"deliveries.list"
 			];
 		}
 		if ($role == 'supporter') {
@@ -180,6 +195,10 @@ class Token
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
 					"users.update.owner", // not allowed to update other users info
+					"reservations.read",
+					"reservations.update.owner",
+					"reservations.delete.owner",
+					"reservations.list"
 			];
 		}
 		// unknown role / guest
@@ -191,7 +210,9 @@ class Token
 				"consumers.read",
 				"consumers.list",
 				"auth.confirm",
-                "users.read.state"
+				"users.read.state",
+				"deliveries.read",
+				"deliveries.list",
 		];
 	}
 }
