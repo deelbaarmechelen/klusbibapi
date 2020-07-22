@@ -89,7 +89,7 @@ class UserController implements UserControllerInterface
         }
         // FIXME: restrict access to owner only for users.read.owner
         try {
-            $user = $this->userManager->getById($args['userid']);
+            $user = $this->userManager->getById($args['userid'], false);
             if (null == $user) {
                 return $response->withStatus(404);
             }

@@ -46,6 +46,10 @@ class UserManager
             if ($user == null) {
                 return null;
             }
+            // TODO: use last_sync_date to check if sync is needed
+            //       if last_sync_date < updated_at -> sync update (PUT request)
+            //       if update_at is null && last_sync_date is null -> sync create (POST request)
+            //       if status is deleted && last_sync_date < updated_at -> sync delete (DELETE request)
             if ($sync) {
                 $this->logger->debug("UserManager.getById: Found user with ID $id and sync with inventory: " . json_encode($user));
                 if (isset($user->user_ext_id)) {
@@ -119,20 +123,22 @@ class UserManager
         $this->logger->debug("Add user to inventory: " . json_encode($user));
         $inventoryUser = null;
         if (!$this->inventory->userExists($user)) {
-            $inventoryUser = $this->inventory->postUser($user);
-            if (is_null($inventoryUser) || !($inventoryUser instanceof User)) {
-                throw new \RuntimeException("Error creating inventory user (response=" . $inventoryUser . ")");
-            }
+            $this->inventory->syncUser($user);
+//            $inventoryUser = $this->inventory->postUser($user);
+//            if (is_null($inventoryUser) || !($inventoryUser instanceof User)) {
+//                throw new \RuntimeException("Error creating inventory user (response=" . $inventoryUser . ")");
+//            }
         } else {
             // lookup user_ext_id
             $inventoryUser = $this->inventory->getUserByEmail($user->email);
             $user->user_ext_id = $inventoryUser->user_ext_id;
+            $user->save();
             $this->updateInventory($user); // update user_ext_id
         }
 
         $this->logger->debug("User added to inventory: " . json_encode($user));
-        $user->user_ext_id = $inventoryUser->user_ext_id;
-        $user->save();
+//        $user->user_ext_id = $inventoryUser->user_ext_id;
+//        $user->save();
     }
 
     /**
@@ -142,8 +148,9 @@ class UserManager
      */
     protected function updateInventory($user) {
         $this->logger->debug("Inventory update requested for user " . json_encode($user));
-        $this->inventory->updateUser($user);
-        $this->inventory->updateUserState($user);
+        $this->inventory->syncUser($user);
+//        $this->inventory->updateUser($user);
+//        $this->inventory->updateUserState($user);
     }
     protected function getByIdFromInventory($id) {
         return $this->inventory->getUserByExtId($id);
