@@ -26,6 +26,7 @@ interface Inventory {
     public function toolExists($toolId) : bool;
     public function accessoryExists($accessoryId) : bool;
 
+    public function syncUser(User $user);
     public function postUser(User $user);
 
     /**
@@ -60,8 +61,15 @@ interface Inventory {
      * update the user (only provided user fields are updated, null fields are ignored)
      * @param User $user
      * @return mixed
+     * @deprecated Use syncUser instead
      */
     public function updateUser(User $user);
+
+    /**
+     * @param User $user
+     * @return mixed
+     * @deprecated Use syncUser instead
+     */
     public function updateUserState(User $user);
     public function deleteUser($id) : bool;
 

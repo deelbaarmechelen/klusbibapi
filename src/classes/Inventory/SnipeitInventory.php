@@ -6,6 +6,7 @@ use Api\Exception\InventoryException;
 use Api\Model\Accessory;
 use Api\Model\ToolState;
 use Api\Inventory\SnipeitToolMapper;
+use Api\Model\UserState;
 use Api\Tool\NotFoundException;
 use Doctrine\Common\Cache\FilesystemCache;
 use GuzzleHttp\Exception\ClientException;
@@ -258,6 +259,42 @@ class SnipeitInventory implements Inventory
         return $tools;
     }
 
+    public function syncUser(User $user) {
+        $data = array();
+        if (isset($user->firstname)) {
+            $data['first_name'] = $user->firstname;
+        }
+        if (isset($user->lastname)) {
+            $data['last_name'] = $user->lastname;
+        }
+        if (isset($user->email)) {
+            $data['username'] = $user->email;
+        }
+        if (isset($user->user_id)) {
+            $data['employee_num'] = $user->user_id;
+        }
+        if (isset($user->state)) {
+            $data['state'] = $user->state;
+        }
+        // TODO: add notification in case of error for manual recovery?
+        if ($user->state == UserState::DELETED && isset($user->user_ext_id)) {
+            return $this->delete('klusbib/sync/users/' . $user->user_ext_id);
+        } elseif (isset($user->user_ext_id)) {
+            // update existing inventory user
+            return $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
+        } else {
+            // newly created user or inexistent in inventory
+            $inventoryUser = $this->post('klusbib/sync/users', $data);
+            $user->user_ext_id = $inventoryUser->id;
+            $user->save();
+        }
+    }
+
+    /**
+     * @param User $user
+     * @return mixed
+     * @deprecated Use syncUser instead
+     */
     public function updateUser(User $user) {
         $data = array();
         if (isset($user->firstname)) {
@@ -274,6 +311,12 @@ class SnipeitInventory implements Inventory
         }
         return $this->patch('users/' . $user->user_ext_id, $data);
     }
+
+    /**
+     * @param User $user
+     * @return mixed|null
+     * @deprecated Use syncUser instead
+     */
     public function updateUserState(User $user)
     {
         return $this->updateUserAvatar($user);

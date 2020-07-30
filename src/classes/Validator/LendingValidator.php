@@ -54,9 +54,9 @@ class LendingValidator
 			$logger->info("Due date (". $lendingData["due_date"] . " has invalid date format (expected YYYY-MM-DD)");
 			return false;
 		}
-		if (isset($lendingData["return_date"]) &&
-				(FALSE == self::cnvStrToDateTime($lendingData["return_date"], $logger))) {
-			$logger->info("Return date (". $lendingData["return_date"] . " has invalid date format (expected YYYY-MM-DD)");
+		if (isset($lendingData["returned_date"]) &&
+				(FALSE == self::cnvStrToDateTime($lendingData["returned_date"], $logger))) {
+			$logger->info("Return date (". $lendingData["returned_date"] . " has invalid date format (expected YYYY-MM-DD)");
 			return false;
 		}
 		if (isset($lendingData["start_date"]) && isset($lendingData["due_date"])
@@ -64,9 +64,9 @@ class LendingValidator
 			$logger->info("Due date (". $lendingData["due_date"] . " cannot be smaller than start date (" . $lendingData["start_date"] . ")");
 			return false;
 		}
-		if (isset($lendingData["start_date"]) && isset($lendingData["return_date"])
-				&& new \DateTime($lendingData["return_date"]) < new \DateTime($lendingData["start_date"])) {
-			$logger->info("Return date (". $lendingData["return_date"] . " cannot be smaller than start date (" . $lendingData["start_date"] . ")");
+		if (isset($lendingData["start_date"]) && isset($lendingData["returned_date"])
+				&& new \DateTime($lendingData["returned_date"]) < new \DateTime($lendingData["start_date"])) {
+			$logger->info("Return date (". $lendingData["returned_date"] . " cannot be smaller than start date (" . $lendingData["start_date"] . ")");
 			return false;
 		}
 		return true;

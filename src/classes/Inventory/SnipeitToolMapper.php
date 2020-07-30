@@ -31,11 +31,11 @@ abstract class SnipeitToolMapper
 //        $tool->manufacturer_url = $data["manufacturer_url"];
         $tool->img = $asset->image;
         if (isset($asset->custom_fields) && !empty($asset->custom_fields)) {
-            $tool->replacement_value = $asset->custom_fields->replacement_value->value; // FIXME: derive from depreciation rules?
-            $tool->experience_level = $asset->custom_fields->experience_level->value;
-            $tool->safety_risk = $asset->custom_fields->safety_risk->value;
+            $tool->replacement_value = isset($asset->custom_fields->replacement_value) ? $asset->custom_fields->replacement_value->value : null; // FIXME: derive from depreciation rules?
+            $tool->experience_level = isset($asset->custom_fields->experience_level) ? $asset->custom_fields->experience_level->value : null;
+            $tool->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
             // FIXME: not accessible without login!
-            $tool->doc_url = $asset->custom_fields->doc_url->value;
+            $tool->doc_url = isset($asset->custom_fields->doc_url) ? $asset->custom_fields->doc_url->value : null;
         }
         $tool->state = self::mapAssetStateToToolState($asset);
         $tool->visible = self::isVisible($asset);

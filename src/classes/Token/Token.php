@@ -115,7 +115,6 @@ class Token
             "lendings.all",
             "lendings.list",
             "auth.confirm",
-			"enrolment.confirm",
 			"deliveries.create",
             "deliveries.create.owner",
             "deliveries.read",
@@ -125,6 +124,8 @@ class Token
             "deliveries.delete.owner",
             "deliveries.list",
             "deliveries.all",
+            "enrolment.confirm",
+            "enrolment.decline"
 		];
 		return $valid_scopes;
 	}
@@ -156,7 +157,8 @@ class Token
                 "users.read.owner", // need to be added for check against emailLinkScopes
                 "users.update.password", // need to be added for check against resetPwdScopes, emailLinkScopes
                 "users.update.owner", // need to be added for check against emailLinkScopes
-				"enrolment.confirm",
+                "enrolment.confirm",
+				"enrolment.decline",
 				"deliveries.all"
 			];
 		}
