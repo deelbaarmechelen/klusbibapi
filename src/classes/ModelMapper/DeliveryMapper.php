@@ -8,7 +8,7 @@ class DeliveryMapper
 	static public function mapDeliveryToArray($delivery) {
 
 		$deliveryArray  = array(
-				"delivery_id" => $delivery->delivery_id,
+				"id" => $delivery->id,
 				"reservation_id" => $delivery->reservation_id,
 				"user_id" => $delivery->user_id,
 				"state_id" => $delivery->state_id,

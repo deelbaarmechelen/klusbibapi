@@ -27,7 +27,7 @@ class Deliveries extends AbstractMigration
 	{
 		Capsule::schema()->create('deliveries', function(Illuminate\Database\Schema\Blueprint $table){
 			// Auto-increment id
-			$table->increments('delivery_id');
+			$table->increments('id');
             $table->integer('user_id')->unsigned;
             $table->integer('reservation_id')->unsigned;
             $table->string('state', 20)->nullable()->default(null);

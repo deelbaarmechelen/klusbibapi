@@ -197,10 +197,10 @@ class Token
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
 					"users.update.owner", // not allowed to update other users info
-					"reservations.read",
-					"reservations.update.owner",
-					"reservations.delete.owner",
-					"reservations.list"
+					"deliveries.read",
+					"deliveries.update.owner",
+					"deliveries.delete.owner",
+					"deliveries.list"
 			];
 		}
 		// unknown role / guest
