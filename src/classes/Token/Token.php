@@ -115,6 +115,15 @@ class Token
             "lendings.all",
             "lendings.list",
             "auth.confirm",
+			"deliveries.create",
+            "deliveries.create.owner",
+            "deliveries.read",
+            "deliveries.update",
+            "deliveries.update.owner",
+            "deliveries.delete",
+            "deliveries.delete.owner",
+            "deliveries.list",
+            "deliveries.all",
             "enrolment.confirm",
             "enrolment.decline"
 		];
@@ -149,7 +158,8 @@ class Token
                 "users.update.password", // need to be added for check against resetPwdScopes, emailLinkScopes
                 "users.update.owner", // need to be added for check against emailLinkScopes
                 "enrolment.confirm",
-                "enrolment.decline"
+				"enrolment.decline",
+				"deliveries.all"
 			];
 		}
 		if ($role == 'member') {
@@ -165,7 +175,12 @@ class Token
 					"consumers.list",
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
-					"users.update.owner", // not allowed to update other users info
+					"users.update.owner",// not allowed to update other users info
+					"deliveries.create.owner",
+					"deliveries.read",
+					"deliveries.update.owner",
+					"deliveries.delete.owner",
+					"deliveries.list"
 			];
 		}
 		if ($role == 'supporter') {
@@ -182,6 +197,10 @@ class Token
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
 					"users.update.owner", // not allowed to update other users info
+					"deliveries.read",
+					"deliveries.update.owner",
+					"deliveries.delete.owner",
+					"deliveries.list"
 			];
 		}
 		// unknown role / guest
@@ -193,7 +212,9 @@ class Token
 				"consumers.read",
 				"consumers.list",
 				"auth.confirm",
-                "users.read.state"
+				"users.read.state",
+				"deliveries.read",
+				"deliveries.list",
 		];
 	}
 }
