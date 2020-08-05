@@ -70,7 +70,7 @@ class EnrolmentController
         }
         if (null == $user) {
             return $response->withStatus(400)
-                ->withJson("No user found with id $userId");;
+                ->withJson("No user found with id $userId");
         }
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         // Check payment mode

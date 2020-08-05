@@ -85,9 +85,9 @@ class EnrolmentManager
         $this->logger->info("Sending enrolment confirmation for user " . $this->user->user_id . ": " . $this->user->full_name);
         $this->mailMgr->sendEnrolmentConfirmation($this->user, PaymentMode::STROOM);
         $this->logger->info("Sending enrolment notification to " . ENROLMENT_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
-        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
+        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user, false);
         $this->logger->info("Sending enrolment notification to " . STROOM_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
-        $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user);
+        $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user, false);
         return $payment;
     }
 
@@ -102,8 +102,8 @@ class EnrolmentManager
                 \Api\Settings::STROOM_RENEWAL_AMOUNT, "EUR");
         };
         $this->mailMgr->sendRenewalConfirmation($this->user, PaymentMode::STROOM);
-        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user);
-        $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user);
+        $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user, true);
+        $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user, true);
         return $payment;
     }
 

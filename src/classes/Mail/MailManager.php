@@ -73,7 +73,7 @@ class MailManager {
             'emailLink' => Settings::EMAIL_LINK);
         return $this->sendTwigTemplate($userEmail, 'password_recovery', $parameters);
 	}
-	public function sendReservationRequest($to, $user, $tool, $reservation, $notifyTeamAddress) {
+	public function sendReservationRequest($to, $user, $tool, $reservation, $notifyTeamAddress = null) {
 		if (empty($tool->code)) {
 			$toolCode = "zonder code"
 					. $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
@@ -166,11 +166,10 @@ class MailManager {
      * @param null $token generated token to allow confirmation
      * @return bool
      */
-    public function sendEnrolmentStroomNotification($userEmail, $newUser, $token = null) {
-//        $link = PROJECT_HOME . "enrolment_confirm/" . $userId . "?token=" . $token . "&name=" . $userName;
+    public function sendEnrolmentStroomNotification($userEmail, $newUser, $isRenewal = false) {
         $parameters = array(
             'newUser' => $newUser,
-//            'confirmLink' => $link
+            'isRenewal' => $isRenewal,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
             'emailLink' => Settings::EMAIL_LINK);
@@ -285,6 +284,7 @@ class MailManager {
             'account' => Settings::ACCOUNT_NBR,
             'amount' => Settings::RENEWAL_AMOUNT,
             'membership_year' => $membership_year,
+            'enqueteLink' => Settings::ENQUETE_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
             'emailLink' => Settings::EMAIL_LINK);
