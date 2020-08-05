@@ -203,4 +203,9 @@ class InventoryMock implements Inventory
     {
         // TODO: Implement accessoryExists() method.
     }
+
+    public function syncUser(User $user)
+    {
+        // TODO: Implement syncUser() method.
+    }
 }

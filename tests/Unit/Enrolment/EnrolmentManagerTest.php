@@ -37,6 +37,9 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
             ),
             'project_user' => array(
             ),
+            'projects' => array(
+                array('id' => 1, 'name' => 'STROOM')
+            ),
         ));
     }
     public function testGetMembershipEndDate()
@@ -121,7 +124,7 @@ if (!class_exists('UserTest')) {
          * @param  mixed $value
          * @return \Illuminate\Database\Eloquent\Model|null
          */
-        public function resolveRouteBinding($value)
+        public function resolveRouteBinding($value, $field = NULL)
         {
             // TODO: Implement resolveRouteBinding() method.
         }

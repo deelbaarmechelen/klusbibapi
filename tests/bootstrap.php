@@ -4,7 +4,6 @@ error_reporting(-1);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 date_default_timezone_set('UTC');
-
 use There4\Slim\Test\WebTestCase;
 use There4\Slim\Test\WebDbTestCase;
 use Tests\DbUnitArrayDataSet;
@@ -59,7 +58,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
 	private $useMiddleware = false;
 	
 	// Run for each unit test to setup our slim app environment
-	public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false)
+	public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false) : void
 	{
         $this->settings = require __DIR__ . '/test_settings.php';
 		$this->dependencies = $dependencies;
