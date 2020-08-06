@@ -124,7 +124,7 @@ class StatController
 
 //        $toolCount = Tool::all()->count();
         $toolStats = array();
-        $toolStats["total-count"] = count($tools);
+        $toolStats["total-count"] = isset($tools) ? count($tools) : 0;
         $newTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::NEW;
         });
@@ -156,7 +156,7 @@ class StatController
     {
         $accessories = $this->inventory->getAccessories();
 
-        $accessoryStats["total-count"] = count($accessories);
+        $accessoryStats["total-count"] = isset($accessories) ? count($accessories) : 0;
         return $accessoryStats;
     }
 
