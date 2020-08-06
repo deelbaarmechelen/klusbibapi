@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../test_env.php';
 
 final class ReservationValidatorTest extends LocalDbWebTestCase
 {
-    public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false)
+    public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false) : void
     {
         parent::setUp($dependencies, $client, $useMiddleware);
     }
@@ -76,8 +76,10 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
         // Configure the stub.
         $toolManager->method('toolExists')
             ->willReturn(true);
-		$result = ReservationValidator::isValidReservationData($reservation, $logger, $toolManager);
+        $errors = array();
+		$result = ReservationValidator::isValidReservationData($reservation, $logger, $toolManager, $errors);
 		$this->assertTrue($result);
+		$this->assertTrue(count($errors) == 0);
 	}
 
     public function testIsValidReservationData_UnknownUser()
@@ -87,7 +89,8 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
         $toolManager = $this->createMock(\Api\Tool\ToolManager::class);
         $toolManager->method('toolExists')
             ->willReturn(true);
-        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager);
+        $errors = array();
+        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager,$errors);
         $this->assertFalse($result);
     }
 
@@ -98,7 +101,8 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
         $toolManager = $this->createMock(\Api\Tool\ToolManager::class);
         $toolManager->method('toolExists')
             ->willReturn(false);
-        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager);
+        $errors = array();
+        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager,$errors);
         $this->assertFalse($result);
     }
 
@@ -109,7 +113,8 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
         $toolManager = $this->createMock(\Api\Tool\ToolManager::class);
         $toolManager->method('toolExists')
             ->willReturn(true);
-        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager);
+        $errors = array();
+        $result = ReservationValidator::isValidReservationData($reservation, $logger,$toolManager,$errors);
         $this->assertFalse($result);
     }
 

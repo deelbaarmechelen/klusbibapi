@@ -7,7 +7,7 @@ require_once __DIR__ . '/../test_env.php';
 class ReservationsTest extends LocalDbWebTestCase
 {
 	// Run for each unit test to setup our slim app environment
-	public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false)
+	public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false) : void
 	{
 // 		if (!defined("RESERVATION_NOTIF_EMAIL")) {
 // 			define("RESERVATION_NOTIF_EMAIL", "ut@klusbib.be");

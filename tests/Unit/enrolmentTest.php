@@ -259,7 +259,7 @@ class EnrolmentTest extends LocalDbWebTestCase
         $actualPaymentData = \Tests\Mock\PaymentEndpointMock::$paymentData;
         $this->assertEquals("EUR",
             $actualPaymentData["amount"]["currency"]);
-        $this->assertEquals("20",
+        $this->assertEquals("20.00",
             $actualPaymentData["amount"]["value"]);
         $this->assertEquals("Klusbib verlenging lidmaatschap nele HippeDame",
             $actualPaymentData["description"]);
@@ -322,7 +322,7 @@ class EnrolmentTest extends LocalDbWebTestCase
         $this->assertEquals(PaymentMode::MOLLIE, $payment->mode);
         $this->assertEquals($orderId, $payment->order_id);
         $this->assertEquals($userId, $payment->user_id);
-        $this->assertEquals('20', $payment->amount);
+        $this->assertEquals('20.00', $payment->amount);
         $this->assertEquals('EUR', $payment->currency);
     }
 
@@ -372,7 +372,7 @@ class EnrolmentTest extends LocalDbWebTestCase
         $this->assertEquals(PaymentMode::MOLLIE, $payment->mode);
         $this->assertEquals($orderId, $payment->order_id);
         $this->assertEquals($userId, $payment->user_id);
-        $this->assertEquals('20', $payment->amount);
+        $this->assertEquals('20.00', $payment->amount);
         $this->assertEquals('EUR', $payment->currency);
     }
 
