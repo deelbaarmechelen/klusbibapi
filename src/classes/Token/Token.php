@@ -176,7 +176,8 @@ class Token
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
 					"users.update.owner",// not allowed to update other users info
-					"deliveries.create.owner",
+                    "lendings.list",
+                    "deliveries.create.owner",
 					"deliveries.read",
 					"deliveries.update.owner",
 					"deliveries.delete.owner",
@@ -197,6 +198,7 @@ class Token
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
 					"users.update.owner", // not allowed to update other users info
+                    "lendings.list",
 					"deliveries.read",
 					"deliveries.update.owner",
 					"deliveries.delete.owner",
