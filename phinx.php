@@ -11,13 +11,17 @@ $url = getenv('DATABASE_URL');
 if (!isset($url) || empty($url)) {
 	$url = $defaultUrl;
 }
-$dsn = Dsn::parse($url);
-$host = $dsn->host;
-$database = substr($dsn->path, 1);
-$user = $dsn->user;
-$pass = $dsn->pass;
-$port = $dsn->port;
-
+//$dsn = Dsn::parse($url); // to be replaced by parse_url (https://www.php.net/manual/en/function.parse-url.php)
+//$host = $dsn->host;
+//$database = substr($dsn->path, 1);
+//$user = $dsn->user;
+//$pass = $dsn->pass;
+//$port = $dsn->port;
+$host = parse_url($url, PHP_URL_HOST);
+$database = substr(parse_url($url, PHP_URL_PATH), 1);
+$user = parse_url($url, PHP_URL_USER);
+$pass = parse_url($url, PHP_URL_PASS);
+$port = parse_url($url, PHP_URL_PORT);
 
 require __DIR__ . '/tests/test_env.php';
 
@@ -37,11 +41,11 @@ return array(
 				"default_database" => "dev",
 				"dev" => array(
 						"adapter" => "mysql",
-						"host" => $dsn->host,
+						"host" => parse_url($url, PHP_URL_HOST),
 						"name" => $database,
-						"user" => $dsn->user,
-						"pass" => $dsn->pass,
-						"port" => $dsn->port
+						"user" => parse_url($url, PHP_URL_USER),
+						"pass" => parse_url($url, PHP_URL_PASS),
+						"port" => parse_url($url, PHP_URL_PORT)
 				),
 				"ut" => array(
 						"adapter" => "sqlite",
@@ -50,11 +54,16 @@ return array(
 				),
 				"test" => array(
 						"adapter" => "mysql",
-						"host" => $dsntst->host,
-						"name" => $databasetst,
-						"user" => $dsntst->user,
-						"pass" => $dsntst->pass,
-						"port" => $dsntst->port
+                        "host" => parse_url($urltst, PHP_URL_HOST),
+                        "name" => $databasetst,
+                        "user" => parse_url($urltst, PHP_URL_USER),
+                        "pass" => parse_url($urltst, PHP_URL_PASS),
+                        "port" => parse_url($urltst, PHP_URL_PORT)
+//						"host" => $dsntst->host,
+//						"name" => $databasetst,
+//						"user" => $dsntst->user,
+//						"pass" => $dsntst->pass,
+//						"port" => $dsntst->port
 				),
 				"ci" => array(
 						"adapter" => "mysql",
@@ -65,11 +74,11 @@ return array(
 				),
 				"dokku" => array(
 						"adapter" => "mysql",
-						"host" => $dsn->host,
-						"name" => $database,
-						"user" => $dsn->user,
-						"pass" => $dsn->pass,
-						"port" => $dsn->port
+                        "host" => parse_url($url, PHP_URL_HOST),
+                        "name" => $database,
+                        "user" => parse_url($url, PHP_URL_USER),
+                        "pass" => parse_url($url, PHP_URL_PASS),
+                        "port" => parse_url($url, PHP_URL_PORT)
 				)
 		)
 );

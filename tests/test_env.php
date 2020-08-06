@@ -12,12 +12,17 @@ $urltst = getenv('TEST_DATABASE_URL');
 if (!isset($urltst) || empty($urltst)) {
 	$urltst = $defaultTstUrl;
 }
-$dsntst = Dsn::parse($urltst);
-$hosttst = $dsntst->host;
-$databasetst = substr($dsntst->path, 1);
-$usertst = $dsntst->user;
-$passtst = $dsntst->pass;
-$porttst = $dsntst->port;
+//$dsntst = Dsn::parse($urltst);
+//$hosttst = $dsntst->host;
+//$databasetst = substr($dsntst->path, 1);
+//$usertst = $dsntst->user;
+//$passtst = $dsntst->pass;
+//$porttst = $dsntst->port;
+$hosttst = parse_url($urltst, PHP_URL_HOST);
+$databasetst = substr(parse_url($urltst, PHP_URL_PATH), 1);
+$usertst = parse_url($urltst, PHP_URL_USER);
+$passtst = parse_url($urltst, PHP_URL_PASS);
+$porttst = parse_url($urltst, PHP_URL_PORT);
 
 defined('PROJECT_HOME') or define("PROJECT_HOME",getenv('PROJECT_HOME'));
 defined('APP_ENV') or define("APP_ENV",'development');
