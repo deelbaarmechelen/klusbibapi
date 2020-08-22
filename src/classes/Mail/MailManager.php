@@ -350,7 +350,7 @@ class MailManager {
     private function realSend($subject, $body, $to): bool
     {
         $this->mailer->SetFrom(SENDER_EMAIL, SENDER_NAME);
-        $this->mailer->AddReplyTo(SENDER_EMAIL, SENDER_NAME);
+        $this->mailer->AddReplyTo(REPLYTO_EMAIL, REPLYTO_NAME);
         $this->mailer->ReturnPath = SENDER_EMAIL;
         $this->mailer->AddAddress($to);
         $this->mailer->Subject = $subject;

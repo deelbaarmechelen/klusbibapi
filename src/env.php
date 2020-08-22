@@ -45,6 +45,8 @@ if (!defined('OAUTH_TOKEN')) define("OAUTH_TOKEN", getenv('OAUTH_TOKEN'));
 
 if (!defined('SENDER_NAME')) define("SENDER_NAME", getenv('SENDER_NAME'));
 if (!defined('SENDER_EMAIL')) define("SENDER_EMAIL", getenv('SENDER_EMAIL'));
+if (!defined('REPLYTO_NAME')) define("REPLYTO_NAME", getenv('REPLYTO_NAME'));
+if (!defined('REPLYTO_EMAIL')) define("REPLYTO_EMAIL", getenv('REPLYTO_EMAIL'));
 if (!defined('ENROLMENT_NOTIF_EMAIL')) define("ENROLMENT_NOTIF_EMAIL", getenv('ENROLMENT_NOTIF_EMAIL'));
 if (!defined('RESERVATION_NOTIF_EMAIL')) define("RESERVATION_NOTIF_EMAIL", getenv('RESERVATION_NOTIF_EMAIL'));
 if (!defined('STROOM_NOTIF_EMAIL')) define("STROOM_NOTIF_EMAIL", getenv('STROOM_NOTIF_EMAIL'));
