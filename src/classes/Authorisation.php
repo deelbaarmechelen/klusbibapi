@@ -231,6 +231,35 @@ class Authorisation {
                 return AccessType::NO_ACCESS;
         }
     }
+    static function checkMembershipAccess ($token, $operation) {
+        if (!isset($token)) {
+            return AccessType::NO_ACCESS;
+        }
+        switch ($operation) {
+            case self::OPERATION_LIST:
+                if ($token->hasScope(["memberships.all", "memberships.list"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            case self::OPERATION_READ:
+                if ($token->hasScope(["memberships.all", "memberships.read"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            case self::OPERATION_CREATE:
+                if ($token->hasScope(["memberships.all", "memberships.create"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            case self::OPERATION_UPDATE:
+                if ($token->hasScope(["memberships.all", "memberships.update"])) {
+                    return AccessType::FULL_ACCESS;
+                }
+                return AccessType::NO_ACCESS;
+            default:
+                return AccessType::NO_ACCESS;
+        }
+    }
     /**
      *
      * @param Token $token

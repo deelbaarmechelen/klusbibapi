@@ -59,11 +59,27 @@ class Membership extends Model
     // Query helpers
     public function scopeActive($query)
     {
-        return $query->where('state', '=', Membership::STATUS_ACTIVE);
+        return $query->where('status', '=', Membership::STATUS_ACTIVE);
     }
     public function scopeExpired($query)
     {
         return $query->where('status', '=', Membership::STATUS_EXPIRED);
+    }
+    public function scopeWithStatus($query, $status)
+    {
+        return $query->where('status', '=', $status);
+    }
+    public function scopeWithSubscriptionId($query, $subscriptionId)
+    {
+        return $query->where('subscription_id', '=', $subscriptionId);
+    }
+    public function scopeWithStartAt($query, $startAt)
+    {
+        return $query->where('start_at', '=', $startAt);
+    }
+    public function scopeWithUser($query, $userId)
+    {
+        return $query->where('contact_id', '=', $userId);
     }
 
     // Validation

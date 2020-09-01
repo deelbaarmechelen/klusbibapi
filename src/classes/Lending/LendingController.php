@@ -75,7 +75,7 @@ class LendingController implements LendingControllerInterface
             $query = $query->withStartDate($startDate);
         }
         if (isset($active)) {
-            $query = $query->active($active);
+            $query = $query->active();
         }
         $lendings = $query->orderBy($sortfield, $sortdir)->get();
         $lendings_page = array_slice($lendings->all(), ($page - 1) * $perPage, $perPage);

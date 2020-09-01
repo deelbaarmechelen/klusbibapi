@@ -229,3 +229,10 @@ $container['Api\Lending\LendingController'] = function(ContainerInterface $c) {
     $userManager = new UserManager($inventory, $logger);
     return new \Api\Lending\LendingController($logger, $token, $toolManager, $userManager);
 };
+$container['Api\Membership\MembershipController'] = function(ContainerInterface $c) {
+    $logger = $c->get("logger");
+    $token = $c->get("token");
+    $inventory = $c->get("Api\Inventory");
+    $userManager = new UserManager($inventory, $logger);
+    return new \Api\Membership\MembershipController($logger, $userManager, $token);
+};

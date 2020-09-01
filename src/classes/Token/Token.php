@@ -125,8 +125,10 @@ class Token
             "deliveries.list",
             "deliveries.all",
             "enrolment.confirm",
-            "enrolment.decline"
-		];
+            "enrolment.decline",
+            "memberships.all",
+            "memberships.list"
+        ];
 		return $valid_scopes;
 	}
 	static public function resetPwdScopes () {
@@ -159,7 +161,8 @@ class Token
                 "users.update.owner", // need to be added for check against emailLinkScopes
                 "enrolment.confirm",
 				"enrolment.decline",
-				"deliveries.all"
+				"deliveries.all",
+                "memberships.all"
 			];
 		}
 		if ($role == 'member') {
