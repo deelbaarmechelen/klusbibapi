@@ -1,34 +1,42 @@
 <?php
 namespace Api\ModelMapper;
 
+use Api\Model\Membership;
 use \Api\Model\User;
 
 class UserMapper
 {
 	static public function mapUserToArray($user) {
-	
+        $membership = Membership::find($user->active_membership);
 		$userArray = array("user_id" => $user->user_id,
-				"user_ext_id" => $user->user_ext_id,
-				"state" => $user->state,
-				"firstname" => $user->firstname,
-				"lastname" => $user->lastname,
-				"email" => $user->email,
-				"email_state" => $user->email_state,
-				"role" => $user->role,
-				"membership_start_date" => $user->membership_start_date,
-				"membership_end_date" => $user->membership_end_date,
-				"birth_date" => $user->birth_date,
-				"address" => $user->address,
-				"postal_code" => $user->postal_code,
-				"city" => $user->city,
-				"phone" => $user->phone,
-				"mobile" => $user->mobile,
-				"registration_number" => $user->registration_number,
-				"payment_mode" => $user->payment_mode,
-				"accept_terms_date" => $user->accept_terms_date,
-				"created_at" => $user->created_at,
-				"updated_at" => $user->updated_at,
-		);
+            "user_ext_id" => $user->user_ext_id,
+            "state" => $user->state,
+            //"state" => !$membership ? $user->state : $membership->status,
+            "firstname" => $user->firstname,
+            "lastname" => $user->lastname,
+            "email" => $user->email,
+            "email_state" => $user->email_state,
+            "role" => $user->role,
+            "membership_start_date" => $user->membership_start_date,
+            //"membership_start_date" => !$membership ? $user->membership_start_date : $membership->start_at,
+            "membership_end_date" => $user->membership_end_date,
+            //"membership_end_date" => !$membership ? $user->membership_end_date : $membership->expires_at,
+            "birth_date" => $user->birth_date,
+            "address" => $user->address,
+            "postal_code" => $user->postal_code,
+            "city" => $user->city,
+            "phone" => $user->phone,
+            "mobile" => $user->mobile,
+            "registration_number" => $user->registration_number,
+            "payment_mode" => $user->payment_mode,
+            "accept_terms_date" => $user->accept_terms_date,
+            "last_sync_date" => $user->last_sync_date,
+            "active_membership" => !$membership ? array() : MembershipMapper::mapMembershipToArray($membership),
+            "company" => $user->company,
+            "comment" => $user->comment,
+            "created_at" => $user->created_at,
+            "updated_at" => $user->updated_at,
+        );
 		
 		return $userArray;
 	}

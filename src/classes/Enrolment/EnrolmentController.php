@@ -30,10 +30,11 @@ class EnrolmentController
         $this->token = $token;
     }
 
+    // TODO: add enrolmentRequest to create a membership for an existing user
     /**
      * Launches the enrolment operation
      * The user needs to be created prior to this operation
-     * This operation is normally terminated by a POST to /enrolment_confirm
+     * This operation is normally terminated by a POST to /enrolment_confirm or /enrolment_decline
      *
      * For online payment with MOLLIE an extra notification is received to process the enrolment
      * as POST to /enrolment/{orderId}
@@ -395,7 +396,7 @@ class EnrolmentController
             return $response->withStatus(400) // Bad request
             ->withJson("Missing or empty paymentId");
         }
-            // FIXME: remove $user from EnrolmentManager constructor
+
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger);
         try {
             $enrolmentManager->processMolliePayment($paymentId);

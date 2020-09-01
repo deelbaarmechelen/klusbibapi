@@ -24,25 +24,48 @@ class UsersTest extends LocalDbWebTestCase
 		$this->enddate->add(new DateInterval('P365D'));
 		
 		return new DbUnitArrayDataSet(array(
+            'membership' => array(
+                array('id' => 1, 'subscription_id' => 1, 'contact_id' => 1,
+                    'status' => 'ACTIVE',
+                    'last_payment_mode' => \Api\Model\PaymentMode::CASH,
+                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'expires_at' => $this->enddate->format('Y-m-d H:i:s')
+                ),
+                array('id' => 2, 'subscription_id' => 1, 'contact_id' => 2,
+                    'status' => 'ACTIVE',
+                    'last_payment_mode' => \Api\Model\PaymentMode::CASH,
+                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'expires_at' => $this->enddate->format('Y-m-d H:i:s')
+                ),
+                array('id' => 3, 'subscription_id' => 1, 'contact_id' => 4,
+                    'status' => 'ACTIVE',
+                    'last_payment_mode' => \Api\Model\PaymentMode::CASH,
+                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'expires_at' => $this->enddate->format('Y-m-d H:i:s')
+                ),
+            ),
 			'users' => array(
 				array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
-						'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
-						'hash' => password_hash("test", PASSWORD_DEFAULT),
-						'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-						'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
-						),
+                    'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+                    'active_membership' => 1
+                ),
 				array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
-						'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => 'ACTIVE',
-						'hash' => password_hash("test", PASSWORD_DEFAULT),
-						'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-						'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
-						),
+                    'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => 'ACTIVE',
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+                    'active_membership' => 2
+                ),
 				array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
-						'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => 'ACTIVE',
-						'hash' => password_hash("test", PASSWORD_DEFAULT),
-						'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-						'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
-						),
+                    'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => 'ACTIVE',
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+                    'active_membership' => 2
+                ),
 			),
 			'reservations' => array(
 					array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
@@ -113,7 +136,7 @@ class UsersTest extends LocalDbWebTestCase
 				"lastname" => "my lastname",
 				"membership_start_date" => "2018-12-12",
 				"email" => "myname.lastname@klusbib.be",
-				"role" => "member"
+				"role" => "member", "state" => "CHECK_PAYMENT"
 		);
 		$body = $this->client->post('/users', $data, $header);
 		$this->assertEquals(201, $this->client->response->getStatusCode());
@@ -148,7 +171,6 @@ class UsersTest extends LocalDbWebTestCase
 		);
 		$body = $this->client->post('/users', $data);
 		$this->assertEquals(201, $this->client->response->getStatusCode());
-		echo "$body";
 		$user = json_decode($body);
 		$this->assertNotNull($user->user_id);
 

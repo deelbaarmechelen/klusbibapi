@@ -2,6 +2,7 @@
 
 namespace Api\Token;
 
+use Api\Model\User;
 use Api\Model\UserState;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Psr\Container\ContainerInterface;
@@ -57,6 +58,13 @@ class TokenController implements TokenControllerInterface
         });
         $token = Token::generateToken($scopes, $sub);
         $this->logger->info("Token generated with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
+
+        // update last_login timestamp
+        if ($sub >= 0) { // not guest login
+            $user = User::find($sub);
+            $user->last_login = new \DateTime('now');
+            $user->save();
+        }
 
         $data = array();
         $data["status"] = "ok";

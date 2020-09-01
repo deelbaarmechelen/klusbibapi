@@ -186,7 +186,7 @@ class PaymentController implements PaymentControllerInterface
                 $paymentData = [
                     "amount" => [
                         "currency" => "EUR",
-                        "value" => \Api\Settings::ENROLMENT_AMOUNT_STRING
+                        "value" => number_format(\Api\Settings::ENROLMENT_AMOUNT , 2,"." )
                     ],
                     "description" => "Klusbib inschrijving {$user->firstname} {$user->lastname}",
                     "redirectUrl" => "{$redirectUrl}?orderId={$orderId}",

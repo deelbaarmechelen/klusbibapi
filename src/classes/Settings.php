@@ -9,9 +9,7 @@ class Settings
     const DEFAULT_LOAN_DAYS = 7;
 
     const ENROLMENT_AMOUNT = 30;
-    const ENROLMENT_AMOUNT_STRING = "30.00";
     const RENEWAL_AMOUNT = 20;
-    const RENEWAL_AMOUNT_STRING = "20.00";
     const STROOM_ENROLMENT_AMOUNT = 0;
     const STROOM_RENEWAL_AMOUNT = 0;
     const MOLLIE_LOCALE = "nl_BE";

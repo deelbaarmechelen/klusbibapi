@@ -8,7 +8,7 @@ class MollieApiClientMock extends MollieApiClient
 {
     /**
      * MollieApiClientMock constructor.
-     * @param PaymentEndpointMock $payments
+     * Customize behaviour by updating (publicly accessible) $payments
      */
     public function __construct()
     {

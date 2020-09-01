@@ -4,15 +4,20 @@ namespace Api\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Api\Model\UserRole;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Model
 {
-	protected $primaryKey = "user_id";
+//    use SoftDeletes;
+
+    protected $primaryKey = "user_id";
 	public $incrementing = false;
 
+    // TODO: use last_sync_date to limit syncing requests
 	static protected $fieldArray = ['user_id', 'state', 'firstname', 'lastname', 'role', 'email', 'email_state',
 			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
-			'phone', 'mobile', 'registration_number', 'payment_mode', 'user_ext_id', 'created_at', 'updated_at'
+			'phone', 'mobile', 'registration_number', 'payment_mode', 'user_ext_id', 'created_at', 'updated_at',
+            'last_sync_date', 'active_membership', 'company', 'comment', 'last_login'
 	];
 	
     // Accessors and mutators
@@ -50,7 +55,16 @@ class User extends Model
             ->withTimestamps();
     }
 
-	public function isAdmin() {
+    public function membership() {
+        return $this->belongsTo('Api\Model\Membership', 'active_membership');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany('Api\Model\Payment', 'user_id', 'user_id');
+    }
+
+    public function isAdmin() {
 		if ($this->role == 'admin') {
 			return true;
 		}

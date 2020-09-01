@@ -2,7 +2,10 @@
 
 namespace Api\User;
 
+use Api\Model\Membership;
+use Api\Model\MembershipType;
 use Api\Model\PaymentMode;
+use Api\ModelMapper\MembershipMapper;
 use Api\Tool\ToolManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
@@ -34,6 +37,7 @@ class UserController implements UserControllerInterface
     }
 
     public function getAll (Request $request, Response $response, $args) {
+        // TODO: remove state, membership_start_date and membership_end_date once clients have been updated
         $this->logger->info("Klusbib GET on '/users' route (params=" . \json_encode($request->getQueryParams()) . ")");
         // query params snipe: deleted=false&company_id=&search=&sort=state&order=desc&offset=0&limit=500
         $authorised = Authorisation::checkUserAccess($this->token, "list", null);
@@ -76,6 +80,7 @@ class UserController implements UserControllerInterface
     }
 
     public function getById($request, $response, $args) {
+        // TODO: remove state, membership_start_date and membership_end_date once clients have been updated
         $this->logger->info("Klusbib GET on '/users/id' route");
     // 	Authorisation::checkAccessByToken($this->token, ["users.all", "users.read", "users.read.owner"]);
         $authorised = Authorisation::checkUserAccess($this->token, "read", $args['userid']);
@@ -170,6 +175,7 @@ class UserController implements UserControllerInterface
                     ->withJson(array('error' => array('status' => 400, 'message' => "user should accept terms")));
             } else {
                 // set date on which terms were accepted
+                // FIXME: should be moved to membership entity?
                 $user->accept_terms_date = date('Y-m-d');
             }
             $mailmgr = new MailManager(null, null, $this->logger);
@@ -225,6 +231,13 @@ class UserController implements UserControllerInterface
         $this->logger->debug('Creating user ' . \json_encode($user));
 
         $this->userManager->create($user);
+        if (!empty($user->membership_start_date) && empty($user->active_membership)) {
+            // create membership
+            $status = MembershipMapper::getMembershipStatus($user->state, $user->user_id);
+            \Api\Enrolment\EnrolmentManager::createMembership(MembershipType::regular(), $user->membership_start_date,
+                $user->membership_end_date, $user, $status);
+
+        }
         $this->logger->info("User created!");
         if ($sendEmailVerification) {
             $this->logger->info("Sending email verification");
@@ -245,7 +258,9 @@ class UserController implements UserControllerInterface
             ->withJson(UserMapper::mapUserToArray($user))
             ->withStatus(201);
     }
+
     function update($request, $response, $args) {
+        // TODO: remove state, membership_start_date and membership_end_date once clients have been updated
         $this->logger->info("Klusbib PUT on '/users/id' route");
 
         if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner", "users.update.password"])) {
@@ -273,8 +288,15 @@ class UserController implements UserControllerInterface
         UserMapper::mapArrayToUser($data, $user, $currentUser->isAdmin(), $this->logger);
         $this->userManager->update($user);
 
+        // update membership
+        if ($membership = Membership::find($user->active_membership)) {
+            MembershipMapper::mapUserArrayToMembership($data, $membership, $currentUser->isAdmin(), $this->logger);
+            $membership->save();
+        }
+
         return $response->withJson(UserMapper::mapUserToArray($user));
     }
+
     function delete($request, $response, $args) {
         $this->logger->info("Klusbib DELETE on '/users/id' route");
 
@@ -285,6 +307,17 @@ class UserController implements UserControllerInterface
         $user = \Api\Model\User::find($args['userid']);
         if (null == $user) {
             return $response->withStatus(204);
+        }
+
+        // if last user on membership, mark membership as cancelled prior to user removal
+        if (isset($user->active_membership)
+         && $membership = Membership::find($user->active_membership)) {
+            $user->membership()->dissociate($membership);
+            $user->save();
+            if ($membership->members()->count() <= 1) {
+                $membership->status = Membership::STATUS_CANCELLED;
+                $membership->save();
+            }
         }
         $this->userManager->delete($user);
         return $response->withStatus(200);
@@ -297,6 +330,8 @@ class UserController implements UserControllerInterface
      */
     protected function getUserState($request, $response, $email)
     {
+        // TODO: create method to return membership state instead
+        $this->logger->warn("User state is deprecated and replaced by membership status");
         if (Authorisation::checkUserAccess($this->token, "read.state", null)) {
             // Allow read of state to resume enrolment
             $email = $request->getQueryParam('email');
@@ -318,5 +353,4 @@ class UserController implements UserControllerInterface
         $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
         return $response->withStatus(403);
     }
-
 }

@@ -3,6 +3,7 @@
 namespace Tests\Mock;
 
 use Mollie\Api\Endpoints\PaymentEndpoint;
+use Mollie\Api\Exceptions\ApiException;
 use \Mollie\Api\MollieApiClient;
 
 class PaymentEndpointMock extends PaymentEndpoint
@@ -31,8 +32,11 @@ class PaymentEndpointMock extends PaymentEndpoint
      */
     public function create(array $data = [], array $filters = [])
     {
-        PaymentEndpointMock::$paymentData = $data;
-        return new PaymentMock($this->client);
+        self::$paymentData = $data;
+        self::$payment = new PaymentMock($this->client);
+        self::$payment->metadata = $data['metadata'];
+        self::$payment->amount = $data['amount'];
+        return self::$payment;
     }
 
     /**

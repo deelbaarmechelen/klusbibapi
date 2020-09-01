@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dev
- * Date: 1/12/18
- * Time: 23:12
- */
 
 namespace Tests\Mock;
 

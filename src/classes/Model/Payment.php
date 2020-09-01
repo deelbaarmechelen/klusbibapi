@@ -16,5 +16,11 @@ class Payment extends Model
         }
         return in_array($field, Payment::$fieldArray);
     }
+    public function user() {
+        return $this->belongsTo('Api\Model\User', 'user_id', 'user_id');
+    }
+    public function membership() {
+        return $this->belongsTo('Api\Model\Membership', 'membership_id', 'id');
+    }
 
 }
