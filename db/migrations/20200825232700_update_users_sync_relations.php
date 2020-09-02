@@ -34,7 +34,7 @@ class UpdateUsersSyncRelations extends AbstractMigration
             $table->timestamp('last_login')->nullable()->default(null);
             $table->softDeletes();
         });
-        Capsule::update("UPDATE users SET active_membership = user_id WHERE role = 'member' OR role = 'admin'");
+        Capsule::update("UPDATE users SET active_membership = user_id WHERE role = 'member' OR role = 'admin' and user_id > 0");
 
     }
     /**

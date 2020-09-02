@@ -31,7 +31,7 @@ class UpdatePaymentRelations extends AbstractMigration
             $table->unsignedInteger('loan_id')->nullable()->default(null);
             $table->unsignedInteger('user_id')->nullable()->default(null)->change();
         });
-        Capsule::update('UPDATE payments SET membership_id = user_id');
+        Capsule::update('UPDATE payments SET membership_id = user_id where user_id in (select id from membership)');
 	}
     /**
      * Down Method.
