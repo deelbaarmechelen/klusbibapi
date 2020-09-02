@@ -29,5 +29,9 @@ class Reservation extends Model
 	{
 		return $this->belongsTo('Api\Model\Tool', 'tool_id');
 	}
-	
+    public function scopeIsDeleted($query)
+    {
+        return $query->where('state', '=', ReservationState::DELETED);
+    }
+
 }

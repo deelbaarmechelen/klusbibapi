@@ -115,13 +115,19 @@ class User extends Model
     }
     public function scopeActive($query)
     {
-        return $query->where('state', '=', UserState::ACTIVE);
+//        return $query->where('state', '=', UserState::ACTIVE);
+        return $query->whereHas('membership', function (Builder $query) {
+            $query->where('status', '=', Membership::STATUS_ACTIVE);
+        });
     }
     public function scopeExpired($query)
     {
-        return $query->where('state', '=', UserState::EXPIRED);
+//        return $query->where('state', '=', UserState::EXPIRED);
+        return $query->whereHas('membership', function (Builder $query) {
+            $query->where('status', '=', Membership::STATUS_EXPIRED);
+        });
     }
-    public function scopeDeleted($query)
+    public function scopeIsDeleted($query)
     {
         return $query->where('state', '=', UserState::DELETED);
     }
@@ -131,7 +137,10 @@ class User extends Model
     }
     public function scopePending($query)
     {
-        return $query->where('state', '=', UserState::CHECK_PAYMENT);
+//        return $query->where('state', '=', UserState::CHECK_PAYMENT);
+        return $query->whereHas('membership', function (Builder $query) {
+            $query->where('status', '=', Membership::STATUS_PENDING);
+        });
     }
     public function scopeAdmin($query)
     {

@@ -28,13 +28,18 @@ foreach ($users as $user) {
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
     echo "email: " . $user->email . "\n";
-    $user->state = 'EXPIRED';
-    $user->save();
+    if ($user->membership()->exists()) {
+        $membership = $user->membership()->first();
+        $membership->status = \Api\Model\Membership::STATUS_EXPIRED;
+        $membership->save();
+        $user->state = 'EXPIRED';
+        $user->save();
+    }
 }
 
 $activeCount = \Api\Model\User::active()->members()->count();
-$expiredCount = \Api\Model\User::where('state', \Api\Model\UserState::EXPIRED)->count();
-$deletedCount = \Api\Model\User::where('state', \Api\Model\UserState::DELETED)->count();
+$expiredCount = \Api\Model\User::expired()->count();
+$deletedCount = \Api\Model\User::isDeleted()->count();
 echo "Active users: $activeCount\n";
 echo "Expired users: $expiredCount\n";
 echo "Deleted users: $deletedCount\n";

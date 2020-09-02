@@ -70,14 +70,14 @@ echo "selected pending users: " . count($pending_users) . "\n";
 markAsDeleted($pending_users);
 
 $activeCount = \Api\Model\User::active()->members()->count();
-$expiredCount = \Api\Model\User::where('state', UserState::EXPIRED)->count();
-$deletedCount = \Api\Model\User::where('state', UserState::DELETED)->count();
+$expiredCount = \Api\Model\User::expired()->count();
+$deletedCount = \Api\Model\User::isDeleted()->count();
 echo "Active users: $activeCount\n";
 echo "Expired users: $expiredCount\n";
 echo "Deleted users: $deletedCount\n";
 
 if ($delete) {
-    $reservationsToDelete = \Api\Model\Reservation::where('state', \Api\Model\ReservationState::DELETED)->get();
+    $reservationsToDelete = \Api\Model\Reservation::isDeleted()->get();
     foreach ($reservationsToDelete as $reservation) {
         echo "Real delete for reservation $reservation->reservation_id\n";
         echo "state: " . $reservation->state . "\n";
@@ -88,7 +88,7 @@ if ($delete) {
         echo "comment: " . $reservation->comment . "\n";
         $reservation->delete();
     }
-    $usersToDelete = \Api\Model\User::where('state', '=', \Api\Model\UserState::DELETED)->get();
+    $usersToDelete = \Api\Model\User::isDeleted()->get();
     foreach ($usersToDelete as $user) {
         echo "Real delete for user $user->user_id\n";
         echo "name: " . $user->firstname . " " . $user->lastname . "\n";
@@ -96,6 +96,7 @@ if ($delete) {
         echo "membership start: " . $user->membership_start_date . "\n";
         echo "membership end: " . $user->membership_end_date . "\n";
         echo "email: " . $user->email . "\n";
+        // FIXME: should also cancel membership? Should already be the case!
         $user->delete();
     }
 }
@@ -121,6 +122,12 @@ function markAsDeleted($users)
             $user->state = UserState::ACTIVE;
             $user->role = UserRole::SUPPORTER;
         } else {
+            // cancel membership
+            if ($user->membership()->exists()) {
+                $membership = $user->membership()->first();
+                $membership->status = \Api\Model\Membership::STATUS_CANCELLED;
+                $membership->save();
+            }
             $user->state = UserState::DELETED;
         }
         $user->save();

@@ -454,7 +454,7 @@ class EnrolmentManager
             }
 //            $this->logger->info("payment data = " . print_r($paymentData, TRUE));
             $payment = $this->mollie->payments->create($paymentData);
-            $this->logger->info("Payment created with order id {$orderId} webhook {$protocol}://{$hostname}/enrolment/{$orderId} and redirectUrl {$redirectUrl}"
+            $this->logger->info("Payment (Mollie) created with order id {$orderId} webhook {$protocol}://{$hostname}/enrolment/{$orderId} and redirectUrl {$redirectUrl}"
                 . "-productId=$productId;membership_end_date=$membershipEndDate");
             // store payment id -> needed?
             return $payment;
