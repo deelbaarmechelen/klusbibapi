@@ -39,7 +39,7 @@ class Membership extends Model
 		if (!isset($field)) {
 			return false;
 		}
-		return in_array($field, User::$fieldArray);
+		return in_array($field, Membership::$fieldArray);
 	}
 	
 	public function members()

@@ -5,6 +5,7 @@ namespace Api\Membership;
 
 use Api\Authorisation;
 use Api\Model\Membership;
+use Api\Model\MembershipType;
 use Api\ModelMapper\MembershipMapper;
 use Api\ModelMapper\UserMapper;
 use Api\User\UserManager;
@@ -108,9 +109,15 @@ class MembershipController
         $data = array();
         foreach ($memberships_page as $membership) {
             $membershipData = MembershipMapper::mapMembershipToArray($membership);
-            // lookup tool and add it to data
-            $user = $this->userManager->getById($membership->contact_id, false);
 
+            // lookup subscription and add it to data
+            $subscription = MembershipType::find($membership->subscription_id);
+            if (isset($subscription)) {
+                $membershipData["subscription"] = MembershipMapper::mapSubscriptionToArray($subscription);
+            }
+
+            // lookup user and add it to data
+            $user = $this->userManager->getById($membership->contact_id, false);
             if (isset($user)) {
                 $this->logger->info('user found: ' . \json_encode($user));
                 $membershipData['user'] = UserMapper::mapUserToArray($user);

@@ -4,6 +4,7 @@ namespace Api\ModelMapper;
 
 
 use Api\Model\Membership;
+use Api\Model\MembershipType;
 use Api\Model\User;
 use Api\Model\UserState;
 
@@ -27,6 +28,25 @@ class MembershipMapper
             "deleted_at" => $membership->deleted_at
         );
         return $membershipArray;
+    }
+
+    static public function mapSubscriptionToArray(MembershipType $membershipType) {
+        if (!isset($membershipType)) {
+            return array();
+        }
+        $membershipTypeArray = array("id" => $membershipType->id,
+            "name" => $membershipType->name,
+            "price" => $membershipType->price,
+            "duration" => $membershipType->duration,
+            "discount" => $membershipType->discount,
+            "self_serve" => $membershipType->self_serve,
+            "max_items" => $membershipType->max_items,
+            "is_active" => $membershipType->is_active,
+            "next_subscription_id" => $membershipType->next_subscription_id,
+            "created_at" => $membershipType->created_at,
+            "updated_at" => $membershipType->updated_at
+        );
+        return $membershipTypeArray;
     }
 
     static public function mapUserArrayToMembership($data, Membership $membership, bool $isAdmin = false, $logger = null) {
