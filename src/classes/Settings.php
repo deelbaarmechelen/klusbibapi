@@ -13,6 +13,7 @@ class Settings
     const STROOM_ENROLMENT_AMOUNT = 0;
     const STROOM_RENEWAL_AMOUNT = 0;
     const MOLLIE_LOCALE = "nl_BE";
+    const CURRENCY = "EUR";
 
     const EMAIL_LINK = 'info@klusbib.be';
     const RESERVATION_EMAIL = 'reservatie@klusbib.be';

@@ -194,7 +194,7 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $mollieApi = new \Tests\Mock\MollieApiClientMock();
         $user->state = \Api\Model\UserState::CHECK_PAYMENT;
         $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi);
-        $enrolmentMgr->confirmPayment(\Api\Model\PaymentMode::STROOM, $user);
+        $enrolmentMgr->confirmPayment(\Api\Model\PaymentMode::STROOM);
 
         $this->assertTrue($user->isStroomParticipant());
         // reload user to get all updates

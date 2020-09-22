@@ -2,6 +2,8 @@
 
 namespace Api\Enrolment;
 
+use Api\Model\MembershipType;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Model\PaymentMode;
 use Api\Model\Payment;
@@ -23,7 +25,7 @@ class EnrolmentController
     protected $token;
 
     public function __construct($logger, EnrolmentFactory $enrolmentFactory, JwtAuthentication $jwtAuthentication,
-        $token) {
+                                $token) {
         $this->logger = $logger;
         $this->enrolmentFactory = $enrolmentFactory;
         $this->jwtAuthentication = $jwtAuthentication;
@@ -46,19 +48,19 @@ class EnrolmentController
         $data = $request->getParsedBody();
         if (empty($data["paymentMode"]) || !isset($data["userId"]) ) {
             $message = "no paymentMode and/or userId provided";
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
             ->withJson("Missing or invalid data: $message");
         }
         if (empty($data["orderId"])  ) {
             $message = "no orderId provided";
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
             ->withJson("Missing or invalid data: $message");
         }
 
         $paymentMode = $data["paymentMode"];
         if ($paymentMode == PaymentMode::MOLLIE && empty($data["redirectUrl"])  ) {
             $message = "no redirectUrl provided (required for online payment)";
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
             ->withJson("Missing or invalid data: $message");
         }
 
@@ -70,8 +72,81 @@ class EnrolmentController
             $renewal = true;
         }
         if (null == $user) {
-            return $response->withStatus(400)
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");
+        }
+
+        if (empty($data["membershipType"])) { // set default values for backward compatibility
+            if ($paymentMode == PaymentMode::STROOM) {
+                $membershipType = MembershipType::STROOM;
+            } else {
+                if ($renewal) {
+                    $membershipType = MembershipType::RENEWAL;
+                } else {
+                    $membershipType = MembershipType::REGULAR;
+                }
+            }
+        } else {
+            $membershipType = $data["membershipType"];
+            // Make case insensitive
+            if (strtoupper($membershipType) == strtoupper(MembershipType::REGULAR) ) {
+                $membershipType = MembershipType::REGULAR;
+            } elseif (strtoupper($membershipType) == strtoupper(MembershipType::RENEWAL) ) {
+                $membershipType = MembershipType::RENEWAL;
+            } elseif (strtoupper($membershipType) == strtoupper(MembershipType::STROOM) ) {
+                $membershipType = MembershipType::STROOM;
+            } elseif (strtoupper($membershipType) == strtoupper(MembershipType::TEMPORARY) ) {
+                $membershipType = MembershipType::TEMPORARY;
+            }
+
+            if ($membershipType != MembershipType::REGULAR
+                && $membershipType != MembershipType::RENEWAL
+                && $membershipType != MembershipType::STROOM
+                && $membershipType != MembershipType::TEMPORARY ) {
+                $message = "Unknown/unsupported membership type: " . $membershipType;
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
+                    ->withJson("Missing or invalid data: $message");
+            }
+
+            // Validate data consistency
+            if ($membershipType == MembershipType::REGULAR) {
+                if ($renewal) {
+                    $message = "Renewal flag set for regular membership type";
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
+                        ->withJson("Missing or invalid data: $message");
+                }
+                if ($paymentMode == PaymentMode::STROOM) {
+                    $message = "Payment mode Stroom specified, but membership type is set to " . $membershipType;
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
+                    ->withJson("Missing or invalid data: $message");
+                }
+            } else if ($membershipType == MembershipType::RENEWAL) {
+                if (!$renewal) {
+                    $renewal = true;
+                }
+                if ($paymentMode == PaymentMode::STROOM) {
+                    $message = "Payment mode Stroom specified, but membership type is set to " . $membershipType;
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
+                    ->withJson("Missing or invalid data: $message");
+                }
+            } else if ($membershipType == MembershipType::STROOM) {
+                if ($paymentMode != PaymentMode::STROOM) {
+                    $message = "Stroom membership type specified, but payment mode set to " . $paymentMode;
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
+                        ->withJson("Missing or invalid data: $message");
+                }
+            } else if ($membershipType == MembershipType::TEMPORARY) {
+                if ($renewal) {
+                    $message = "Renewal flag set for temporary membership type";
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
+                    ->withJson("Missing or invalid data: $message");
+                }
+                if ($paymentMode == PaymentMode::STROOM) {
+                    $message = "Payment mode Stroom specified, but membership type is set to " . $membershipType;
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
+                    ->withJson("Missing or invalid data: $message");
+                }
+            }
         }
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         // Check payment mode
@@ -80,23 +155,28 @@ class EnrolmentController
                 if ($renewal) {
                     $payment = $enrolmentManager->renewalByTransfer($orderId);
                 } else {
-                    $payment = $enrolmentManager->enrolmentByTransfer($orderId);
+                    $payment = $enrolmentManager->enrolmentByTransfer($orderId, $membershipType);
                 }
-            } catch (\Api\Exception\EnrolmentException $e) {
-                if ($e->getCode() == \Api\Exception\EnrolmentException::ALREADY_ENROLLED) {
+            } catch (EnrolmentException $e) {
+                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
                     $response_data = array("message" => $e->getMessage(),
-                        membership_end_date => $user->membership_end_date);
-                    return $response->withStatus(208) // 208 = Already Reported
-                    ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == \Api\Exception\EnrolmentException::NOT_ENROLLED) {
-                    $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(403)
+                        "membership_end_date" => $user->membership_end_date);
+                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED) // 208 = Already Reported
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == \Api\Exception\EnrolmentException::UNSUPPORTED_STATE) {
+                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
+                    $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
+                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
                     $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(501)
+                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else {
+                    $response_data = array("message" => "Unexpected enrolment exception: " . $e->getMessage());
+                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 }
@@ -106,7 +186,7 @@ class EnrolmentController
             $data["orderId"] = $orderId;
             $data["paymentMode"] = $payment->mode;
             $data["paymentState"] = $payment->state;
-            return $response->withStatus(200)
+            return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         }
@@ -128,7 +208,7 @@ class EnrolmentController
                 $data = array();
                 $data["checkoutUrl"] = $molliePayment->getCheckoutUrl();
                 $data["orderId"] = $orderId;
-                return $response->withStatus(200)
+                return $response->withStatus(HttpResponseCode::OK)
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
             } catch (EnrolmentException $e) {
@@ -136,21 +216,24 @@ class EnrolmentController
                     $response_data = array("message" => $e->getMessage(),
                         membership_end_date => $user->membership_end_date,
                         orderId => $orderId);
-                    return $response->withStatus(208)// 208 = Already Reported
+                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED)// 208 = Already Reported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
                     $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(403)
+                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
                     $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(501)// Unsupported
+                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)// Unsupported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::MOLLIE_EXCEPTION) {
-                    return $response->withStatus(500)// Internal error
+                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
+                    ->withJson($e->getMessage());
+                } else {
+                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
                     ->withJson($e->getMessage());
                 }
             }
@@ -167,14 +250,14 @@ class EnrolmentController
             // we still need to do authentication, as this is skipped for /enrolment route
             /* If token cannot be found return with 401 Unauthorized. */
             if (false === $token = $this->jwtAuthentication->fetchToken($request)) {
-                return $this->jwtAuthentication->error($request, $response->withStatus(401), [
+                return $this->jwtAuthentication->error($request, $response->withStatus(HttpResponseCode::UNAUTHORIZED), [
                     "message" => $this->jwtAuthentication->getMessage()
                 ]);
             }
 
             /* If token cannot be decoded return with 401 Unauthorized. */
             if (false === $decoded = $this->jwtAuthentication->decodeToken($token)) {
-                return $this->jwtAuthentication->error($request, $response->withStatus(401), [
+                return $this->jwtAuthentication->error($request, $response->withStatus(HttpResponseCode::UNAUTHORIZED), [
                     "message" => $this->jwtAuthentication->getMessage(),
                     "token" => $token
                 ]);
@@ -185,27 +268,27 @@ class EnrolmentController
             $currentUser = User::find($this->token->getSub());
             if (!isset($currentUser)) {
                 $this->logger->warn("No user found for token " . $this->token->getSub());
-                return $response->withStatus(403)
+                return $response->withStatus(HttpResponseCode::FORBIDDEN)
                     ->withJson("{ message: 'Not allowed, please login with an admin user'}");
             }
             if (!$currentUser->isAdmin()) {
                 $this->logger->warn("Enrolment attempt for payment mode $paymentMode by user "
                     . $currentUser->firstName ." " . $currentUser->lastName . "("
                     . $this->token->getSub() . ")");
-                return $response->withStatus(403)
+                return $response->withStatus(HttpResponseCode::FORBIDDEN)
                     ->withJson("{ message: 'Not allowed, please login with an admin user'}");
             }
             try {
                 if ($renewal) {
                     $payment = $enrolmentManager->renewalByVolunteer($orderId, $paymentMode);
                 } else {
-                    $payment = $enrolmentManager->enrolmentByVolunteer($orderId, $paymentMode);
+                    $payment = $enrolmentManager->enrolmentByVolunteer($orderId, $paymentMode, $membershipType);
                 }
                 $data = array();
                 $data["orderId"] = $orderId;
                 $data["paymentMode"] = $payment->mode;
                 $data["paymentState"] = $payment->state;
-                return $response->withStatus(200)
+                return $response->withStatus(HttpResponseCode::OK)
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
@@ -213,19 +296,22 @@ class EnrolmentController
                 if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
                     $response_data = array("message" => $e->getMessage(),
                         membership_end_date => $user->membership_end_date);
-                    return $response->withStatus(208) // 208 = Already Reported
+                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED) // 208 = Already Reported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
                     $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(403)
+                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
                     $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(501)
+                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else {
+                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
+                    ->withJson($e->getMessage());
                 }
             }
 
@@ -244,7 +330,7 @@ class EnrolmentController
                 $data["orderId"] = $orderId;
                 $data["paymentMode"] = $payment->mode;
                 $data["paymentState"] = $payment->state;
-                return $response->withStatus(200)
+                return $response->withStatus(HttpResponseCode::OK)
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
@@ -252,19 +338,22 @@ class EnrolmentController
                 if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
                     $response_data = array("message" => $e->getMessage(),
                         membership_end_date => $user->membership_end_date);
-                    return $response->withStatus(208) // 208 = Already Reported
+                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED) // 208 = Already Reported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
                     $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(403)
+                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
                     $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(501)
+                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else {
+                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
+                    ->withJson($e->getMessage());
                 }
             }
 
@@ -272,7 +361,7 @@ class EnrolmentController
 
         $message = "Unsupported payment mode ($paymentMode)";
         $this->logger->warn("Invalid POST request on /enrolment received: $message");
-        return $response->withStatus(400) // Bad request
+        return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
         ->withJson($message);
     }
 
@@ -281,14 +370,14 @@ class EnrolmentController
 
         $access = Authorisation::checkEnrolmentAccess($this->token, "confirm");
         if ($access === AccessType::NO_ACCESS) {
-            return $response->withStatus(403); // Unauthorized
+            return $response->withStatus(HttpResponseCode::FORBIDDEN); // Unauthorized
         }
 
         // Get data
         $data = $request->getParsedBody();
         if (empty($data["paymentMode"]) || !isset($data["userId"])) {
             $message = "no paymentMode and/or userId provided";
-            return $response->withStatus(400)// Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
             ->withJson("Missing or invalid data: $message");
         }
         $paymentMode = $data["paymentMode"];
@@ -299,29 +388,29 @@ class EnrolmentController
             $renewal = true;
         }
         if (null == $user) {
-            return $response->withStatus(400)
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");;
         }
 
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         try {
-            $enrolmentManager->confirmPayment($paymentMode,$user);
+            $enrolmentManager->confirmPayment($paymentMode);
             $data = array();
-            return $response->withStatus(200)
+            return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         } catch (EnrolmentException $e) {
             if ($e->getCode() == EnrolmentException::UNEXPECTED_PAYMENT_MODE) {
                 $message = "Unsupported payment mode ($paymentMode)";
                 $this->logger->warn("Invalid POST request on /enrolment/confirm received: $message");
-                return $response->withStatus(400) // Bad request
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
                 ->withJson($message);
             } else if ($e->getCode() == EnrolmentException::UNEXPECTED_CONFIRMATION) {
                 $message = "Unexpected confirmation for payment mode ($paymentMode)";
-                return $response->withStatus(400)// Bad request
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
                 ->withJson($message);
             } else {
-                return $response->withStatus(500)// Internal error
+                return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
                 ->withJson($e->getMessage());
             }
         }
@@ -333,14 +422,14 @@ class EnrolmentController
 
         $access = Authorisation::checkEnrolmentAccess($this->token, "decline");
         if ($access === AccessType::NO_ACCESS) {
-            return $response->withStatus(403); // Unauthorized
+            return $response->withStatus(HttpResponseCode::FORBIDDEN); // Unauthorized
         }
 
         // Get data
         $data = $request->getParsedBody();
         if (empty($data["paymentMode"]) || !isset($data["userId"])) {
             $message = "no paymentMode and/or userId provided";
-            return $response->withStatus(400)// Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
             ->withJson("Missing or invalid data: $message");
         }
         $paymentMode = $data["paymentMode"];
@@ -351,28 +440,28 @@ class EnrolmentController
             $renewal = true;
         }
         if (null == $user) {
-            return $response->withStatus(400)
-                ->withJson("No user found with id $userId");;
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                ->withJson("No user found with id $userId");
         }
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         try {
             $enrolmentManager->declinePayment($paymentMode,$user);
             $data = array();
-            return $response->withStatus(200)
+            return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         } catch (EnrolmentException $e) {
             if ($e->getCode() == EnrolmentException::UNEXPECTED_PAYMENT_MODE) {
                 $message = "Unsupported payment mode ($paymentMode)";
                 $this->logger->warn("Invalid POST request on /enrolment/decline received: $message");
-                return $response->withStatus(400) // Bad request
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
                 ->withJson($message);
             } else if ($e->getCode() == EnrolmentException::UNEXPECTED_CONFIRMATION) {
                 $message = "Unexpected (declined) confirmation for payment mode ($paymentMode)";
-                return $response->withStatus(400)// Bad request
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
                 ->withJson($message);
             } else {
-                return $response->withStatus(500)// Internal error
+                return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
                 ->withJson($e->getMessage());
             }
         }
@@ -384,7 +473,7 @@ class EnrolmentController
         $this->logger->info("Klusbib POST '/enrolment/{$args['orderId']}' route");
         if (empty($args['orderId'])) {
             $this->logger->error("POST /enrolment/{orderId} failed due to missing orderId param");
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
             ->withJson("Missing or empty orderId");
         }
         // Get data
@@ -393,7 +482,7 @@ class EnrolmentController
         $orderId = $args['orderId'];
         if (empty($paymentId)) {
             $this->logger->error("POST /enrolment/{orderId} failed due to missing id param (orderId=" . $orderId . "; parsed body=" . json_encode($data));
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
             ->withJson("Missing or empty paymentId");
         }
 
@@ -403,15 +492,18 @@ class EnrolmentController
         } catch (EnrolmentException $e) {
 
             if ($e->getCode() == EnrolmentException::UNKNOWN_USER) {
-                return $response->withStatus(400)
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson($e->getMessage());;
             } elseif ($e->getCode() == EnrolmentException::MOLLIE_EXCEPTION) {
-                return $response->withStatus(500)// Internal error
+                return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
+                ->withJson($e->getMessage());
+            } else {
+                return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
                 ->withJson($e->getMessage());
             }
         }
 
-        return $response->withStatus(200)
+        return $response->withStatus(HttpResponseCode::OK)
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode([], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 

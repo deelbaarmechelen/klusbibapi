@@ -243,7 +243,7 @@ class MailManager {
      * @return bool TRUE if message successfully sent
      */
     public function sendRenewal($user, $daysToExpiry, $token) {
-        $membership_year = $this->getMembershipYear($user->membership_end_date);
+        $membership_year = $this->getMembershipYear($user->membership->expires_at->format('Y-m-d'));
         $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
         $parameters = array('user' => $user,
             'profileLink' => $link,
@@ -277,7 +277,8 @@ class MailManager {
         return $this->sendTwigTemplate($user->email, 'resume_enrolment_reminder', $parameters);
     }
     public function sendRenewalConfirmation($user, $paymentMode) {
-        $membership_year = $this->getMembershipYear($user->membership_end_date);
+//        $membership_year = $this->getMembershipYear($user->membership_end_date);
+        $membership_year = $this->getMembershipYear($user->membership->expires_at->format('Y-m-d'));
         $parameters = array(
             'user' => $user,
             'paymentMode' => $paymentMode,

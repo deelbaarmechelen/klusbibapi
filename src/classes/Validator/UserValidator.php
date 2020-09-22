@@ -23,6 +23,13 @@ class UserValidator
             array_push($errors, $message);
             return false;
         }
+
+        if (empty($user["email"])) {
+            $message = "Missing user email";
+            $logger->info($message);
+            array_push($errors, $message);
+            return false;
+        }
 		return true;
 	}
 

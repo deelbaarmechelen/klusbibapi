@@ -231,6 +231,8 @@ class UserController implements UserControllerInterface
         $this->logger->debug('Creating user ' . \json_encode($user));
 
         $this->userManager->create($user);
+        // For backward compatibility: create membership at once if start date is provided
+        // FIXME: check if this can be removed and call "POST enrolment" instead
         if (!empty($user->membership_start_date) && empty($user->active_membership)) {
             // create membership
             $status = MembershipMapper::getMembershipStatus($user->state, $user->user_id);

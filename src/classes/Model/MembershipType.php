@@ -12,14 +12,22 @@ class MembershipType extends Model
         'self_serve', 'credit_limit', 'max_items', 'is_active', 'next_subscription_id', 'created_at', 'updated_at'
 	];
 
-	static public function regular() {
-	    return MembershipType::where('name', '=', 'Regular')->firstOrFail();
+    const REGULAR = 'Regular';
+    const RENEWAL = 'Renewal';
+    const STROOM = 'Stroom';
+    const TEMPORARY = 'Temporary';
+
+    static public function regular() {
+	    return MembershipType::where('name', '=', self::REGULAR)->firstOrFail();
     }
     static public function renewal() {
-        return MembershipType::where('name', '=', 'Renewal')->firstOrFail();
+        return MembershipType::where('name', '=', self::RENEWAL)->firstOrFail();
     }
     static public function stroom() {
-        return MembershipType::where('name', '=', 'Stroom')->firstOrFail();
+        return MembershipType::where('name', '=', self::STROOM)->firstOrFail();
+    }
+    static public function temporary() {
+        return MembershipType::where('name', '=', self::TEMPORARY)->firstOrFail();
     }
 
     // public methods
