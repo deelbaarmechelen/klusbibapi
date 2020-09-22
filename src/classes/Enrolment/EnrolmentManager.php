@@ -241,8 +241,13 @@ class EnrolmentManager
         // update payment
         $membership = Membership::find($user->active_membership);
         $payment = Payment::find($membership->payment->payment_id);
-        $payment->state = PaymentState::SUCCESS;
-        $payment->save();
+        if (isset($payment)) {
+            $payment->state = PaymentState::SUCCESS;
+            $payment->save();
+        } else {
+            $this->logger->error("Payment missing for user $user->firstname $user->lastname "
+            . "(recvd payment confirmation for payment mode " . $paymentMode);
+        }
 
         // update status
         $user->state = UserState::ACTIVE;
