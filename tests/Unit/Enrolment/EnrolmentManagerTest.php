@@ -19,6 +19,36 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $this->expiredEndDate->sub(new DateInterval('P20D'));
 
         return new \Tests\DbUnitArrayDataSet(array(
+            'membership_type' => array(
+                array('id' => 1, 'name' => 'Regular', 'price' => 30,
+                    'duration' => 365,
+                    'self_serve' => 1,
+                    'is_active' => 1,
+                    'max_items' => 5,
+                    'next_subscription_id' => 3
+                ),
+                array('id' => 2, 'name' => 'Temporary', 'price' => 0,
+                    'duration' => 60,
+                    'self_serve' => 0,
+                    'is_active' => 1,
+                    'max_items' => 5,
+                    'next_subscription_id' => 1
+                ),
+                array('id' => 3, 'name' => 'Renewal', 'price' => 20,
+                    'duration' => 365,
+                    'self_serve' => 0,
+                    'is_active' => 1,
+                    'max_items' => 5,
+                    'next_subscription_id' => null
+                ),
+                array('id' => 4, 'name' => 'Stroom', 'price' => 0,
+                    'duration' => 365,
+                    'self_serve' => 0,
+                    'is_active' => 1,
+                    'max_items' => 5,
+                    'next_subscription_id' => 3
+                ),
+            ),
             'membership' => array(
                 array('id' => 1, 'subscription_id' => 1, 'contact_id' => 1,
                     'status' => 'ACTIVE',
