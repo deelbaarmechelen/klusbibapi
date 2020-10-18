@@ -389,12 +389,12 @@ class EnrolmentController
         }
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                ->withJson("No user found with id $userId");;
+                ->withJson("No user found with id $userId");
         }
 
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         try {
-            $enrolmentManager->confirmPayment($paymentMode);
+            $enrolmentManager->confirmPayment($paymentMode, $renewal);
             $data = array();
             return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")

@@ -88,6 +88,12 @@ class EnrolmentTest extends LocalDbWebTestCase
                     'start_at' => $this->expiredStartDate->format('Y-m-d'),
                     'expires_at' => $this->renewalEndDate->format('Y-m-d')
                 ),
+                array('id' => 5, 'subscription_id' => 1, 'contact_id' => 6,
+                    'status' => \Api\Model\Membership::STATUS_PENDING,
+                    'last_payment_mode' => \Api\Model\PaymentMode::MOLLIE,
+                    'start_at' => $this->startdate->format('Y-m-d'),
+                    'expires_at' => $this->enddate->format('Y-m-d')
+                ),
             ),
 			'users' => array(
 				array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
@@ -109,7 +115,7 @@ class EnrolmentTest extends LocalDbWebTestCase
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
-                    'active_membership' => 2
+                    'active_membership' => null
                 ),
                 array('user_id' => 4, 'firstname' => 'nele', 'lastname' => 'HippeDame',
                     'role' => 'member', 'email' => 'nele@klusbib.be', 'state' => UserState::EXPIRED,
@@ -121,18 +127,28 @@ class EnrolmentTest extends LocalDbWebTestCase
                 array('user_id' => 5, 'firstname' => 'an', 'lastname' => 'ErvarenLetser',
                     'role' => 'member', 'email' => 'an@klusbib.be', 'state' => UserState::ACTIVE,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'membership_start_date' => $this->startdate->format('Y-m-d'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d'),
+                    'active_membership' => 3
+                ),
+                array('user_id' => 6, 'firstname' => 'tom', 'lastname' => 'Techie',
+                    'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => UserState::CHECK_PAYMENT,
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
                     'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
-                    'active_membership' => 3
+                    'active_membership' => 5
                 ),
             ),
             'payments' => array(
-                array('payment_id' => 1, 'user_id' => 3, 'state' => PaymentState::NEW, 'mode' => PaymentMode::MOLLIE,
+                array('payment_id' => 1, 'user_id' => 3, 'state' => PaymentState::OPEN, 'mode' => PaymentMode::MOLLIE,
                     'payment_date' => $this->startdate->format('Y-m-d'), 'order_id' => '3_20201018120000',
                     'amount' => 30, 'currency' => 'EUR', 'membership_id' => 2),
-                array('payment_id' => 2, 'user_id' => 4, 'state' => PaymentState::NEW, 'mode' => PaymentMode::MOLLIE,
+                array('payment_id' => 2, 'user_id' => 4, 'state' => PaymentState::OPEN, 'mode' => PaymentMode::MOLLIE,
                     'payment_date' => $this->startdate->format('Y-m-d'), 'order_id' => '4_20201018120000',
-                    'amount' => 20, 'currency' => 'EUR', 'membership_id' => 4)
+                    'amount' => 20, 'currency' => 'EUR', 'membership_id' => 4),
+                array('payment_id' => 3, 'user_id' => 6, 'state' => PaymentState::OPEN, 'mode' => PaymentMode::MOLLIE,
+                    'payment_date' => $this->startdate->format('Y-m-d'), 'order_id' => '6_20201018120000',
+                    'amount' => 30, 'currency' => 'EUR', 'membership_id' => 5)
             )
         ));
 	}
@@ -401,7 +417,7 @@ class EnrolmentTest extends LocalDbWebTestCase
     public function testPostEnrolmentMollieWebhook()
     {
         echo "test POST enrolment (enrolment)\n";
-        $userId = "3";
+        $userId = "6";
         $orderId = $userId . "_20201018120000";
         $paymentId = "tr_12345678";
 
@@ -412,7 +428,7 @@ class EnrolmentTest extends LocalDbWebTestCase
         $paymentMollie->metadata->product_id = \Api\Model\Product::ENROLMENT;
         $paymentMollie->metadata->membership_end_date = $this->enddate->format('Y-m-d');
         $paymentMollie->amount = new stdClass();
-        $paymentMollie->amount->value = '20';
+        $paymentMollie->amount->value = '30';
         $paymentMollie->amount->currency = 'EUR';
         \Tests\Mock\PaymentEndpointMock::$payment = $paymentMollie;
         $paymentMollie->paidAt = new DateTime();
@@ -480,6 +496,7 @@ class EnrolmentTest extends LocalDbWebTestCase
         $user = $this->lookupUser($userId);
         $this->assertEquals(UserState::ACTIVE, $user->state);
         $this->assertEquals($this->renewalEndDate->format('Y-m-d'), $user->membership_end_date);
+        $this->assertEquals(4, $user->active_membership->id);
 
         // Check payment is updated
         $payments = $this->checkPaymentCreated($orderId);

@@ -326,8 +326,9 @@ class UsersTest extends LocalDbWebTestCase
 	public function testDeleteUser()
 	{
 		echo "test DELETE user\n";
-		$this->client->delete('/users/1');
-		$body = $this->assertEquals(200, $this->client->response->getStatusCode());
+        $body = $this->client->delete('/users/1');
+        echo $body;
+		$this->assertEquals(200, $this->client->response->getStatusCode());
 		
 		// delete inexistant user
 		$this->client->delete('/users/1');

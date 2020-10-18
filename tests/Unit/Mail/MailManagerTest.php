@@ -159,7 +159,7 @@ final class MailManagerTest extends TestCase
         $user->membership_end_date = date('Y-m-d');
         $membership = new MembershipTest();
         $membership->expires_at = new DateTime();
-        $user->membership = $membership;
+        $user->activeMembership = $membership;
 
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
@@ -180,7 +180,7 @@ final class MailManagerTest extends TestCase
         $user->membership_end_date = date('Y-m-d');
         $membership = new MembershipTest();
         $membership->expires_at = new DateTime();
-        $user->membership = $membership;
+        $user->activeMembership = $membership;
 
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);

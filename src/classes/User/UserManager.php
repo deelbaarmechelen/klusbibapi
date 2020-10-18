@@ -80,13 +80,22 @@ class UserManager
 
     /**
      * Updates a local user and sync to inventory
+     * Sync is skipped if none of the inventory fields need to be modified
+     *
      * @param $user the user to be updated
+     * @param $firstnameUpdated true if firstname has been modified
+     * @param $lastnameUpdate true if lastname has been modified
+     * @param $emailUpdated true if email has been modified
+     * @param $stateUpdated true if user state has been modified
      */
-    function update(User $user) {
+    function update(User $user, $firstnameUpdated = true, $lastnameUpdate = true, $emailUpdated = true, $stateUpdated = true) {
         $this->logger->debug("Update user: " . json_encode($user));
-        $this->updateInventory($user);
+        if ($firstnameUpdated || $lastnameUpdate || $emailUpdated || $stateUpdated) {
+            $this->updateInventory($user);
+        }
         $user->save();
     }
+
     /**
      * Deletes a local user and sync to inventory
      * @param $user the user to be deleted

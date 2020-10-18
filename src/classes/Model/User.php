@@ -55,8 +55,11 @@ class User extends Model
             ->withTimestamps();
     }
 
-    public function membership() {
+    public function activeMembership() {
         return $this->belongsTo('Api\Model\Membership', 'active_membership');
+    }
+    public function memberships() {
+        return $this->hasMany('Api\Model\Membership', 'contact_id', 'user_id');
     }
 
     public function payments()
@@ -116,14 +119,14 @@ class User extends Model
     public function scopeActive($query)
     {
 //        return $query->where('state', '=', UserState::ACTIVE);
-        return $query->whereHas('membership', function (Builder $query) {
+        return $query->whereHas('activeMembership', function (Builder $query) {
             $query->where('status', '=', Membership::STATUS_ACTIVE);
         });
     }
     public function scopeExpired($query)
     {
 //        return $query->where('state', '=', UserState::EXPIRED);
-        return $query->whereHas('membership', function (Builder $query) {
+        return $query->whereHas('activeMembership', function (Builder $query) {
             $query->where('status', '=', Membership::STATUS_EXPIRED);
         });
     }
@@ -138,7 +141,7 @@ class User extends Model
     public function scopePending($query)
     {
 //        return $query->where('state', '=', UserState::CHECK_PAYMENT);
-        return $query->whereHas('membership', function (Builder $query) {
+        return $query->whereHas('activeMembership', function (Builder $query) {
             $query->where('status', '=', Membership::STATUS_PENDING);
         });
     }

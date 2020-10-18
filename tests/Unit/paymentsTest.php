@@ -30,7 +30,7 @@ class PaymentsTest extends LocalDbWebTestCase
                 ),
             ),
 			'payments' => array(
-				array('payment_id' => 1, 'user_id' => 3, 'state' => \Api\Model\PaymentState::NEW,
+				array('payment_id' => 1, 'user_id' => 3, 'state' => \Api\Model\PaymentState::OPEN,
                     'mode'=> \Api\Model\PaymentMode::TRANSFER, 'payment_date'=> $this->paymentDate->format('Y-m-d H:i:s'),
                     'order_id'=> '123',
                     'amount' => 20, 'currency' => 'euro',

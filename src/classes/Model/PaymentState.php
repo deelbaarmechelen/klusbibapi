@@ -3,13 +3,14 @@ namespace Api\Model;
 
 abstract class PaymentState
 {
-    const NEW = "NEW";
+    //const NEW = "NEW"; // deprecated
 	const OPEN = "OPEN";
-	const PENDING = "PENDING";
+	const PENDING = "PENDING"; // Mollie only
 	const SUCCESS = "SUCCESS";
 	const FAILED = "FAILED";
-    const EXPIRED = "EXPIRED";
-    const CANCELED = "CANCELED";
-    const REFUND = "REFUND";
-    const CHARGEBACK = "CHARGEBACK";
+    const EXPIRED = "EXPIRED"; // Mollie only
+    const CANCELED = "CANCELED"; // Mollie only
+
+    const REFUND = "REFUND"; // Mollie only
+    const CHARGEBACK = "CHARGEBACK"; // Mollie only
 }

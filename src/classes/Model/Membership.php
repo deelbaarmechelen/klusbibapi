@@ -56,6 +56,10 @@ class Membership extends Model
         return $this->hasOne('Api\Model\Payment');
     }
 
+    public function contact() {
+        return $this->belongsTo('Api\Model\User', 'contact_id', 'user_id');
+    }
+
     // Query helpers
     public function scopeActive($query)
     {

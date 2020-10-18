@@ -22,5 +22,13 @@ class Payment extends Model
     public function membership() {
         return $this->belongsTo('Api\Model\Membership', 'membership_id', 'id');
     }
+    public function scopeForMembership($query)
+    {
+        return $query->whereNotNull('membership_id');
+    }
+    public function scopeForLoan($query)
+    {
+        return $query->whereNotNull('loan_id');
+    }
 
 }

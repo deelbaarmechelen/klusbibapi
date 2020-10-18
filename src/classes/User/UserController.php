@@ -233,13 +233,14 @@ class UserController implements UserControllerInterface
         $this->userManager->create($user);
         // For backward compatibility: create membership at once if start date is provided
         // FIXME: check if this can be removed and call "POST enrolment" instead
-        if (!empty($user->membership_start_date) && empty($user->active_membership)) {
-            // create membership
-            $status = MembershipMapper::getMembershipStatus($user->state, $user->user_id);
-            \Api\Enrolment\EnrolmentManager::createMembership(MembershipType::regular(), $user->membership_start_date,
-                $user->membership_end_date, $user, $status);
-
-        }
+//        if (!empty($user->membership_start_date) && empty($user->active_membership)) {
+//            // create membership
+//            $status = MembershipMapper::getMembershipStatus($user->state, $user->user_id);
+//            // FIXME: membership type not known yet. Could be stroom if payment mode STROOM is chosen in next step
+//            \Api\Enrolment\EnrolmentManager::createMembership(MembershipType::regular(), $user->membership_start_date,
+//                $user->membership_end_date, $user, $status);
+//
+//        }
         $this->logger->info("User created!");
         if ($sendEmailVerification) {
             $this->logger->info("Sending email verification");
@@ -314,7 +315,7 @@ class UserController implements UserControllerInterface
         // if last user on membership, mark membership as cancelled prior to user removal
         if (isset($user->active_membership)
          && $membership = Membership::find($user->active_membership)) {
-            $user->membership()->dissociate($membership);
+            $user->activeMembership()->dissociate($membership);
             $user->save();
             if ($membership->members()->count() <= 1) {
                 $membership->status = Membership::STATUS_CANCELLED;

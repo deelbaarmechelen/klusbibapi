@@ -151,6 +151,13 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                     'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
                     'active_membership' => 5
                 ),
+                array('user_id' => 6, 'firstname' => 'newt', 'lastname' => 'NewUser',
+                    'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => \Api\Model\UserState::CHECK_PAYMENT,
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'membership_start_date' => null,
+                    'membership_end_date' => null,
+                    'active_membership' => null
+                ),
             ),
             'project_user' => array(
             ),
@@ -202,7 +209,7 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $enrolmentMgr->renewalByTransfer($orderId);
 
         $user = \Api\Model\User::find($user->user_id);
-        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->membership->status); // original membership unchanged
+        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->activeMembership->status); // original membership unchanged
 
         // lookup newly created payment
         $payment = \Api\Model\Payment::where([
@@ -236,7 +243,7 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $requestUri = new \Slim\Http\Uri("http", "localhost", 8080, "redirect");
         $enrolmentMgr->renewalByMollie($orderId, $redirectUrl, \Api\Model\PaymentMode::MOLLIE,$requestUri);
         $user = \Api\Model\User::find($user->user_id);
-        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->membership->status); // unchanged status (FIXME: test with an expired account to assert there is no update?)
+        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->activeMembership->status); // unchanged status (FIXME: test with an expired account to assert there is no update?)
 
         // lookup newly created payment
         $payment = \Api\Model\Payment::where([
@@ -247,9 +254,44 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $this->assertNotEmpty($payment);
         $renewalMembership = $payment->membership;
 
-        $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $renewalMembership->status);
+        $this->assertEquals(\Api\Model\Membership::STATUS_PENDING, $renewalMembership->status);
+        // check newly created renewal membership can be linked to our user
+        $this->assertEquals($user->user_id,  $renewalMembership->contact_id);
         $this->assertEquals(\Api\Model\PaymentMode::MOLLIE,  $renewalMembership->last_payment_mode);
     }
+    public function testEnrolmentByStroom() {
+        $user = \Api\Model\User::find(6);
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class); // logger stub
+        $mailMgr = $this->getMockBuilder(\Api\Mail\MailManager::class) // mail mgr mock
+        ->getMock();
+        // should send a confirmation to user
+        $mailMgr->expects($this->once())
+            ->method('sendEnrolmentConfirmation')
+            ->with($user, \Api\Model\PaymentMode::STROOM);
+
+        $mollieApi = new \Tests\Mock\MollieApiClientMock(); // dummy, should not be called
+        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi);
+        $orderId = "order123";
+        $enrolmentMgr->enrolmentByStroom($orderId);
+        $user = \Api\Model\User::find($user->user_id);
+        $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $user->activeMembership->status);
+
+        // lookup newly created payment
+        $payment = \Api\Model\Payment::where([
+            ['order_id', '=', $orderId],
+            ['user_id', '=', $user->user_id],
+            ['mode', '=', \Api\Model\PaymentMode::STROOM],
+        ])->first();
+        $this->assertNotEmpty($payment);
+        $enrolmentMembership = $payment->membership;
+
+        // current membership is the newly created membership
+        $this->assertEquals($user->activeMembership->id,  $enrolmentMembership->id);
+        $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $enrolmentMembership->status);
+        $this->assertEquals(\Api\Model\MembershipType::stroom()->id,  $enrolmentMembership->subscription_id);
+        $this->assertEquals(\Api\Model\PaymentMode::STROOM,  $enrolmentMembership->last_payment_mode);
+    }
+
     public function testRenewalByStroom() {
         $user = \Api\Model\User::find(3);
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class); // logger stub
@@ -266,7 +308,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $orderId = "order123";
         $enrolmentMgr->renewalByStroom($orderId);
         $user = \Api\Model\User::find($user->user_id);
-        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->membership->status);
+        // current membership is still active
+        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->activeMembership->status);
 
         // lookup newly created payment
         $payment = \Api\Model\Payment::where([
@@ -277,6 +320,7 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $this->assertNotEmpty($payment);
         $renewalMembership = $payment->membership;
 
+        // newly created membership is pending
         $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $renewalMembership->status);
         $this->assertEquals(\Api\Model\PaymentMode::STROOM,  $renewalMembership->last_payment_mode);
     }
@@ -292,16 +336,18 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $mailMgr->expects($this->once())
             ->method('sendEnrolmentPaymentConfirmation')
             ->with($user, \Api\Model\PaymentMode::STROOM);
-
+        $inventory = $this->createMock(\Api\Inventory\Inventory::class); // inventory stub
+        $userMgr = new \Api\User\UserManager($inventory, $logger);
         $mollieApi = new \Tests\Mock\MollieApiClientMock();
+
         $user->state = \Api\Model\UserState::CHECK_PAYMENT;
-        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi);
+        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi, $userMgr);
         $enrolmentMgr->confirmPayment(\Api\Model\PaymentMode::STROOM);
 
         $this->assertTrue($user->isStroomParticipant());
         // reload user to get all updates
         $user = \Api\Model\User::find(3);
-        $membership = $user->membership()->first();
+        $membership = $user->activeMembership()->first();
         $payment = \Api\Model\Payment::find($membership->payment->payment_id);
         $this->assertEquals(\Api\Model\PaymentState::SUCCESS, $payment->state);
     }
@@ -309,20 +355,22 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
     public function testProcessMolliePayment() {
         $userId = 5;
         $user = \Api\Model\User::find($userId);
-        $originalMembershipId = $user->membership->id;
+        $originalMembershipId = $user->activeMembership->id;
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class); // logger stub
         $mailMgr = $this->createMailMgrMock();
+        $inventory = $this->createMock(\Api\Inventory\Inventory::class); // inventory stub
+        $userMgr = new \Api\User\UserManager($inventory, $logger);
 
         // Mock Mollie interactions
         $paymentId = "tr_456-paymentId"; // payment with id 4
         $mollieApi = $this->createMollieMock($paymentId, $userId, \Api\Model\Product::ENROLMENT, 30);
 
-        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi);
+        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi, $userMgr);
         $enrolmentMgr->processMolliePayment($paymentId);
 
         // reload user to get all updates
         $user = \Api\Model\User::find($userId);
-        $membership = $user->membership()->first(); // get active membership
+        $membership = $user->activeMembership()->first(); // get active membership
         $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE, $membership->status);
         $this->assertEquals(\Api\Model\PaymentMode::MOLLIE, $membership->last_payment_mode);
         $newMembershipId = $membership->id;
@@ -337,27 +385,33 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
     public function testProcessMolliePaymentRenewal() {
         $userId = 4;
         $user = \Api\Model\User::find($userId);
-        $originalMembershipId = $user->membership->id;
+        echo \json_encode($user) . "\n";
+        echo \json_encode($user->activeMembership)."\n";
+        $originalMembershipId = $user->activeMembership->id;
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class); // logger stub
         $mailMgr = $this->createMailMgrMock(true); // mock enrolment confirmation and notification calls
+        $inventory = $this->createMock(\Api\Inventory\Inventory::class); // inventory stub
+        $userMgr = new \Api\User\UserManager($inventory, $logger);
 
         // Mock Mollie interactions
         $paymentId = "tr_123-paymentId"; // payment with id 4
         $mollieApi = $this->createMollieMock($paymentId, $userId, \Api\Model\Product::RENEWAL, 20);
 
-        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi);
+        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi, $userMgr);
         $enrolmentMgr->processMolliePayment($paymentId);
 
         // reload user to get all updates
         $user = \Api\Model\User::find($userId);
+
         $this->assertEquals(\Api\Model\UserState::ACTIVE, $user->state);
         $this->assertEquals(\Api\Model\PaymentMode::MOLLIE, $user->payment_mode);
 
-        $membership = $user->membership()->first(); // get active membership
+        $membership = $user->activeMembership()->first(); // get active membership
         $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE, $membership->status);
         $this->assertEquals(\Api\Model\PaymentMode::MOLLIE, $membership->last_payment_mode);
         $newMembershipId = $membership->id;
 
+        $this->assertEquals(4, $newMembershipId);
         $this->assertNotEquals($originalMembershipId, $newMembershipId); // membership should have been updated
         $originalMembership = \Api\Model\Membership::find($originalMembershipId);
         $this->assertEquals(\Api\Model\Membership::STATUS_EXPIRED, $originalMembership->status);
