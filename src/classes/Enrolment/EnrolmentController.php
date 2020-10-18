@@ -491,7 +491,7 @@ class EnrolmentController
             $enrolmentManager->processMolliePayment($paymentId);
         } catch (EnrolmentException $e) {
 
-            if ($e->getCode() == EnrolmentException::UNKNOWN_USER) {
+            if ($e->getCode() == EnrolmentException::UNKNOWN_USER || $e->getCode() == EnrolmentException::UNKNOWN_PAYMENT) {
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson($e->getMessage());;
             } elseif ($e->getCode() == EnrolmentException::MOLLIE_EXCEPTION) {

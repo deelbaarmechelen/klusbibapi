@@ -341,7 +341,7 @@ class PaymentController implements PaymentControllerInterface
                 || $payment->state == "REFUND"
                 || $payment->state == "CHARGEBACK") {
                 // Permanent failure, or special case -> send notification for manual follow up
-                $this->mailManager->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment);
+                $this->mailManager->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment, "payment failed");
             }
 
         } catch (\Mollie\Api\Exceptions\ApiException $e) {

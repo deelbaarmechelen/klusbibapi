@@ -181,11 +181,12 @@ class MailManager {
             'isRenewal' => $isRenewal);
         return $this->sendTwigTemplate($userEmail, 'enrolment_success_notif', $parameters);
     }
-    public function sendEnrolmentFailedNotification($userEmail, $newUser, $payment, $isRenewal = false) {
+    public function sendEnrolmentFailedNotification($userEmail, $newUser, $payment, $isRenewal = false, $errorMsg = "") {
         $parameters = array(
             'newUser' => $newUser,
             'payment' => $payment,
-            'isRenewal' => $isRenewal);
+            'isRenewal' => $isRenewal,
+            'message' => $errorMsg);
         return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
     }
 

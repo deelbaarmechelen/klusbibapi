@@ -4,7 +4,7 @@
 <div>
     <p>Beste,</p>
     <p>Via de website werd een {% if isRenewal %}lidmaatschap hernieuwing{% else %}nieuw lidmaatschap{% endif %} geregistreerd,
-        maar er trad een probleem op bij de verwerking van de betaling<br/>
+        maar er trad een probleem op bij de verwerking van de betaling ({{ message }})<br/>
         {% if isRenewal %}
         Gebruiker {{ newUser.firstname }} {{ newUser.lastname }} probeerde zijn lidmaatschap te verlengen
         en heeft nu status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )

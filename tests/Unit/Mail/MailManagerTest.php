@@ -5,7 +5,7 @@ use Tests\Mock\PHPMailerMock;
 use Api\Model\User;
 use Api\Model\Tool;
 use Api\Model\Reservation;
-
+use Api\Model\Membership;
 require_once __DIR__ . '/../../test_env.php';
 
 final class MailManagerTest extends TestCase
@@ -157,6 +157,10 @@ final class MailManagerTest extends TestCase
         $user->firstname = "tester";
         $user->lastname = "de mock";
         $user->membership_end_date = date('Y-m-d');
+        $membership = new MembershipTest();
+        $membership->expires_at = new DateTime();
+        $user->membership = $membership;
+
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
         $result = $mailmgr->sendRenewal($user, -7, 'mytoken');
@@ -174,6 +178,10 @@ final class MailManagerTest extends TestCase
         $user->firstname = "tester";
         $user->lastname = "de mock";
         $user->membership_end_date = date('Y-m-d');
+        $membership = new MembershipTest();
+        $membership->expires_at = new DateTime();
+        $user->membership = $membership;
+
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
         $result = $mailmgr->sendRenewalConfirmation($user, \Api\Model\PaymentMode::STROOM);
@@ -365,6 +373,42 @@ if (!class_exists('ReservationTest')) {
         public $startsAt;
         public $endsAt;
         public $type;
+        public $comment;
+
+        /**
+         * Get the connection of the entity.
+         *
+         * @return string|null
+         */
+        public function getQueueableConnection()
+        {
+            // TODO: Implement getQueueableConnection() method.
+        }
+
+        /**
+         * Retrieve the model for a bound value.
+         *
+         * @param  mixed $value
+         * @return \Illuminate\Database\Eloquent\Model|null
+         */
+        public function resolveRouteBinding($value, $field = NULL)
+        {
+            // TODO: Implement resolveRouteBinding() method.
+        }
+    }
+}
+if (!class_exists('MembershipTest')) {
+    class MembershipTest extends Membership
+    {
+        //'id', 'status', 'start_at', 'expires_at', 'subscription_id', 'contact_id',
+        // 'last_payment_mode', 'comment', 'created_at', 'updated_at', 'deleted_at
+        public $id = 999;
+        public $status;
+        public $start_at;
+        public $expires_at;
+        public $subscription_id;
+        public $contact_id;
+        public $last_payment_mode;
         public $comment;
 
         /**
