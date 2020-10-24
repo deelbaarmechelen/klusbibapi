@@ -268,6 +268,7 @@ class EnrolmentManager
             $renewalMembership = $this->renewMembership($nextMembershipType, $this->user->activeMembership);
             $renewalMembership->last_payment_mode = $paymentMode;
             $renewalMembership->payment()->save($payment);
+            $this->user->memberships()->save($renewalMembership);
 
             // Direct activation if payment is already completed
             if ($paymentCompleted) {
@@ -432,9 +433,8 @@ class EnrolmentManager
 //        }
 
         // update membership status
-        $membership = Membership::find($this->user->active_membership);
-        $membership->status = Membership::STATUS_ACTIVE;
-        $membership->save();
+        $currentMembership = Membership::find($this->user->active_membership);
+        $this->activateRenewalMembership($currentMembership, $membership);
 
         // update project participants
         if ($paymentMode == PaymentMode::STROOM) {
