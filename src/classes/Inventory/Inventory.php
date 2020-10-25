@@ -26,7 +26,7 @@ interface Inventory {
     public function toolExists($toolId) : bool;
     public function accessoryExists($accessoryId) : bool;
 
-    public function syncUser(User $user);
+    public function syncUser(User $user) : bool;
     public function postUser(User $user);
 
     /**

@@ -35,10 +35,10 @@ class UserManager
     /**
      * retrieve the local user and check synchronisation with inventory
      * @param $id
-     * @param $sync when true, sync user with inventory
+     * @param $sync when true, force sync of user with inventory
      * @return mixed
      */
-    function getById($id, $sync = true) {
+    function getById($id, $sync = false) {
         $this->logger->debug("UserManager.getById: Get user by ID $id");
 
         try {
@@ -50,14 +50,16 @@ class UserManager
             //       if last_sync_date < updated_at -> sync update (PUT request)
             //       if update_at is null && last_sync_date is null -> sync create (POST request)
             //       if status is deleted && last_sync_date < updated_at -> sync delete (DELETE request)
-            if ($sync) {
+            if ($sync || $this->syncRequired($user)) {
                 $this->logger->debug("UserManager.getById: Found user with ID $id and sync with inventory: " . json_encode($user));
                 if (isset($user->user_ext_id)) {
                     $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
                     if ($inventoryUser == null) {
                         $this->addToInventory($user);
                     } elseif (!$this->inventoryUpToDate($user, $inventoryUser)) {
-                        $this->updateInventory($user);
+                        $this->logger->info("inventory not up to date for user " . \json_encode($user) .
+                            " - inventory user: " . \json_encode($inventoryUser));
+                        $result = $this->updateInventory($user);
                     }
                 } else {
                     $this->addToInventory($user);
@@ -132,7 +134,11 @@ class UserManager
         $this->logger->debug("Add user to inventory: " . json_encode($user));
         $inventoryUser = null;
         if (!$this->inventory->userExists($user)) {
-            $this->inventory->syncUser($user);
+            $result = $this->inventory->syncUser($user);
+            if (isset($result) && $result == true) {
+                $user->last_sync_date = new \DateTime();
+                $user->save();
+            }
 //            $inventoryUser = $this->inventory->postUser($user);
 //            if (is_null($inventoryUser) || !($inventoryUser instanceof User)) {
 //                throw new \RuntimeException("Error creating inventory user (response=" . $inventoryUser . ")");
@@ -154,14 +160,29 @@ class UserManager
      * Update inventory based on $user
      * Make sure $user->user_ext_id is correctly set
      * @param $user
+     * @return true if inventory update was successful
      */
-    protected function updateInventory($user) {
+    protected function updateInventory($user) : bool {
         $this->logger->debug("Inventory update requested for user " . json_encode($user));
-        $this->inventory->syncUser($user);
-//        $this->inventory->updateUser($user);
-//        $this->inventory->updateUserState($user);
+        $result = $this->inventory->syncUser($user);
+        if (isset($result) && $result == true) {
+            $user->last_sync_date = new \DateTime();
+            $user->save();
+        }
+        return $result;
     }
     protected function getByIdFromInventory($id) {
         return $this->inventory->getUserByExtId($id);
+    }
+
+    /**
+     * Check if sync with inventory is needed
+     * @param $user a local user
+     * @return bool true if user needs to be synced with inventory
+     */
+    private function syncRequired(User $user): bool
+    {
+        return $user->last_sync_date == null              // user has not been synced with inventory yet
+            || $user->last_sync_date < $user->updated_at; // user has been updated since last sync
     }
 }

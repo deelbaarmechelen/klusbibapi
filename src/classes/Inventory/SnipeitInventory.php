@@ -259,7 +259,8 @@ class SnipeitInventory implements Inventory
         return $tools;
     }
 
-    public function syncUser(User $user) {
+    public function syncUser(User $user) : bool {
+        $this->logger->info("syncing user $user->user_id with inventory");
         $data = array();
         if (isset($user->firstname)) {
             $data['first_name'] = $user->firstname;
@@ -278,15 +279,27 @@ class SnipeitInventory implements Inventory
         }
         // TODO: add notification in case of error for manual recovery?
         if ($user->state == UserState::DELETED && isset($user->user_ext_id)) {
-            return $this->delete('klusbib/sync/users/' . $user->user_ext_id);
+            $response = $this->delete('klusbib/sync/users/' . $user->user_ext_id);
+            if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
+                return true;
+            }
+            return false;
         } elseif (isset($user->user_ext_id)) {
             // update existing inventory user
-            return $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
+            $response = $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
+            if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
+                return true;
+            }
+            return false;
         } else {
             // newly created user or inexistent in inventory
             $inventoryUser = $this->post('klusbib/sync/users', $data);
-            $user->user_ext_id = $inventoryUser->id;
-            $user->save();
+            if (isset($inventoryUser) && isset($inventoryUser->id)) {
+                $user->user_ext_id = $inventoryUser->id;
+                $user->save();
+                return true;
+            }
+            return false;
         }
     }
 
