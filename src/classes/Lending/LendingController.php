@@ -55,6 +55,18 @@ class LendingController implements LendingControllerInterface
         if (!isset($perPage)) {
             $perPage = '1000';
         }
+        $expandTool = $request->getQueryParam('_expandTool');
+        if (!isset($expandTool)) {
+            $expandTool = false; // tool is remote, so default to false
+        } else {
+            $expandTool = filter_var($expandTool, FILTER_VALIDATE_BOOLEAN);
+        }
+        $expandUser = $request->getQueryParam('_expandUser');
+        if (!isset($expandUser)) {
+            $expandUser = true; // user is local, so default to true
+        } else {
+            $expandUser = filter_var($expandUser, FILTER_VALIDATE_BOOLEAN);
+        }
         $query = Lending::valid();
         $userId = $request->getQueryParam('user_id');
         $toolId = $request->getQueryParam('tool_id');
@@ -82,21 +94,25 @@ class LendingController implements LendingControllerInterface
         $data = array();
         foreach ($lendings_page as $lending) {
             $lendingData = LendingMapper::mapLendingToArray($lending);
-            // lookup tool and add it to data
-            $tool = $this->toolManager->getByIdAndType($lending->tool_id, $lending->tool_type);
-            if (isset($tool)) {
-                if ($tool->tool_type = ToolType::TOOL) {
-                    $lendingData['tool'] = ToolMapper::mapToolToArray($tool);
-                } else if ($tool->tool_type = ToolType::ACCESSORY) {
-                    $lendingData['tool'] = ToolMapper::mapAccessoryToArray($tool);
+            if ($expandTool) {
+                // lookup tool and add it to data
+                $tool = $this->toolManager->getByIdAndType($lending->tool_id, $lending->tool_type);
+                if (isset($tool)) {
+                    if ($tool->tool_type = ToolType::TOOL) {
+                        $lendingData['tool'] = ToolMapper::mapToolToArray($tool);
+                    } else if ($tool->tool_type = ToolType::ACCESSORY) {
+                        $lendingData['tool'] = ToolMapper::mapAccessoryToArray($tool);
+                    }
                 }
             }
-            $user = $this->userManager->getById($lending->user_id, false);
+            if ($expandUser) {
+                $user = $this->userManager->getById($lending->user_id, false);
 
-            if (isset($user)) {
-                $this->logger->info('user found: ' . \json_encode($user));
-                $lendingData['user'] = UserMapper::mapUserToArray($user);
-                $this->logger->info(\json_encode($lendingData));
+                if (isset($user)) {
+                    $this->logger->info('user found: ' . \json_encode($user));
+                    $lendingData['user'] = UserMapper::mapUserToArray($user);
+                    $this->logger->info(\json_encode($lendingData));
+                }
             }
             array_push($data, $lendingData);
         }
