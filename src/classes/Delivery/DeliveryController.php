@@ -2,6 +2,7 @@
 
 namespace Api\Delivery;
 
+use Api\Validator\DeliveryValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Exception\ForbiddenException;
 use Api\ModelMapper\DeliveryMapper;
@@ -56,16 +57,17 @@ class DeliveryController
             ->withHeader('X-Total-Count', count($deliveries));
     }
 
-   /*  public function getByID($request, $response, $args) {
-        $this->logger->info("Klusbib GET '/reservations/id' route");
-        $reservation = \Api\Model\Reservation::find($args['reservationid']);
-        if (null == $reservation) {
+    public function getByID($request, $response, $args) {
+        $this->logger->info("Klusbib GET '/deliveries/id' route");
+        $delivery = \Api\Model\Delivery::find($args['deliveryid']);
+        if (null == $delivery) {
             return $response->withStatus(404);
         }
 
-        $data = ReservationMapper::mapReservationToArray($reservation);
+        $data = DeliveryMapper::mapDeliveryToArray($delivery);
         return $response->withJson($data);
-    } */
+    }
+
     public function create($request, $response, $args) {
         $this->logger->info("Klusbib POST '/deliveries' route");
 
@@ -74,25 +76,37 @@ class DeliveryController
 
         $data = $request->getParsedBody();
         $errors = array();
-        /*if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
+        if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
             return $response->withStatus(400)->withJson($errors); // Bad request
-        }*/
-        $this->logger->info("Reservation request is valid");
+        }
+        $this->logger->info("Delivery request is valid");
         $delivery = new \Api\Model\Delivery();
 
         if(isset($data["user_id"])){
             $delivery->user_id = $data["user_id"];
         }
-        $delivery->reservation_id = $data["reservation_id"];
+        if(isset($data["reservation_id"])) {
+            $delivery->reservation_id = $data["reservation_id"];
+        }
         if(isset($data["state"])){
             $delivery->state = $data["state"];
         }
-        $delivery->pick_up_address = $data["pick_up_address"];
-        $delivery->drop_off_address = $data["drop_off_address"];
-        $delivery->comment = $data["comment"];
-        $delivery->pick_up_date = $data["pick_up_date"];
-        $delivery->drop_off_date = $data["drop_off_date"];
-                
+        if(isset($data["pick_up_address"])) {
+            $delivery->pick_up_address = $data["pick_up_address"];
+        }
+        if(isset($data["drop_off_address"])) {
+            $delivery->drop_off_address = $data["drop_off_address"];
+        }
+        if(isset($data["comment"])) {
+            $delivery->comment = $data["comment"];
+        }
+        if(isset($data["pick_up_date"])) {
+            $delivery->pick_up_date = $data["pick_up_date"];
+        }
+        if(isset($data["drop_off_date"])) {
+            $delivery->drop_off_date = $data["drop_off_date"];
+        }
+
         /*$access = Authorisation::checkReservationAccess($this->token, "create", $delivery, $toolOwnerId);
         $this->logger->info("Reservation access check: " . $access);
         if ($access === AccessType::NO_ACCESS) {
@@ -121,9 +135,9 @@ class DeliveryController
         $data = $request->getParsedBody();
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
         $errors = array();
-        /*if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
+        if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
             return $response->withStatus(400)->withJson($errors); // Bad request
-        }*/
+        }
         $access = Authorisation::checkDeliveryAccess($this->token, "update", $delivery, $this->logger);
         if ($access === AccessType::NO_ACCESS) {
             return $response->withStatus(403); // Unauthorized
