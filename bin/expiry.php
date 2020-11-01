@@ -28,11 +28,11 @@ foreach ($users as $user) {
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
     echo "email: " . $user->email . "\n";
-    if ($user->membership()->exists()) {
-        $membership = $user->membership()->first();
+    if ($user->activeMembership()->exists()) {
+        $membership = $user->activeMembership()->first();
         $membership->status = \Api\Model\Membership::STATUS_EXPIRED;
         $membership->save();
-        $user->state = 'EXPIRED';
+        $user->state = \Api\Model\UserState::EXPIRED;
         $user->save();
     }
 }
