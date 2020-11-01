@@ -123,8 +123,8 @@ function markAsDeleted($users)
             $user->role = UserRole::SUPPORTER;
         } else {
             // cancel membership
-            if ($user->membership()->exists()) {
-                $membership = $user->membership()->first();
+            if ($user->activeMembership()->exists()) {
+                $membership = $user->activeMembership()->first();
                 $membership->status = \Api\Model\Membership::STATUS_CANCELLED;
                 $membership->save();
             }
