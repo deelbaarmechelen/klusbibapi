@@ -4,6 +4,7 @@ namespace Api\Tool;
 
 use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
+use Api\Model\InventoryItem;
 use Api\Model\Tool;
 use Api\Model\ToolType;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -59,12 +60,62 @@ class ToolManager
 //        $tool = \Api\Model\Tool::find($id);
 
         // TODO: create or update corresponding tool in local db??
-        // needed to store mutliple images and handle reservations
+        // needed to store multiple images and handle reservations
         return $tool;
     }
     public function getAccessoryById($id) {
         $accessory = $this->getAccessoryByIdFromInventory($id);
         return $accessory;
+    }
+
+    public function sync() {
+        $syncTime = new \DateTime();
+        // sync tools
+        $toolItems = $this->inventory->getInventoryItems(ToolType::TOOL);
+        foreach($toolItems as $item) {
+            echo "Syncing tool with id " . $item->id . "\n";
+            $existingItem = InventoryItem::find($item->id);
+            if ($existingItem === null) {
+                // save will create new item
+                echo "creating new tool item " . $item->id . "\n";
+                $item->last_sync_date = $syncTime;
+                $item->save();
+            } else {
+                // update item values
+                echo "updating tool item " . $item->id . "\n";
+                $this->updateExistingItem($item, $existingItem);
+
+                $existingItem->last_sync_date = $syncTime;
+                $existingItem->save();
+            }
+
+        }
+        // sync accessories
+        $accessories = $this->inventory->getInventoryItems(ToolType::ACCESSORY);
+//        $accessories = $this->getAllAccessories();
+        foreach($accessories as $accessory) {
+            echo "Syncing accessory with id " . $accessory->accessory_id . "\n";
+            $existingAccessory = InventoryItem::find($accessory->id);
+            if ($existingAccessory === null) {
+                // save will create new item
+                echo "creating new accessory item " . $accessory->id . "\n";
+                $accessory->last_sync_date = $syncTime;
+                $accessory->save();
+            } else {
+                // update item values
+                echo "updating accessory item " . $accessory->id . "\n";
+                $this->updateExistingItem($accessory, $existingAccessory);
+
+                $existingAccessory->last_sync_date = $syncTime;
+                $existingAccessory->save();
+            }
+        }
+
+        // Delete all other items
+        InventoryItem::outOfSync($syncTime)->delete();
+    }
+    public function syncAccessory($id) {
+        $accessory = $this->getAccessoryByIdFromInventory($id);
     }
 
     protected function getByIdFromInventory($id) {
@@ -185,5 +236,40 @@ class ToolManager
             return false;
         }
         return $tool->category == $category;
+    }
+
+    /**
+     * @param $item
+     * @param $existingItem
+     */
+    private function updateExistingItem($item, $existingItem): void
+    {
+        $existingItem->name = $item->name;
+        $existingItem->item_type = $item->item_type;
+        $existingItem->created_by = $item->created_by;
+        $existingItem->assigned_to = $item->assigned_to;
+        $existingItem->current_location_id = $item->current_location_id;
+        $existingItem->item_condition = $item->item_condition;
+        $existingItem->sku = $item->sku;
+        $existingItem->description = $item->description;
+        $existingItem->keywords = $item->keywords;
+        $existingItem->brand = $item->brand;
+        $existingItem->care_information = $item->care_information;
+        $existingItem->component_information = $item->component_information;
+        $existingItem->loan_fee = $item->loan_fee;
+        $existingItem->max_loan_days = $item->max_loan_days;
+        $existingItem->is_active = $item->is_active;
+        $existingItem->show_on_website = $item->show_on_website;
+        $existingItem->serial = $item->serial;
+        $existingItem->note = $item->note;
+        $existingItem->price_cost = $item->price_cost;
+        $existingItem->price_sell = $item->price_sell;
+        $existingItem->image_name = $item->image_name;
+        $existingItem->short_url = $item->short_url;
+        $existingItem->item_sector = $item->item_sector;
+        $existingItem->is_reservable = $item->is_reservable;
+        $existingItem->deposit_amount = $item->deposit_amount;
+        $existingItem->donated_by = $item->donated_by;
+        $existingItem->owned_by = $item->owned_by;
     }
 }

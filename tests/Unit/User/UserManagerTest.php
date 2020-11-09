@@ -13,7 +13,8 @@ final class UserManagerTest extends TestCase
         // FIXME: complete test
         $inventory = null;
         $logger = null;
-        $userMgr = new UserManager($inventory, $logger);
+        $mailMgr = new MailManager(null, null, $logger);
+        $userMgr = new UserManager($inventory, $logger, $mailMgr);
         $id = "123";
         $user = $userMgr->getById($id);
         $this->assertTrue(isset($user));

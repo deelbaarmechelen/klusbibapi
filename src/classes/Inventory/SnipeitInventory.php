@@ -6,6 +6,7 @@ use Api\Exception\InventoryException;
 use Api\Model\Accessory;
 use Api\Model\ToolState;
 use Api\Inventory\SnipeitToolMapper;
+use Api\Model\ToolType;
 use Api\Model\UserState;
 use Api\Tool\NotFoundException;
 use Doctrine\Common\Cache\FilesystemCache;
@@ -159,6 +160,30 @@ class SnipeitInventory implements Inventory
         return false;
     }
 
+    public function getInventoryItems($toolType, $offset = 0, $limit=1000) {
+        $items = new Collection();
+        if ($toolType == ToolType::TOOL) {
+            $assets = $this->get('hardware?offset=' . $offset . '&limit=' . $limit . '&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
+            echo \json_encode($assets);
+            foreach ($assets->rows as $asset) {
+                $item = SnipeitToolMapper::mapAssetToItem($asset);
+                $items->add($item);
+            }
+
+        } else if ($toolType == ToolType::ACCESSORY) {
+            $snipeAccessories = $this->get('accessories?offset=' . $offset . '&limit=' . $limit . '&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
+
+            foreach ($snipeAccessories->rows as $snipeAccessory) {
+                $item = SnipeitToolMapper::mapAccessoryToItem($snipeAccessory);
+                $items->add($item);
+            }
+        } else {
+            throw new \Exception("Invalid tool type: " . $toolType);
+        }
+
+        return $items;
+    }
+
     /**
      * Lookup user in inventory based on external id
      * @param $id the user_ext_id aka snipeIt Person.id
@@ -283,14 +308,22 @@ class SnipeitInventory implements Inventory
             if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
                 return true;
             }
-            return false;
+            $message = "sync of user $user->user_id failed (delete)";
+            if (isset($response)) {
+                $message .= ": response " . \json_encode($response);
+            }
+            throw new InventoryException($message);
         } elseif (isset($user->user_ext_id)) {
             // update existing inventory user
             $response = $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
             if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
                 return true;
             }
-            return false;
+            $message = "sync of user $user->user_id failed (put)";
+            if (isset($response)) {
+                $message .= ": response " . \json_encode($response);
+            }
+            throw new InventoryException($message);
         } else {
             // newly created user or inexistent in inventory
             $inventoryUser = $this->post('klusbib/sync/users', $data);
@@ -299,7 +332,11 @@ class SnipeitInventory implements Inventory
                 $user->save();
                 return true;
             }
-            return false;
+            $message = "sync of user $user->user_id failed (post)";
+            if (isset($inventoryUser)) {
+                $message .= ": response " . \json_encode($inventoryUser);
+            }
+            throw new InventoryException($message);
         }
     }
 
@@ -451,11 +488,11 @@ class SnipeitInventory implements Inventory
                 throw new \Api\Exception\NotFoundException();
             }
             else if (isset($statusCode) && ($statusCode >= 500)) {
-                throw new \Api\Exception\InventoryException("Unable to access inventory", null, $clientException);
+                throw new \Api\Exception\InventoryException("Unable to access inventory (" . $clientException->getMessage().")", null, $clientException);
             }
-            throw new \Api\Exception\InventoryException("Unexpected client exception!!", null, $clientException);
+            throw new \Api\Exception\InventoryException("Unexpected client exception!! (" . $clientException->getMessage().")", null, $clientException);
         } catch (ServerException $serverException) {
-            throw new \Api\Exception\InventoryException("Inventory unavailable", null, $serverException);
+            throw new \Api\Exception\InventoryException("Inventory unavailable (" . $serverException->getMessage().")", null, $serverException);
         }
 
         if ($res->getStatusCode() >= 400){

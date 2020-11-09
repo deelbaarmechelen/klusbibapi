@@ -223,6 +223,44 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $renewalMembership->status);
         $this->assertEquals(\Api\Model\PaymentMode::TRANSFER,  $renewalMembership->last_payment_mode);
     }
+    public function testRenewalByTransferDone() {
+        $user = \Api\Model\User::find(3);
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class); // logger stub
+        $logger->expects($this->any())->method('info');
+        $mailMgr = $this->getMockBuilder(\Api\Mail\MailManager::class) // mail mgr mock
+            ->getMock();
+        // should send a confirmation to user
+        $mailMgr->expects($this->once())
+            ->method('sendRenewalConfirmation')
+            ->with($user, \Api\Model\PaymentMode::TRANSFER);
+
+        $mollieApi = new \Tests\Mock\MollieApiClientMock();
+        $user->state = \Api\Model\UserState::ACTIVE;
+        $inventory = $this->createMock(\Api\Inventory\Inventory::class); // inventory stub
+        $userMgr = new \Api\User\UserManager($inventory, $logger);
+        $originalMembershipId = $user->activeMembership->id; // save id of original membership
+
+        $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi, $userMgr);
+        $orderId = "order123";
+        $enrolmentMgr->renewalByTransfer($orderId, true);
+
+        $user = \Api\Model\User::find($user->user_id);
+        $originalMembership = \Api\Model\Membership::find($originalMembershipId);
+        $this->assertEquals(\Api\Model\Membership::STATUS_EXPIRED,  $originalMembership->status); // original membership expired
+        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->activeMembership->status); // current membership active
+
+        // lookup newly created payment
+        $payment = \Api\Model\Payment::where([
+            ['order_id', '=', $orderId],
+            ['user_id', '=', $user->user_id],
+            ['mode', '=', \Api\Model\PaymentMode::TRANSFER],
+        ])->first();
+        $this->assertNotEmpty($payment);
+        $renewalMembership = $payment->membership;
+        echo \json_encode($renewalMembership);
+        $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE, $renewalMembership->status);
+        $this->assertEquals(\Api\Model\PaymentMode::TRANSFER, $renewalMembership->last_payment_mode);
+    }
 
     public function testRenewalByMollie() {
         // FIXME: upgrade of phpunit required (and switch to createStub?)

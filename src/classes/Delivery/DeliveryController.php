@@ -2,6 +2,8 @@
 
 namespace Api\Delivery;
 
+use Api\Model\InventoryItem;
+use Api\Util\HttpResponseCode;
 use Api\Validator\DeliveryValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Exception\ForbiddenException;
@@ -25,23 +27,29 @@ class DeliveryController
     public function getAll($request, $response, $args) {
        $this->logger->info("Klusbib GET '/deliveries' route");
 
- /*         $sortdir = $request->getQueryParam('_sortDir');
-        if (!isset($sortdir)) {
-            $sortdir = 'asc';
-        }
-        $sortfield = $request->getQueryParam('_sortField');
-        if (!Reservation::canBeSortedOn($sortfield) ) {
-            $sortfield = 'reservation_id';
-        }
-        $page = $request->getQueryParam('_page');
-        if (!isset($page)) {
-            $page = '1';
-        }
-        $perPage = $request->getQueryParam('_perPage');
-        if (!isset($perPage)) {
-            $perPage = '50';
-        }
-        $query= $request->getQueryParam('_query'); */
+       try {
+           Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.list"]);
+       } catch (ForbiddenException $ex) {
+           return $response->withStatus($ex->getCode()); // Unauthorized
+       }
+
+        /*         $sortdir = $request->getQueryParam('_sortDir');
+               if (!isset($sortdir)) {
+                   $sortdir = 'asc';
+               }
+               $sortfield = $request->getQueryParam('_sortField');
+               if (!Reservation::canBeSortedOn($sortfield) ) {
+                   $sortfield = 'reservation_id';
+               }
+               $page = $request->getQueryParam('_page');
+               if (!isset($page)) {
+                   $page = '1';
+               }
+               $perPage = $request->getQueryParam('_perPage');
+               if (!isset($perPage)) {
+                   $perPage = '50';
+               }
+               $query= $request->getQueryParam('_query'); */
 
         $querybuilder = Capsule::table('deliveries')
             ->select('*');
@@ -61,7 +69,7 @@ class DeliveryController
         $this->logger->info("Klusbib GET '/deliveries/id' route");
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
         if (null == $delivery) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
 
         $data = DeliveryMapper::mapDeliveryToArray($delivery);
@@ -71,13 +79,13 @@ class DeliveryController
     public function create($request, $response, $args) {
         $this->logger->info("Klusbib POST '/deliveries' route");
 
-        /*Authorisation::checkAccessByToken($this->token,
-            ["reservations.all", "reservations.create", "reservations.create.owner", "reservations.create.owner.donation_only"]);*/
+        Authorisation::checkAccessByToken($this->token,
+            ["deliveries.all", "deliveries.create", "deliveries.create.owner", "deliveries.create.owner.donation_only"]);
 
         $data = $request->getParsedBody();
         $errors = array();
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
-            return $response->withStatus(400)->withJson($errors); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
         $this->logger->info("Delivery request is valid");
         $delivery = new \Api\Model\Delivery();
@@ -136,11 +144,11 @@ class DeliveryController
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
         $errors = array();
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
-            return $response->withStatus(400)->withJson($errors); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
         $access = Authorisation::checkDeliveryAccess($this->token, "update", $delivery, $this->logger);
         if ($access === AccessType::NO_ACCESS) {
-            return $response->withStatus(403); // Unauthorized
+            return $response->withStatus(HttpResponseCode::FORBIDDEN); // Unauthorized
         }
         $confirmation = false;
         $cancellation = false;
@@ -188,29 +196,29 @@ class DeliveryController
         }
         $delivery->save();
         /*if ($confirmation) {
-            // Send notification to confirm the reservation
+            // Send notification to confirm the delivery
             $this->logger->info('Sending notification for confirmation of reservation ' . json_encode($delivery));
             $tool = $this->toolManager->getById($delivery->tool_id);
             $isSendSuccessful = $this->mailManager->sendReservationConfirmation($delivery->user->email,
-                $delivery->user, $tool, $delivery, RESERVATION_NOTIF_EMAIL);
+                $delivery->user, $tool, $delivery, DELIVERY_NOTIF_EMAIL);
             if ($isSendSuccessful) {
                 $this->logger->info('confirm notification email sent successfully to ' . $delivery->user->email);
             } else {
                 $message = $this->mailManager->getLastMessage();
-                $this->logger->warn('Problem sending confirm_reservation notification email: '. $message);
+                $this->logger->warn('Problem sending confirm_delivery notification email: '. $message);
             }
         }
         if ($cancellation) {
-            // Send notification to confirm the reservation
-            $this->logger->info('Sending notification for cancel of reservation ' . json_encode($reservation));
+            // Send notification to confirm the delivery
+            $this->logger->info('Sending notification for cancel of delivery ' . json_encode($delivery));
             $tool = $this->toolManager->getById($reservation->tool_id);
-            $isSendSuccessful = $this->mailManager->sendReservationCancellation($reservation->user->email,
-                $reservation->user, $tool, $reservation, RESERVATION_NOTIF_EMAIL, $this->token->decoded->sub);
+            $isSendSuccessful = $this->mailManager->sendReservationCancellation($delivery->user->email,
+                $reservation->user, $tool, $reservation, DELIVERY_NOTIF_EMAIL, $this->token->decoded->sub);
             if ($isSendSuccessful) {
-                $this->logger->info('cancel notification email sent successfully to ' . $reservation->user->email);
+                $this->logger->info('cancel notification email sent successfully to ' . $delivery->user->email);
             } else {
                 $message = $this->mailManager->getLastMessage();
-                $this->logger->warn('Problem sending cancel_reservation notification email: '. $message);
+                $this->logger->warn('Problem sending cancel_delivery notification email: '. $message);
             }
         }*/
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery));
@@ -222,9 +230,55 @@ class DeliveryController
         // TODO: only allow delete of own reservations if access is reservations.delete.owner
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
         if (null == $delivery) {
-            return $response->withStatus(204);
+            return $response->withStatus(HttpResponseCode::NO_CONTENT);
         }
         $delivery->delete();
-        return $response->withStatus(200);
-    } 
+        return $response->withStatus(HttpResponseCode::OK);
+    }
+
+    public function addItem($request, $response, $args) {
+        $this->logger->info("Klusbib POST '/deliveries/{delivery_id}/items' route");
+        Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
+        $delivery = \Api\Model\Delivery::find($args['deliveryid']);
+        if (null == $delivery) {
+            return $response->withStatus(HttpResponseCode::NOT_FOUND)
+                ->withJson(array("message" => "Delivery not found!"));
+        }
+        $data = $request->getParsedBody();
+        $this->logger->info("Klusbib PUT body: ". json_encode($data));
+        $item = InventoryItem::find($data['item_id']);
+        if (null == $item) {
+            return $response->withStatus(HttpResponseCode::NOT_FOUND)
+                ->withJson(array("message" => "Item not found!"));
+        }
+        $delivery->items()->attach($item);
+        $delivery->save();
+
+    }
+    public function updateItem($request, $response, $args) {
+        $this->logger->info("Klusbib PUT '/deliveries/{delivery_id}/items/{item_id}' route");
+        // update quantity?
+        Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
+        $delivery = \Api\Model\Delivery::find($args['deliveryid']);
+        if (null == $delivery) {
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
+        }
+    }
+    public function removeItem($request, $response, $args) {
+        $this->logger->info("Klusbib DELETE '/deliveries/{delivery_id}/items/{item_id}' route");
+        Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
+        $delivery = \Api\Model\Delivery::find($args['deliveryid']);
+        if (null == $delivery) {
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
+        }
+        $item = InventoryItem::find($args['itemid']);
+        if (null == $item) {
+            return $response->withStatus(HttpResponseCode::NOT_FOUND)
+                ->withJson(array("message" => "Item not found!"));
+        }
+        $delivery->items()->detach($args['itemid']);
+        $delivery->save();
+
+    }
+
 }

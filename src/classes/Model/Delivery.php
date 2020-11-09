@@ -18,4 +18,10 @@ class Delivery extends Model
 		}
 		return in_array($field, Delivery::$fieldArray);
 	}
+
+    public function items() {
+        return $this->belongsToMany('Api\Model\InventoryItem', 'delivery_item',
+            'delivery_id', 'inventory_item_id');
+    }
+
 }

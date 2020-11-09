@@ -4,6 +4,7 @@ namespace Api\User;
 
 use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
+use Api\Mail\MailManager;
 use Api\Model\UserState;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,17 +19,20 @@ use Api\ModelMapper\UserMapper;
 class UserManager
 {
     public static function instance($logger) {
-        return new UserManager(SnipeitInventory::instance(), $logger);
+        return new UserManager(SnipeitInventory::instance(), $logger, new MailManager(null, null, $logger));
     }
     private $inventory;
     private $logger;
+    private $mailManager;
+
     /**
      * UserManager constructor.
      */
-    public function __construct(Inventory $inventory, $logger)
+    public function __construct(Inventory $inventory, $logger, MailManager $mailManager = null)
     {
         $this->inventory = $inventory;
         $this->logger = $logger;
+        $this->mailManager = $mailManager;
     }
 
     // FIXME: catch Inventory exceptions to make it non blocking and avoid exposing internals to caller
@@ -133,27 +137,34 @@ class UserManager
     protected function addToInventory($user) {
         $this->logger->debug("Add user to inventory: " . json_encode($user));
         $inventoryUser = null;
-        if (!$this->inventory->userExists($user)) {
-            $result = $this->inventory->syncUser($user);
-            if (isset($result) && $result == true) {
-                $user->last_sync_date = new \DateTime();
-                $user->save();
-            }
+        try {
+            if (!$this->inventory->userExists($user)) {
+                $result = $this->inventory->syncUser($user);
+                if (isset($result) && $result == true) {
+                    $user->last_sync_date = new \DateTime();
+                    $user->save();
+                }
 //            $inventoryUser = $this->inventory->postUser($user);
 //            if (is_null($inventoryUser) || !($inventoryUser instanceof User)) {
 //                throw new \RuntimeException("Error creating inventory user (response=" . $inventoryUser . ")");
 //            }
-        } else {
-            // lookup user_ext_id
-            $inventoryUser = $this->inventory->getUserByEmail($user->email);
-            $user->user_ext_id = $inventoryUser->user_ext_id;
-            $user->save();
-            $this->updateInventory($user); // update user_ext_id
-        }
+            } else {
+                // lookup user_ext_id
+                $inventoryUser = $this->inventory->getUserByEmail($user->email);
+                $user->user_ext_id = $inventoryUser->user_ext_id;
+                $user->save();
+                $this->updateInventory($user); // update user_ext_id
+            }
 
-        $this->logger->debug("User added to inventory: " . json_encode($user));
+            $this->logger->debug("User added to inventory: " . json_encode($user));
 //        $user->user_ext_id = $inventoryUser->user_ext_id;
 //        $user->save();
+        } catch (\Exception $ex) {
+            $this->logger->error('Error adding user ' . $user->user_id . ' to inventory: ' . $ex->getMessage());
+            $context = "UserManager::addToInventory; user=" . \json_encode($user);
+            $this->mailManager->sendErrorNotif($ex->getMessage(), $context);
+            return false;
+        }
     }
 
     /**
@@ -164,12 +175,19 @@ class UserManager
      */
     protected function updateInventory($user) : bool {
         $this->logger->debug("Inventory update requested for user " . json_encode($user));
-        $result = $this->inventory->syncUser($user);
-        if (isset($result) && $result == true) {
-            $user->last_sync_date = new \DateTime();
-            $user->save();
+        try {
+            $result = $this->inventory->syncUser($user);
+            if (isset($result) && $result == true) {
+                $user->last_sync_date = new \DateTime();
+                $user->save();
+            }
+            return $result;
+        } catch (\Exception $ex) {
+            $this->logger->error('Error updating user ' . $user->user_id . ' to inventory: ' . $ex->getMessage());
+            $context = "UserManager::updateInventory; user=" . \json_encode($user);
+            $this->mailManager->sendErrorNotif($ex->getMessage(), $context);
+            return false;
         }
-        return $result;
     }
     protected function getByIdFromInventory($id) {
         return $this->inventory->getUserByExtId($id);

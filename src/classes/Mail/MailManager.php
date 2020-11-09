@@ -45,6 +45,12 @@ class MailManager {
         }
     }
 
+    public function sendErrorNotif($message, $context = "") {
+        $parameters = array(
+            'message' => $message,
+            'context' => $context);
+        return $this->sendTwigTemplate(SUPPORT_NOTIF_EMAIL, 'error_notif', $parameters);
+    }
 	public function sendEmailVerification($userId, $userName, $to, $token) {
         if ($this->logger) {
             $this->logger->debug("Sending email verification " . $to . " (user name=" . $userName . "; id=" . $userId . ")");
@@ -190,7 +196,7 @@ class MailManager {
         return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
     }
 
-    public function sendEnrolmentConfirmation(User $user, $paymentMode) {
+    public function sendEnrolmentConfirmation(User $user, $paymentMode, $paymentCompleted = false) {
         $scopes = ["auth.confirm"];
         $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"));
         $link = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
@@ -202,6 +208,7 @@ class MailManager {
             'amount' => Settings::ENROLMENT_AMOUNT,
             'membership_year' => $membership_year,
             'confirmEmail' => !$user->isEmailConfirmed(),
+            'paymentCompleted' => $paymentCompleted,
             'link' => $link,
             'enqueteLink' => Settings::ENQUETE_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
@@ -277,7 +284,7 @@ class MailManager {
             'membership_year' => $membership_year);
         return $this->sendTwigTemplate($user->email, 'resume_enrolment_reminder', $parameters);
     }
-    public function sendRenewalConfirmation($user, $paymentMode) {
+    public function sendRenewalConfirmation($user, $paymentMode, $paymentCompleted = false) {
 //        $membership_year = $this->getMembershipYear($user->membership_end_date);
         $membership_year = $this->getMembershipYear($user->activeMembership->expires_at->format('Y-m-d'));
         $parameters = array(
@@ -286,6 +293,7 @@ class MailManager {
             'account' => Settings::ACCOUNT_NBR,
             'amount' => Settings::RENEWAL_AMOUNT,
             'membership_year' => $membership_year,
+            'paymentCompleted' => $paymentCompleted,
             'enqueteLink' => Settings::ENQUETE_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,

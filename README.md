@@ -20,9 +20,9 @@ Database can be installed with phinx migrations
 * connecting to container with SSH
 * sudo -u dokku -i
 * docker ps (get containerId)
-* docker exec -ti <containerId> /bin/bash
-OR
 * docker exec -ti <containerName> /bin/bash (e.g. api.web.1)
+OR
+* dokku enter api
 * cd /app
 * /app/.heroku/php/bin/php /app/vendor/robmorgan/phinx/bin/phinx migrate -e dokku
 * Run project seeder to create STROOM project
