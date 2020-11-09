@@ -261,7 +261,7 @@ class ToolManager
         $existingItem->is_active = $item->is_active;
         $existingItem->show_on_website = $item->show_on_website;
         $existingItem->serial = $item->serial;
-        $existingItem->note = $item->note;
+        $existingItem->note = (isset($item) && strlen($item) > 128) ? substr($item->note, 0, 125) . "..." : $item->note;
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
         $existingItem->image_name = $item->image_name;
