@@ -314,6 +314,7 @@ class SnipeitInventory implements Inventory
                 }
                 throw new InventoryException($message);
             }
+            return true; // user does not exist yet on inventory, nothing to remove
         } else {
             if (isset($user->user_ext_id)) {
                 // update existing inventory user
