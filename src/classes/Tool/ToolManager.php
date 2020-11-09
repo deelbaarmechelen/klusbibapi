@@ -86,6 +86,7 @@ class ToolManager
                 $this->updateExistingItem($item, $existingItem);
 
                 $existingItem->last_sync_date = $syncTime;
+                echo "item to be saved: ".\json_encode($existingItem);
                 $existingItem->save();
             }
 
