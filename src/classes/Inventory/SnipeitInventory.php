@@ -164,7 +164,6 @@ class SnipeitInventory implements Inventory
         $items = new Collection();
         if ($toolType == ToolType::TOOL) {
             $assets = $this->get('hardware?offset=' . $offset . '&limit=' . $limit . '&company_id=' . SnipeitInventory::COMPANY_ID_KLUSBIB);
-            echo \json_encode($assets);
             foreach ($assets->rows as $asset) {
                 $item = SnipeitToolMapper::mapAssetToItem($asset);
                 $items->add($item);
@@ -303,7 +302,8 @@ class SnipeitInventory implements Inventory
             $data['state'] = $user->state;
         }
         // TODO: add notification in case of error for manual recovery?
-        if ($user->state == UserState::DELETED && isset($user->user_ext_id)) {
+        if (($user->state == UserState::DELETED || $user->state == UserState::DISABLED)
+            && isset($user->user_ext_id)) {
             $response = $this->delete('klusbib/sync/users/' . $user->user_ext_id);
             if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
                 return true;
