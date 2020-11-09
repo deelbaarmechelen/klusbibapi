@@ -109,9 +109,7 @@ class LendingController implements LendingControllerInterface
                 $user = $this->userManager->getById($lending->user_id, false);
 
                 if (isset($user)) {
-                    $this->logger->info('user found: ' . \json_encode($user));
                     $lendingData['user'] = UserMapper::mapUserToArray($user);
-                    $this->logger->info(\json_encode($lendingData));
                 }
             }
             array_push($data, $lendingData);
