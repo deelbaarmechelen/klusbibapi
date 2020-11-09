@@ -313,30 +313,32 @@ class SnipeitInventory implements Inventory
                 $message .= ": response " . \json_encode($response);
             }
             throw new InventoryException($message);
-        } elseif (isset($user->user_ext_id)) {
-            // update existing inventory user
-            $response = $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
-            if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
-                return true;
-            }
-            $message = "sync of user $user->user_id failed (put)";
-            if (isset($response)) {
-                $message .= ": response " . \json_encode($response);
-            }
-            throw new InventoryException($message);
         } else {
-            // newly created user or inexistent in inventory
-            $inventoryUser = $this->post('klusbib/sync/users', $data);
-            if (isset($inventoryUser) && isset($inventoryUser->id)) {
-                $user->user_ext_id = $inventoryUser->id;
-                $user->save();
-                return true;
+            if (isset($user->user_ext_id)) {
+                // update existing inventory user
+                $response = $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
+                if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
+                    return true;
+                }
+                $message = "sync of user $user->user_id failed (put)";
+                if (isset($response)) {
+                    $message .= ": response " . \json_encode($response);
+                }
+                throw new InventoryException($message);
+            } else {
+                // newly created user or inexistent in inventory
+                $inventoryUser = $this->post('klusbib/sync/users', $data);
+                if (isset($inventoryUser) && isset($inventoryUser->id)) {
+                    $user->user_ext_id = $inventoryUser->id;
+                    $user->save();
+                    return true;
+                }
+                $message = "sync of user $user->user_id failed (post)";
+                if (isset($inventoryUser)) {
+                    $message .= ": response " . \json_encode($inventoryUser);
+                }
+                throw new InventoryException($message);
             }
-            $message = "sync of user $user->user_id failed (post)";
-            if (isset($inventoryUser)) {
-                $message .= ": response " . \json_encode($inventoryUser);
-            }
-            throw new InventoryException($message);
         }
     }
 
