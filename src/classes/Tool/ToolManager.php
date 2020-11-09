@@ -86,7 +86,6 @@ class ToolManager
                 $this->updateExistingItem($item, $existingItem);
 
                 $existingItem->last_sync_date = $syncTime;
-                echo "item to be saved: ".\json_encode($existingItem);
                 $existingItem->save();
             }
 
@@ -262,7 +261,13 @@ class ToolManager
         $existingItem->is_active = $item->is_active;
         $existingItem->show_on_website = $item->show_on_website;
         $existingItem->serial = $item->serial;
-        $existingItem->note = (isset($item->note) && strlen($item->note) > 128) ? substr($item->note, 0, 125) . "..." : $item->note;
+        if (isset($item->note)) {
+            echo "item note: " . $item->note . "\n";
+            $existingItem->note = (strlen($item->note) > 128) ? substr($item->note, 0, 124) . "..." : $item->note;
+            echo "updated item note: " . $existingItem->note . "\n";
+        } else {
+            $existingItem->note = null;
+        }
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
         $existingItem->image_name = $item->image_name;

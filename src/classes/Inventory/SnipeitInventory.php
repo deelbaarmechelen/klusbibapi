@@ -302,17 +302,18 @@ class SnipeitInventory implements Inventory
             $data['state'] = $user->state;
         }
         // TODO: add notification in case of error for manual recovery?
-        if (($user->state == UserState::DELETED || $user->state == UserState::DISABLED)
-            && isset($user->user_ext_id)) {
-            $response = $this->delete('klusbib/sync/users/' . $user->user_ext_id);
-            if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
-                return true;
+        if ($user->state == UserState::DELETED || $user->state == UserState::DISABLED) {
+            if ( isset($user->user_ext_id)) {
+                $response = $this->delete('klusbib/sync/users/' . $user->user_ext_id);
+                if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
+                    return true;
+                }
+                $message = "sync of user $user->user_id failed (delete)";
+                if (isset($response)) {
+                    $message .= ": response " . \json_encode($response);
+                }
+                throw new InventoryException($message);
             }
-            $message = "sync of user $user->user_id failed (delete)";
-            if (isset($response)) {
-                $message .= ": response " . \json_encode($response);
-            }
-            throw new InventoryException($message);
         } else {
             if (isset($user->user_ext_id)) {
                 // update existing inventory user
