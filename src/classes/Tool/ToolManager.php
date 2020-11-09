@@ -78,6 +78,8 @@ class ToolManager
             if ($existingItem === null) {
                 // save will create new item
                 echo "creating new tool item " . $item->id . "\n";
+                $item->note = (isset($item->note) && strlen($item->note) > 128) ?
+                    substr($item->note, 0, 125) . "..." : $item->note;
                 $item->last_sync_date = $syncTime;
                 $item->save();
             } else {
@@ -99,6 +101,8 @@ class ToolManager
             if ($existingAccessory === null) {
                 // save will create new item
                 echo "creating new accessory item " . $accessory->id . "\n";
+                $accessory->note = (isset($accessory->note) && strlen($accessory->note) > 128) ?
+                    substr($accessory->note, 0, 125) . "..." : $accessory->note;
                 $accessory->last_sync_date = $syncTime;
                 $accessory->save();
             } else {
@@ -263,7 +267,7 @@ class ToolManager
         $existingItem->serial = $item->serial;
         if (isset($item->note)) {
             echo "item note: " . $item->note . "\n";
-            $existingItem->note = (strlen($item->note) > 128) ? substr($item->note, 0, 124) . "..." : $item->note;
+            $existingItem->note = (strlen($item->note) > 128) ? substr($item->note, 0, 125) . "..." : $item->note;
             echo "updated item note: " . $existingItem->note . "\n";
         } else {
             $existingItem->note = null;
