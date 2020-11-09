@@ -4,12 +4,86 @@ namespace Api\Inventory;
 
 
 use Api\Model\Accessory;
+use Api\Model\InventoryItem;
 use Api\Model\Tool;
 use Api\Model\ToolCategory;
 use Api\Model\ToolState;
+use Api\Model\ToolType;
 
 abstract class SnipeitToolMapper
 {
+
+    const ACCESSORY_OFFSET = 100000;
+
+    static public function mapAssetToItem($asset) : ?InventoryItem  {
+        $item = new InventoryItem();
+        $item->id = $asset->id;
+        $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
+        $item->item_type = ToolType::TOOL;
+        $item->created_by =  null;//')->unsigned()->nullable()->default(null);
+        $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
+        $item->current_location_id =  null;//')->unsigned()->nullable()->default(null);
+        $item->item_condition = null;//')->unsigned()->nullable()->default(null);
+        $item->sku = $asset->asset_tag;
+        $item->description =  null;//', 1024)->nullable()->default(null);
+        $item->keywords =  self::mapAssetCategoryToToolCategory($asset);
+        $item->brand =  html_entity_decode ($asset->manufacturer->name);//', 1024)->nullable()->default(null);
+        $item->care_information =  null;//', 1024)->nullable()->default(null); - full description - shown online
+        $item->component_information =  null;//', 1024)->nullable()->default(null);
+        $item->loan_fee =  null;//', 10,2)->nullable()->default(null);
+        $item->max_loan_days =  null;//')->unsigned()->nullable()->default(null);
+        $item->is_active = true; // FIXME: check value based on state?
+        $item->show_on_website =  self::isVisible($asset);
+        $item->serial = $asset->serial;
+        $item->note = $asset->notes; // short description admin
+        $item->price_cost =  null;//', 10,2)->nullable()->default(null);
+        $item->price_sell =  null;//', 10,2)->nullable()->default(null);
+        $item->image_name =  null;//', 255)->nullable()->default(null);
+        $item->short_url =  null;//', 64)->nullable()->default(null);
+        $item->item_sector =  null;//')->unsigned()->nullable()->default(null);
+        $item->is_reservable = true; // FIXME: check value based on state?
+        $item->deposit_amount =  null;//', 10,2)->nullable()->default(null);
+        $item->donated_by = null; //')->unsigned()->nullable()->default(null);
+        $item->owned_by = null; //')->unsigned()->nullable()->default(null);
+
+        // TODO: state, description, image, category
+        return $item;
+    }
+
+    static public function mapAccessoryToItem($accessory) : ?InventoryItem  {
+        $item = new InventoryItem();
+        $item->id = $accessory->id + self::ACCESSORY_OFFSET;
+        $item->name = !empty($accessory->name) ? html_entity_decode ($accessory->name) : html_entity_decode ($accessory->category->name);
+        $item->item_type = ToolType::ACCESSORY;
+        $item->created_by =  null;//')->unsigned()->nullable()->default(null);
+        $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
+        $item->current_location_id =  null;//')->unsigned()->nullable()->default(null);
+        $item->item_condition = null;//')->unsigned()->nullable()->default(null);
+        $item->sku = $item->name;
+        $item->description = null; // full description - shown online
+        $item->keywords = null; // self::mapAssetCategoryToToolCategory($accessory);
+        $item->brand =  html_entity_decode ($accessory->manufacturer->name);//', 1024)->nullable()->default(null);
+        $item->care_information =  null;//', 1024)->nullable()->default(null);
+        $item->component_information =  null;//', 1024)->nullable()->default(null);
+        $item->loan_fee =  null;//', 10,2)->nullable()->default(null);
+        $item->max_loan_days =  null;//')->unsigned()->nullable()->default(null);
+        $item->is_active = true; // FIXME: check value based on state?
+        $item->show_on_website = true;
+        $item->serial = null;
+        $item->note = $accessory->notes; // short description admin
+        $item->price_cost = null;//', 10,2)->nullable()->default(null);
+        $item->price_sell = null;//', 10,2)->nullable()->default(null);
+        $item->image_name = null;//', 255)->nullable()->default(null);
+        $item->short_url =  null;//', 64)->nullable()->default(null);
+        $item->item_sector =  null;//')->unsigned()->nullable()->default(null);
+        $item->is_reservable = true; // FIXME: check value based on state?
+        $item->deposit_amount = null;//', 10,2)->nullable()->default(null);
+        $item->donated_by = null; //')->unsigned()->nullable()->default(null);
+        $item->owned_by = null; //')->unsigned()->nullable()->default(null);
+        // TODO: state, image, category
+        return $item;
+    }
+
     /**
      * @param $asset asset to be converted to a tool
      * @return Tool the converted tool

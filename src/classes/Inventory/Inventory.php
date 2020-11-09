@@ -18,6 +18,7 @@ interface Inventory {
     public function getToolById($id) : ?Tool;
     public function getAccessories($offset = 0, $limit=1000);
     public function getAccessoryById($id) : ?Accessory;
+    public function getInventoryItems($toolType, $offset = 0, $limit=1000);
     /**
      * check tool exists in inventory
      * @param $toolId

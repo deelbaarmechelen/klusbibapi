@@ -209,4 +209,10 @@ class InventoryMock implements Inventory
         // TODO: Implement syncUser() method.
         return true;
     }
+
+    public function getInventoryItems($toolType, $offset = 0, $limit=1000)
+    {
+        // TODO: Implement getInventoryItems() method
+    }
+
 }

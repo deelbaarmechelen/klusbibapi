@@ -75,7 +75,7 @@ class EnrolmentManager
      */
     // TODO: test enrolment by transfer to check correct creation of payment
     // TODO: replace other usages of payment_mode and Settings for enrolment/renewal amount
-    function enrolmentByTransfer($orderId, $membershipTypeName){
+    function enrolmentByTransfer($orderId, $membershipTypeName, $paymentCompleted = false){
         if (strcasecmp ($membershipTypeName, MembershipType::REGULAR) == 0) {
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
@@ -83,7 +83,7 @@ class EnrolmentManager
         } else {
             throw new EnrolmentException("Unexpected membership type " . $membershipTypeName, EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE);
         }
-        return $this->enrolment($orderId, PaymentMode::TRANSFER, $membershipType, false);
+        return $this->enrolment($orderId, PaymentMode::TRANSFER, $membershipType, $paymentCompleted);
     }
 
     /**
@@ -144,11 +144,11 @@ class EnrolmentManager
         if ($paymentCompleted) {
             // TODO: immediately confirm payment, but avoid too much extra mails!
             // + customize email message based on payment mode
-            $this->confirmPayment($paymentMode, false, $payment);
+            $this->confirmPayment($paymentMode, false, $payment, false);
         }
 
         // Send emails
-        $this->mailMgr->sendEnrolmentConfirmation($this->user, $paymentMode);
+        $this->mailMgr->sendEnrolmentConfirmation($this->user, $paymentMode, $paymentCompleted);
         if ($paymentMode == PaymentMode::STROOM) {
             $this->logger->info("Sending enrolment notification to " . ENROLMENT_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
             $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user, false);
@@ -209,8 +209,8 @@ class EnrolmentManager
      * @return Payment
      * @throws EnrolmentException
      */
-    function renewalByTransfer($orderId) {
-        return $this->renewal($orderId, PaymentMode::TRANSFER, false);
+    function renewalByTransfer($orderId, $paymentCompleted = false) {
+        return $this->renewal($orderId, PaymentMode::TRANSFER, $paymentCompleted);
     }
 
     /**
@@ -271,16 +271,17 @@ class EnrolmentManager
             $this->user->memberships()->save($renewalMembership);
 
             // Direct activation if payment is already completed
-            if ($paymentCompleted) {
-                $this->activateRenewalMembership($membership, $renewalMembership);
-            }
+//            if ($paymentCompleted) {
+//                // FIXME: already done in confirmPayment, so could be removed?
+//                $this->activateRenewalMembership($membership, $renewalMembership);
+//            }
             $renewalMembership->save();
         }
 
         if ($paymentCompleted) {
-            // TODO: immediately confirm payment, but avoid too much extra mails!
+            // TODO: immediately confirm payment, but avoid too much extra mails! -> set email notif to false
             // + customize email message based on payment mode
-            $this->confirmPayment($paymentMode, true, $payment);
+            $this->confirmPayment($paymentMode, true, $payment, false);
         }
         $activeMembership = Membership::find($this->user->active_membership);
         $this->user->payment_mode = $activeMembership->last_payment_mode;
@@ -289,7 +290,7 @@ class EnrolmentManager
         $this->userMgr->update($this->user, false, false, false, false);
         //$this->user->save();
 
-        $this->mailMgr->sendRenewalConfirmation($this->user, $paymentMode);
+        $this->mailMgr->sendRenewalConfirmation($this->user, $paymentMode, $paymentCompleted);
         if ($paymentMode == PaymentMode::STROOM) {
             $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user, true);
             $this->mailMgr->sendEnrolmentStroomNotification(STROOM_NOTIF_EMAIL, $this->user, true);
@@ -343,11 +344,14 @@ class EnrolmentManager
      * or through a separate API call after validating the payment completed (e.g. TRANSFER, STROOM)
      * MOLLIE payment should not be confirmed, as they are processed through webhook (see processMolliePayment)
      * @param $paymentMode
+     * @param $renewal true if confirming a renewal
+     * @param $payment payment to be confirmed. When null, payment is looked up based on user id and payment mode
+     * @param $sendEmailNotif when true, an email notification will be sent to user as payment confirmation
      * @throws EnrolmentException
      * @throws \Api\Mail\EnrolmentException
      * @throws \Exception
      */
-    function confirmPayment($paymentMode, $renewal = false, Payment $payment = null) {
+    function confirmPayment($paymentMode, $renewal = false, Payment $payment = null, $sendEmailNotif = true) {
         if ($paymentMode == PaymentMode::MOLLIE) {
             $message = "Unexpected confirmation for payment mode ($paymentMode)";
             $this->logger->warning($message);
@@ -363,12 +367,14 @@ class EnrolmentManager
                 ['mode', '=', $paymentMode]
             ])->get();
 
-            if (empty($payments))  {
+            if (empty($payments) || count($payments) == 0)  {
                 $message = "Unexpected confirmation, no payment found for user " . $this->user->firstname .
                     " (" . $this->user->user_id .") for payment mode (" . $paymentMode . ")";
                 $this->logger->warning($message);
                 // note: no payment, so unable to send 'enrolment failed' notification
                 throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
+            } else {
+                $this->logger->info("payments found: " . \json_encode($payments));
             }
             if (count($payments) == 1) {
                 $payment = $payments[0];
@@ -408,19 +414,19 @@ class EnrolmentManager
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
         }
 
-        // set end date
-        if ($membership->status == Membership::STATUS_PENDING) {
-            // end_date already set at enrolment initiation, no need to update it
-        } else {
-            // deprecated, for backward compatibility. Membership now always created at enrolment initiation
-            // If end_date more than 6 months in future, assume it has already been updated
-            $pivotDate = new DateTime('now');
-            $pivotDate->add(new DateInterval('P6M'));
-            $currentEndDate = DateTime::createFromFormat('Y-m-d', $membership->expires_at);
-            if ($currentEndDate < $pivotDate) {
-                $membership->expires_at = self::getMembershipEndDate($membership->expires_at->format('Y-m-d'));
-            }
-        }
+//        // set end date
+//        if ($membership->status == Membership::STATUS_PENDING) {
+//            // end_date already set at enrolment initiation, no need to update it
+//        } else {
+//            // deprecated, for backward compatibility. Membership now always created at enrolment initiation
+//            // If end_date more than 6 months in future, assume it has already been updated
+//            $pivotDate = new DateTime('now');
+//            $pivotDate->add(new DateInterval('P6M'));
+//            $currentEndDate = DateTime::createFromFormat('Y-m-d', $membership->expires_at);
+//            if ($currentEndDate < $pivotDate) {
+//                $membership->expires_at = self::getMembershipEndDate($membership->expires_at->format('Y-m-d'));
+//            }
+//        }
 
         // update payment
 //        $payment = Payment::find($membership->payment->payment_id);
@@ -450,10 +456,8 @@ class EnrolmentManager
         $this->userMgr->update($this->user, false, false, false, true);
 
         // send email notifications
-        if ($paymentMode == PaymentMode::TRANSFER) {
-            $this->mailMgr->sendEnrolmentPaymentConfirmation($this->user, $paymentMode);
-        }
-        if ($paymentMode == PaymentMode::STROOM) {
+        if ($sendEmailNotif &&
+            ($paymentMode == PaymentMode::TRANSFER || $paymentMode == PaymentMode::STROOM) ) {
             $this->mailMgr->sendEnrolmentPaymentConfirmation($this->user, $paymentMode);
         }
     }

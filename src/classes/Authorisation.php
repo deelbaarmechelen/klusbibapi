@@ -2,6 +2,7 @@
 namespace Api;
 
 use Api\Exception\ForbiddenException;
+use Api\Util\HttpResponseCode;
 
 class Authorisation {
 
@@ -12,7 +13,7 @@ class Authorisation {
 
     static function checkAccessByToken($token, $allowedScopes) {
 		if (false === $token->hasScope($allowedScopes)) {
-			throw new ForbiddenException("Missing authorisation for scopes " . json_encode($allowedScopes), 403);
+			throw new ForbiddenException("Missing authorisation for scopes " . json_encode($allowedScopes), HttpResponseCode::FORBIDDEN);
 		}
 	}
 	/**

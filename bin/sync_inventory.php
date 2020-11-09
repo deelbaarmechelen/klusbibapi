@@ -10,13 +10,17 @@ require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../src/env.php';
 $settings = require __DIR__ . '/../src/settings.php';
 $logger_settings = $settings['settings']['logger'];
+
 $logger = new Monolog\Logger($logger_settings['name']);
 $logger->pushProcessor(new Monolog\Processor\UidProcessor());
-$logger->pushHandler(new Monolog\Handler\StreamHandler($logger_settings['path'], $logger_settings['level']));
+$logger->pushHandler(new Monolog\Handler\RotatingFileHandler($logger_settings['path'], $logger_settings['maxFiles'], $logger_settings['level']));
 
-$userManager = new UserManager(SnipeitInventory::instance($logger), $logger);
-$users = Capsule::table('users')->get();
+$userManager = new UserManager(SnipeitInventory::instance($logger), $logger, new \Api\Mail\MailManager(null, null, $logger));
+$users = \Api\Model\User::outOfSync()->get(); // filter users to be synced
 foreach($users as $user) {
     echo "Syncing user with id " . $user->user_id . "\n";
     $userManager->getById($user->user_id);
 }
+
+$toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger);
+$tools = $toolManager->sync();

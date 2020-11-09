@@ -135,8 +135,9 @@ $container["JwtAuthentication"] = function (ContainerInterface $container) {
 $container["Api\Enrolment\EnrolmentFactory"] = function (ContainerInterface $container) {
     $logger = $container->get("logger"); // retrieve the 'logger' from the container
     $inventory = $container->get("Api\Inventory");
-    $userMgr = new UserManager($inventory, $logger);
-    return new \Api\Enrolment\EnrolmentFactory(new MailManager(null, null, $logger)
+    $mailMgr = new MailManager(null, null, $logger);
+    $userMgr = new UserManager($inventory, $logger, $mailMgr);
+    return new \Api\Enrolment\EnrolmentFactory($mailMgr
         , new MollieApiClient(), $userMgr);
 };
 $container["Api\Inventory"] = function (ContainerInterface $container) {
@@ -148,7 +149,8 @@ $container['Api\User\UserController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger"); // retrieve the 'logger' from the container
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
-    return new UserController($logger, new UserManager($inventory, $logger), new ToolManager($inventory, $logger),$token);
+    $mailMgr = new MailManager(null, null, $logger);
+    return new UserController($logger, new UserManager($inventory, $logger, $mailMgr), new ToolManager($inventory, $logger),$token);
 };
 
 $container['Api\Tool\ToolController'] = function(ContainerInterface $c) {
@@ -228,14 +230,16 @@ $container['Api\Lending\LendingController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
     $inventory = $c->get("Api\Inventory");
+    $mailMgr = new MailManager(null, null, $logger);
     $toolManager = new ToolManager($inventory, $logger);
-    $userManager = new UserManager($inventory, $logger);
+    $userManager = new UserManager($inventory, $logger, $mailMgr);
     return new \Api\Lending\LendingController($logger, $token, $toolManager, $userManager);
 };
 $container['Api\Membership\MembershipController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
     $inventory = $c->get("Api\Inventory");
-    $userManager = new UserManager($inventory, $logger);
+    $mailMgr = new MailManager(null, null, $logger);
+    $userManager = new UserManager($inventory, $logger, $mailMgr);
     return new \Api\Membership\MembershipController($logger, $userManager, $token);
 };

@@ -7,7 +7,7 @@ Beste {{ user.firstname }},<br><br>
 Bedankt voor je blijvende steun!
 </p>
 
-{% if paymentMode == 'TRANSFER' %}<p>
+{% if paymentMode == 'TRANSFER' and not paymentCompleted %}<p>
 Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b> te storten
 met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.<br>
 Van zodra we je betaling ontvangen zullen we je lidmaatschap verlengen.

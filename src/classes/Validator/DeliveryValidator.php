@@ -9,6 +9,9 @@ class DeliveryValidator
 {
 	static function isValidDeliveryData($delivery, $logger, &$errors) {
         if (empty($delivery)) {
+            $message = "No data provided";
+            $logger->info($message);
+            array_push($errors, $message);
             return false;
         }
 		if (!isset($delivery["user_id"])) {
