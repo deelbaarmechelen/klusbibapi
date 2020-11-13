@@ -62,7 +62,7 @@ abstract class SnipeitToolMapper
         $item->sku = $item->name;
         $item->description = null; // full description - shown online
         $item->keywords = null; // self::mapAssetCategoryToToolCategory($accessory);
-        $item->brand =  html_entity_decode ($accessory->manufacturer->name);//', 1024)->nullable()->default(null);
+        $item->brand =  isset($accessory->manufacturer) ? html_entity_decode ($accessory->manufacturer->name) : null;//', 1024)->nullable()->default(null);
         $item->care_information =  null;//', 1024)->nullable()->default(null);
         $item->component_information =  null;//', 1024)->nullable()->default(null);
         $item->loan_fee =  null;//', 10,2)->nullable()->default(null);
