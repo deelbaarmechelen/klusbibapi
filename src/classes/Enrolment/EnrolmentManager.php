@@ -16,6 +16,7 @@ use Api\Model\UserState;
 use Api\ModelMapper\MembershipMapper;
 use Api\Settings;
 use Api\User\UserManager;
+use Carbon\Carbon;
 use DateTime;
 use DateInterval;
 use Mollie\Api\MollieApiClient;
@@ -52,11 +53,12 @@ class EnrolmentManager
     /**
      * @param $orderId
      * @param $paymentMode
-     * @param $membershipType
+     * @param $membershipTypeName
      * @return Payment
      * @throws EnrolmentException
      */
-    function enrolmentByVolunteer($orderId, $paymentMode, $membershipTypeName){
+    function enrolmentByVolunteer($orderId, $paymentMode, $membershipTypeName, $startMembershipDate = null
+        , $acceptTermsDate = null){
         if (strcasecmp ($membershipTypeName, MembershipType::REGULAR) == 0) {
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
@@ -64,18 +66,22 @@ class EnrolmentManager
         } else {
             throw new EnrolmentException("Unexpected membership type " . $membershipTypeName, EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE);
         }
-        return $this->enrolment($orderId, $paymentMode, $membershipType, true);
+        return $this->enrolment($orderId, $paymentMode, $membershipType, true, $startMembershipDate
+            , $acceptTermsDate);
     }
 
     /**
      * @param $orderId
      * @param $membershipTypeName
+     * @param $paymentCompleted true if payment has already been done
+     * @param $startMembershipDate
      * @return Payment
      * @throws EnrolmentException
      */
     // TODO: test enrolment by transfer to check correct creation of payment
     // TODO: replace other usages of payment_mode and Settings for enrolment/renewal amount
-    function enrolmentByTransfer($orderId, $membershipTypeName, $paymentCompleted = false){
+    function enrolmentByTransfer($orderId, $membershipTypeName, $paymentCompleted = false,
+                                 $startMembershipDate = null, $acceptTermsDate = null){
         if (strcasecmp ($membershipTypeName, MembershipType::REGULAR) == 0) {
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
@@ -83,16 +89,19 @@ class EnrolmentManager
         } else {
             throw new EnrolmentException("Unexpected membership type " . $membershipTypeName, EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE);
         }
-        return $this->enrolment($orderId, PaymentMode::TRANSFER, $membershipType, $paymentCompleted);
+        return $this->enrolment($orderId, PaymentMode::TRANSFER, $membershipType, $paymentCompleted,
+            $startMembershipDate, $acceptTermsDate);
     }
 
     /**
      * @param $orderId
+     * @param $startMembershipDate
      * @return Payment
      * @throws EnrolmentException
      */
-    function enrolmentByStroom($orderId){
-        return $this->enrolment($orderId, PaymentMode::STROOM, MembershipType::stroom(), false);
+    function enrolmentByStroom($orderId, $startMembershipDate = null, $acceptTermsDate = null){
+        return $this->enrolment($orderId, PaymentMode::STROOM, MembershipType::stroom(),
+            false, $startMembershipDate, $acceptTermsDate);
     }
 
     /**
@@ -100,12 +109,24 @@ class EnrolmentManager
      * @param $paymentMode
      * @param $membershipType
      * @param bool $paymentCompleted
+     * @param $startMembershipDate
      * @return Payment
      * @throws EnrolmentException
      */
-    function enrolment($orderId, $paymentMode, $membershipType, $paymentCompleted = false){
+    function enrolment($orderId, $paymentMode, $membershipType, $paymentCompleted = false,
+                       $startMembershipDate = null, $acceptTermsDate = null){
+        if ($this->user->state == UserState::DISABLED) {
+            // enrolment for a disabled user -> enable the user and check payment as first step of enrolment
+            $this->user->state = UserState::CHECK_PAYMENT;
+        }
         // Validations
         $this->checkUserStateEnrolment();
+        // check user info is complete
+        $this->checkUserInfo();
+
+        // check accept_terms_date is set to value between last terms update and current date
+        $this->checkTermsAccepted($acceptTermsDate);
+
         $payment = $this->lookupPayment($orderId, $paymentMode);
         if ($payment != null) { // payment already exists, check its state
             if ($paymentCompleted) {
@@ -122,7 +143,7 @@ class EnrolmentManager
         }
 
         // Create membership
-        $membershipId = $this->createUserMembership($membershipType);
+        $membershipId = $this->createUserMembership($membershipType, $startMembershipDate);
         $membership = Membership::findOrFail($membershipId);
         $membership->last_payment_mode = $paymentMode;
         $membership->save();
@@ -200,8 +221,8 @@ class EnrolmentManager
      * @return Payment
      * @throws EnrolmentException
      */
-    function renewalByVolunteer($orderId, $paymentMode) {
-        return $this->renewal($orderId, $paymentMode, true);
+    function renewalByVolunteer($orderId, $paymentMode, $acceptTermsDate = null) {
+        return $this->renewal($orderId, $paymentMode, true, $acceptTermsDate);
     }
 
     /**
@@ -209,8 +230,8 @@ class EnrolmentManager
      * @return Payment
      * @throws EnrolmentException
      */
-    function renewalByTransfer($orderId, $paymentCompleted = false) {
-        return $this->renewal($orderId, PaymentMode::TRANSFER, $paymentCompleted);
+    function renewalByTransfer($orderId, $paymentCompleted = false, $acceptTermsDate = null) {
+        return $this->renewal($orderId, PaymentMode::TRANSFER, $paymentCompleted, $acceptTermsDate);
     }
 
     /**
@@ -218,20 +239,24 @@ class EnrolmentManager
      * @return Payment
      * @throws EnrolmentException
      */
-    function renewalByStroom($orderId) {
-        return $this->renewal($orderId, PaymentMode::STROOM, false);
+    function renewalByStroom($orderId, $acceptTermsDate = null) {
+        return $this->renewal($orderId, PaymentMode::STROOM, false, $acceptTermsDate);
     }
 
     /**
      * @param $orderId
      * @param $paymentMode
      * @param bool $paymentCompleted
+     * @param $acceptTermsDate
      * @return Payment
      * @throws EnrolmentException
      * @throws \Exception
      */
-    function renewal($orderId, $paymentMode, $paymentCompleted = false) {
+    function renewal($orderId, $paymentMode, $paymentCompleted = false, $acceptTermsDate = null) {
         $this->checkUserStateRenewal();
+        // check accept_terms_date is set to value between last terms update and current date
+        $this->checkTermsAccepted($acceptTermsDate);
+
         $payment = $this->lookupPayment($orderId, $paymentMode);
         if ($payment != null) { // payment already exists -> check its state
             if ($paymentCompleted) {
@@ -414,29 +439,9 @@ class EnrolmentManager
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
         }
 
-//        // set end date
-//        if ($membership->status == Membership::STATUS_PENDING) {
-//            // end_date already set at enrolment initiation, no need to update it
-//        } else {
-//            // deprecated, for backward compatibility. Membership now always created at enrolment initiation
-//            // If end_date more than 6 months in future, assume it has already been updated
-//            $pivotDate = new DateTime('now');
-//            $pivotDate->add(new DateInterval('P6M'));
-//            $currentEndDate = DateTime::createFromFormat('Y-m-d', $membership->expires_at);
-//            if ($currentEndDate < $pivotDate) {
-//                $membership->expires_at = self::getMembershipEndDate($membership->expires_at->format('Y-m-d'));
-//            }
-//        }
-
         // update payment
-//        $payment = Payment::find($membership->payment->payment_id);
-//        if (isset($payment)) {
-            $payment->state = PaymentState::SUCCESS;
-            $payment->save();
-//        } else {
-//            $this->logger->error("Payment missing for user $this->user->firstname $this->user->lastname "
-//            . "(recvd payment confirmation for payment mode " . $paymentMode);
-//        }
+        $payment->state = PaymentState::SUCCESS;
+        $payment->save();
 
         // update membership status
         $currentMembership = Membership::find($this->user->active_membership);
@@ -494,11 +499,15 @@ class EnrolmentManager
      * @return mixed
      * @throws \Exception
      */
-    function createUserMembership(MembershipType $type) {
+    function createUserMembership(MembershipType $type, $startMembershipDate = null) {
         if (is_null($this->user->active_membership)) {
             $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->user_id);
-            $start_date = strftime('%Y-%m-%d', time());
-            $end_date = self::getMembershipEndDate($start_date);
+            if (empty($startMembershipDate) ) {
+                $start_date = strftime('%Y-%m-%d', $startMembershipDate);
+            } else {
+                $start_date = strftime('%Y-%m-%d', time());
+            }
+            $end_date = self::getMembershipEndDate($start_date, $type);
             self::createMembership($type, $start_date, $end_date, $this->user, $status);
         }
         return $this->user->active_membership;
@@ -514,11 +523,7 @@ class EnrolmentManager
      * @throws \Exception
      */
     function renewMembership(MembershipType $newType, Membership $membership) : Membership {
-        if ($newType->duration == 365 || $newType->duration == 366) { // extend with 1 year
-            $end_date = self::getMembershipEndDate($membership->expires_at->format('Y-m-d'));
-        } else {
-            $end_date = $membership->expires_at->add(new DateInterval('P'. $newType->duration .'D'));
-        }
+        $end_date = self::getMembershipEndDate($membership->expires_at->format('Y-m-d'), $newType);
 
         $renewalMembership = self::createMembership($newType, $membership->start_at, $end_date, null, Membership::STATUS_PENDING);
         return $renewalMembership;
@@ -546,20 +551,26 @@ class EnrolmentManager
      * @return string
      * @throws \Exception
      */
-    public static function getMembershipEndDate($startDateMembership): string
+    public static function getMembershipEndDate($startDateMembership, $membershipType = null): string
     {
+        if (! isset($membershipType) ) {
+            $membershipType = MembershipType::regular();
+        }
         $startDate = DateTime::createFromFormat('Y-m-d', $startDateMembership);
         if ($startDate == false) {
             throw new \InvalidArgumentException("Invalid date format (expecting 'YYYY-MM-DD'): " . $startDateMembership);
         }
-        $pivotDate = new DateTime('first day of december this year');
-        $membershipEndDate = $startDate->add(new DateInterval('P1Y')); //$endDate->format('Y');
-        $currentDate = new DateTime();
-        if ($currentDate > $pivotDate) { // extend membership until end of year
-            $extendedEndDate = $currentDate->modify('last day of december next year');
-            if ($membershipEndDate < $extendedEndDate) {
-                $membershipEndDate = $extendedEndDate;
+        if ($membershipType->isYearlySubscription()) {
+            $pivotDate = new DateTime('first day of december next year');
+            $membershipEndDate = $startDate->add(new DateInterval('P1Y')); //$endDate->format('Y');
+            if ($membershipEndDate > $pivotDate) { // extend membership until end of year
+                $extendedEndDate = new DateTime('last day of december next year');
+                if ($membershipEndDate < $extendedEndDate) {
+                    $membershipEndDate = $extendedEndDate;
+                }
             }
+        } else {
+            $membershipEndDate = $startDate->add(new DateInterval('P' . $membershipType->duration . 'D'));
         }
         return $membershipEndDate->format('Y-m-d');
     }
@@ -647,6 +658,58 @@ class EnrolmentManager
         }
     }
 
+    protected function checkUserInfo() {
+        if (empty($this->user->firstname) ) {
+            throw new EnrolmentException("User firstname is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+        if (empty($this->user->lastname) ) {
+            throw new EnrolmentException("User lastname is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+        if (empty($this->user->role) ) {
+            throw new EnrolmentException("User role is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+        if (empty($this->user->email) ) {
+            throw new EnrolmentException("User email is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+        if (empty($this->user->address) ) {
+            throw new EnrolmentException("User address is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+        if (empty($this->user->postal_code) ) {
+            throw new EnrolmentException("User postal code is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+        if (empty($this->user->city) ) {
+            throw new EnrolmentException("User city is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+        if (empty($this->user->registration_number) ) {
+            throw new EnrolmentException("User registration number is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        }
+    }
+
+    /**
+     * check accept_terms_date is set to value between last terms update and current date
+     */
+    protected function checkTermsAccepted($acceptTermsDate = null) {
+        if (!empty($acceptTermsDate)
+         && Carbon::now()->gte($acceptTermsDate)                 // exclude future dates
+         && $this->user->accept_terms_date->lt($acceptTermsDate) // only update if more recent than current value
+        ) {
+            $this->user->accept_terms_date = $acceptTermsDate;
+        }
+
+        if (empty($this->user->accept_terms_date) ) {
+            throw new EnrolmentException("User did not accept terms yet", EnrolmentException::ACCEPT_TERMS_MISSING);
+        }
+        if ($this->user->accept_terms_date->gt(Carbon::now())) {
+            throw new EnrolmentException("Invalid accept terms date (" . $this->user->accept_terms_date->format('Y-m-d') . " is a future date)",
+                EnrolmentException::ACCEPT_TERMS_MISSING);
+        }
+        $terms_date = Carbon::createFromFormat('Y-m-d', Settings::LAST_TERMS_DATE_UPDATE);
+        if ($this->user->accept_terms_date->lt($terms_date)) {
+            throw new EnrolmentException("Terms have been updated and need reapproval "
+            . "(last terms update on : " .Settings::LAST_TERMS_DATE_UPDATE. ", last approval on " .$this->user->accept_terms_date->format('Y-m-d') .")",
+                EnrolmentException::ACCEPT_TERMS_MISSING);
+        }
+    }
     /**
      * @throws EnrolmentException
      */

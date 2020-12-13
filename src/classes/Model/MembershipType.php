@@ -53,4 +53,8 @@ class MembershipType extends Model
     {
         return $query->where('is_active', '=', true);
     }
+
+    public function isYearlySubscription() {
+        return $this->duration == 365 || $this->duration == 366;
+    }
 }

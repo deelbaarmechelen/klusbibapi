@@ -26,4 +26,5 @@ class Settings
     const GEN_CONDITIONS_URL = self::WEBPAGE_LINK . '/docs/KlusbibAfspraken.pdf';
     const PRIVACY_STATEMENT_URL = self::WEBPAGE_LINK . '/docs/PrivacyVerklaring.pdf';
     const INVENTORY_LINK = 'https://inventory.deelbaarmechelen.be';
+    const LAST_TERMS_DATE_UPDATE = "2019-12-09";
 }

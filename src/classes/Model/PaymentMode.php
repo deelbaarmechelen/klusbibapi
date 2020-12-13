@@ -11,6 +11,7 @@ abstract class PaymentMode
 	const TRANSFER = "TRANSFER";
 	const OVAM = "OVAM";
 	const LETS = "LETS";
+    const KDOBON = "KDOBON";
     const MBON = "MBON";
 	const PAYCONIQ = "PAYCONIQ";
 	const STROOM = "STROOM";
