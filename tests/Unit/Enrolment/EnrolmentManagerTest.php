@@ -17,6 +17,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $this->expiredStartDate->sub(new DateInterval('P20D'));
         $this->expiredEndDate = clone $this->enddate;
         $this->expiredEndDate->sub(new DateInterval('P20D'));
+        $this->acceptTermsDate = clone $this->startdate;
+        $this->acceptTermsDate->sub(new DateInterval('P1M'));
 
         return new \Tests\DbUnitArrayDataSet(array(
             'membership_type' => array(
@@ -119,6 +121,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                 array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
                     'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 1
@@ -126,6 +130,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                 array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
                     'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 2
@@ -133,6 +139,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                 array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 2
@@ -140,6 +148,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                 array('user_id' => 4, 'firstname' => 'nele', 'lastname' => 'HippeDame',
                     'role' => 'member', 'email' => 'nele@klusbib.be', 'state' => \Api\Model\UserState::EXPIRED,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
                     'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
                     'active_membership' => 3
@@ -147,6 +157,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                 array('user_id' => 5, 'firstname' => 'tom', 'lastname' => 'DoetMee',
                     'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => \Api\Model\UserState::CHECK_PAYMENT,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
                     'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
                     'active_membership' => 5
@@ -154,6 +166,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                 array('user_id' => 6, 'firstname' => 'newt', 'lastname' => 'NewUser',
                     'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => \Api\Model\UserState::CHECK_PAYMENT,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => null,
                     'membership_end_date' => null,
                     'active_membership' => null

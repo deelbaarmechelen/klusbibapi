@@ -30,6 +30,8 @@ class EnrolmentTest extends LocalDbWebTestCase
         $this->expiredEndDate->sub(new DateInterval('P20D'));
         $this->renewalEndDate = clone $this->expiredEndDate;
         $this->renewalEndDate->add(new DateInterval('P1Y'));
+        $this->acceptTermsDate = clone $this->startdate;
+        $this->acceptTermsDate->sub(new DateInterval('P1M'));
 
 
         return new DbUnitArrayDataSet(array(
@@ -99,6 +101,8 @@ class EnrolmentTest extends LocalDbWebTestCase
 				array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
                     'role' => 'admin', 'email' => 'admin@klusbib.be',  'state' => 'ACTIVE',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 1
@@ -106,6 +110,8 @@ class EnrolmentTest extends LocalDbWebTestCase
 				array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
                     'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => UserState::ACTIVE,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 2
@@ -113,6 +119,8 @@ class EnrolmentTest extends LocalDbWebTestCase
 				array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => UserState::CHECK_PAYMENT,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => null
@@ -120,6 +128,8 @@ class EnrolmentTest extends LocalDbWebTestCase
                 array('user_id' => 4, 'firstname' => 'nele', 'lastname' => 'HippeDame',
                     'role' => 'member', 'email' => 'nele@klusbib.be', 'state' => UserState::EXPIRED,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
                     'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
                     'active_membership' => 3
@@ -127,6 +137,8 @@ class EnrolmentTest extends LocalDbWebTestCase
                 array('user_id' => 5, 'firstname' => 'an', 'lastname' => 'ErvarenLetser',
                     'role' => 'member', 'email' => 'an@klusbib.be', 'state' => UserState::ACTIVE,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->startdate->format('Y-m-d'),
                     'membership_end_date' => $this->enddate->format('Y-m-d'),
                     'active_membership' => 3
@@ -134,9 +146,20 @@ class EnrolmentTest extends LocalDbWebTestCase
                 array('user_id' => 6, 'firstname' => 'tom', 'lastname' => 'Techie',
                     'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => UserState::CHECK_PAYMENT,
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
                     'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
                     'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
                     'active_membership' => 5
+                ),
+                array('user_id' => 7, 'firstname' => 'wim', 'lastname' => 'Newbie',
+                    'role' => 'member', 'email' => 'wim@klusbib.be', 'state' => UserState::DISABLED,
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => null,
+                    'membership_end_date' => null,
+                    'active_membership' => null
                 ),
             ),
             'payments' => array(
@@ -227,6 +250,31 @@ class EnrolmentTest extends LocalDbWebTestCase
         $header = array('HTTP_AUTHORIZATION' => "bearer " . $token);
         $body = $this->client->post('/enrolment', $data, $header);
         $this->assertEquals(403, $this->client->response->getStatusCode());
+    }
+    public function testPostEnrolmentVolunteerTemporary()
+    {
+        echo "test POST enrolment volunteer temporary\n";
+        $userId = "7";
+        $orderId = $userId . "_20181202120000";
+        $data = array("paymentMode" => PaymentMode::PAYCONIQ,
+            "userId" => $userId,
+            "orderId" => $orderId,
+            "membershipType" => "TEMPORARY"
+        );
+        $scopes = array("users.create");
+        $sub = "1";
+        $token = Token::generateToken($scopes, $sub);
+        $header = array('HTTP_AUTHORIZATION' => "bearer " . $token);
+        $body = $this->client->post('/enrolment', $data, $header);
+        print_r($body);
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $response_data = json_decode($body);
+        $this->assertNotNull($response_data);
+        $this->assertEquals(PaymentMode::PAYCONIQ, $response_data->paymentMode);
+        $this->assertEquals(PaymentState::SUCCESS, $response_data->paymentState);
+
+        // check payment has properly been created
+        $this->checkPayment($orderId, $userId);
     }
     public function testPostEnrolmentTransfer()
     {

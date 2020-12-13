@@ -13,13 +13,21 @@ class User extends Model
     protected $primaryKey = "user_id";
 	public $incrementing = false;
 
-    // TODO: use last_sync_date to limit syncing requests
 	static protected $fieldArray = ['user_id', 'state', 'firstname', 'lastname', 'role', 'email', 'email_state',
 			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
-			'phone', 'mobile', 'registration_number', 'payment_mode', 'user_ext_id', 'created_at', 'updated_at',
-            'last_sync_date', 'active_membership', 'company', 'comment', 'last_login'
+			'phone', 'mobile', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
+            'last_sync_date', 'active_membership', 'company', 'comment', 'last_login', 'created_at', 'updated_at'
 	];
-	
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'accept_terms_date' => 'datetime:Y-m-d',
+    ];
+
     // Accessors and mutators
     public function setEmailAttribute($value) {
         if (isset($value) && !empty($value)

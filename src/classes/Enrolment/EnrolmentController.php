@@ -4,6 +4,7 @@ namespace Api\Enrolment;
 
 use Api\Model\MembershipType;
 use Api\Util\HttpResponseCode;
+use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Model\PaymentMode;
 use Api\Model\Payment;
@@ -32,7 +33,6 @@ class EnrolmentController
         $this->token = $token;
     }
 
-    // TODO: add enrolmentRequest to create a membership for an existing user
     /**
      * Launches the enrolment operation
      * The user needs to be created prior to this operation
@@ -75,6 +75,28 @@ class EnrolmentController
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");
+        }
+
+        if (!empty($data["acceptTermsDate"]) ) {
+            $acceptTermsDate = Carbon::createFromFormat('Y-m-d', $data["acceptTermsDate"]);
+            if ($acceptTermsDate.gt(Carbon::now())) {
+
+                $message = "Not possible to accept future terms";
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                    ->withJson("Missing or invalid data: $message");
+            }
+        } else {
+            $acceptTermsDate = null;
+        }
+        if (empty($data["startMembershipDate"])) {
+            $startMembershipDate = null;
+        } else {
+            if ($renewal) {
+                $message = "startMembershipDate not allowed for membership renewal";
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                ->withJson("Missing or invalid data: $message");
+            }
+            $startMembershipDate = Carbon::createFromFormat('Y-m-d', $data["startMembershipDate"]);
         }
 
         if (empty($data["membershipType"])) { // set default values for backward compatibility
@@ -155,6 +177,7 @@ class EnrolmentController
             || $paymentMode == PaymentMode::LETS
             || $paymentMode == PaymentMode::OVAM
             || $paymentMode == PaymentMode::MBON
+            || $paymentMode == PaymentMode::KDOBON
             || $paymentMode == PaymentMode::SPONSORING
             || $paymentMode == PaymentMode::OTHER) {
             $paymentCompleted = true;
@@ -162,9 +185,11 @@ class EnrolmentController
             && strcasecmp ($data["paymentCompleted"], 'true') == 0 ) {
             $paymentCompleted = true;
         }
-        if ($paymentCompleted) {
-            // registering a completed payment requires admin rights
-            // we still need to do authentication, as this is skipped for /enrolment route
+
+        // registering a completed payment requires admin rights
+        // Only admin can specify explicit membership start date
+        // we still need to do authentication, as this is skipped for /enrolment route
+        if ($paymentCompleted || !empty($startMembershipDate)) {
 
             /* If token cannot be found return with 401 Unauthorized. */
             if (false === $token = $this->jwtAuthentication->fetchToken($request)) {
@@ -203,9 +228,10 @@ class EnrolmentController
         if ($paymentMode == PaymentMode::TRANSFER) {
             try {
                 if ($renewal) {
-                    $payment = $enrolmentManager->renewalByTransfer($orderId, $paymentCompleted);
+                    $payment = $enrolmentManager->renewalByTransfer($orderId, $paymentCompleted, $acceptTermsDate);
                 } else {
-                    $payment = $enrolmentManager->enrolmentByTransfer($orderId, $membershipType, $paymentCompleted);
+                    $payment = $enrolmentManager->enrolmentByTransfer($orderId, $membershipType, $paymentCompleted,
+                        $startMembershipDate, $acceptTermsDate);
                 }
             } catch (EnrolmentException $e) {
                 if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
@@ -296,15 +322,17 @@ class EnrolmentController
             || $paymentMode == PaymentMode::LETS
             || $paymentMode == PaymentMode::OVAM
             || $paymentMode == PaymentMode::MBON
+            || $paymentMode == PaymentMode::KDOBON
             || $paymentMode == PaymentMode::SPONSORING
             || $paymentMode == PaymentMode::OTHER
         ) {
 
             try {
                 if ($renewal) {
-                    $payment = $enrolmentManager->renewalByVolunteer($orderId, $paymentMode);
+                    $payment = $enrolmentManager->renewalByVolunteer($orderId, $paymentMode, $acceptTermsDate);
                 } else {
-                    $payment = $enrolmentManager->enrolmentByVolunteer($orderId, $paymentMode, $membershipType);
+                    $payment = $enrolmentManager->enrolmentByVolunteer($orderId, $paymentMode, $membershipType,
+                        $startMembershipDate, $acceptTermsDate);
                 }
                 $data = array();
                 $data["orderId"] = $orderId;
@@ -344,9 +372,9 @@ class EnrolmentController
             $this->logger->info("enrolment for STROOM project; user=" . \json_encode($user) . ";orderId=" . $orderId);
             try {
                 if ($renewal) {
-                    $payment = $enrolmentManager->renewalByStroom($orderId);
+                    $payment = $enrolmentManager->renewalByStroom($orderId, $acceptTermsDate);
                 } else {
-                    $payment = $enrolmentManager->enrolmentByStroom($orderId);
+                    $payment = $enrolmentManager->enrolmentByStroom($orderId, $startMembershipDate, $acceptTermsDate);
                 }
                 $data = array();
                 $data["orderId"] = $orderId;
