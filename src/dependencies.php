@@ -72,6 +72,18 @@ $container['errorHandler'] = function (ContainerInterface $container) {
             ->write('Something went wrong!');
     };
 };
+$container['phpErrorHandler'] = function (ContainerInterface $container) {
+    return function (\Slim\Http\Request $request, \Slim\Http\Response $response, $exception) use ($container) {
+        $logger = $container->get("logger"); // retrieve the 'logger' from the container
+        $logger->error("PHP runtime error on request " . $request->getMethod() . " " . $request->getRequestTarget()
+            . ". Body: " . $request->getBody()->read(100)
+            . ($request->getBody()->getSize() > 100 ? "..." : ""));
+        $logger->error($exception);
+        return $response->withStatus(500)
+            ->withHeader('Content-Type', 'text/html')
+            ->write('Something went wrong!');
+    };
+};
 
 $container["token"] = function (ContainerInterface $container) {
 	return new Token;
