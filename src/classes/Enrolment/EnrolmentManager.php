@@ -19,6 +19,7 @@ use Api\User\UserManager;
 use Carbon\Carbon;
 use DateTime;
 use DateInterval;
+use Illuminate\Support\Facades\Log;
 use Mollie\Api\MollieApiClient;
 
 class EnrolmentManager
@@ -691,7 +692,8 @@ class EnrolmentManager
     protected function checkTermsAccepted($acceptTermsDate = null) {
         if (!empty($acceptTermsDate)
          && Carbon::now()->gte($acceptTermsDate)                 // exclude future dates
-         && $this->user->accept_terms_date->lt($acceptTermsDate) // only update if more recent than current value
+         && (empty($this->user->accept_terms_date)
+                || (new Carbon($this->user->accept_terms_date))->lt($acceptTermsDate)) // only update if more recent than current value
         ) {
             $this->user->accept_terms_date = $acceptTermsDate;
         }
