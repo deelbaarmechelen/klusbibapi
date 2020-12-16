@@ -83,17 +83,27 @@ class MembershipController
         if (!isset($perPage)) {
             $perPage = '1000';
         }
-        $query = Membership::active();
         $userId = $request->getQueryParam('user_id');
         $status = $request->getQueryParam('status');
+        if (!isset($status)) {
+            $status = Membership::STATUS_ACTIVE;
+        }
         $subscriptionId = $request->getQueryParam('subscription_id');
         $startAt = $request->getQueryParam('start_at');
-        $active = $request->getQueryParam('active');
+        $query = Membership::all();
+
+        if ($status == Membership::STATUS_ACTIVE) {
+            $query = Membership::active();
+        } elseif ($status == "OPEN") {
+            $query = Membership::open();
+        } elseif ($status == "ALL") {
+            // nothing to do
+        } else {
+            $query = $query->withStatus($status);
+        }
+
         if (isset($userId)) {
             $query = $query->withUser($userId);
-        }
-        if (isset($status)) {
-            $query = $query->withStatus($status);
         }
         if (isset($subscriptionId)) {
             $query = $query->withSubscriptionId($subscriptionId);
@@ -101,9 +111,6 @@ class MembershipController
         if (isset($startDate)) {
             $query = $query->withStartAt($startAt);
         }
-//        if (isset($active)) {
-//            $query = $query->active();
-//        }
         $memberships = $query->orderBy($sortfield, $sortdir)->get();
         $memberships_page = array_slice($memberships->all(), ($page - 1) * $perPage, $perPage);
         $data = array();
