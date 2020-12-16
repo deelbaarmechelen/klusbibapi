@@ -79,7 +79,7 @@ class EnrolmentController
 
         if (!empty($data["acceptTermsDate"]) ) {
             $acceptTermsDate = Carbon::createFromFormat('Y-m-d', $data["acceptTermsDate"]);
-            if ($acceptTermsDate.gt(Carbon::now())) {
+            if (Carbon::now()->lt($acceptTermsDate)) {
 
                 $message = "Not possible to accept future terms";
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
@@ -250,6 +250,12 @@ class EnrolmentController
                     return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
+                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
+                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else {
                     $response_data = array("message" => "Unexpected enrolment exception: " . $e->getMessage());
                     return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
@@ -305,6 +311,12 @@ class EnrolmentController
                     return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)// Unsupported
                     ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
+                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
+                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else if ($e->getCode() == EnrolmentException::MOLLIE_EXCEPTION) {
                     return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
                     ->withJson($e->getMessage());
@@ -359,6 +371,12 @@ class EnrolmentController
                     return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
+                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
+                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else {
                     return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
                     ->withJson($e->getMessage());
@@ -399,6 +417,12 @@ class EnrolmentController
                 } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
                     $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
                     return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
+                        ->withHeader("Content-Type", "application/json")
+                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
+                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
+                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                         ->withHeader("Content-Type", "application/json")
                         ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
                 } else {
