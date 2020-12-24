@@ -17,6 +17,8 @@ class EnrolmentException extends \Exception
     const UNKNOWN_PAYMENT = 10;
     const INCOMPLETE_USER_DATA = 11;
     const ACCEPT_TERMS_MISSING = 12;
+    const DUPLICATE_REQUEST = 13;
+    const UNEXPECTED_START_DATE = 14;
 
     public function __construct($message = "", $code = 0, $previous = null) {
         parent::__construct($message, $code, $previous);

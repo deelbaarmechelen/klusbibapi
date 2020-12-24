@@ -47,6 +47,7 @@ class EnrolmentController
 
         // Get data
         $data = $request->getParsedBody();
+        $this->logger->info("parsedbody=" . json_encode($data));
         if (empty($data["paymentMode"]) || !isset($data["userId"])) {
             $message = "no paymentMode and/or userId provided";
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
@@ -132,12 +133,30 @@ class EnrolmentController
             }
 
             // Validate data consistency
+            if ($renewal && !$user->activeMembership()->exists()) {
+                $message = "Renewal flag set but no active membership";
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                ->withJson("Missing or invalid data: $message");
+            }
             if ($membershipType == MembershipType::REGULAR) {
-                if ($renewal) {
-                    $message = "Renewal flag set for regular membership type";
-                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
-                    ->withJson("Missing or invalid data: $message");
+                // Renewal with REGULAR membership is possible when current membership is TEMPORARY
+                // but only makes sense if membership is still active
+                if (  $user->activeMembership()->exists()
+                    // check next membership type is 'regular'?
+                    && isset($user->activeMembership->subscription)
+                    && MembershipType::regular()->id === $user->activeMembership->subscription->next_subscription_id) {
+
+                    // FIXME: how to handle this if a start membership date is provided? Just skip and assume provided date is the one to use? (and thus disable renewal flag!)
+                    if (Carbon::now()->lt($user->activeMembership->expires_at) ) {
+                        // temporary membership still active -> force renewal to start new membership after expiration
+                        $this->logger->info("Regular enrolment on active temporary membership -> processed as renewal (membership id " . $user->activeMembership->id . ")");
+                        $renewal = true;
+                    } else {
+                        $this->logger->info("Regular enrolment on expired temporary membership -> processed as new enrolment (membership id " . $user->activeMembership->id . ")");
+                        $renewal = false;
+                    }
                 }
+
                 if ($paymentMode == PaymentMode::STROOM) {
                     $message = "Payment mode Stroom specified, but membership type is set to " . $membershipType;
                     return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
@@ -234,34 +253,7 @@ class EnrolmentController
                         $startMembershipDate, $acceptTermsDate);
                 }
             } catch (EnrolmentException $e) {
-                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
-                    $response_data = array("message" => $e->getMessage(),
-                        "membership_end_date" => $user->membership_end_date);
-                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED) // 208 = Already Reported
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
-                    $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
-                    $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
-                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
-                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
-                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else {
-                    $response_data = array("message" => "Unexpected enrolment exception: " . $e->getMessage());
-                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                }
+                return $this->handleEnrolmentException($response, $e, $user);
             }
 
             $data = array();
@@ -294,36 +286,7 @@ class EnrolmentController
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
             } catch (EnrolmentException $e) {
-                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
-                    $response_data = array("message" => $e->getMessage(),
-                        membership_end_date => $user->membership_end_date,
-                        orderId => $orderId);
-                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED)// 208 = Already Reported
-                    ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
-                    $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
-                    $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)// Unsupported
-                    ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
-                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
-                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
-                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::MOLLIE_EXCEPTION) {
-                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
-                    ->withJson($e->getMessage());
-                } else {
-                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
-                    ->withJson($e->getMessage());
-                }
+                return $this->handleEnrolmentException($response, $e, $user);
             }
         }
         // manual enrolment (cash or lets or ..., arranged with volunteer in klusbib)
@@ -355,32 +318,7 @@ class EnrolmentController
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
             } catch (EnrolmentException $e) {
-                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
-                    $response_data = array("message" => $e->getMessage(),
-                        membership_end_date => $user->membership_end_date);
-                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED) // 208 = Already Reported
-                    ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
-                    $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
-                    $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
-                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
-                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
-                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else {
-                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
-                    ->withJson($e->getMessage());
-                }
+                return $this->handleEnrolmentException($response, $e, $user);
             }
 
         }
@@ -403,32 +341,7 @@ class EnrolmentController
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
             } catch (EnrolmentException $e) {
-                if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
-                    $response_data = array("message" => $e->getMessage(),
-                        membership_end_date => $user->membership_end_date);
-                    return $response->withStatus(HttpResponseCode::ALREADY_REPORTED) // 208 = Already Reported
-                    ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
-                    $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
-                    return $response->withStatus(HttpResponseCode::FORBIDDEN)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
-                    $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
-                    return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
-                    || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING) {
-                    $response_data = array("message" => "Invalid request: " . $e->getMessage());
-                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                        ->withHeader("Content-Type", "application/json")
-                        ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-                } else {
-                    return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)// Internal error
-                    ->withJson($e->getMessage());
-                }
+                return $this->handleEnrolmentException($response, $e, $user);
             }
 
         }
@@ -581,5 +494,48 @@ class EnrolmentController
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode([], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
+    }
+
+    /**
+     * @param $response
+     * @param $e
+     * @param $user
+     * @return mixed
+     */
+    private function handleEnrolmentException($response, $e, $user)
+    {
+        if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
+            $response_data = array("message" => $e->getMessage(),
+                "membership_end_date" => $user->membership_end_date);
+            return $response->withStatus(HttpResponseCode::ALREADY_REPORTED)// 208 = Already Reported
+            ->withHeader("Content-Type", "application/json")
+                ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
+            $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)
+                ->withHeader("Content-Type", "application/json")
+                ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
+            $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
+            return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
+                ->withHeader("Content-Type", "application/json")
+                ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        } else if ($e->getCode() == EnrolmentException::INCOMPLETE_USER_DATA
+            || $e->getCode() == EnrolmentException::ACCEPT_TERMS_MISSING
+            || $e->getCode() == EnrolmentException::DUPLICATE_REQUEST
+            || $e->getCode() == EnrolmentException::UNEXPECTED_START_DATE
+            || $e->getCode() == EnrolmentException::UNEXPECTED_PAYMENT_MODE
+            || $e->getCode() == EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE
+        ) {
+            $response_data = array("message" => "Invalid request: " . $e->getMessage());
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                ->withHeader("Content-Type", "application/json")
+                ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        } else {
+            $response_data = array("message" => "Unexpected enrolment exception: " . $e->getMessage());
+            return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
+                ->withHeader("Content-Type", "application/json")
+                ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        }
     }
 }
