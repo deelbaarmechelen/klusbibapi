@@ -226,8 +226,16 @@ class EnrolmentManager
             $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, PaymentState::OPEN,
                 $membershipType->price, Settings::CURRENCY);
 
-            $membershipId = $this->createUserMembership($membershipType);
-            $membership = Membership::findOrFail($membershipId);
+            if ($this->user->active_membership != null) {
+                $membership = $this->user->activeMembership()->first();
+            } else {
+                $start_date = strftime('%Y-%m-%d', time());
+                $end_date = self::getMembershipEndDate($start_date, $membershipType);
+                $membership = self::createMembership($membershipType, $start_date, $end_date, $this->user, Membership::STATUS_PENDING);
+            }
+
+//            $membershipId = $this->createUserMembership($membershipType);
+//            $membership = Membership::findOrFail($membershipId);
             $membership->last_payment_mode = PaymentMode::MOLLIE;
             $membership->payment()->save($payment);
             $membership->save();
@@ -555,7 +563,7 @@ class EnrolmentManager
         if (is_null($this->user->active_membership)) {
             $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->user_id);
             if (!empty($startMembershipDate) ) {
-                $start_date = strftime('%Y-%m-%d', $startMembershipDate);
+                $start_date = $startMembershipDate->format('Y-m-d');
             } else {
                 $start_date = strftime('%Y-%m-%d', time());
             }
@@ -975,7 +983,11 @@ class EnrolmentManager
                 $this->user = $user;
             }
 
-            $membership = $user->activeMembership()->first(); // lookup active membership
+            if ($user->activeMembership != null) {
+                $membership = $user->activeMembership()->first(); // lookup active membership
+            } else {
+                $membership = $user->memberships()->pending()->where('last_payment_mode', PaymentMode::MOLLIE)->first();
+            }
             if (null == $membership) {
                 $this->logger->error("POST /enrolment/$orderId failed: user $userId is not enrolled");
                 throw new EnrolmentException("User with id $userId is not enrolled", EnrolmentException::NOT_ENROLLED);
@@ -985,8 +997,9 @@ class EnrolmentManager
                 if ($payment->state == PaymentState::SUCCESS) {
                     // FIXME: should be based on membership status instead of user state!
                     if ($user->state != UserState::ACTIVE || $membership->status != Membership::STATUS_ACTIVE) {
-                        $membership->status = Membership::STATUS_ACTIVE;
-                        $membership->save();
+                        $this->activateMembership(null, $membership);
+//                        $membership->status = Membership::STATUS_ACTIVE;
+//                        $membership->save();
 
                         // update user data
                         $user->state = UserState::ACTIVE;
