@@ -325,8 +325,9 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi);
         $orderId = "order123";
         $enrolmentMgr->enrolmentByStroom($orderId);
+        $membership = $user->memberships()->pending()->where('last_payment_mode', \Api\Model\PaymentMode::STROOM)->first();
         $user = \Api\Model\User::find($user->user_id);
-        $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $user->activeMembership->status);
+        $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $membership->status);
 
         // lookup newly created payment
         $payment = \Api\Model\Payment::where([
@@ -337,8 +338,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $this->assertNotEmpty($payment);
         $enrolmentMembership = $payment->membership;
 
-        // current membership is the newly created membership
-        $this->assertEquals($user->activeMembership->id,  $enrolmentMembership->id);
+        // created membership is the newly created membership
+        $this->assertEquals($membership->id,  $enrolmentMembership->id);
         $this->assertEquals(\Api\Model\Membership::STATUS_PENDING,  $enrolmentMembership->status);
         $this->assertEquals(\Api\Model\MembershipType::stroom()->id,  $enrolmentMembership->subscription_id);
         $this->assertEquals(\Api\Model\PaymentMode::STROOM,  $enrolmentMembership->last_payment_mode);

@@ -7,7 +7,7 @@ Beste {{ user.firstname }},<br><br>
 {% if paymentMode == 'TRANSFER' or paymentMode == 'CASH'%}
 We hebben je betaling goed ontvangen.<br>
 {% endif %}
-Je lidmaatschap is nu actief en loopt tot {{ user.membership_end_date }}
+Je lidmaatschap is nu actief en loopt tot {{ user.membership_end_date | date('Y-m-d') }}
 </p>
 <p>
 Neem een kijkje op onze <a href="{{ webpageLink }}" >website</a> voor een overzicht van het beschikbare gereedschap.<br>
