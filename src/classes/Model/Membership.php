@@ -65,6 +65,10 @@ class Membership extends Model
     {
         return $query->where('status', '=', Membership::STATUS_ACTIVE);
     }
+    public function scopePending($query)
+    {
+        return $query->where('status', '=', Membership::STATUS_PENDING);
+    }
     public function scopeOpen($query)
     {
         return $query->where('status', '=', Membership::STATUS_ACTIVE)

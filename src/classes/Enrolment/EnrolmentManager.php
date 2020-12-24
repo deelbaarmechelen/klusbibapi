@@ -122,11 +122,18 @@ class EnrolmentManager
         }
         // Validations
         $this->checkUserStateEnrolment();
+
         // check user info is complete
         $this->checkUserInfo();
 
         // check accept_terms_date is set to value between last terms update and current date
         $this->checkTermsAccepted($acceptTermsDate);
+
+        // Prevent processing same request twice
+        $this->checkDuplicateRequest($orderId);
+
+        // Block requests for enrolments more than 1 year in future
+        $this->blockFutureRequests($startMembershipDate);
 
         $payment = $this->lookupPayment($orderId, $paymentMode);
         if ($payment != null) { // payment already exists, check its state
@@ -144,8 +151,30 @@ class EnrolmentManager
         }
 
         // Create membership
-        $membershipId = $this->createUserMembership($membershipType, $startMembershipDate);
-        $membership = Membership::findOrFail($membershipId);
+        // FIXME: membership not created if an active membership exists... -> nok in case of e.g. temporary -> regular or stroom -> stroom enrolments
+        //        but in case of multiple renewal requests, we don't want to create extra memberships with advanced end date
+        //        only reuse active membership if same type and same end date?
+        //        OR never reuse active membership, but only make it active when payment is completed? + only allow 1 future pending membership?
+
+        // FIXME: status should no longer be based on user state...
+//        $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->user_id);
+        $status = Membership::STATUS_PENDING;
+        if (empty($startMembershipDate) ) {
+            $start_date = strftime('%Y-%m-%d', time());
+        } else {
+            $start_date = $startMembershipDate->format('Y-m-d');
+        }
+        $end_date = self::getMembershipEndDate($start_date, $membershipType);
+
+        // cancel eventual pending memberships
+        $pendingMemberships = $this->user->memberships()->pending()->get();
+        foreach($pendingMemberships as $pending) {
+            $pending->status = Membership::STATUS_CANCELLED;
+            $pending->save();
+        }
+        $membership = $this->createMembership($membershipType, $start_date, $end_date, $this->user, $status);
+//        $membershipId = $this->createUserMembership($membershipType, $startMembershipDate);
+//        $membership = Membership::findOrFail($membershipId);
         $membership->last_payment_mode = $paymentMode;
         $membership->save();
         $this->user->membership_start_date = $membership->start_at;
@@ -255,8 +284,15 @@ class EnrolmentManager
      */
     function renewal($orderId, $paymentMode, $paymentCompleted = false, $acceptTermsDate = null) {
         $this->checkUserStateRenewal();
+
         // check accept_terms_date is set to value between last terms update and current date
         $this->checkTermsAccepted($acceptTermsDate);
+
+        // Prevent processing same request twice
+        $this->checkDuplicateRequest($orderId);
+
+        // Block requests for renewals more than 1 year in future
+        $this->blockFutureRequests();
 
         $payment = $this->lookupPayment($orderId, $paymentMode);
         if ($payment != null) { // payment already exists -> check its state
@@ -305,6 +341,7 @@ class EnrolmentManager
         }
 
         if ($paymentCompleted) {
+            // TODO: check amount paid against enrolment amount
             // TODO: immediately confirm payment, but avoid too much extra mails! -> set email notif to false
             // + customize email message based on payment mode
             $this->confirmPayment($paymentMode, true, $payment, false);
@@ -353,7 +390,6 @@ class EnrolmentManager
             $renewalMembership->last_payment_mode = PaymentMode::MOLLIE;
             $renewalMembership->payment()->save($payment);
             $this->user->memberships()->save($renewalMembership);
-//            $renewalMembership->contact()->save($this->user);
             $renewalMembership->save();
         };
 
@@ -446,7 +482,7 @@ class EnrolmentManager
 
         // update membership status
         $currentMembership = Membership::find($this->user->active_membership);
-        $this->activateRenewalMembership($currentMembership, $membership);
+        $this->activateMembership($currentMembership, $membership);
 
         // update project participants
         if ($paymentMode == PaymentMode::STROOM) {
@@ -457,7 +493,7 @@ class EnrolmentManager
         $this->user->payment_mode = $membership->last_payment_mode;
         $this->user->membership_start_date = $membership->start_at;
         $this->user->membership_end_date = $membership->expires_at;
-        $this->user->state = UserState::ACTIVE;
+        $this->user->state = $this->getUserState($membership->status);
         // update user through user manager to also sync inventory!
         $this->userMgr->update($this->user, false, false, false, true);
 
@@ -468,6 +504,21 @@ class EnrolmentManager
         }
     }
 
+    function getUserState($membershipStatus) {
+        if ($membershipStatus == Membership::STATUS_ACTIVE) {
+            $state = UserState::ACTIVE;
+        } elseif ($membershipStatus == Membership::STATUS_EXPIRED) {
+            $state = UserState::EXPIRED;
+        } elseif ($membershipStatus == Membership::STATUS_PENDING) {
+            $state = UserState::CHECK_PAYMENT;
+        } elseif ($membershipStatus == Membership::STATUS_CANCELLED) {
+            $state = UserState::DISABLED;
+        } else {
+            throw new \Exception("Invalid user state value $membershipStatus for user with id $this->user->user_id");
+        }
+        return $state;
+
+    }
     /**
      * @param $paymentMode
      * @param $user
@@ -503,7 +554,7 @@ class EnrolmentManager
     function createUserMembership(MembershipType $type, $startMembershipDate = null) {
         if (is_null($this->user->active_membership)) {
             $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->user_id);
-            if (empty($startMembershipDate) ) {
+            if (!empty($startMembershipDate) ) {
                 $start_date = strftime('%Y-%m-%d', $startMembershipDate);
             } else {
                 $start_date = strftime('%Y-%m-%d', time());
@@ -530,9 +581,11 @@ class EnrolmentManager
         return $renewalMembership;
     }
 
-    function activateRenewalMembership(Membership $currentMembership, Membership $renewedMembership) {
-        $currentMembership->status = Membership::STATUS_EXPIRED;
-        $currentMembership->save();
+    function activateMembership(?Membership $currentMembership, Membership $renewedMembership) {
+        if ($currentMembership != null) {
+            $currentMembership->status = Membership::STATUS_EXPIRED;
+            $currentMembership->save();
+        }
 
         $renewedMembership->status = Membership::STATUS_ACTIVE;
         $renewedMembership->save();
@@ -597,13 +650,14 @@ class EnrolmentManager
         $membership->status = $status;
         $membership->save();
 
-        if (isset($user)) {
+        if (isset($user) && $status == Membership::STATUS_ACTIVE) {
             $user->activeMembership()->associate($membership);
             //$this->userMgr->update($user); FIXME: -> not accessible, static method...
             $user->save();
         }
         return $membership;
     }
+
     /**
      * @param $orderId
      * @return Payment
@@ -646,19 +700,54 @@ class EnrolmentManager
     }
 
     /**
-     * @throws EnrolmentException
+     * Check if active membership is a temporary free membership
+     * @param Membership $membership
+     * @return bool true if active membership is a temporary free membership
      */
-    protected function checkUserStateEnrolment()
-    {
-        if ($this->user->state == UserState::ACTIVE || $this->user->state == UserState::EXPIRED) {
-            throw new EnrolmentException("User already enrolled, consider a renewal", EnrolmentException::ALREADY_ENROLLED);
+    protected function isTempMembership(?Membership $membership) : bool {
+        if ($membership == null) {
+            return false;
         }
-        // FIXME: should also allow enrolment of DISABLED users?
-        if ($this->user->state != UserState::CHECK_PAYMENT) {
-            throw new EnrolmentException("User state unsupported for enrolment", EnrolmentException::UNSUPPORTED_STATE);
+        $this->logger->info(\json_encode($membership));
+        return MembershipType::temporary()->id == $membership->subscription_id;
+    }
+
+    /**
+     * Check if the enrolment request was already processed
+     * @param $orderId
+     */
+    function checkDuplicateRequest($orderId) {
+        // check if an enrolment with same order id was already processed
+        if (Payment::where('order_id', $orderId)->exists()) {
+            throw new EnrolmentException("An enrolment with order id " . $orderId . " was already processed",
+                EnrolmentException::DUPLICATE_REQUEST);
         }
     }
 
+    /**
+     * Prevent creation of an enrolment with start date more than 1 year in the future
+     * @param $startMembershipDate
+     * @throws EnrolmentException
+     */
+    function blockFutureRequests($startMembershipDate = null) {
+        $pivotDate = Carbon::now()->add(1, 'year');
+        if (isset($startMembershipDate) && $pivotDate->lt($startMembershipDate)) {
+            throw new EnrolmentException("Enrolment start date not allowed: "
+                . $startMembershipDate->format('Y-m-d') . " > max allowed date (" . $pivotDate->format('Y-m-d') . ")",
+                EnrolmentException::UNEXPECTED_START_DATE);
+        }
+        if (isset($this->user->activeMembership)
+            && $pivotDate->lt($this->user->activeMembership->expires_at)) {
+            throw new EnrolmentException("Enrolment start date not allowed: "
+                . $this->user->activeMembership->expires_at->format('Y-m-d') . " > max allowed date (" . $pivotDate->format('Y-m-d') . ")",
+                EnrolmentException::UNEXPECTED_START_DATE);
+        }
+    }
+
+    /**
+     * Check all mandatory user information is available for an enrolment
+     * @throws EnrolmentException
+     */
     protected function checkUserInfo() {
         if (empty($this->user->firstname) ) {
             throw new EnrolmentException("User firstname is missing", EnrolmentException::INCOMPLETE_USER_DATA);
@@ -712,7 +801,26 @@ class EnrolmentManager
                 EnrolmentException::ACCEPT_TERMS_MISSING);
         }
     }
+
     /**
+     * Check user state allows enrolment
+     * @throws EnrolmentException
+     */
+    protected function checkUserStateEnrolment()
+    {
+        $this->logger->info(\json_encode($this->user->activeMembership));
+        if ( ($this->user->state == UserState::ACTIVE || $this->user->state == UserState::EXPIRED)
+            && !$this->isTempMembership($this->user->activeMembership) ) {
+            throw new EnrolmentException("User already enrolled, consider a renewal", EnrolmentException::ALREADY_ENROLLED);
+        }
+        // Note: DISABLED users should get a state update to CHECK_PAYMENT prior to this call
+        if ($this->user->state != UserState::CHECK_PAYMENT) {
+            throw new EnrolmentException("User state unsupported for enrolment", EnrolmentException::UNSUPPORTED_STATE);
+        }
+    }
+
+    /**
+     * Check user state allows RENEWAL
      * @throws EnrolmentException
      */
     protected function checkUserStateRenewal()
@@ -908,7 +1016,7 @@ class EnrolmentManager
                         $renewalMembership = $payment->membership()->first();
 
                         if (isset($renewalMembership)) {
-                            $this->activateRenewalMembership($membership, $renewalMembership);
+                            $this->activateMembership($membership, $renewalMembership);
                         } else {
                             $errorMsg = "Successful mollie payment received, but no linked membership (payment=" . \json_encode($payment) . ")";
                             $this->logger->warning($errorMsg);
@@ -960,15 +1068,9 @@ class EnrolmentManager
      */
     private function checkPaymentMode($paymentMode): void
     {
-        if ($paymentMode != PaymentMode::CASH &&
-            $paymentMode != PaymentMode::TRANSFER &&
-            $paymentMode != PaymentMode::MBON &&
-            $paymentMode != PaymentMode::SPONSORING &&
-            $paymentMode != PaymentMode::LETS &&
-            $paymentMode != PaymentMode::PAYCONIQ &&
-            $paymentMode != PaymentMode::OTHER &&
-            $paymentMode != PaymentMode::STROOM &&
-            $paymentMode != PaymentMode::OVAM
+        if (!PaymentMode::isValidPaymentMode($paymentMode)
+            || $paymentMode == PaymentMode::UNKNOWN
+            || $paymentMode == PaymentMode::NONE
         ) {
             $message = "Unsupported payment mode ($paymentMode)";
             $this->logger->warning($message);

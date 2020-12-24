@@ -29,7 +29,7 @@ class UserMapper
             "mobile" => $user->mobile,
             "registration_number" => $user->registration_number,
             "payment_mode" => $user->payment_mode,
-            "accept_terms_date" => $user->accept_terms_date,
+            "accept_terms_date" => !$user->accept_terms_date ? null : $user->accept_terms_date->format('Y-m-d'),
             "last_sync_date" => $user->last_sync_date,
             "active_membership" => !$membership ? array() : MembershipMapper::mapMembershipToArray($membership),
             "company" => $user->company,
