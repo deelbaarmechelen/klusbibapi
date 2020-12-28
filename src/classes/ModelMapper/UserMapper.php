@@ -44,9 +44,10 @@ class UserMapper
 		if (isset($data["user_id"]) && !empty($data["user_id"]) && $isAdmin) {
 			$user->user_id= $data["user_id"];
 		}
-		if (isset($data["state"]) && $isAdmin) {
-			$user->state = $data["state"];
-		}
+		// No longer allow update of state -> should be set based on membership
+//		if (isset($data["state"]) && $isAdmin) {
+//			$user->state = $data["state"];
+//		}
 		if (isset($data["firstname"])) {
 			$user->firstname = $data["firstname"];
 		}
@@ -68,19 +69,17 @@ class UserMapper
 			}
 			$user->hash = password_hash($data["password"], PASSWORD_DEFAULT);
 		}
-		if (!empty($data["membership_start_date"])
-            && ($isAdmin || empty($user->membership_end_date))) {
-		    // Once set, only admins can change end_date. Check for empty to allow set of initial value (defaults to 1 year membership)
-			$user->membership_start_date = $data["membership_start_date"];
-			if (!empty($data["membership_end_date"])) {
-				$user->membership_end_date = $data["membership_end_date"];
-			} else { // default to 1 year membership
-				$user->membership_end_date = date('Y-m-d', strtotime("+1 year", strtotime($data["membership_start_date"])));
-			}
-		}
-		if (isset($data["birth_date"])) {
-			$user->birth_date = $data["birth_date"];
-		}
+		// No longer allow update of membership start and end date -> should be set based on active membership
+//		if (!empty($data["membership_start_date"])
+//            && ($isAdmin || empty($user->membership_end_date))) {
+//		    // Once set, only admins can change end_date. Check for empty to allow set of initial value (defaults to 1 year membership)
+//			$user->membership_start_date = $data["membership_start_date"];
+//			if (!empty($data["membership_end_date"])) {
+//				$user->membership_end_date = $data["membership_end_date"];
+//			} else { // default to 1 year membership
+//				$user->membership_end_date = date('Y-m-d', strtotime("+1 year", strtotime($data["membership_start_date"])));
+//			}
+//		}
 		if (isset($data["address"])) {
 			$user->address = $data["address"];
 		}
