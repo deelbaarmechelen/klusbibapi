@@ -168,7 +168,7 @@ class UserController implements UserControllerInterface
             }
 
             $user->role = 'member'; // only members can be created through web enrolment
-            $data["membership_start_date"] = strftime('%Y-%m-%d', time());
+//            $data["membership_start_date"] = strftime('%Y-%m-%d', time());
             if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {
                 $this->logger->warn('user ' . $data["firstname"] . ' ' . $data["lastname"] . ' did not accept terms (accept_terms=' . $data["accept_terms"] . ')');
                 return $response->withStatus(400)
@@ -219,14 +219,14 @@ class UserController implements UserControllerInterface
                     ->withJson(array('error' => array('status' => 400, 'message' => "user_id is not numeric")));
             }
         }
-        if (!empty($data["membership_start_date"])) {
-            $user->membership_start_date = $data["membership_start_date"];
-            if (!empty($data["membership_end_date"])) {
-                $user->membership_end_date = $data["membership_end_date"];
-            } else { // default to 1 year membership
-                $data["membership_end_date"] = \Api\Enrolment\EnrolmentManager::getMembershipEndDate($user->membership_start_date);
-            }
-        }
+//        if (!empty($data["membership_start_date"])) {
+//            $user->membership_start_date = $data["membership_start_date"];
+//            if (!empty($data["membership_end_date"])) {
+//                $user->membership_end_date = $data["membership_end_date"];
+//            } else { // default to 1 year membership
+//                $data["membership_end_date"] = \Api\Enrolment\EnrolmentManager::getMembershipEndDate($user->membership_start_date);
+//            }
+//        }
         UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
         $this->logger->debug('Creating user ' . \json_encode($user));
 

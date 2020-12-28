@@ -158,7 +158,7 @@ class UsersTest extends LocalDbWebTestCase
 	}
 	public function testPostUsersEnrolment()
 	{
-		echo "test POST users (enrolment)\n";
+		echo "test POST users (web enrolment)\n";
 		// scope users.all and users.create missing
 		$scopes = array("users.list", "users.update", "users.read");
 		$this->setToken("1", $scopes);
@@ -187,8 +187,6 @@ class UsersTest extends LocalDbWebTestCase
 		$this->assertEquals(UserState::CHECK_PAYMENT, $user->state); // state should be forced to check payment
 		$this->assertEquals(EmailState::CONFIRM_EMAIL, $user->email_state); // email state should be forced to confirm email
 		$this->assertNotNull($user->accept_terms_date);
-		$this->assertTrue(isset($user->membership_start_date));
-		$this->assertTrue(isset($user->membership_end_date));
 	}
 	
 	public function testPostUsersAlreadyExists()
