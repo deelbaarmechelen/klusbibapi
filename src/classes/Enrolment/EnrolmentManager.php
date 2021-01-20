@@ -60,6 +60,7 @@ class EnrolmentManager
      */
     function enrolmentByVolunteer($orderId, $paymentMode, $membershipTypeName, $startMembershipDate = null
         , $acceptTermsDate = null){
+        $this->logger->info("Enrolment by volunteer: order id $orderId, payment mode $paymentMode, membership type name $membershipTypeName");
         if (strcasecmp ($membershipTypeName, MembershipType::REGULAR) == 0) {
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
@@ -83,6 +84,7 @@ class EnrolmentManager
     // TODO: replace other usages of payment_mode and Settings for enrolment/renewal amount
     function enrolmentByTransfer($orderId, $membershipTypeName, $paymentCompleted = false,
                                  $startMembershipDate = null, $acceptTermsDate = null){
+        $this->logger->info("Enrolment by transfer: order id $orderId, payment completed $paymentCompleted, membership type name $membershipTypeName");
         if (strcasecmp ($membershipTypeName, MembershipType::REGULAR) == 0) {
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
@@ -101,6 +103,7 @@ class EnrolmentManager
      * @throws EnrolmentException
      */
     function enrolmentByStroom($orderId, $startMembershipDate = null, $acceptTermsDate = null){
+        $this->logger->info("Enrolment by stroom: order id $orderId");
         return $this->enrolment($orderId, PaymentMode::STROOM, MembershipType::stroom(),
             false, $startMembershipDate, $acceptTermsDate);
     }
@@ -260,6 +263,7 @@ class EnrolmentManager
      * @throws EnrolmentException
      */
     function renewalByVolunteer($orderId, $paymentMode, $acceptTermsDate = null) {
+        $this->logger->info("Renewal by volunteer: order id $orderId, payment mode $paymentMode");
         return $this->renewal($orderId, $paymentMode, true, $acceptTermsDate);
     }
 
@@ -269,6 +273,7 @@ class EnrolmentManager
      * @throws EnrolmentException
      */
     function renewalByTransfer($orderId, $paymentCompleted = false, $acceptTermsDate = null) {
+        $this->logger->info("Renewal by transfer: order id $orderId, payment competed $paymentCompleted");
         return $this->renewal($orderId, PaymentMode::TRANSFER, $paymentCompleted, $acceptTermsDate);
     }
 
@@ -278,6 +283,7 @@ class EnrolmentManager
      * @throws EnrolmentException
      */
     function renewalByStroom($orderId, $acceptTermsDate = null) {
+        $this->logger->info("Renewal by stroom: order id $orderId");
         return $this->renewal($orderId, PaymentMode::STROOM, false, $acceptTermsDate);
     }
 
