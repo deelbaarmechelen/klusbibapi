@@ -273,7 +273,7 @@ class EnrolmentManager
      * @throws EnrolmentException
      */
     function renewalByTransfer($orderId, $paymentCompleted = false, $acceptTermsDate = null) {
-        $this->logger->info("Renewal by transfer: order id $orderId, payment competed $paymentCompleted");
+        $this->logger->info("Renewal by transfer: order id $orderId, payment completed $paymentCompleted");
         return $this->renewal($orderId, PaymentMode::TRANSFER, $paymentCompleted, $acceptTermsDate);
     }
 

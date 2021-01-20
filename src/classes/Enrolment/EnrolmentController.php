@@ -200,8 +200,10 @@ class EnrolmentController
             || $paymentMode == PaymentMode::SPONSORING
             || $paymentMode == PaymentMode::OTHER) {
             $paymentCompleted = true;
-        } elseif ($paymentMode == PaymentMode::TRANSFER && isset($data["paymentCompleted"])
-            && strcasecmp ($data["paymentCompleted"], 'true') == 0 ) {
+        } elseif ($paymentMode == PaymentMode::TRANSFER
+            && isset($data["paymentCompleted"])
+            && ($data["paymentCompleted"] || strcasecmp ($data["paymentCompleted"], 'true') == 0 )) {
+            // boolean true or string value "true"
             $paymentCompleted = true;
         }
 
