@@ -38,6 +38,11 @@ if (!defined('MAIL_PORT')) define("MAIL_PORT", getenv('MAIL_PORT')); // smtp por
 if (!defined('MAIL_USERNAME')) define("MAIL_USERNAME", getenv('MAIL_USERNAME')); // smtp username
 if (!defined('MAIL_PASSWORD')) define("MAIL_PASSWORD", getenv('MAIL_PASSWORD')); // smtp password
 if (!defined('MAIL_HOST')) define("MAIL_HOST", getenv('MAIL_HOST')); // smtp host
+// smtp auth type
+if (!defined('MAIL_AUTH_TYPE')) {
+    $authType = getenv('MAIL_AUTH_TYPE');
+    define("MAIL_AUTH_TYPE", isset($authType) ? $authType : 'XOAUTH2');
+}
 if (!defined('MAILER')) define("MAILER", getenv('MAILER'));
 if (!defined('OAUTH_CLIENT_ID')) define("OAUTH_CLIENT_ID", getenv('OAUTH_CLIENT_ID'));
 if (!defined('OAUTH_CLIENT_SECRET')) define("OAUTH_CLIENT_SECRET", getenv('OAUTH_CLIENT_SECRET'));

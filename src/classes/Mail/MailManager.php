@@ -493,7 +493,7 @@ class MailManager {
         //Whether to use SMTP authentication
         $this->mailer->SMTPAuth = TRUE;
         //Set AuthType to use XOAUTH2
-        $this->mailer->AuthType = 'XOAUTH2';
+        $this->mailer->AuthType = MAIL_AUTH_TYPE;
         //Set the encryption mechanism to use - STARTTLS or SMTPS
         $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $this->mailer->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]; // security issue -> only to be used for localhost dev
