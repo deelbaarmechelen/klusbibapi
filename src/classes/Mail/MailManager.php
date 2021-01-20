@@ -443,7 +443,7 @@ class MailManager {
         $this->mailer->clearCustomHeaders();
         $this->mailer->setLanguage('nl');
         if (MAILER == "smtp") {
-            $this->initSmtpOAuth();
+            $this->initSmtp();
         } else {
             $this->initSendmail();
         }
@@ -478,7 +478,7 @@ class MailManager {
         );
     }
 
-    private function initSmtpOAuth(): void
+    private function initSmtp(): void
     {
 //Tell PHPMailer to use SMTP
         $this->mailer->IsSMTP();
@@ -504,6 +504,9 @@ class MailManager {
         if ($this->mailer->AuthType == 'XOAUTH2') {
             $oauth = $this->getOAuth();
             $this->mailer->setOAuth($oauth);
+        } else {
+            $this->mailer->Username  = MAIL_USERNAME;
+            $this->mailer->Password  = MAIL_PASSWORD;
         }
     }
     private function initSendmail(): void
