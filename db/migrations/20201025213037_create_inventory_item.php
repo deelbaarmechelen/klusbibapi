@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class CreateInventoryItem extends AbstractMigration
+
+class CreateInventoryItem extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -24,8 +18,9 @@ class CreateInventoryItem extends AbstractMigration
      * with the Table class.
      */
 	public function up()
-    {
-        Capsule::schema()->create('inventory_item', function (Illuminate\Database\Schema\Blueprint $table) {
+	{
+		$this->initCapsule();
+	        Capsule::schema()->create('inventory_item', function (Illuminate\Database\Schema\Blueprint $table) {
             $table->integer('id')->unsigned(); // geen auto-increment, want waarde komt vanuit inventory
             $table->string('name', 255);
             $table->string('item_type', 16);
@@ -72,6 +67,7 @@ class CreateInventoryItem extends AbstractMigration
      */
 	public function down()
 	{
-		Capsule::schema()->drop('inventory_item');
+		$this->initCapsule();
+	        Capsule::schema()->drop('inventory_item');
 	}
 }

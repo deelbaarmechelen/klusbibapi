@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-// require_once __DIR__ . '/../../src/env.php';
-// require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class UpdateTools extends AbstractMigration
+
+class UpdateTools extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -25,6 +19,7 @@ class UpdateTools extends AbstractMigration
      */
 	public function up()
 	{
+        $this->initCapsule();
 		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->string('brand', 20)->nullable()->default(null);
 			$table->string('type', 20)->nullable()->default(null);
@@ -43,6 +38,7 @@ class UpdateTools extends AbstractMigration
      */
 	public function down()
 	{
+        $this->initCapsule();
 		Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->dropColumn('brand');
 			$table->dropColumn('type');

@@ -1,15 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-// require __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class CreateReservations extends AbstractMigration
+
+class CreateReservations extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -24,6 +19,7 @@ class CreateReservations extends AbstractMigration
      */
 	public function up()
 	{
+        $this->initCapsule();
 		Capsule::schema()->create('reservations', function(Illuminate\Database\Schema\Blueprint $table){
 			// Auto-increment id
 			$table->increments('reservation_id');
@@ -50,6 +46,7 @@ class CreateReservations extends AbstractMigration
      */
 	public function down()
 	{
+        $this->initCapsule();
 		Capsule::schema()->table('reservations', function(Illuminate\Database\Schema\Blueprint $table) {
 			$table->dropIndex('reservations_tool_id_index');
 			$table->dropIndex('reservations_user_id_index');

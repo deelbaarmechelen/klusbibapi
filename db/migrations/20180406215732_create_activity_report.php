@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class CreateActivityReport extends AbstractMigration
+
+class CreateActivityReport extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -25,7 +19,8 @@ class CreateActivityReport extends AbstractMigration
      */
 	public function up()
 	{
-		Capsule::schema()->create('activity_report', function(Illuminate\Database\Schema\Blueprint $table){
+		$this->initCapsule();
+	        Capsule::schema()->create('activity_report', function(Illuminate\Database\Schema\Blueprint $table){
 			// Auto-increment id
 			$table->increments('id');
             $table->date('day')->nullable()->default(null);
@@ -51,6 +46,7 @@ class CreateActivityReport extends AbstractMigration
      */
 	public function down()
 	{
-		Capsule::schema()->drop('activity_report');
+		$this->initCapsule();
+	        Capsule::schema()->drop('activity_report');
 	}
 }

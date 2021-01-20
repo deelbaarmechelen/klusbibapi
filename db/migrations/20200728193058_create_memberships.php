@@ -1,18 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
-//use Illuminate\Support\Facades\DB;
-//use Illuminate\Database\Capsule\Manager as DB;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class CreateMemberships extends AbstractMigration
+
+class CreateMemberships extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -27,6 +19,7 @@ class CreateMemberships extends AbstractMigration
      */
 	public function up()
 	{
+		$this->initCapsule();
 //        Capsule::schema()->drop('membership');
 //        Capsule::schema()->drop('membership_type');
 	    // Tables aligned to Lend Engine data model in preparation to eventual transition
@@ -92,7 +85,8 @@ class CreateMemberships extends AbstractMigration
      */
 	public function down()
 	{
-		Capsule::schema()->drop('membership');
+		$this->initCapsule();
+	        Capsule::schema()->drop('membership');
         Capsule::schema()->drop('membership_type');
 	}
 }
