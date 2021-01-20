@@ -1,15 +1,14 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-// require_once __DIR__ . '/../../src/env.php';
-// $settings = require __DIR__ . '/../../src/settings.php';
-
-class CreateTools extends AbstractMigration
+class CreateTools extends AbstractCapsuleMigration
 {
+
 	public function up()
 	{
+        $this->initCapsule();
 		Capsule::schema()->create('tools', function(Illuminate\Database\Schema\Blueprint $table){
 			// Auto-increment id
 			$table->increments('tool_id');
@@ -25,6 +24,7 @@ class CreateTools extends AbstractMigration
 	}
 	public function down()
 	{
-		Capsule::schema()->drop('tools');
+		$this->initCapsule();
+	        Capsule::schema()->drop('tools');
 	}
 }

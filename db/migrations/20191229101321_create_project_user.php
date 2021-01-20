@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class CreateProjectUser extends AbstractMigration
+
+class CreateProjectUser extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -25,7 +19,8 @@ class CreateProjectUser extends AbstractMigration
      */
 	public function up()
 	{
-		Capsule::schema()->create('project_user', function(Illuminate\Database\Schema\Blueprint $table){
+		$this->initCapsule();
+	        Capsule::schema()->create('project_user', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->integer('project_id')->unsigned()->nullable()->default(null);
             $table->integer('user_id')->unsigned()->nullable()->default(null);
 			$table->string('info', 255)->nullable()->default(null);
@@ -41,6 +36,7 @@ class CreateProjectUser extends AbstractMigration
      */
 	public function down()
 	{
-		Capsule::schema()->drop('project_user');
+		$this->initCapsule();
+	        Capsule::schema()->drop('project_user');
 	}
 }

@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class UpdateLendingToolType extends AbstractMigration
+
+class UpdateLendingToolType extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -25,7 +19,8 @@ class UpdateLendingToolType extends AbstractMigration
      */
 	public function up()
 	{
-        Capsule::schema()->table('lendings', function(Illuminate\Database\Schema\Blueprint $table){
+		$this->initCapsule();
+	        Capsule::schema()->table('lendings', function(Illuminate\Database\Schema\Blueprint $table){
             $table->string('tool_type', 20)->default('TOOL');
             $table->dropColumn('active');
          });
@@ -37,7 +32,8 @@ class UpdateLendingToolType extends AbstractMigration
      */
 	public function down()
 	{
-        Capsule::schema()->table('lendings', function(Illuminate\Database\Schema\Blueprint $table){
+		$this->initCapsule();
+	        Capsule::schema()->table('lendings', function(Illuminate\Database\Schema\Blueprint $table){
             $table->dropColumn('tool_type');
         });
 	}

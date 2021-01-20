@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class UpdateToolExtId extends AbstractMigration
+
+class UpdateToolExtId extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -25,7 +19,8 @@ class UpdateToolExtId extends AbstractMigration
      */
 	public function up()
 	{
-        Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
+		$this->initCapsule();
+	        Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
             $table->string('tool_ext_id', 20)->nullable()->default(null);
         });
 	}
@@ -36,7 +31,8 @@ class UpdateToolExtId extends AbstractMigration
      */
 	public function down()
 	{
-        Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
+		$this->initCapsule();
+	        Capsule::schema()->table('tools', function(Illuminate\Database\Schema\Blueprint $table){
             $table->dropColumn('tool_ext_id');
         });
 	}

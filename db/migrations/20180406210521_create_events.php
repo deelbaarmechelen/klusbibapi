@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class CreateEvents extends AbstractMigration
+
+class CreateEvents extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -25,7 +19,8 @@ class CreateEvents extends AbstractMigration
      */
 	public function up()
 	{
-        Capsule::schema()->create('events', function(Illuminate\Database\Schema\Blueprint $table){
+		$this->initCapsule();
+	        Capsule::schema()->create('events', function(Illuminate\Database\Schema\Blueprint $table){
             // Auto-increment id
             $table->increments('event_id');
             $table->string('name', 50); // enrolment, donation, loan, return, reservation, cash withdrawal, cash deposit, free gift, consumers sale
@@ -39,7 +34,8 @@ class CreateEvents extends AbstractMigration
         });
     }
     public function down()
-    {
-        Capsule::schema()->drop('events');
+	{
+		$this->initCapsule();
+	        Capsule::schema()->drop('events');
     }
 }

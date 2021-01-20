@@ -1,16 +1,10 @@
 <?php
+require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
-use Phinx\Migration\AbstractMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
-/**
- * Custom template for database migration with Illuminate\Database
- * 
- * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
- */
-class UpdateUsersSyncRelations extends AbstractMigration
+
+class UpdateUsersSyncRelations extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -24,8 +18,9 @@ class UpdateUsersSyncRelations extends AbstractMigration
      * with the Table class.
      */
     public function up()
-    {
-        Capsule::schema()->table('users', function(Illuminate\Database\Schema\Blueprint $table){
+	{
+		$this->initCapsule();
+	        Capsule::schema()->table('users', function(Illuminate\Database\Schema\Blueprint $table){
             $table->string('last_sync_date', 255)->nullable()->default(null);
             $table->unsignedInteger('active_membership')->nullable()->default(null);
             $table->foreign('active_membership')->references('id')->on('membership');;
@@ -43,8 +38,9 @@ class UpdateUsersSyncRelations extends AbstractMigration
      * Called when invoking rollback
      */
     public function down()
-    {
-        Capsule::schema()->table('users', function(Illuminate\Database\Schema\Blueprint $table){
+	{
+		$this->initCapsule();
+	        Capsule::schema()->table('users', function(Illuminate\Database\Schema\Blueprint $table){
             $table->dropColumn('last_sync_date'); // for sync with snipe IT, not foreseen in Lend Engine
             $table->dropForeign(['active_membership']);
             $table->dropColumn('active_membership');

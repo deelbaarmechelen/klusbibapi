@@ -1,10 +1,12 @@
 <?php
+declare(strict_types=1);
+$namespaceDefinition
 require_once __DIR__ . '/../AbstractCapsuleMigration.php';
 
+use $useClassName;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-
-class UpdatePayments extends AbstractCapsuleMigration
+final class $className extends $baseClassName
 {
     /**
      * Up Method.
@@ -19,11 +21,15 @@ class UpdatePayments extends AbstractCapsuleMigration
      */
 	public function up()
 	{
-		$this->initCapsule();
-	        Capsule::schema()->table('payments', function(Illuminate\Database\Schema\Blueprint $table){
-            $table->string('payment_ext_id', 20)->nullable()->default(null);
-            $table->timestamp('expiration_date')->nullable()->default(null);
-        });
+        $this->initCapsule();
+		Capsule::schema()->create('yourTableName', function(Illuminate\Database\Schema\Blueprint $table){
+			// Auto-increment id
+			$table->increments('id');
+			$table->string('field', 255)->nullable()->default(null);
+
+			// Required for Eloquent's created_at and updated_at columns
+			$table->timestamps();
+		});
 	}
     /**
      * Down Method.
@@ -32,10 +38,7 @@ class UpdatePayments extends AbstractCapsuleMigration
      */
 	public function down()
 	{
-		$this->initCapsule();
-	        Capsule::schema()->table('payments', function(Illuminate\Database\Schema\Blueprint $table){
-            $table->dropColumn('payment_ext_id');
-            $table->dropColumn('expiration_date');
-        });
+        $this->initCapsule();
+		Capsule::schema()->drop('yourTableName');
 	}
 }

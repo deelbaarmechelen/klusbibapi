@@ -1,11 +1,9 @@
 <?php
 
-use Phinx\Seed\AbstractSeed;
+require_once __DIR__ . '/../AbstractCapsuleSeeder.php';
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require __DIR__ . '/../../src/settings.php';
-
-class ToolsTableSeeder extends AbstractSeed
+class ToolsTableSeeder extends AbstractCapsuleSeeder
 {
     /**
      * Run Method.
@@ -17,6 +15,8 @@ class ToolsTableSeeder extends AbstractSeed
      */
     public function run()
     {
+        $this->initCapsule();
+
     	Capsule::table('tools')->insert([
     			'name' => 'tool ' . str_random(10),
     			'description' => 'description of this tool',

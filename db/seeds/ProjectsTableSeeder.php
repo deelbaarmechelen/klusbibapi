@@ -1,9 +1,9 @@
 <?php
 
-use Phinx\Seed\AbstractSeed;
+require_once __DIR__ . '/../AbstractCapsuleSeeder.php';
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-class ProjectsTableSeeder extends AbstractSeed
+class ProjectsTableSeeder extends AbstractCapsuleSeeder
 {
     /**
      * Run Method.
@@ -15,6 +15,7 @@ class ProjectsTableSeeder extends AbstractSeed
      */
     public function run()
     {
+        $this->initCapsule();
         $project_count = Capsule::table('projects')->where('name', '=', 'STROOM')->count();
         if ($project_count == 0) {
             Capsule::table('projects')->insert([
