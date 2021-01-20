@@ -42,8 +42,7 @@ class Membership extends Model
 		return in_array($field, Membership::$fieldArray);
 	}
 	
-	public function members()
-	{
+	public function members() {
 		return $this->hasMany('Api\Model\User', 'active_membership');
 	}
 

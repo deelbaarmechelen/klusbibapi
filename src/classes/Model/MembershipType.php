@@ -45,7 +45,7 @@ class MembershipType extends Model
 
     public function nextMembershipType()
     {
-        return $this->hasOne('Api\Model\MembershipType', 'next_subscription_id');
+        return $this->belongsTo('Api\Model\MembershipType', 'next_subscription_id');
     }
 
 	// Query helpers

@@ -1,6 +1,8 @@
 <?php
 namespace Api\Mail;
 
+use Api\Model\Membership;
+use Api\Model\MembershipType;
 use Api\Model\User;
 use Api\Token\Token;
 use PHPMailer\PHPMailer\OAuth;
@@ -196,7 +198,7 @@ class MailManager {
         return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
     }
 
-    public function sendEnrolmentConfirmation(User $user, $paymentMode, $paymentCompleted = false) {
+    public function sendEnrolmentConfirmation(User $user, $paymentMode, $paymentCompleted = false, Membership $membership = null) {
         $scopes = ["auth.confirm"];
         $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"));
         $link = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
@@ -205,7 +207,10 @@ class MailManager {
             'user' => $user,
             'paymentMode' => $paymentMode,
             'account' => Settings::ACCOUNT_NBR,
+            // FIXME: amount may not be hardcoded as organisations have different pricing -> should be retrieved from membership
             'amount' => Settings::ENROLMENT_AMOUNT,
+        // FIXME: if still to confirm, there will be no active membership -> should lookup pending membership!
+//            'amount' => $user->activeMembership && $user->activeMembership->subscription ? $user->activeMembership->subscription->price : Settings::ENROLMENT_AMOUNT,
             'membership_year' => $membership_year,
             'confirmEmail' => !$user->isEmailConfirmed(),
             'paymentCompleted' => $paymentCompleted,
@@ -253,9 +258,11 @@ class MailManager {
     public function sendRenewal($user, $daysToExpiry, $token) {
         $membership_year = $this->getMembershipYear($user->activeMembership->expires_at->format('Y-m-d'));
         $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
+        $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null
+            ? $user->activeMembership->subscription->nextMembershipType->price : $user->activeMembership->subscription->price;
         $parameters = array('user' => $user,
             'profileLink' => $link,
-            'amount' => Settings::RENEWAL_AMOUNT,
+            'amount' => $renewalAmount,
             'account' => Settings::ACCOUNT_NBR,
             'currentDate' => date('Y-m-d'),
             'emailLink' => Settings::EMAIL_LINK,
@@ -272,9 +279,7 @@ class MailManager {
         $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
         $parameters = array('user' => $user,
             'link' => $link,
-            'amount' => Settings::RENEWAL_AMOUNT,
             'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
-            'enrolmentLink' => Settings::ENROLMENT_LINK,
             'account' => Settings::ACCOUNT_NBR,
             'currentDate' => date('Y-m-d'),
             'emailLink' => Settings::EMAIL_LINK,
@@ -285,13 +290,14 @@ class MailManager {
         return $this->sendTwigTemplate($user->email, 'resume_enrolment_reminder', $parameters);
     }
     public function sendRenewalConfirmation($user, $paymentMode, $paymentCompleted = false) {
-//        $membership_year = $this->getMembershipYear($user->membership_end_date);
         $membership_year = $this->getMembershipYear($user->activeMembership->expires_at->format('Y-m-d'));
+        $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null
+            ? $user->activeMembership->subscription->nextMembershipType->price : $user->activeMembership->subscription->price;
         $parameters = array(
             'user' => $user,
             'paymentMode' => $paymentMode,
             'account' => Settings::ACCOUNT_NBR,
-            'amount' => Settings::RENEWAL_AMOUNT,
+            'amount' => $renewalAmount,
             'membership_year' => $membership_year,
             'paymentCompleted' => $paymentCompleted,
             'enqueteLink' => Settings::ENQUETE_LINK,

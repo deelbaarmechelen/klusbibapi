@@ -199,7 +199,7 @@ class EnrolmentManager
         }
 
         // Send emails
-        $this->mailMgr->sendEnrolmentConfirmation($this->user, $paymentMode, $paymentCompleted);
+        $this->mailMgr->sendEnrolmentConfirmation($this->user, $paymentMode, $paymentCompleted, $membership);
         if ($paymentMode == PaymentMode::STROOM) {
             $this->logger->info("Sending enrolment notification to " . ENROLMENT_NOTIF_EMAIL . "(user: " . $this->user->full_name . ")");
             $this->mailMgr->sendEnrolmentStroomNotification(ENROLMENT_NOTIF_EMAIL, $this->user, false);
@@ -1009,7 +1009,7 @@ class EnrolmentManager
                         $this->userMgr->update($user, false, false, false, true);
 
                         // send confirmation to new member
-                        $this->mailMgr->sendEnrolmentConfirmation($user, PaymentMode::MOLLIE);
+                        $this->mailMgr->sendEnrolmentConfirmation($user, PaymentMode::MOLLIE, $membership);
                         // send notification to Klusbib team
                         $this->mailMgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user, false);
                     }
