@@ -501,8 +501,10 @@ class MailManager {
         $this->mailer->Host = MAIL_HOST;
         //Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
         $this->mailer->Port = MAIL_PORT;
-        $oauth = $this->getOAuth();
-        $this->mailer->setOAuth($oauth);
+        if ($this->mailer->AuthType == 'XOAUTH2') {
+            $oauth = $this->getOAuth();
+            $this->mailer->setOAuth($oauth);
+        }
     }
     private function initSendmail(): void
     {
