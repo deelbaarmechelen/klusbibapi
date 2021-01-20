@@ -88,6 +88,10 @@ final class MailManagerTest extends TestCase
         $user->firstname = "tester";
         $user->lastname = "de mock";
         $user->membership_end_date = date('Y-m-d');
+        $membership = new MembershipTest();
+        $membership->subscription_id = 1;
+        $membership->expires_at = new DateTime();
+        $user->activeMembership = $membership;
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
         $result = $mailmgr->sendEnrolmentConfirmation($user, \Api\Model\PaymentMode::TRANSFER);
@@ -158,6 +162,7 @@ final class MailManagerTest extends TestCase
         $user->lastname = "de mock";
         $user->membership_end_date = date('Y-m-d');
         $membership = new MembershipTest();
+        $membership->subscription_id = 1;
         $membership->expires_at = new DateTime();
         $user->activeMembership = $membership;
 
@@ -180,11 +185,12 @@ final class MailManagerTest extends TestCase
         $user->membership_end_date = date('Y-m-d');
         $membership = new MembershipTest();
         $membership->expires_at = new DateTime();
+        $membership->subscription_id = 1;
         $user->activeMembership = $membership;
 
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
-        $result = $mailmgr->sendRenewalConfirmation($user, \Api\Model\PaymentMode::STROOM);
+        $result = $mailmgr->sendRenewalConfirmation($user, \Api\Model\PaymentMode::TRANSFER, true);
         $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
         $this->assertTrue($result);
         $get_sent = $mailer->get_sent(0);
