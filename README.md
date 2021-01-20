@@ -141,34 +141,34 @@ https://documentation.cpanel.net/display/CKB/Guide+to+Git+-+How+to+Set+Up+Deploy
 tar --exclude 'inventory.deelbaarmechelen.be/vendor' -czvf inventory.tar.gz inventory.deelbaarmechelen.be/
 
 * upgrade inventory
-** git pull github master
-** php upgrade.php
-** git push origin master
+  * git pull github master
+  * php upgrade.php
+  * git push origin master
 Should trigger an automatic deploy based on .cpanel.yml. For manual migration:
-** login to remote host
-** cd into remote git repo
-** update to pushed changes
+  * login to remote host
+  * cd into remote git repo
+  * update to pushed changes
 git reset --hard HEAD 
-** copy changes to deploy dir
+  * copy changes to deploy dir
 rsync -anv --exclude '.git' --exclude '.github' --exclude '.*' --exclude 'tests' --exclude 'storage' snipe/ inventory.deelbaarmechelen.be 
-** restore access rights
+  * restore access rights
 chmod 775 ~/inventory.deelbaarmechelen.be
-** cd ~/inventory.deelbaarmechelen.be
-** php upgrade.php
-** php composer.phar install --no-dev --prefer-source
-**  php composer.phar dump-autoload
-**  php artisan migrate
-**  php artisan config:clear
-**  php artisan config:cache
-** Check PHP version (in composer.json) and upgrade if required
+  * cd ~/inventory.deelbaarmechelen.be
+  * php upgrade.php
+  * php composer.phar install --no-dev --prefer-source
+  *  php composer.phar dump-autoload
+  *  php artisan migrate
+  *  php artisan config:clear
+  *  php artisan config:cache
+  * Check PHP version (in composer.json) and upgrade if required
 
 ## Test tools
 * curl: this command line tool can be used to send requests to inventory or api (to be updated with inventory urls)
-** Get the Bearer token using cURL and jq
+  * Get the Bearer token using cURL and jq
 TOKEN=$(curl -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"username":"{username}","password":"{password}","rememberMe":false}' https://{hostname}/api/authenticate | jq -r '.id_token')
 In this example the API expects a POST body with “username”, “password” and “rememberMe” fields. Adapt according to your own needs.
 
 jq is used to parse the JSON response, which contains the token in a field called “id_token”.
 
-** Pass the Bearer token in the Authorization header
+  * Pass the Bearer token in the Authorization header
 curl -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" https://{hostname}/api/myresource
