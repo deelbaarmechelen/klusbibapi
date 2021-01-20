@@ -17,7 +17,10 @@ Wij nemen contact voor je op met de project verantwoordelijke om je aanvraag ver
 Van zodra je aanvraag bevestigd is zullen we je lidmaatschap verlengen en krijg je hiervan een bericht.<br>
 Mocht je echter niets meer vernemen binnen de komende 2 weken, dan liep er waarschijnlijk iets mis en kan je best opnieuw contact met ons opnemen of met de project verantwoordelijke
 </p>{% else %}<p>
-Je lidmaatschap is nu verlengd tot {{ user.membership_end_date }}
+{% if (paymentMode == 'TRANSFER' or paymentMode == 'CASH') and paymentCompleted %}
+We hebben je betaling goed ontvangen.<br>
+{% endif %}
+Je lidmaatschap is nu verlengd tot {{ user.membership_end_date | date('Y-m-d') }}
 </p>{% endif %}
 {% if paymentMode == 'STROOM' %}<p>
 Ook vernemen we graag welk gereedschap je naar op zoek bent, zodat we gericht ons aanbod kunnen aanvullen.<br>

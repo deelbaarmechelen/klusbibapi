@@ -7,7 +7,7 @@ Beste {{ user.firstname }},<br><br>
 Graag bedanken we je alvast voor het vertrouwen en hopen we je zo snel mogelijk te zien in de Klusbib voor je eerste ontlening.<br>
 Voor alle info over onze openingsuren en afspraken verwijzen we je graag door naar onze <a href="{{ webpageLink }}" >website</a>.</p><br>
 {% if paymentMode == 'TRANSFER' and not paymentCompleted %}<p>
-Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b> te storten
+Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount |number_format}} &euro; op rekeningnummer <b>{{ account }}</b> te storten
 met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.<br>
 Van zodra we je betaling ontvangen zullen we je account activeren.
 </p><br>{% endif %}
