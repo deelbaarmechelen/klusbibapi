@@ -3,6 +3,7 @@
 namespace Api\Reservation;
 
 use Api\Tool\ToolManager;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Exception\ForbiddenException;
 use Api\ModelMapper\ReservationMapper;
@@ -154,7 +155,11 @@ class ReservationController implements ReservationControllerInterface
             $reservation->type = "reservation";
         }
         // TODO: if not admin, should be max startsAt + 7 days
-        $reservation->save();
+
+        if (!$reservation->save()) {
+            return $response->withJson(array("result" => "failed", "message" => "Unable to store reservation"))
+                ->withStatus(HttpResponseCode::INTERNAL_ERROR);
+        }
         if ($reservation->state === ReservationState::REQUESTED) {
             // Send notification to confirm the reservation
             $this->logger->info('Sending notifications for new reservation ' . json_encode($reservation));
