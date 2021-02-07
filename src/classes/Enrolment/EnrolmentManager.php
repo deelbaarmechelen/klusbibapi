@@ -386,7 +386,10 @@ class EnrolmentManager
      */
     function renewalByMollie($orderId, $redirectUrl, $requestedPaymentMean, $requestUri) {
         $this->checkUserStateRenewal();
-        $membership = Membership::findOrFail($this->user->active_membership);
+        $membership = Membership::find($this->user->active_membership);
+        if (!$membership) {
+            throw new EnrolmentException("No active membership found", EnrolmentException::NOT_ENROLLED);
+        }
         if (isset($membership->subscription->next_subscription_id)) {
             $nextMembershipType = MembershipType::find($membership->subscription->next_subscription_id);
         } else {

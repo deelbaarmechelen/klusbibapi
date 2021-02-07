@@ -288,6 +288,7 @@ class EnrolmentController
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
             } catch (EnrolmentException $e) {
+                $this->logger->error("Enrolment exception: " . $e->getMessage());
                 return $this->handleEnrolmentException($response, $e, $user);
             }
         }
@@ -513,7 +514,7 @@ class EnrolmentController
             ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
-            $response_data = array("message" => "User not yet active (" . $user->state . "), please proceed to enrolment");
+            $response_data = array("message" => "User not yet enrolled (state=" . $user->state . "), please proceed to enrolment");
             return $response->withStatus(HttpResponseCode::FORBIDDEN)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));

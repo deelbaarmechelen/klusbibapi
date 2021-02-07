@@ -36,6 +36,12 @@ class PasswordResetController
             return $response->withStatus(404);
         }
 
+        if (isset($body["redirect_url"])) {
+            $redirectUrl = $body["redirect_url"];
+        } else {
+            $redirectUrl = null;
+        }
+
         // generate temporary token allowing password change
         $sub = $user->user_id;
         $requested_scopes = Token::allowedScopes($user->role);
@@ -49,7 +55,7 @@ class PasswordResetController
 
         // generate email
         $mailMgr = new MailManager();
-        $result = $mailMgr->sendPwdRecoveryMail($user->user_id, $user->firstname, $email, $token);
+        $result = $mailMgr->sendPwdRecoveryMail($user->user_id, $user->firstname, $email, $token, $redirectUrl);
 
         if (!$result) { // error in mail send
             $error["message"] = $mailMgr->getLastMessage();

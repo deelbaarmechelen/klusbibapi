@@ -72,8 +72,13 @@ class MailManager {
             'emailLink' => Settings::EMAIL_LINK);
         return $this->sendTwigTemplate($to, 'email_verification', $parameters);
 	}
-	public function sendPwdRecoveryMail($userId, $userName, $userEmail, $token) {
-		$link = PROJECT_HOME . "auth/reset/" . $userId . "?token=" . $token . "&name=" . $userName;
+	public function sendPwdRecoveryMail($userId, $userName, $userEmail, $token, $redirectUrl = null) {
+		if (isset($redirectUrl)) {
+		    $link = $redirectUrl;
+        } else {
+            $link = PROJECT_HOME . "auth/reset/" . $userId;
+        }
+        $link .= "?token=" . $token . "&name=" . $userName . "&userId=" . $userId;
         $parameters = array(
             'userName' => $userName,
             'link' => $link,
