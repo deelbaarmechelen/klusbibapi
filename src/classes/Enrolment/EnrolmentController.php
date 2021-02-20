@@ -202,7 +202,7 @@ class EnrolmentController
             $paymentCompleted = true;
         } elseif ($paymentMode == PaymentMode::TRANSFER
             && isset($data["paymentCompleted"])
-            && ($data["paymentCompleted"] || strcasecmp ($data["paymentCompleted"], 'true') == 0 )) {
+            && ($data["paymentCompleted"] === true || strcasecmp ($data["paymentCompleted"], 'true') == 0 )) {
             // boolean true or string value "true"
             $paymentCompleted = true;
         }
