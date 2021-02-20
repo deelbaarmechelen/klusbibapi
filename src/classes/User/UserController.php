@@ -340,12 +340,12 @@ class UserController implements UserControllerInterface
             $email = $request->getQueryParam('email');
             if (!isset($email)) {
                 return $response->withStatus(400)
-                    ->withJson(array(message => "Missing email parameter"));
+                    ->withJson(array('message' => "Missing email parameter"));
             }
             $user = Capsule::table('users')->where('email', $email)->first();
             if (!isset($user)) {
                 return $response->withStatus(404)
-                    ->withJson(array(message => "Unknown email"));
+                    ->withJson(array('message' => "Unknown email"));
             }
 
             return $response->withJson(array("user_id" => $user->user_id,
