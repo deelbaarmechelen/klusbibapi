@@ -55,10 +55,9 @@ class PaymentController implements PaymentControllerInterface
         }
         $orderId = $request->getQueryParam('orderId');
         if (!isset($orderId)) {
-            $builder = Capsule::table('payments');
+            $builder = Payment::any();
         } else {
-            $builder = Capsule::table('payments')
-                ->where('order_id', $orderId);
+            $builder = Payment::forOrder($orderId);
         }
         $payments = $builder->orderBy($sortfield, $sortdir)->get();
         $payments_page = array_slice($payments->all(), ($page - 1) * $perPage, $perPage);

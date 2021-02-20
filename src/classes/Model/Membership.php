@@ -60,6 +60,16 @@ class Membership extends Model
     }
 
     // Query helpers
+    /**
+     * This dummy query helper allows to use query builder
+     * When using the equivalent 'all()' method, a Collection is returned making it difficult to use fluent query builder interface
+     * @param $query
+     * @return mixed
+     */
+    public function scopeAnyStatus($query)
+    {
+        return $query;
+    }
     public function scopeActive($query)
     {
         return $query->where('status', '=', Membership::STATUS_ACTIVE);

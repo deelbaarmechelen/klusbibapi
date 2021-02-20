@@ -26,6 +26,15 @@ class Lending extends Model
     }
 
     /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'start_date', 'due_date', 'returned_date', 'created_at', 'updated_at'
+    ];
+
+    /**
      * Get the user that owns the lending.
      */
     public function user()

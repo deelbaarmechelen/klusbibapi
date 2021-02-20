@@ -133,6 +133,7 @@ class LendingController implements LendingControllerInterface
             return $response->withStatus(404);
         }
         $this->logger->info('lending found for id ' . $lending->lending_id);
+
         return $response->withJson(LendingMapper::mapLendingToArray($lending));
     }
 

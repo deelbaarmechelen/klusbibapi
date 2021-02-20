@@ -7,7 +7,19 @@ class Payment extends Model
 {
     protected $primaryKey = "payment_id";
     static protected $fieldArray = ['payment_id', 'user_id', 'state', 'mode', 'payment_date', 'order_id',
-        'amount', 'currency', 'created_at', 'updated_at'
+        'amount', 'currency', 'comment', 'expiration_date', 'membership_id', 'loan_id', 'created_at', 'updated_at'
+    ];
+//    protected $casts = [
+//        'payment_date'  => 'date:Y-m-d',
+//        'expiration_date' => 'date:Y-m-d',
+//    ];
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'payment_date','expiration_date', 'created_at', 'updated_at'
     ];
 
     public static function canBeSortedOn($field) {
@@ -21,6 +33,14 @@ class Payment extends Model
     }
     public function membership() {
         return $this->belongsTo('Api\Model\Membership', 'membership_id', 'id');
+    }
+    public function scopeAny($query)
+    {
+        return $query;
+    }
+    public function scopeForOrder($query, $orderId)
+    {
+        return $query->where('order_id', $orderId);
     }
     public function scopeForMembership($query)
     {

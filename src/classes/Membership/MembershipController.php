@@ -90,16 +90,15 @@ class MembershipController
         }
         $subscriptionId = $request->getQueryParam('subscription_id');
         $startAt = $request->getQueryParam('start_at');
-        $query = Membership::all();
 
         if ($status == Membership::STATUS_ACTIVE) {
             $query = Membership::active();
         } elseif ($status == "OPEN") {
             $query = Membership::open();
         } elseif ($status == "ALL") {
-            // nothing to do
+            $query = Membership::anyStatus();
         } else {
-            $query = $query->withStatus($status);
+            $query = Membership::withStatus($status);
         }
 
         if (isset($userId)) {
