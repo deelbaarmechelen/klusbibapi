@@ -157,11 +157,7 @@ class UserController implements UserControllerInterface
             $sendNotification = FALSE;
             $sendEmailVerification = FALSE;
         }
-        $webEnrolment = false;
-        if (!$authorised || isset($data["webenrolment"])) {
-            $webEnrolment = true;
-        }
-        if ($webEnrolment) {
+        if ($this->isWebEnrolment($authorised, $data)) {
             $user->state = UserState::CHECK_PAYMENT;
             if (!isset($data["payment_mode"])) {
                 $data["payment_mode"] = \Api\Model\PaymentMode::UNKNOWN;
@@ -181,6 +177,12 @@ class UserController implements UserControllerInterface
             $mailmgr = new MailManager(null, null, $this->logger);
             $sendNotification = TRUE;
             $sendEmailVerification = FALSE;
+        } else {
+            // set default values
+            if (!isset($data["state"])) {
+                $user->state = UserState::DISABLED;
+            }
+
         }
         if (isset($data["email"])) {
             $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
@@ -355,5 +357,19 @@ class UserController implements UserControllerInterface
         }
         $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
         return $response->withStatus(403);
+    }
+
+    /**
+     * Returns true if the request should be considered as an unauthenticated web enrolment
+     * @param $authorised
+     * @param $data
+     * @param $webEnrolment
+     */
+    private function isWebEnrolment($authorised, $data): void
+    {
+        if (!$authorised || isset($data["webenrolment"])) {
+            return true;
+        }
+        return false;
     }
 }
