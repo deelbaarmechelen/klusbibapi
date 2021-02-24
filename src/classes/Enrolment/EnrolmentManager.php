@@ -284,6 +284,10 @@ class EnrolmentManager
      */
     function renewalByStroom($orderId, $acceptTermsDate = null) {
         $this->logger->info("Renewal by stroom: order id $orderId");
+        // check not yet enrolled via Stroom: Stroom membership can only be requested once
+        if ($this->user->isStroomParticipant()) {
+            throw new EnrolmentException("Stroom membership can only be requested once", EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE);
+        }
         return $this->renewal($orderId, PaymentMode::STROOM, false, $acceptTermsDate);
     }
 

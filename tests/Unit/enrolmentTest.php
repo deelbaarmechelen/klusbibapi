@@ -96,6 +96,12 @@ class EnrolmentTest extends LocalDbWebTestCase
                     'start_at' => $this->startdate->format('Y-m-d'),
                     'expires_at' => $this->enddate->format('Y-m-d')
                 ),
+                array('id' => 6, 'subscription_id' => 4, 'contact_id' => 8,
+                    'status' => \Api\Model\Membership::STATUS_ACTIVE,
+                    'last_payment_mode' => \Api\Model\PaymentMode::STROOM,
+                    'start_at' => $this->startdate->format('Y-m-d'),
+                    'expires_at' => $this->enddate->format('Y-m-d')
+                ),
             ),
 			'users' => array(
 				array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
@@ -161,6 +167,15 @@ class EnrolmentTest extends LocalDbWebTestCase
                     'membership_end_date' => null,
                     'active_membership' => null
                 ),
+                array('user_id' => 8, 'firstname' => 'Steven', 'lastname' => 'Stroom',
+                    'role' => 'member', 'email' => 'steven@klusbib.be', 'state' => UserState::ACTIVE,
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'address' => 'here', 'postal_code' => '2800', 'city' => 'Mechelen',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => $this->startdate->format('Y-m-d'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d'),
+                    'active_membership' => 6
+                ),
             ),
             'payments' => array(
                 array('payment_id' => 1, 'user_id' => 3, 'state' => PaymentState::OPEN, 'mode' => PaymentMode::MOLLIE,
@@ -172,6 +187,9 @@ class EnrolmentTest extends LocalDbWebTestCase
                 array('payment_id' => 3, 'user_id' => 6, 'state' => PaymentState::OPEN, 'mode' => PaymentMode::MOLLIE,
                     'payment_date' => $this->startdate->format('Y-m-d'), 'order_id' => '6_20201018120000',
                     'amount' => 30, 'currency' => 'EUR', 'membership_id' => 5)
+            ),
+            'project_user' => array(
+                array('project_id' => 1, 'user_id' => 8, 'info' => 'test user')
             )
         ));
 	}
@@ -405,6 +423,28 @@ class EnrolmentTest extends LocalDbWebTestCase
         $user = $this->lookupUser($userId);
         $this->assertEquals(UserState::EXPIRED, $user->state);
         $this->assertEquals($this->expiredEndDate->format('Y-m-d'), $user->membership_end_date);
+    }
+    public function testPostRenewalStroomFromStroomMember()
+    {
+        echo "test POST enrolment (renewal)\n";
+        $userId = "8";
+        $orderId = $userId . "_20181202120000";
+        $data = array("paymentMode" => PaymentMode::STROOM,
+            "userId" => $userId,
+            "orderId" => $orderId,
+            "renewal" => true
+        );
+        $body = $this->client->post('/enrolment', $data);
+        print_r($body);
+        $this->assertEquals(400, $this->client->response->getStatusCode());
+        $response_data = json_decode($body);
+        $this->assertNotNull($response_data);
+        $this->assertEquals("Invalid request: Stroom membership can only be requested once", $response_data->message);
+
+        // check user remained unchanged
+        $user = $this->lookupUser($userId);
+        $this->assertEquals(UserState::ACTIVE, $user->state);
+        $this->assertEquals($this->enddate->format('Y-m-d'), $user->membership_end_date);
     }
 
 	public function testPostRenewalMollie()

@@ -48,31 +48,32 @@ class EnrolmentController
         // Get data
         $data = $request->getParsedBody();
         $this->logger->info("parsedbody=" . json_encode($data));
-        if (empty($data["paymentMode"]) || !isset($data["userId"])) {
-            $message = "no paymentMode and/or userId provided";
-            return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
-            ->withJson("Missing or invalid data: $message");
-        }
-        if (empty($data["orderId"])) {
-            $message = "no orderId provided";
-            return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
-            ->withJson("Missing or invalid data: $message");
+
+        try {
+            if (empty($data["paymentMode"]) || !isset($data["userId"])) {
+                throw new InvalidEnrolmentRequest("Missing or invalid data: no paymentMode and/or userId provided",
+                    HttpResponseCode::BAD_REQUEST);
+            }
+            if (empty($data["orderId"])) {
+                throw new InvalidEnrolmentRequest("Missing or invalid data: no orderId provided",
+                    HttpResponseCode::BAD_REQUEST);
+            }
+
+            if ($data["paymentMode"] == PaymentMode::MOLLIE && empty($data["redirectUrl"])) {
+                throw new InvalidEnrolmentRequest("Missing or invalid data: no redirectUrl provided (required for online payment)",
+                    HttpResponseCode::BAD_REQUEST);
+            }
+        } catch (InvalidEnrolmentRequest $exception) {
+            return $response->withStatus($exception->getCode())
+                ->withJson($exception->getMessage());
         }
 
         $paymentMode = $data["paymentMode"];
-        if ($paymentMode == PaymentMode::MOLLIE && empty($data["redirectUrl"])) {
-            $message = "no redirectUrl provided (required for online payment)";
-            return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
-            ->withJson("Missing or invalid data: $message");
-        }
-
         $userId = $data["userId"];
         $user = \Api\Model\User::find($userId);
         $orderId = $data["orderId"];
-        $renewal = false;
-        if (isset($data["renewal"]) && $data["renewal"] == true) {
-            $renewal = true;
-        }
+        $renewal = $this->isRenewal($data);
+
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");
@@ -101,15 +102,7 @@ class EnrolmentController
         }
 
         if (empty($data["membershipType"])) { // set default values for backward compatibility
-            if ($paymentMode == PaymentMode::STROOM) {
-                $membershipType = MembershipType::STROOM;
-            } else {
-                if ($renewal) {
-                    $membershipType = MembershipType::RENEWAL;
-                } else {
-                    $membershipType = MembershipType::REGULAR;
-                }
-            }
+            $membershipType = $this->getDefaultMembershipType($paymentMode, $renewal);
         } else {
             $membershipType = $data["membershipType"];
             // Make case insensitive
@@ -373,10 +366,7 @@ class EnrolmentController
         $paymentMode = $data["paymentMode"];
         $userId = $data["userId"];
         $user = \Api\Model\User::find($userId);
-        $renewal = false;
-        if (isset($data["renewal"]) && $data["renewal"] == true) {
-            $renewal = true;
-        }
+        $renewal = $this->isRenewal($data);
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");
@@ -425,10 +415,7 @@ class EnrolmentController
         $paymentMode = $data["paymentMode"];
         $userId = $data["userId"];
         $user = \Api\Model\User::find($userId);
-        $renewal = false;
-        if (isset($data["renewal"]) && $data["renewal"] == true) {
-            $renewal = true;
-        }
+        $renewal = $this->isRenewal($data);
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");
@@ -540,5 +527,35 @@ class EnrolmentController
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         }
+    }
+
+    /**
+     * @param $paymentMode
+     * @param $renewal
+     * @return string
+     */
+    private function getDefaultMembershipType($paymentMode, $renewal): string
+    {
+        if ($paymentMode == PaymentMode::STROOM) {
+            $membershipType = MembershipType::STROOM;
+        } else {
+            if ($renewal) {
+                $membershipType = MembershipType::RENEWAL;
+            } else {
+                $membershipType = MembershipType::REGULAR;
+            }
+        }
+        return $membershipType;
+    }
+
+    /**
+     * @param $data array containing parsed request data
+     * @return bool true if enrolment request is a renewal
+     */
+    private function isRenewal($data) {
+        if (isset($data["renewal"]) && $data["renewal"] == true) {
+            return true;
+        }
+        return false;
     }
 }
