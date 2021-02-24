@@ -365,7 +365,7 @@ class UserController implements UserControllerInterface
      * @param $data
      * @param $webEnrolment
      */
-    private function isWebEnrolment($authorised, $data): void
+    private function isWebEnrolment($authorised, $data): bool
     {
         if (!$authorised || isset($data["webenrolment"])) {
             return true;
