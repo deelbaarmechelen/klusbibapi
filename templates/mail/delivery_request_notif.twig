@@ -1,0 +1,18 @@
+{% block subject 'Nieuwe leveringsaanvraag' %}
+
+{% block body %}
+Beste,<br><br>
+<p>Via de website werd een aanvraag voor een levering geregistreerd<br>
+Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
+wenst toestellen {{ delivery.items }} te laten leveren op {{ delivery.drop_off_date | date("Y-m-d") }}
+</p>
+<p>
+Gelieve de levering te bevestigen via de inventaris {{ inventoryLink }}
+</p>
+<p>
+Met vriendelijke groeten<br>
+Admin<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}

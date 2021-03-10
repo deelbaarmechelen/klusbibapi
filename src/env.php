@@ -55,6 +55,7 @@ if (!defined('REPLYTO_EMAIL')) define("REPLYTO_EMAIL", getenv('REPLYTO_EMAIL'));
 if (!defined('SUPPORT_NOTIF_EMAIL')) define("SUPPORT_NOTIF_EMAIL", getenv('SUPPORT_NOTIF_EMAIL'));
 if (!defined('ENROLMENT_NOTIF_EMAIL')) define("ENROLMENT_NOTIF_EMAIL", getenv('ENROLMENT_NOTIF_EMAIL'));
 if (!defined('RESERVATION_NOTIF_EMAIL')) define("RESERVATION_NOTIF_EMAIL", getenv('RESERVATION_NOTIF_EMAIL'));
+if (!defined('DELIVERY_NOTIF_EMAIL')) define("DELIVERY_NOTIF_EMAIL", getenv('DELIVERY_NOTIF_EMAIL'));
 if (!defined('STROOM_NOTIF_EMAIL')) define("STROOM_NOTIF_EMAIL", getenv('STROOM_NOTIF_EMAIL'));
 
 if (!defined('MOLLIE_API_KEY')) define("MOLLIE_API_KEY", getenv('MOLLIE_API_KEY'));

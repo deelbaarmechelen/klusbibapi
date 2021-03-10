@@ -166,6 +166,17 @@ class MailManager {
         }
         return $this->sendTwigTemplate($to, 'reservation_cancel', $parameters);
 	}
+
+    public function sendDeliveryRequestNotification($to, $delivery, $user) {
+        $parameters = array(
+            'user' => $user,
+            'delivery' => $delivery,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK,
+            'inventoryLink' => Settings::INVENTORY_LINK);
+
+        return $this->sendTwigTemplate($to, 'delivery_request_notif', $parameters);
+    }
     // Send enrolment notification to Klusbib team
     public function sendEnrolmentNotification($userEmail, $newUser) {
         $parameters = array(

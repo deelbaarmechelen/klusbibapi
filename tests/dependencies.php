@@ -261,5 +261,6 @@ $container['Api\Lending\LendingController'] = function(ContainerInterface $c) {
 $container['Api\Delivery\DeliveryController'] = function(ContainerInterface $c) {
     $logger = $c->get("logger");
     $token = $c->get("token");
-    return new \Api\Delivery\DeliveryController($logger, $token);
+    $mailManager = new MailManager(null, null, $logger);
+    return new \Api\Delivery\DeliveryController($logger, $token, $mailManager);
 };

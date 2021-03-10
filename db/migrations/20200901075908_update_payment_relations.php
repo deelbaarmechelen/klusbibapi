@@ -36,7 +36,7 @@ class UpdatePaymentRelations extends AbstractCapsuleMigration
 	public function down()
 	{
 		$this->initCapsule();
-	        Capsule::update('UPDATE payments SET membership_id = null');
+        Capsule::update('UPDATE payments SET membership_id = null');
         Capsule::schema()->table('payments', function(Illuminate\Database\Schema\Blueprint $table){
             $table->dropForeign(['membership_id']);
             $table->dropColumn('membership_id');

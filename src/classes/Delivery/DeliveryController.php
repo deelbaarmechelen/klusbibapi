@@ -2,7 +2,9 @@
 
 namespace Api\Delivery;
 
+use Api\Mail\MailManager;
 use Api\Model\InventoryItem;
+use Api\Model\User;
 use Api\Util\HttpResponseCode;
 use Api\Validator\DeliveryValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -18,10 +20,12 @@ class DeliveryController
 {
     protected $logger;
     protected $token;
+    protected $mailManager;
 
-    public function __construct($logger, $token) {
+    public function __construct($logger, $token, MailManager $mailManager = null) {
         $this->logger = $logger;
         $this->token = $token;
+        $this->mailManager = $mailManager;
     }
 
     public function getAll($request, $response, $args) {
@@ -87,6 +91,11 @@ class DeliveryController
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
+        $user = User::find($data["user_id"]);
+        if (null == $user) {
+            $errors = array("message" => "No user found with id " . $data["user_id"]);
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors);
+        }
         $this->logger->info("Delivery request is valid");
         $delivery = new \Api\Model\Delivery();
 
@@ -108,6 +117,9 @@ class DeliveryController
         if(isset($data["comment"])) {
             $delivery->comment = $data["comment"];
         }
+        if(isset($data["consumers"])) {
+            $delivery->consumers = $data["consumers"];
+        }
         if(isset($data["pick_up_date"])) {
             $delivery->pick_up_date = $data["pick_up_date"];
         }
@@ -115,20 +127,20 @@ class DeliveryController
             $delivery->drop_off_date = $data["drop_off_date"];
         }
 
-        /*$access = Authorisation::checkReservationAccess($this->token, "create", $delivery, $toolOwnerId);
-        $this->logger->info("Reservation access check: " . $access);
+        $access = Authorisation::checkDeliveryAccess($this->token, "create", $delivery, $this->logger);
+        $this->logger->info("Delivery access check: " . $access);
         if ($access === AccessType::NO_ACCESS) {
             return $response->withStatus(403); // Unauthorized
         }
 
         if ($access !== AccessType::FULL_ACCESS) {
-            $delivery->state = ReservationState::REQUESTED;
+            $delivery->state = DeliveryState::REQUESTED;
         }
-        if ($access !== AccessType::FULL_ACCESS) {
-            $delivery->type = "reservation";
-        }*/
 
         $delivery->save();
+        if ($delivery->state === DeliveryState::REQUESTED) {
+            $this->mailManager->sendDeliveryRequestNotification(DELIVERY_NOTIF_EMAIL, $delivery, $user);
+        }
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery))
             ->withStatus(201);
     }

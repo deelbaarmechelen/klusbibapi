@@ -21,7 +21,10 @@ class DeliveryMapper
             "drop_off_address" => $delivery->drop_off_address,
             "pick_up_date" => $delivery->pick_up_date,
             "drop_off_date" => $delivery->drop_off_date,
+            "consumers" => $delivery->consumers,
             "comment" => $delivery->comment,
+            "price" => $delivery->price,
+            "payment_id" => $delivery->payment_id,
             "items" => $deliveryItems
         );
 

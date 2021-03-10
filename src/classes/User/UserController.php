@@ -5,6 +5,7 @@ namespace Api\User;
 use Api\Model\Membership;
 use Api\Model\MembershipType;
 use Api\Model\PaymentMode;
+use Api\ModelMapper\DeliveryMapper;
 use Api\ModelMapper\MembershipMapper;
 use Api\Tool\ToolManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -104,24 +105,15 @@ class UserController implements UserControllerInterface
             return $response->withStatus(500)
                 ->withJson(array('error' => $ex->getMessage()));
         }
+        $userArray["reservations"] = $this->addUserReservations($user);
+        $userArray["deliveries"] = $this->addUserDeliveries($user);
 
-        // Add user reservations
-        $reservations = $user->reservations;
-        $reservationsArray = array();
-        foreach ($reservations as $reservation) {
-            $reservationData = ReservationMapper::mapReservationToArray($reservation);
-            $tool = $this->toolManager->getById($reservationData['tool_id']);
-            if (isset($tool)) {
-                $reservationData['tool_code'] = $tool->code;
-                $reservationData['tool_name'] = $tool->name;
-                $reservationData['tool_brand'] = $tool->brand;
-                $reservationData['tool_type'] = $tool->type;
-            }
-            array_push($reservationsArray, $reservationData);
-        }
-        $userArray["reservations"] = $reservationsArray;
         return $response->withJson($userArray);
     }
+
+    /**
+     * @deprecated use create instead
+     */
     function add($request, $response, $args){
         return $this->create($request, $response, $args);
     }
@@ -371,5 +363,35 @@ class UserController implements UserControllerInterface
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param $user
+      * @return mixed
+     */
+    private function addUserReservations($user)
+    {
+        $reservationsArray = array();
+        foreach ($user->reservations as $reservation) {
+            $reservationData = ReservationMapper::mapReservationToArray($reservation);
+            $tool = $this->toolManager->getById($reservationData['tool_id']);
+            if (isset($tool)) {
+                $reservationData['tool_code'] = $tool->code;
+                $reservationData['tool_name'] = $tool->name;
+                $reservationData['tool_brand'] = $tool->brand;
+                $reservationData['tool_type'] = $tool->type;
+            }
+            array_push($reservationsArray, $reservationData);
+        }
+        return $reservationsArray;
+    }
+    private function addUserDeliveries($user)
+    {
+        $deliveriesArray = array();
+        foreach ($user->deliveries as $delivery) {
+            $deliveryData = DeliveryMapper::mapDeliveryToArray($delivery);
+            array_push($deliveriesArray, $deliveryData);
+        }
+        return $deliveriesArray;
     }
 }

@@ -52,6 +52,10 @@ class User extends Model
 	{
 		return $this->hasMany('Api\Model\Reservation', 'user_id');
 	}
+    public function deliveries()
+    {
+        return $this->hasMany('Api\Model\Delivery', 'user_id');
+    }
 
     /**
      * The projects this user participates to.
