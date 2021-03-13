@@ -65,6 +65,8 @@ class DeliveryController
         } */
         $deliveries = $querybuilder->get();
 
+        // FIXME: add items for each delivery to response
+
         return $response->withJson($deliveries)
             ->withHeader('X-Total-Count', count($deliveries));
     }
@@ -138,6 +140,21 @@ class DeliveryController
         }
 
         $delivery->save();
+        //$items = json_decode($data["items"]);
+        $items = $data["items"];
+        if (is_array($items)) {
+            foreach ($items as $rcvdItem) {
+                //$decoded_item = json_decode($rcvdItem);
+                //$this->logger->info(\json_encode($decoded_item));
+                $item = InventoryItem::find($rcvdItem["tool_id"]);
+                if (null != $item) {
+                    $this->addItemToDelivery($item, $delivery);
+                } else {
+                    $this->logger->warn("No inventory item found for item " . \json_encode($rcvdItem));
+                }
+            }
+        }
+
         if ($delivery->state === DeliveryState::REQUESTED) {
             $this->mailManager->sendDeliveryRequestNotification(DELIVERY_NOTIF_EMAIL, $delivery, $user);
         }
@@ -263,8 +280,7 @@ class DeliveryController
             return $response->withStatus(HttpResponseCode::NOT_FOUND)
                 ->withJson(array("message" => "Item not found!"));
         }
-        $delivery->items()->attach($item);
-        $delivery->save();
+        $this->addItemToDelivery($item, $delivery);
 
     }
     public function updateItem($request, $response, $args) {
@@ -291,6 +307,16 @@ class DeliveryController
         $delivery->items()->detach($args['itemid']);
         $delivery->save();
 
+    }
+
+    /**
+     * @param $delivery
+     * @param $item
+     */
+    private function addItemToDelivery($item, $delivery): void
+    {
+        $delivery->items()->attach($item);
+        $delivery->save();
     }
 
 }

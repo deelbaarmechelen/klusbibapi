@@ -107,6 +107,7 @@ class UserController implements UserControllerInterface
         }
         $userArray["reservations"] = $this->addUserReservations($user);
         $userArray["deliveries"] = $this->addUserDeliveries($user);
+        $userArray["projects"] = $this->addUserProjects($user);
 
         return $response->withJson($userArray);
     }
@@ -393,5 +394,18 @@ class UserController implements UserControllerInterface
             array_push($deliveriesArray, $deliveryData);
         }
         return $deliveriesArray;
+    }
+    private function addUserProjects($user)
+    {
+        $projectsArray = array();
+        $this->logger->info(\json_encode($user->projects));
+        foreach ($user->projects as $project) {
+            $this->logger->info(\json_encode($project));
+            $projectData = array("id" => $project->id, "name" => $project->name);
+
+            //$projectData = ProjectMapper::mapDeliveryToArray($project);
+            array_push($projectsArray, $projectData);
+        }
+        return $projectsArray;
     }
 }

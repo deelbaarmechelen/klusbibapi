@@ -4,10 +4,18 @@
 Beste,<br><br>
 <p>Via de website werd een aanvraag voor een levering geregistreerd<br>
 Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
-wenst toestellen {{ delivery.items }} te laten leveren op {{ delivery.drop_off_date | date("Y-m-d") }}
+wenst volgende toestellen te laten leveren op {{ delivery.drop_off_date | date("Y-m-d") }}:<br/>
+<ul>
+    {% for item in delivery.items %}
+        <li>{{ item.sku }} - {{ item.name }} (merk: {{ item.brand }})</li>
+    {% endfor %}
+</ul>
+Extra verbruiksmaterialen / handgereedschap: {{ delivery.consumers }}<br/>
+Opmerkingen: {{ delivery.comment }}
 </p>
 <p>
-Gelieve de levering te bevestigen via de inventaris {{ inventoryLink }}
+Gelieve de levering te bevestigen via de inventaris {{ inventoryLink }} en/of contact op te nemen met de gebruiker voor verder praktische afspraken
+(email: {{ user.email }})
 </p>
 <p>
 Met vriendelijke groeten<br>
