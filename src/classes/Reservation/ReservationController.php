@@ -2,6 +2,7 @@
 
 namespace Api\Reservation;
 
+use Api\Delivery\DeliveryManager;
 use Api\Tool\ToolManager;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -246,7 +247,12 @@ class ReservationController implements ReservationControllerInterface
             $this->logger->info("Klusbib PUT updating comment from " . $reservation->comment . " to " . $newComment);
             $reservation->comment = $newComment;
         }
+        if ($reservation->deliveryItem()->exists()) {
+            // Update delivery
+            $this->updateDelivery($reservation);
+        }
         $reservation->save();
+
         if ($confirmation) {
             // Send notification to confirm the reservation
             $this->logger->info('Sending notification for confirmation of reservation ' . json_encode($reservation));
@@ -281,9 +287,47 @@ class ReservationController implements ReservationControllerInterface
         // TODO: only allow delete of own reservations if access is reservations.delete.owner
         $reservation = \Api\Model\Reservation::find($args['reservationid']);
         if (null == $reservation) {
-            return $response->withStatus(204);
+            return $response->withStatus(HttpResponseCode::NO_CONTENT);
+        }
+        if ($reservation->deliveryItem()->exists()) {
+            $reason = "Removal of reservation for item " . \json_encode($reservation->deliveryItem);
+            $this->deleteDeliveryItem($reservation->deliveryItem, $reason);
         }
         $reservation->delete();
-        return $response->withStatus(200);
+        return $response->withStatus(HttpResponseCode::OK);
+    }
+
+    private function updateDelivery($reservation) {
+        // check reservation status
+        if ($reservation->isCancelled() && $reservation->deliveryItem()->exists()) {
+            $reason = "Reservation is cancelled for item " . \json_encode($reservation->deliveryItem);
+            $this->deleteDeliveryItem($reservation->deliveryItem, $reason);
+        }
+
+        // check reservation vs delivery start and end date
+        $delivery = $reservation->deliveryItem->delivery;
+        if ($reservation->startsAt > $delivery->pick_up_date) {
+            $reason = "Delivery is planned before start of reservation";
+            $this->logger->info("Sending delivery update notification with reason $reason");
+            $this->mailManager->sendDeliveryUpdateNotification(DELIVERY_NOTIF_EMAIL, $delivery, $reason);
+        }
+        if ($reservation->endsAt < $delivery->drop_off_date) {
+            $reason = "Delivery is planned after end of reservation";
+            $this->logger->info("Sending delivery update notification with reason $reason");
+            $this->mailManager->sendDeliveryUpdateNotification(DELIVERY_NOTIF_EMAIL, $delivery, $reason);
+        }
+
+    }
+    private function deleteDeliveryItem($item, $reason = "unknown")
+    {
+        if (!isset($item)) {
+            return;
+        }
+        $delivery = $item->delivery;
+        $delivery->items()->detach($item->inventory_item_id);
+        $delivery->save();
+
+        // send email notification
+        $this->mailManager->sendDeliveryUpdateNotification(DELIVERY_NOTIF_EMAIL, $delivery, $reason);
     }
 }

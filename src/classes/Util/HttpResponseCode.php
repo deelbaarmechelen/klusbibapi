@@ -6,6 +6,7 @@ namespace Api\Util;
 class HttpResponseCode
 {
     const OK = 200;
+    const CREATED = 201;
     const NO_CONTENT = 204;
     const ALREADY_REPORTED = 208;
     const BAD_REQUEST = 400;

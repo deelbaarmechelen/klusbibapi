@@ -36,6 +36,10 @@ class DeliveryMapper
         return array(
             "delivery_id" => $item->pivot->delivery_id,
             "inventory_item_id" => $item->pivot->inventory_item_id,
+            "reservation_id" => $item->pivot->reservation_id,
+            "fee" => $item->pivot->fee,
+            "size" => $item->pivot->size,
+            "comment" => $item->pivot->comment,
             "id" => $item->id,
             "item_type" => $item->item_type,
             "sku" => $item->sku,

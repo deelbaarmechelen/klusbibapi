@@ -86,24 +86,24 @@ class ReservationsTest extends LocalDbWebTestCase
 						)
 				),
 				'reservations' => array(
-						array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
-								'title' => 'title 1',
-								'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
-								'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
-								'type' => 'repair', 'state' => 'REQUESTED', 'comment' => 'my comment'
-						),
-						array('reservation_id' => 2, 'tool_id' => 1, 'user_id' => 1,
-								'title' => 'title 2',
-								'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
-								'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
-								'type' => 'maintenance', 'state' => 'CONFIRMED'
-						),
-						array('reservation_id' => 3, 'tool_id' => 3, 'user_id' => 1,
-								'title' => 'title 3',
-								'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
-								'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
-								'type' => 'repair', 'state' => 'CLOSED', 'comment' => ''
-						),
+                    array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
+                            'title' => 'title 1',
+                            'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
+                            'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
+                            'type' => 'repair', 'state' => 'REQUESTED', 'comment' => 'my comment'
+                    ),
+                    array('reservation_id' => 2, 'tool_id' => 1, 'user_id' => 1,
+                            'title' => 'title 2',
+                            'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
+                            'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
+                            'type' => 'maintenance', 'state' => 'CONFIRMED'
+                    ),
+                    array('reservation_id' => 3, 'tool_id' => 3, 'user_id' => 1,
+                            'title' => 'title 3',
+                            'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
+                            'endsAt' => $this->enddate->format('Y-m-d H:i:s'),
+                            'type' => 'repair', 'state' => 'CLOSED', 'comment' => ''
+                    ),
 				),
 		));
 	}
@@ -254,6 +254,7 @@ class ReservationsTest extends LocalDbWebTestCase
 		echo "\n";
 		$this->assertEquals(403, $this->client->response->getStatusCode());
 	}
+
 	public function testPostReservationsDonationOnly()
 	{
 		echo "test POST reservations - Donation only\n";
@@ -315,15 +316,123 @@ class ReservationsTest extends LocalDbWebTestCase
 		$this->assertEquals($data["type"], $reservation->type);
 	}
 
+    public function testPutReservationWithDelivery()
+    {
+        echo "test PUT reservation with delivery\n";
+
+        // create reservation and delivery
+        $user = factory(\Api\Model\User::class)->create([
+            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+        ]);
+        $tool = factory(\Api\Model\Tool::class)->create([
+            'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
+        ]);
+        $reservationStart = new DateTime();
+        $reservationEnd = clone $reservationStart;
+        $reservationEnd->add(new DateInterval('P7D'));
+        $reservation = factory(\Api\Model\Reservation::class)->create([
+            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
+        ]);
+        $inventoryItem = factory(\Api\Model\InventoryItem::class)->create([]);
+        $deliveryDropOff = clone $reservationStart;
+        $deliveryDropOff->add(new DateInterval('P2D'));
+        $delivery = factory(\Api\Model\Delivery::class)->create([
+            'comment' => 'opm', 'consumers' => 'hamer+beitel',
+            'pick_up_date' => $reservationStart->format('Y-m-d'), 'drop_off_date' => $deliveryDropOff->format('Y-m-d')
+        ]);
+        $item = factory(\Api\Model\DeliveryItem::class)->create([
+            'delivery_id' => $delivery->id, 'inventory_item_id' => $inventoryItem->id, 'reservation_id' => $reservation->reservation_id
+        ]);
+        $delivery = $this->lookupDelivery($delivery->id);
+
+        // update reservation
+        $newReservationStart = new DateTime();
+        $newReservationStart->add(new DateInterval('P20D'));
+        $newReservationEnd = clone $newReservationStart;
+        $newReservationEnd->add(new DateInterval('P7D'));
+
+        $data = array("startsAt" => $newReservationStart->format('Y-m-d'),
+            "endsAt" => $newReservationEnd->format('Y-m-d'),
+            "user_id" => "3",
+            "tool_id" => "3"
+        );
+        $header = array();
+        $body = $this->client->put('/reservations/' . $reservation->reservation_id, $data, $header);
+        print_r($body);
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+
+        // check reservation has properly been updated
+        $bodyGet = $this->client->get('/reservations/' . $reservation->reservation_id);
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $reservation = json_decode($bodyGet);
+        $this->assertEquals($data["startsAt"], $reservation->startsAt);
+        $this->assertEquals($data["endsAt"], $reservation->endsAt);
+    }
+
 	public function testDeleteReservation()
 	{
 		echo "test DELETE reservation\n";
-		$this->client->delete('/reservations/1');
-		$body = $this->assertEquals(200, $this->client->response->getStatusCode());
+		$body = $this->client->delete('/reservations/1');
+		print_r($body);
+		$this->assertEquals(200, $this->client->response->getStatusCode());
 		
 		// check reservation no longer exists
 		$bodyGet = $this->client->get('/reservations/1');
 		$this->assertEquals(404, $this->client->response->getStatusCode());
 	}
-	
+    public function testDeleteReservationWitDelivery()
+    {
+        echo "test DELETE reservation linked to delivery\n";
+
+        $user = factory(\Api\Model\User::class)->create([
+            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+        ]);
+        $tool = factory(\Api\Model\Tool::class)->create([
+            'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
+        ]);
+        $reservationStart = new DateTime();
+        $reservationEnd = clone $reservationStart;
+        $reservationEnd->add(new DateInterval('P7D'));
+        $reservation = factory(\Api\Model\Reservation::class)->create([
+            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
+        ]);
+        $inventoryItem = factory(\Api\Model\InventoryItem::class)->create([]);
+        $delivery = factory(\Api\Model\Delivery::class)->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
+        $item = factory(\Api\Model\DeliveryItem::class)->create([
+            'delivery_id' => $delivery->id, 'inventory_item_id' => $inventoryItem->id, 'reservation_id' => $reservation->reservation_id
+        ]);
+        $delivery = $this->lookupDelivery($delivery->id);
+        $this->assertEquals(1, count($delivery->items));
+
+        // act
+        $body = $this->client->delete('/reservations/' . $reservation->reservation_id);
+        print_r($body);
+
+        // assert
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+
+        // check reservation no longer exists
+        $bodyGet = $this->client->get('/reservations/' . $reservation->reservation_id);
+        $this->assertEquals(404, $this->client->response->getStatusCode());
+
+        // check delivery item no longer exists
+        $delivery = $this->lookupDelivery($delivery->id);
+        $this->assertEquals(0, count($delivery->items));
+    }
+
+    /**
+     * @param $delivery
+     * @return array
+     */
+    private function lookupDelivery($deliveryId): stdClass
+    {
+        $bodyGet = $this->client->get('/deliveries/' . $deliveryId);
+        $this->assertEquals(200, $this->client->response->getStatusCode());
+        echo "delivery:\n";
+        print_r($bodyGet);
+        echo "\n\n";
+        $delivery = \json_decode($bodyGet);
+        return $delivery;
+    }
+
 }

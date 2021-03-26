@@ -29,9 +29,16 @@ class Reservation extends Model
 	{
 		return $this->belongsTo('Api\Model\Tool', 'tool_id');
 	}
+    public function deliveryItem()
+    {
+        return $this->hasOne('Api\Model\DeliveryItem', 'reservation_id');
+    }
     public function scopeIsDeleted($query)
     {
         return $query->where('state', '=', ReservationState::DELETED);
     }
 
+    public function isCancelled() : bool {
+	    return $this->state == ReservationState::CANCELLED;
+    }
 }

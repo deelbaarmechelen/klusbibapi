@@ -36,6 +36,7 @@ if (!defined('REPLYTO_NAME')) define("REPLYTO_NAME", "ReplyTo tester");
 if (!defined('REPLYTO_EMAIL')) define("REPLYTO_EMAIL", "replyto@klusbib.be");
 defined('ENROLMENT_NOTIF_EMAIL') or define("ENROLMENT_NOTIF_EMAIL", "test@klusbib.be");
 defined('RESERVATION_NOTIF_EMAIL') or define("RESERVATION_NOTIF_EMAIL", "test@klusbib.be");
+if (!defined('DELIVERY_NOTIF_EMAIL')) define("DELIVERY_NOTIF_EMAIL", "delivery-test@klusbib.be");
 defined('STROOM_NOTIF_EMAIL') or define("STROOM_NOTIF_EMAIL", "test@klusbib.be");
 
 defined('MOLLIE_API_KEY') or define("MOLLIE_API_KEY", "test_EaVzmHexdwwThxbQp6qn3rqjDdDAbA");

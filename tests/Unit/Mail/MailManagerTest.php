@@ -6,11 +6,62 @@ use Api\Model\User;
 use Api\Model\Tool;
 use Api\Model\Reservation;
 use Api\Model\Membership;
+use Api\Model\Delivery;
+use Api\Model\DeliveryItem;
+use Tests\DbUnitArrayDataSet;
+
 require_once __DIR__ . '/../../test_env.php';
 
-final class MailManagerTest extends TestCase
+final class MailManagerTest extends LocalDbWebTestCase
+//final class MailManagerTest extends TestCase
 {
-	public function testSendPwdRecoveryMail()
+    /**
+     * @return PHPUnit_Extensions_Database_DataSet_IDataSet
+     */
+    public function getDataSet()
+    {
+        $this->createdate = new DateTime();
+        $this->updatedate = clone $this->createdate;
+        $this->pickUpDate = new DateTime();
+        $this->dropOffDate = clone $this->pickUpDate;
+        $this->dropOffDate->add(new DateInterval('P2D'));
+
+        return new DbUnitArrayDataSet(array(
+            'users' => array(
+                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+                    'role' => 'member', 'email' => 'daniel@klusbib.be',
+                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                ),
+            ),
+            'deliveries' => array(
+                array('id' => 1, 'user_id' => 3, 'state' => 1,
+                    'pick_up_date' => $this->pickUpDate->format('Y-m-d H:i:s'),
+                    'drop_off_date' => $this->dropOffDate->format('Y-m-d H:i:s'),
+                    'pick_up_address' => "here",
+                    'drop_off_address' => "there",
+                    'created_at' => $this->createdate->format('Y-m-d H:i:s'),
+                    'updated_at' => $this->updatedate->format('Y-m-d H:i:s')
+                ),
+            ),
+            'inventory_item' => array(
+                array('id' => 1, 'name' => "my tool", 'item_type' => \Api\Model\ToolType::TOOL,
+                    'sku' => "KB-000-20-001", 'brand' => 'Makita',
+                    'created_at' => $this->createdate->format('Y-m-d H:i:s'),
+                    'updated_at' => $this->updatedate->format('Y-m-d H:i:s')
+                ),
+                array('id' => 2, 'name' => "my second tool", 'item_type' => \Api\Model\ToolType::ACCESSORY,
+                    'sku' => "KB-000-20-002",
+                    'created_at' => $this->createdate->format('Y-m-d H:i:s'),
+                    'updated_at' => $this->updatedate->format('Y-m-d H:i:s')
+                ),
+            ),
+            'delivery_item' => array(
+                array('delivery_id' => 1, 'inventory_item_id' => 1),
+            ),
+        ));
+    }
+
+    public function testSendPwdRecoveryMail()
 	{
 		$mailer = new PHPMailerMock ();
 		$mailmgr = new MailManager($mailer);
@@ -81,6 +132,67 @@ final class MailManagerTest extends TestCase
 		$this->assertEquals("Nieuwe reservatie", $get_sent->subject);
         print_r($get_sent->body);
 	}
+    public function testSendDeliveryRequest()
+    {
+        $mailer = new PHPMailerMock ();
+        $mailmgr = new MailManager($mailer);
+        $user = new UserTest();
+        $user->user_id = 123;
+        $user->email = "info@klusbib.be";
+        $user->firstname = "tester";
+        $user->lastname = "de mock";
+        $tool = new ToolTest();
+        $tool->name = "mytool";
+        $tool->description = "mydescription";
+        $tool->brand = "myBrand";
+        $tool->type = "myType";
+        $reservation = new ReservationTest();
+        $reservationStart = new DateTime();
+        $reservation->startsAt = new DateTime();
+        $reservation->endsAt = clone $reservationStart;
+        $reservation->endsAt->add(new DateInterval('P7D'));
+
+        $delivery = factory(Delivery::class)->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
+        $items = factory(DeliveryItem::class, 2)->create(['delivery_id' => $delivery->id, 'inventory_item_id' => 1]);
+
+        $result = $mailmgr->sendDeliveryRequestNotification("info@klusbib.be", $delivery, $user);
+        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
+        $this->assertTrue($result);
+        $get_sent = $mailer->get_sent(0);
+        $this->assertNotNull($get_sent);
+        $this->assertEquals("Nieuwe leveringsaanvraag", $get_sent->subject);
+        print_r($get_sent->body);
+    }
+    public function testSendDeliveryUpdate()
+    {
+        $mailer = new PHPMailerMock ();
+        $mailmgr = new MailManager($mailer);
+
+        $user = factory(User::class)->create([
+            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+        ]);
+        $tool = factory(Tool::class)->create([
+            'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
+        ]);
+        $reservationStart = new DateTime();
+        $reservationEnd = clone $reservationStart;
+        $reservationEnd->add(new DateInterval('P7D'));
+        $reservation = factory(Reservation::class)->create([
+            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
+        ]);
+        $delivery = factory(Delivery::class)->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
+        $items = factory(DeliveryItem::class, 2)->create([
+            'delivery_id' => $delivery->id, 'inventory_item_id' => 1, 'reservation_id' => $reservation->reservation_id
+        ]);
+
+        $result = $mailmgr->sendDeliveryUpdateNotification("info@klusbib.be", $delivery, $user);
+        $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
+        $this->assertTrue($result);
+        $get_sent = $mailer->get_sent(0);
+        $this->assertNotNull($get_sent);
+        $this->assertEquals("Wijziging levering", $get_sent->subject);
+        print_r($get_sent->body);
+    }
     public function testSendEnrolmentConfirmationTransfer()
     {
         $user = new UserTest();
@@ -439,3 +551,4 @@ if (!class_exists('MembershipTest')) {
         }
     }
 }
+

@@ -132,7 +132,7 @@ class DeliveryController
         $access = Authorisation::checkDeliveryAccess($this->token, "create", $delivery, $this->logger);
         $this->logger->info("Delivery access check: " . $access);
         if ($access === AccessType::NO_ACCESS) {
-            return $response->withStatus(403); // Unauthorized
+            return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
 
         if ($access !== AccessType::FULL_ACCESS) {
@@ -140,12 +140,9 @@ class DeliveryController
         }
 
         $delivery->save();
-        //$items = json_decode($data["items"]);
-        $items = $data["items"];
+        $items = isset($data["items"]) ? $data["items"] : array();
         if (is_array($items)) {
             foreach ($items as $rcvdItem) {
-                //$decoded_item = json_decode($rcvdItem);
-                //$this->logger->info(\json_encode($decoded_item));
                 $item = InventoryItem::find($rcvdItem["tool_id"]);
                 if (null != $item) {
                     $this->addItemToDelivery($item, $delivery);
@@ -159,7 +156,7 @@ class DeliveryController
             $this->mailManager->sendDeliveryRequestNotification(DELIVERY_NOTIF_EMAIL, $delivery, $user);
         }
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery))
-            ->withStatus(201);
+            ->withStatus(HttpResponseCode::CREATED);
     }
     
     public function update($request, $response, $args) {
@@ -167,12 +164,12 @@ class DeliveryController
         Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
         if (null == $delivery) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         $data = $request->getParsedBody();
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
         $errors = array();
-        if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
+        if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors, false)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
         $access = Authorisation::checkDeliveryAccess($this->token, "update", $delivery, $this->logger);
@@ -274,23 +271,47 @@ class DeliveryController
                 ->withJson(array("message" => "Delivery not found!"));
         }
         $data = $request->getParsedBody();
-        $this->logger->info("Klusbib PUT body: ". json_encode($data));
         $item = InventoryItem::find($data['item_id']);
         if (null == $item) {
-            return $response->withStatus(HttpResponseCode::NOT_FOUND)
-                ->withJson(array("message" => "Item not found!"));
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                ->withJson(array("message" => "Missing item_id"));
         }
         $this->addItemToDelivery($item, $delivery);
 
+        return $response->withStatus(HttpResponseCode::CREATED);
     }
     public function updateItem($request, $response, $args) {
-        $this->logger->info("Klusbib PUT '/deliveries/{delivery_id}/items/{item_id}' route");
+        $this->logger->info("Klusbib PUT '/deliveries/{deliveryid}/items/{itemid}' route");
         // update quantity?
         Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
         if (null == $delivery) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
+        $data = $request->getParsedBody();
+
+        foreach( $delivery->items()->wherePivot('inventory_item_id', $args['itemid'])->get() as $inventoryItem) {
+            if (isset($data["reservation_id"])) {
+                $this->logger->info("Klusbib PUT updating reservation_id from " . $inventoryItem->pivot->reservation_id . " to " . $data["reservation_id"]);
+                $inventoryItem->pivot->reservation_id = $data["reservation_id"];
+            }
+            if (isset($data["fee"])) {
+                $this->logger->info("Klusbib PUT updating fee from " . $inventoryItem->pivot->fee . " to " . $data["fee"]);
+                $inventoryItem->pivot->fee = $data["fee"];
+            }
+            if (isset($data["size"])) {
+                $this->logger->info("Klusbib PUT updating size from " . $inventoryItem->pivot->size . " to " . $data["size"]);
+                $inventoryItem->pivot->size = $data["size"];
+            }
+            if (isset($data["comment"])) {
+                $this->logger->info("Klusbib PUT updating comment from " . $inventoryItem->pivot->comment . " to " . $data["comment"]);
+                $inventoryItem->pivot->comment = $data["comment"];
+            }
+            $inventoryItem->pivot->save();
+        }
+        $delivery->refresh();
+
+        return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery))->withStatus(HttpResponseCode::OK);
     }
     public function removeItem($request, $response, $args) {
         $this->logger->info("Klusbib DELETE '/deliveries/{delivery_id}/items/{item_id}' route");
@@ -307,6 +328,7 @@ class DeliveryController
         $delivery->items()->detach($args['itemid']);
         $delivery->save();
 
+        return $response->withStatus(HttpResponseCode::OK);
     }
 
     /**

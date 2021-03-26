@@ -21,7 +21,16 @@ class Delivery extends Model
 
     public function items() {
         return $this->belongsToMany('Api\Model\InventoryItem', 'delivery_item',
-            'delivery_id', 'inventory_item_id');
+            'delivery_id', 'inventory_item_id')
+            ->withPivot([
+                'reservation_id',
+                'comment',
+                'fee',
+                'size',
+                'created_at',
+                'updated_at',
+            ])
+            ->withTimestamps();
     }
 
 }

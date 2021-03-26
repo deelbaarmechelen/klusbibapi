@@ -33,6 +33,28 @@ $capsule->setAsGlobal();
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();
 
+if (! function_exists('factory')) {
+    /**
+     * Create a model factory builder for a given class, name, and amount.
+     *
+     * @param  dynamic  class|class,name|class,amount|class,name,amount
+     * @return \Illuminate\Database\Eloquent\FactoryBuilder
+     */
+    function factory()
+    {
+        require __DIR__. '/../db/factories/ModelFactory.php';
+
+        $arguments = func_get_args();
+
+        if (isset($arguments[1]) && is_string($arguments[1])) {
+            return $factory->of($arguments[0], $arguments[1])->times($arguments[2] ?? null);
+        } elseif (isset($arguments[1])) {
+            return $factory->of($arguments[0])->times($arguments[1]);
+        }
+
+        return $factory->of($arguments[0]);
+    }
+}
 return [
     'settings' => [
         'displayErrorDetails' => true, // set to false in production

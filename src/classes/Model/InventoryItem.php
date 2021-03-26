@@ -9,6 +9,7 @@ class InventoryItem extends Model
 {
     protected $table = 'inventory_item';
     protected $primaryKey = "id";
+    public $incrementing = false;
     static protected $fieldArray = ['id',
         // to be completed!
         'created_at', 'updated_at'

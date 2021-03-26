@@ -7,38 +7,38 @@ use Api\Tool\ToolManager;
 
 class DeliveryValidator
 {
-	static function isValidDeliveryData($delivery, $logger, &$errors) {
+	static function isValidDeliveryData($delivery, $logger, &$errors, bool $new = true) {
         if (empty($delivery)) {
             $message = "No data provided";
             $logger->info($message);
             array_push($errors, $message);
             return false;
         }
-		if (!isset($delivery["user_id"])) {
+		if (!isset($delivery["user_id"]) && $new) {
             $message = "Missing user_id";
 			$logger->info($message);
             array_push($errors, $message);
 			return false;
 		}
-        if (empty($delivery["state"])) {
+        if (empty($delivery["state"]) && $new) {
             $message = "Missing state";
             $logger->info($message);
             array_push($errors, $message);
             return false;
         }
-        if (empty($delivery["pick_up_address"])) {
+        if (empty($delivery["pick_up_address"]) && $new) {
             $message = "Missing pick_up_address";
             $logger->info($message);
             array_push($errors, $message);
 			return false;
 		}
-        if (empty($delivery["drop_off_address"])) {
+        if (empty($delivery["drop_off_address"]) && $new) {
             $message = "Missing drop_off_address";
             $logger->info($message);
             array_push($errors, $message);
 			return false;
 		}
-        if (!UserValidator::userExists($delivery["user_id"], $logger)) {
+        if (isset($delivery["user_id"]) && !UserValidator::userExists($delivery["user_id"], $logger)) {
             $message = "Inexistant user " . $delivery["user_id"];
             $logger->info($message);
             array_push($errors, $message);

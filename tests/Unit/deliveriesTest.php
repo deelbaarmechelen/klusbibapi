@@ -60,6 +60,7 @@ class DeliveryTest extends LocalDbWebTestCase
         $this->setUser('daniel@klusbib.be');
         $this->setToken('3', ["deliveries.all"]);
 		$body = $this->client->get('/deliveries');
+		echo $body;
 		$this->assertEquals(200, $this->client->response->getStatusCode());
         $deliveries = json_decode($body);
 		$this->assertEquals(1, count($deliveries));
@@ -99,6 +100,7 @@ class DeliveryTest extends LocalDbWebTestCase
             "drop_off_address" => "there"
         );
         $body = $this->client->post('/deliveries', $data);
+        print_r($body);
         $this->assertEquals(201, $this->client->response->getStatusCode());
         $delivery = json_decode($body);
         $this->assertEquals(2, $delivery->id);
@@ -144,7 +146,7 @@ class DeliveryTest extends LocalDbWebTestCase
         $this->setToken('3', ["deliveries.all"]);
         $data = array("item_id" => 2 );
         $body = $this->client->post('/deliveries/1/items', $data);
-        $this->assertEquals(200, $this->client->response->getStatusCode());
+        $this->assertEquals(201, $this->client->response->getStatusCode());
     }
     public function testRemoveDeliveryItem()
     {
