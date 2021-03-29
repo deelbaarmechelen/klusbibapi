@@ -22,10 +22,24 @@ class InventoryItem extends Model
         return in_array($field, Delivery::$fieldArray);
     }
 
-    public function deliveries() {
-        return $this->belongsToMany('Api\Model\Delivery', 'delivery_item',
-            'inventory_item_id', 'delivery_id');
+    public function deliveryItems() {
+        return $this->hasMany('Api\Model\DeliveryItem', 'inventory_item_id', 'id');
     }
+//    public function deliveries() {
+//        return $this->belongsToMany('Api\Model\Delivery', 'delivery_item',
+//            'inventory_item_id', 'delivery_id')
+//            ->using(DeliveryItem::class)
+//            ->withPivot([
+//                'reservation_id',
+//                'comment',
+//                'fee',
+//                'size',
+//                'created_at',
+//                'updated_at',
+//            ])
+//            ->withTimestamps();
+//        ;
+//    }
 
     public function scopeOutOfSync($query, $lastSyncDate)
     {

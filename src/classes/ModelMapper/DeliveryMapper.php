@@ -9,7 +9,7 @@ class DeliveryMapper
     {
 
         $deliveryItems = array();
-        foreach ($delivery->items as $item) {
+        foreach ($delivery->deliveryItems as $item) {
             array_push($deliveryItems, DeliveryMapper::mapDeliveryItemToArray($item));
         }
         $deliveryArray = array(
@@ -34,21 +34,40 @@ class DeliveryMapper
     static public function mapDeliveryItemToArray($item)
     {
         return array(
-            "delivery_id" => $item->pivot->delivery_id,
-            "inventory_item_id" => $item->pivot->inventory_item_id,
-            "reservation_id" => $item->pivot->reservation_id,
-            "fee" => $item->pivot->fee,
-            "size" => $item->pivot->size,
-            "comment" => $item->pivot->comment,
-            "id" => $item->id,
-            "item_type" => $item->item_type,
-            "sku" => $item->sku,
-            "name" => $item->name,
-            "description" => $item->description,
-            "keywords" => $item->keywords,
-            "brand" => $item->brand,
-            "is_active" => $item->is_active,
-            "show_on_website" => $item->show_on_website,
+            "delivery_id" => $item->delivery_id,
+            "inventory_item_id" => $item->inventory_item_id,
+            "reservation_id" => $item->reservation_id,
+            "comment" => $item->comment,
+            "id" => (isset($item->inventoryItem)) ? $item->inventoryItem->id : null,
+            "item_type" => (isset($item->inventoryItem)) ? $item->inventoryItem->item_type : null,
+            "sku" => (isset($item->inventoryItem)) ? $item->inventoryItem->sku : null,
+            "name" => (isset($item->inventoryItem)) ? $item->inventoryItem->name : null,
+            "description" => (isset($item->inventoryItem)) ? $item->inventoryItem->description : null,
+            "keywords" => (isset($item->inventoryItem)) ? $item->inventoryItem->keywords : null,
+            "brand" =>(isset($item->inventoryItem)) ?  $item->inventoryItem->brand : null,
+            "is_active" => (isset($item->inventoryItem)) ? $item->inventoryItem->is_active : null,
+            "show_on_website" => (isset($item->inventoryItem)) ? $item->inventoryItem->show_on_website : null,
+            "fee" => (isset($item->inventoryItem)) ? $item->inventoryItem->loan_fee : null,
+            "size" => (isset($item->inventoryItem)) ? $item->inventoryItem->size : null,
+            "deliverable" => (isset($item->inventoryItem)) ? $item->inventoryItem->deliverable : null,
+            "safety_risk" => (isset($item->inventoryItem)) ? $item->inventoryItem->safety_risk : null,
+            "experience_level" => (isset($item->inventoryItem)) ? $item->inventoryItem->experience_level : null
+
+//            "delivery_id" => $item->pivot->delivery_id,
+//            "inventory_item_id" => $item->pivot->inventory_item_id,
+//            "reservation_id" => $item->pivot->reservation_id,
+//            "fee" => $item->pivot->fee,
+//            "size" => $item->pivot->size,
+//            "comment" => $item->pivot->comment,
+//            "id" => $item->id,
+//            "item_type" => $item->item_type,
+//            "sku" => $item->sku,
+//            "name" => $item->name,
+//            "description" => $item->description,
+//            "keywords" => $item->keywords,
+//            "brand" => $item->brand,
+//            "is_active" => $item->is_active,
+//            "show_on_website" => $item->show_on_website,
         );
     }
 }

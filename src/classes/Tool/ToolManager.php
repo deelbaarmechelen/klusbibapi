@@ -281,5 +281,9 @@ class ToolManager
         $existingItem->deposit_amount = $item->deposit_amount;
         $existingItem->donated_by = $item->donated_by;
         $existingItem->owned_by = $item->owned_by;
+        $existingItem->experience_level = $item->experience_level;
+        $existingItem->safety_risk = $item->safety_risk;
+        $existingItem->deliverable = $item->deliverable;
+        $existingItem->size = $item->size;
     }
 }

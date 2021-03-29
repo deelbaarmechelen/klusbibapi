@@ -74,6 +74,8 @@ class ReservationController implements ReservationControllerInterface
         foreach ($reservations_page as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
             $reservationData["username"] = $reservation->firstname . " " . $reservation->lastname;
+            $tool = $this->toolManager->getById($reservation->tool_id);
+            $reservationData["deliverable"] = $tool != null ? $tool->deliverable : false;
             array_push($data, $reservationData);
         }
         return $response->withJson($data)

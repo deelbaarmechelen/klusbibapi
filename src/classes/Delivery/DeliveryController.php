@@ -3,7 +3,9 @@
 namespace Api\Delivery;
 
 use Api\Mail\MailManager;
+use Api\Model\DeliveryItem;
 use Api\Model\InventoryItem;
+use Api\Model\Reservation;
 use Api\Model\User;
 use Api\Util\HttpResponseCode;
 use Api\Validator\DeliveryValidator;
@@ -145,7 +147,26 @@ class DeliveryController
             foreach ($items as $rcvdItem) {
                 $item = InventoryItem::find($rcvdItem["tool_id"]);
                 if (null != $item) {
-                    $this->addItemToDelivery($item, $delivery);
+                    $this->logger->info ("Adding Item to delivery: " . \json_encode($item) . "\n\n");
+                    $deliveryItem = new DeliveryItem();
+                    $item->deliveryItems()->save($deliveryItem);
+                    $delivery->deliveryItems()->save($deliveryItem);
+                    //$this->addItemToDelivery($item, $delivery);
+                    if (isset($rcvdItem["reservation_id"])) {
+                        //$deliveryItem = $item->deliveries()->find($delivery->id);
+                        $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem) . "\n\n");
+                        //$deliveryItem->pivot->reservation_id = $rcvdItem["reservation_id"];
+                        $reservation = Reservation::find($rcvdItem["reservation_id"]);
+                        if ($reservation !== null) {
+                            $this->logger->info ("Reservation found: " . \json_encode($reservation) . "\n\n");
+                            $reservation->deliveryItem()->save($deliveryItem);
+                            //$deliveryItem->pivot->reservation()->save($reservation);
+                            //$item->save();
+                            //$reservation->save();
+                        }
+//                        $item->deliveries->first()->pivot->reservation->attach();
+
+                    }
                 } else {
                     $this->logger->warn("No inventory item found for item " . \json_encode($rcvdItem));
                 }
@@ -276,6 +297,9 @@ class DeliveryController
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson(array("message" => "Missing item_id"));
         }
+//        $deliveryItem = new DeliveryItem();
+//        $item->deliveryItems()->save($deliveryItem);
+//        $delivery->deliveryItems()->save($deliveryItem);
         $this->addItemToDelivery($item, $delivery);
 
         return $response->withStatus(HttpResponseCode::CREATED);
@@ -290,25 +314,44 @@ class DeliveryController
         }
         $data = $request->getParsedBody();
 
-        foreach( $delivery->items()->wherePivot('inventory_item_id', $args['itemid'])->get() as $inventoryItem) {
+        foreach( $delivery->deliveryItems()->where('inventory_item_id', $args['itemid'])->get() as $deliveryItem) {
             if (isset($data["reservation_id"])) {
-                $this->logger->info("Klusbib PUT updating reservation_id from " . $inventoryItem->pivot->reservation_id . " to " . $data["reservation_id"]);
-                $inventoryItem->pivot->reservation_id = $data["reservation_id"];
+                $this->logger->info("Klusbib PUT updating reservation_id from " . $deliveryItem->reservation_id . " to " . $data["reservation_id"]);
+                $deliveryItem->reservation_id = $data["reservation_id"];
             }
             if (isset($data["fee"])) {
-                $this->logger->info("Klusbib PUT updating fee from " . $inventoryItem->pivot->fee . " to " . $data["fee"]);
-                $inventoryItem->pivot->fee = $data["fee"];
+                $this->logger->info("Klusbib PUT updating fee from " . $deliveryItem->fee . " to " . $data["fee"]);
+                $deliveryItem->fee = $data["fee"];
             }
             if (isset($data["size"])) {
-                $this->logger->info("Klusbib PUT updating size from " . $inventoryItem->pivot->size . " to " . $data["size"]);
-                $inventoryItem->pivot->size = $data["size"];
+                $this->logger->info("Klusbib PUT updating size from " . $deliveryItem->size . " to " . $data["size"]);
+                $deliveryItem->size = $data["size"];
             }
             if (isset($data["comment"])) {
-                $this->logger->info("Klusbib PUT updating comment from " . $inventoryItem->pivot->comment . " to " . $data["comment"]);
-                $inventoryItem->pivot->comment = $data["comment"];
+                $this->logger->info("Klusbib PUT updating comment from " . $deliveryItem->comment . " to " . $data["comment"]);
+                $deliveryItem->comment = $data["comment"];
             }
-            $inventoryItem->pivot->save();
+            $deliveryItem->save();
         }
+//        foreach( $delivery->items()->wherePivot('inventory_item_id', $args['itemid'])->get() as $inventoryItem) {
+//            if (isset($data["reservation_id"])) {
+//                $this->logger->info("Klusbib PUT updating reservation_id from " . $inventoryItem->pivot->reservation_id . " to " . $data["reservation_id"]);
+//                $inventoryItem->pivot->reservation_id = $data["reservation_id"];
+//            }
+//            if (isset($data["fee"])) {
+//                $this->logger->info("Klusbib PUT updating fee from " . $inventoryItem->pivot->fee . " to " . $data["fee"]);
+//                $inventoryItem->pivot->fee = $data["fee"];
+//            }
+//            if (isset($data["size"])) {
+//                $this->logger->info("Klusbib PUT updating size from " . $inventoryItem->pivot->size . " to " . $data["size"]);
+//                $inventoryItem->pivot->size = $data["size"];
+//            }
+//            if (isset($data["comment"])) {
+//                $this->logger->info("Klusbib PUT updating comment from " . $inventoryItem->pivot->comment . " to " . $data["comment"]);
+//                $inventoryItem->pivot->comment = $data["comment"];
+//            }
+//            $inventoryItem->pivot->save();
+//        }
         $delivery->refresh();
 
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery))->withStatus(HttpResponseCode::OK);
@@ -325,7 +368,7 @@ class DeliveryController
             return $response->withStatus(HttpResponseCode::NOT_FOUND)
                 ->withJson(array("message" => "Item not found!"));
         }
-        $delivery->items()->detach($args['itemid']);
+        $delivery->deliveryItems()->delete($args['itemid']);
         $delivery->save();
 
         return $response->withStatus(HttpResponseCode::OK);
@@ -337,8 +380,16 @@ class DeliveryController
      */
     private function addItemToDelivery($item, $delivery): void
     {
-        $delivery->items()->attach($item);
-        $delivery->save();
+        $deliveryItem = new DeliveryItem();
+        $deliveryItem->fee = $item->loan_fee;
+        $deliveryItem->size = $item->size;
+        $deliveryItem->save();
+        $item->deliveryItems()->save($deliveryItem);
+        $delivery->deliveryItems()->save($deliveryItem);
+
+//        $delivery->items()->attach($item);
+//        $delivery->deliveryItems()->save($item);
+//        $delivery->save();
     }
 
 }

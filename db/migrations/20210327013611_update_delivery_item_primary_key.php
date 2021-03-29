@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../src/settings.php';
  * 
  * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
  */
-class UpdateDeliveryItem extends AbstractCapsuleMigration
+class UpdateDeliveryItemPrimaryKey extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
@@ -26,15 +26,9 @@ class UpdateDeliveryItem extends AbstractCapsuleMigration
 	{
         $this->initCapsule();
         Capsule::schema()->table('delivery_item', function(Illuminate\Database\Schema\Blueprint $table){
-            $table->integer('reservation_id')->unsigned()->nullable()->default(null); // link with reservation is optional
-            $table->foreign('reservation_id')
-                    ->references('reservation_id')
-                    ->on('reservations')
-                    ->onUpdate('cascade')
-                    ->onDelete('cascade');
-            $table->string('comment', 255)->nullable()->default(null);
-            $table->timestamps();
-        });
+			// Auto-increment id
+			$table->increments('id');
+		});
 	}
     /**
      * Down Method.
@@ -45,12 +39,8 @@ class UpdateDeliveryItem extends AbstractCapsuleMigration
 	{
         $this->initCapsule();
         Capsule::schema()->table('delivery_item', function(Illuminate\Database\Schema\Blueprint $table) {
-            $table->dropForeign('delivery_item_reservation_id_foreign');
-            $table->dropColumn('reservation_id');
-            $table->dropColumn('comment');
-
-            $table->dropColumn('created_at');
-            $table->dropColumn('updated_at');
+            $table->dropColumn('id');
         });
+
 	}
 }

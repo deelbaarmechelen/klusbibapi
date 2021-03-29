@@ -31,7 +31,10 @@ class ToolMapper
 			"experience_level" => $tool->experience_level,
 			"safety_risk" => $tool->safety_risk,
 			"state" => $tool->state,
-			"visible" => $visible,
+            "visible" => $visible,
+            "fee" => $tool->fee,
+            "size" => $tool->size,
+            "deliverable" => $tool->deliverable,
 			"reservations" => array()
 		);
 		return $toolArray;

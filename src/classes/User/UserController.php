@@ -381,7 +381,11 @@ class UserController implements UserControllerInterface
                 $reservationData['tool_name'] = $tool->name;
                 $reservationData['tool_brand'] = $tool->brand;
                 $reservationData['tool_type'] = $tool->type;
+                $reservationData["tool_size"] = $tool->size;
+                $reservationData["tool_fee"] = $tool->fee;
+                $reservationData["deliverable"] = $tool->deliverable;
             }
+
             array_push($reservationsArray, $reservationData);
         }
         return $reservationsArray;

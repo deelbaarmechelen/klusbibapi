@@ -25,12 +25,12 @@ abstract class SnipeitToolMapper
         $item->current_location_id =  null;//')->unsigned()->nullable()->default(null);
         $item->item_condition = null;//')->unsigned()->nullable()->default(null);
         $item->sku = $asset->asset_tag;
-        $item->description =  null;//', 1024)->nullable()->default(null);
+//        $item->description =  $asset->notes;//', 1024)->nullable()->default(null);
         $item->keywords =  self::mapAssetCategoryToToolCategory($asset);
         $item->brand =  html_entity_decode ($asset->manufacturer->name);//', 1024)->nullable()->default(null);
         $item->care_information =  null;//', 1024)->nullable()->default(null); - full description - shown online
         $item->component_information =  null;//', 1024)->nullable()->default(null);
-        $item->loan_fee =  null;//', 10,2)->nullable()->default(null);
+//        $item->loan_fee =  null;//', 10,2)->nullable()->default(null); -> see custom_fields
         $item->max_loan_days =  null;//')->unsigned()->nullable()->default(null);
         $item->is_active = true; // FIXME: check value based on state?
         $item->show_on_website =  self::isVisible($asset);
@@ -38,15 +38,28 @@ abstract class SnipeitToolMapper
         $item->note = $asset->notes; // short description admin
         $item->price_cost =  null;//', 10,2)->nullable()->default(null);
         $item->price_sell =  null;//', 10,2)->nullable()->default(null);
-        $item->image_name =  null;//', 255)->nullable()->default(null);
-        $item->short_url =  null;//', 64)->nullable()->default(null);
+        $item->image_name =  $asset->image;//', 255)->nullable()->default(null);
+//        $item->short_url =  null;//', 64)->nullable()->default(null); -> see custom_fields
         $item->item_sector =  null;//')->unsigned()->nullable()->default(null);
         $item->is_reservable = true; // FIXME: check value based on state?
         $item->deposit_amount =  null;//', 10,2)->nullable()->default(null);
         $item->donated_by = null; //')->unsigned()->nullable()->default(null);
         $item->owned_by = null; //')->unsigned()->nullable()->default(null);
 
-        // TODO: state, description, image, category
+        if (isset($asset->custom_fields) && !empty($asset->custom_fields)) {
+            $item->price_sell = isset($asset->custom_fields->replacement_value) ? floatval($asset->custom_fields->replacement_value->value) : null; // FIXME: derive from depreciation rules?
+            $item->experience_level = isset($asset->custom_fields->experience_level) ? $asset->custom_fields->experience_level->value : null;
+            $item->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
+            // FIXME: not accessible without login!
+            $item->short_url = isset($asset->custom_fields->doc_url) ? $asset->custom_fields->doc_url->value : null;
+            $deliverable = isset($asset->custom_fields->leverbaar) ? $asset->custom_fields->leverbaar->value : "Nee";
+            $deliverable = ($deliverable === "Ja") ? true : false;
+            $item->deliverable = $deliverable;
+            $item->loan_fee = isset($asset->custom_fields->forfait) ? floatval($asset->custom_fields->forfait->value) : null;
+            $item->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
+        }
+
+        // TODO: state, description, category
         return $item;
     }
 
@@ -110,6 +123,11 @@ abstract class SnipeitToolMapper
             $tool->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
             // FIXME: not accessible without login!
             $tool->doc_url = isset($asset->custom_fields->doc_url) ? $asset->custom_fields->doc_url->value : null;
+            $deliverable = isset($asset->custom_fields->leverbaar) ? $asset->custom_fields->leverbaar->value : "Nee";
+            $deliverable = ($deliverable === "Ja") ? true : false;
+            $tool->deliverable = $deliverable;
+            $tool->fee = isset($asset->custom_fields->forfait) ? $asset->custom_fields->forfait->value : null;
+            $tool->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
         }
         $tool->state = self::mapAssetStateToToolState($asset);
         $tool->visible = self::isVisible($asset);

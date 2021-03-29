@@ -19,18 +19,24 @@ class Delivery extends Model
 		return in_array($field, Delivery::$fieldArray);
 	}
 
-    public function items() {
-        return $this->belongsToMany('Api\Model\InventoryItem', 'delivery_item',
-            'delivery_id', 'inventory_item_id')
-            ->withPivot([
-                'reservation_id',
-                'comment',
-                'fee',
-                'size',
-                'created_at',
-                'updated_at',
-            ])
-            ->withTimestamps();
+    public function deliveryItems() {
+        return $this->hasMany('Api\Model\DeliveryItem', 'delivery_id',
+            'id');
     }
+
+//    public function items() {
+//        return $this->belongsToMany('Api\Model\InventoryItem', 'delivery_item',
+//            'delivery_id', 'inventory_item_id')
+//            ->using(DeliveryItem::class)
+//            ->withPivot([
+//                'reservation_id',
+//                'comment',
+//                'fee',
+//                'size',
+//                'created_at',
+//                'updated_at',
+//            ])
+//            ->withTimestamps();
+//    }
 
 }
