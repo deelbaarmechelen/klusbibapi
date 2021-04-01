@@ -22,6 +22,10 @@ class Tool extends Model
 		return $this->hasMany('Api\Model\Reservation', 'tool_id');
 	}
 
+    public function inventoryItem()
+    {
+        return $this->belongsTo('Api\Model\InventoryItem', 'tool_id');
+    }
     // Query helpers
     public function scopeAll($query)
     {

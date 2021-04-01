@@ -380,7 +380,7 @@ class ReservationsTest extends LocalDbWebTestCase
 		$bodyGet = $this->client->get('/reservations/1');
 		$this->assertEquals(404, $this->client->response->getStatusCode());
 	}
-    public function testDeleteReservationWitDelivery()
+    public function testDeleteReservationWithDelivery()
     {
         echo "test DELETE reservation linked to delivery\n";
 

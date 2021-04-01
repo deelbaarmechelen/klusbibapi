@@ -58,6 +58,11 @@ class Lending extends Model
         return $this->belongsTo('Api\Model\Accessory', 'tool_id')->where('tool_type', '=', ToolType::ACCESSORY);
     }
 
+    public function deliveryItem()
+    {
+        return $this->hasOne('Api\Model\DeliveryItem', 'lending_id');
+    }
+
     public function scopeValid($query)
     {
         return $query->whereNotNull('user_id')

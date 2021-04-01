@@ -22,6 +22,10 @@ class InventoryItem extends Model
         return in_array($field, Delivery::$fieldArray);
     }
 
+    public function tool()
+    {
+        return $this->hasOne('Api\Model\Tool', 'tool_id');
+    }
     public function deliveryItems() {
         return $this->hasMany('Api\Model\DeliveryItem', 'inventory_item_id', 'id');
     }

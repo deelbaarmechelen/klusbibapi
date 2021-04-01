@@ -16,6 +16,11 @@ class DeliveryItem extends Model
         return $this->hasOne('Api\Model\Reservation', 'reservation_id', 'reservation_id');
     }
 
+    public function lending()
+    {
+        return $this->hasOne('Api\Model\Lending', 'lending_id', 'lending_id');
+    }
+
     public function inventoryItem()
     {
         return $this->belongsTo('Api\Model\InventoryItem', 'inventory_item_id', 'id');

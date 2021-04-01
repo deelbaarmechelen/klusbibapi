@@ -2,6 +2,7 @@
 namespace Api\Validator;
 
 use Api\Model\DeliveryState;
+use Api\Model\DeliveryType;
 use Api\Model\Tool;
 use Api\Tool\ToolManager;
 
@@ -26,6 +27,12 @@ class DeliveryValidator
             array_push($errors, $message);
             return false;
         }
+//        if (empty($delivery["type"]) && $new) {
+//            $message = "Missing type";
+//            $logger->info($message);
+//            array_push($errors, $message);
+//            return false;
+//        }
         if (empty($delivery["pick_up_address"]) && $new) {
             $message = "Missing pick_up_address";
             $logger->info($message);
@@ -74,6 +81,14 @@ class DeliveryValidator
             array_push($errors, $message);
             return false;
         }
+        if (isset($delivery["type"]) &&
+            (FALSE == DeliveryValidator::isValidType($delivery["type"], $logger))) {
+            $message = "Type (". $delivery["type"] . " is invalid (expected "
+                . DeliveryType::PICK_UP . "," . DeliveryType::DROP_OFF . ")";
+            $logger->info($message);
+            array_push($errors, $message);
+            return false;
+        }
 		return true;
 	}
 	static private function cnvStrToDateTime($str, $logger) {
@@ -101,5 +116,12 @@ class DeliveryValidator
 	        return true;
         }
 	    return false;
+    }
+    static private function isValidType($type) {
+        if ($type == DeliveryType::DROP_OFF
+            || $type == DeliveryType::PICK_UP) {
+            return true;
+        }
+        return false;
     }
 }

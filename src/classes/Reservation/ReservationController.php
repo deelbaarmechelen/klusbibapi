@@ -326,8 +326,9 @@ class ReservationController implements ReservationControllerInterface
             return;
         }
         $delivery = $item->delivery;
-        $delivery->items()->detach($item->inventory_item_id);
-        $delivery->save();
+        $item->delete();
+//        $delivery->items()->detach($item->inventory_item_id);
+//        $delivery->save();
 
         // send email notification
         $this->mailManager->sendDeliveryUpdateNotification(DELIVERY_NOTIF_EMAIL, $delivery, $reason);

@@ -5,6 +5,7 @@ namespace Api\Delivery;
 use Api\Mail\MailManager;
 use Api\Model\DeliveryItem;
 use Api\Model\InventoryItem;
+use Api\Model\Lending;
 use Api\Model\Reservation;
 use Api\Model\User;
 use Api\Util\HttpResponseCode;
@@ -112,6 +113,9 @@ class DeliveryController
         if(isset($data["state"])){
             $delivery->state = $data["state"];
         }
+        if(isset($data["type"])){
+            $delivery->type = $data["type"];
+        }
         if(isset($data["pick_up_address"])) {
             $delivery->pick_up_address = $data["pick_up_address"];
         }
@@ -151,21 +155,23 @@ class DeliveryController
                     $deliveryItem = new DeliveryItem();
                     $item->deliveryItems()->save($deliveryItem);
                     $delivery->deliveryItems()->save($deliveryItem);
-                    //$this->addItemToDelivery($item, $delivery);
+
                     if (isset($rcvdItem["reservation_id"])) {
-                        //$deliveryItem = $item->deliveries()->find($delivery->id);
                         $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem) . "\n\n");
-                        //$deliveryItem->pivot->reservation_id = $rcvdItem["reservation_id"];
                         $reservation = Reservation::find($rcvdItem["reservation_id"]);
                         if ($reservation !== null) {
                             $this->logger->info ("Reservation found: " . \json_encode($reservation) . "\n\n");
                             $reservation->deliveryItem()->save($deliveryItem);
-                            //$deliveryItem->pivot->reservation()->save($reservation);
-                            //$item->save();
-                            //$reservation->save();
                         }
-//                        $item->deliveries->first()->pivot->reservation->attach();
+                    }
 
+                    if (isset($rcvdItem["lending_id"])) {
+                        $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem) . "\n\n");
+                        $lending = Lending::find($rcvdItem["lending_id"]);
+                        if ($lending !== null) {
+                            $this->logger->info ("Lending found: " . \json_encode($lending) . "\n\n");
+                            $lending->deliveryItem()->save($deliveryItem);
+                        }
                     }
                 } else {
                     $this->logger->warn("No inventory item found for item " . \json_encode($rcvdItem));
@@ -228,6 +234,10 @@ class DeliveryController
                 $cancellation = true;
             }*/
             $delivery->state = $data["state"];
+        }
+        if (isset($data["type"])) {
+            $this->logger->info("Klusbib PUT updating type from " . $delivery->type . " to " . $data["type"]);
+            $delivery->type = $data["type"];
         }
         if (isset($data["pick_up_date"])) {
             $this->logger->info("Klusbib PUT updating pick up date from " . $delivery->pick_up_date . " to " . $data["pick_up_date"]);
@@ -381,8 +391,6 @@ class DeliveryController
     private function addItemToDelivery($item, $delivery): void
     {
         $deliveryItem = new DeliveryItem();
-        $deliveryItem->fee = $item->loan_fee;
-        $deliveryItem->size = $item->size;
         $deliveryItem->save();
         $item->deliveryItems()->save($deliveryItem);
         $delivery->deliveryItems()->save($deliveryItem);
