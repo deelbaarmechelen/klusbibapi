@@ -1,0 +1,32 @@
+{% block subject 'Bevestiging van levering/ophaling' %}
+
+{% block body %}
+Beste {{ user.firstname }},<br><br>
+<p>{% if delivery.type == 'PICKUP' %}
+        De ophaling van volgende toestellen is bevestigd
+    {% endif %}
+    {% if delivery.type == 'DROPOFF' %}
+        De levering van volgende toestellen is bevestigd
+    {% endif %}</p>
+<ul>
+    {% for item in delivery.deliveryItems %}
+        <li>{{ item.inventoryItem.sku }} - {{ item.inventoryItem.name }}
+            (merk: {{ item.inventoryItem.brand }}, afmetingen: {{ item.inventoryItem.size }}{% if delivery.type == 'DROPOFF' %}, forfait: {{ item.inventoryItem.loan_fee }}{% endif %})
+        </li>
+    {% endfor %}
+</ul>
+<p>
+    Extra verbruiksmaterialen / handgereedschap: {{ delivery.consumers }}<br/>
+    Opmerkingen: {{ delivery.comment }}
+</p>
+<p>
+    {% if delivery.type == 'PICKUP' %}De ophaling is voorzien voor {{ delivery.pick_up_date | date("Y-m-d") }} op volgend adres: {{ delivery.pick_up_address }}:{% endif %}
+    {% if delivery.type == 'DROPOFF' %}De levering is voorzien voor {{ delivery.drop_off_date | date("Y-m-d") }} op volgend adres: {{ delivery.drop_off_address }}:{% endif %}
+</p>
+<p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}

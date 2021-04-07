@@ -178,10 +178,11 @@ class MailManager {
         return $this->sendTwigTemplate($to, 'delivery_request_notif', $parameters);
     }
 
-    public function sendDeliveryUpdateNotification($to, $delivery) {
+    public function sendDeliveryUpdateNotification($to, $delivery, $reason) {
         $parameters = array(
             'user' => $delivery->user,
             'delivery' => $delivery,
+            'reason' => $reason,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'emailLink' => Settings::EMAIL_LINK,
             'inventoryLink' => Settings::INVENTORY_LINK);
@@ -189,6 +190,27 @@ class MailManager {
         return $this->sendTwigTemplate($to, 'delivery_update_notif', $parameters);
     }
 
+    public function sendDeliveryConfirmation($to, $delivery, $user) {
+        $parameters = array(
+            'user' => $user,
+            'delivery' => $delivery,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK,
+            'inventoryLink' => Settings::INVENTORY_LINK);
+
+        return $this->sendTwigTemplate($to, 'delivery_confirm', $parameters);
+    }
+
+    public function sendDeliveryCancellation($to, $delivery, $user) {
+        $parameters = array(
+            'user' => $user,
+            'delivery' => $delivery,
+            'webpageLink' => Settings::WEBPAGE_LINK,
+            'emailLink' => Settings::EMAIL_LINK,
+            'inventoryLink' => Settings::INVENTORY_LINK);
+
+        return $this->sendTwigTemplate($to, 'delivery_cancel', $parameters);
+    }
     // Send enrolment notification to Klusbib team
     public function sendEnrolmentNotification($userEmail, $newUser) {
         $parameters = array(

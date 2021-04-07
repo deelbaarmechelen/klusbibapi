@@ -1,21 +1,36 @@
-{% block subject 'Wijziging levering' %}
+{% block subject 'Wijziging levering/ophaling' %}
 
 {% block body %}
 Beste,<br><br>
-<p>Volgende levering werd gewijzigd:<br>
-Levering {{ delivery.id }} voor gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
-wenst volgende toestellen te laten leveren op {{ delivery.drop_off_date | date("Y-m-d") }}:<br/>
+<p>
+{% if delivery.type == 'PICKUP' %}Er werd een ophaling gewijzigd<br>{% endif %}
+{% if delivery.type == 'DROPOFF' %}Er werd een levering gewijzigd<br>{% endif %}
+ID: {{ delivery.id }}<br>
+Reden voor wijziging: {{ reason }}<br>
+Huidige status: {{ delivery.state }}<br>
+</p><p>
+Details:<br>
+Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }}) wenst volgende toestellen te laten
+{% if delivery.type == 'PICKUP' %}ophalen op {{ delivery.pick_up_date | date("Y-m-d") }}:{% endif %}
+{% if delivery.type == 'DROPOFF' %}leveren op {{ delivery.drop_off_date | date("Y-m-d") }}:{% endif %}
+<br/>
 <ul>
-    {% for item in delivery.items %}
-        <li>{{ item.sku }} - {{ item.name }} (merk: {{ item.brand }})</li>
+    {% for item in delivery.deliveryItems %}
+        <li>{{ item.inventoryItem.sku }} - {{ item.inventoryItem.name }}
+            (merk: {{ item.inventoryItem.brand }}, afmetingen: {{ item.inventoryItem.size }}{% if delivery.type == 'DROPOFF' %}, forfait: {{ item.inventoryItem.loan_fee }}{% endif %})
+        </li>
     {% endfor %}
 </ul>
 Extra verbruiksmaterialen / handgereedschap: {{ delivery.consumers }}<br/>
 Opmerkingen: {{ delivery.comment }}
 </p>
 <p>
-Gelieve de levering te bevestigen via de inventaris {{ inventoryLink }} en/of contact op te nemen met de gebruiker voor verder praktische afspraken
-(email: {{ user.email }})
+    {% if delivery.type == 'PICKUP' %}Adres voor ophaling: {{ delivery.pick_up_address }}:{% endif %}
+    {% if delivery.type == 'DROPOFF' %}Adres voor levering: {{ delivery.drop_off_address }}:{% endif %}
+</p>
+<p>
+Voor meer details, raadpleeg de levering op <a href="{{ inventoryLink }}" >inventaris</a> en/of neem contact op met de gebruiker voor verder praktische afspraken
+(email: <a href="mailto:{{ user.email }}" >{{ user.email }}</a>)
 </p>
 <p>
 Met vriendelijke groeten<br>

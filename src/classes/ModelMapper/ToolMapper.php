@@ -32,7 +32,7 @@ class ToolMapper
 			"safety_risk" => $tool->safety_risk,
 			"state" => $tool->state,
             "visible" => $visible,
-            "fee" => isset($tool->inventoryItem) ? $tool->inventoryItem->fee : null,
+            "fee" => isset($tool->inventoryItem) ? $tool->inventoryItem->loan_fee : null,
             "size" => isset($tool->inventoryItem) ? $tool->inventoryItem->size : null,
             "deliverable" => isset($tool->inventoryItem) ? $tool->inventoryItem->deliverable : null,
 			"reservations" => array()

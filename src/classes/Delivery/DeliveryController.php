@@ -225,14 +225,14 @@ class DeliveryController
         }
         if (isset($data["state"])) {
             $this->logger->info("Klusbib PUT updating state from " . $delivery->state . " to " . $data["state"]);
-            /*if ($delivery->state != DeliveryState::CONFIRMED
+            if ($delivery->state != DeliveryState::CONFIRMED
                 && $data["state"] == DeliveryState::CONFIRMED) {
                 $confirmation = true;
             }
             if ($delivery->state != DeliveryState::CANCELLED
                 && $data["state"] == DeliveryState::CANCELLED) {
                 $cancellation = true;
-            }*/
+            }
             $delivery->state = $data["state"];
         }
         if (isset($data["type"])) {
@@ -252,12 +252,12 @@ class DeliveryController
             $delivery->comment = $data["comment"];
         }
         $delivery->save();
-        /*if ($confirmation) {
+        $reason = "";
+        if ($confirmation) {
+            $reason = "confirmation";
             // Send notification to confirm the delivery
-            $this->logger->info('Sending notification for confirmation of reservation ' . json_encode($delivery));
-            $tool = $this->toolManager->getById($delivery->tool_id);
-            $isSendSuccessful = $this->mailManager->sendReservationConfirmation($delivery->user->email,
-                $delivery->user, $tool, $delivery, DELIVERY_NOTIF_EMAIL);
+            $this->logger->info('Sending notification for confirmation of delivery ' . json_encode($delivery));
+            $isSendSuccessful = $this->mailManager->sendDeliveryConfirmation($delivery->user->email, $delivery, $delivery->user);
             if ($isSendSuccessful) {
                 $this->logger->info('confirm notification email sent successfully to ' . $delivery->user->email);
             } else {
@@ -266,18 +266,18 @@ class DeliveryController
             }
         }
         if ($cancellation) {
+            $reason = "cancellation";
             // Send notification to confirm the delivery
             $this->logger->info('Sending notification for cancel of delivery ' . json_encode($delivery));
-            $tool = $this->toolManager->getById($reservation->tool_id);
-            $isSendSuccessful = $this->mailManager->sendReservationCancellation($delivery->user->email,
-                $reservation->user, $tool, $reservation, DELIVERY_NOTIF_EMAIL, $this->token->decoded->sub);
+            $isSendSuccessful = $this->mailManager->sendDeliveryCancellation($delivery->user->email, $delivery, $delivery->user);
             if ($isSendSuccessful) {
                 $this->logger->info('cancel notification email sent successfully to ' . $delivery->user->email);
             } else {
                 $message = $this->mailManager->getLastMessage();
                 $this->logger->warn('Problem sending cancel_delivery notification email: '. $message);
             }
-        }*/
+        }
+        $this->mailManager->sendDeliveryUpdateNotification(DELIVERY_NOTIF_EMAIL, $delivery, $reason);
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery));
     }
 
@@ -307,9 +307,6 @@ class DeliveryController
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson(array("message" => "Missing item_id"));
         }
-//        $deliveryItem = new DeliveryItem();
-//        $item->deliveryItems()->save($deliveryItem);
-//        $delivery->deliveryItems()->save($deliveryItem);
         $this->addItemToDelivery($item, $delivery);
 
         return $response->withStatus(HttpResponseCode::CREATED);
@@ -394,10 +391,6 @@ class DeliveryController
         $deliveryItem->save();
         $item->deliveryItems()->save($deliveryItem);
         $delivery->deliveryItems()->save($deliveryItem);
-
-//        $delivery->items()->attach($item);
-//        $delivery->deliveryItems()->save($item);
-//        $delivery->save();
     }
 
 }

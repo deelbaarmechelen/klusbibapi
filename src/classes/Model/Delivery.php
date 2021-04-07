@@ -24,6 +24,14 @@ class Delivery extends Model
             'id');
     }
 
+    /**
+     * Get the user that owns the delivery.
+     */
+    public function user()
+    {
+        return $this->belongsTo('Api\Model\User', 'user_id');
+    }
+
 //    public function items() {
 //        return $this->belongsToMany('Api\Model\InventoryItem', 'delivery_item',
 //            'delivery_id', 'inventory_item_id')

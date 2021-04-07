@@ -190,7 +190,7 @@ final class MailManagerTest extends LocalDbWebTestCase
         $this->assertTrue($result);
         $get_sent = $mailer->get_sent(0);
         $this->assertNotNull($get_sent);
-        $this->assertEquals("Wijziging levering", $get_sent->subject);
+        $this->assertEquals("Wijziging levering/ophaling", $get_sent->subject);
         print_r($get_sent->body);
     }
     public function testSendEnrolmentConfirmationTransfer()
