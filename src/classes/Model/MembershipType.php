@@ -14,6 +14,8 @@ class MembershipType extends Model
 
     const REGULAR = 'Regular';
     const RENEWAL = 'Renewal';
+    const REGULARORG = 'RegularOrg';
+    const RENEWALORG = 'RenewalOrg';
     const STROOM = 'Stroom';
     const TEMPORARY = 'Temporary';
 
@@ -22,6 +24,12 @@ class MembershipType extends Model
     }
     static public function renewal() {
         return MembershipType::where('name', '=', self::RENEWAL)->firstOrFail();
+    }
+    static public function regularOrg() {
+        return MembershipType::where('name', '=', self::REGULARORG)->firstOrFail();
+    }
+    static public function renewalOrg() {
+        return MembershipType::where('name', '=', self::RENEWALORG)->firstOrFail();
     }
     static public function stroom() {
         return MembershipType::where('name', '=', self::STROOM)->firstOrFail();

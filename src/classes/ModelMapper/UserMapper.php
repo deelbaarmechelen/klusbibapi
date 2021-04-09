@@ -104,6 +104,12 @@ class UserMapper
 		if (isset($data["accept_terms_date"])) {
 			$user->accept_terms_date = $data["accept_terms_date"];
 		}
+        if (isset($data["company"])) {
+            $user->company = $data["company"];
+        }
+        if (isset($data["comment"])) {
+            $user->comment = $data["comment"];
+        }
 	}
 
 }

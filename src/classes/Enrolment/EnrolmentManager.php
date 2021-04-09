@@ -65,6 +65,8 @@ class EnrolmentManager
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
             $membershipType = MembershipType::temporary();
+        } elseif (strcasecmp ($membershipTypeName, MembershipType::REGULARORG) == 0) {
+            $membershipType = MembershipType::regularOrg();
         } else {
             throw new EnrolmentException("Unexpected membership type " . $membershipTypeName, EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE);
         }
@@ -89,6 +91,8 @@ class EnrolmentManager
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
             $membershipType = MembershipType::temporary();
+        } elseif (strcasecmp ($membershipTypeName, MembershipType::REGULARORG) == 0) {
+            $membershipType = MembershipType::regularOrg();
         } else {
             throw new EnrolmentException("Unexpected membership type " . $membershipTypeName, EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE);
         }

@@ -110,6 +110,10 @@ class EnrolmentController
                 $membershipType = MembershipType::REGULAR;
             } elseif (strtoupper($membershipType) == strtoupper(MembershipType::RENEWAL)) {
                 $membershipType = MembershipType::RENEWAL;
+            } elseif (strtoupper($membershipType) == strtoupper(MembershipType::REGULARORG)) {
+                $membershipType = MembershipType::REGULARORG;
+            } elseif (strtoupper($membershipType) == strtoupper(MembershipType::RENEWALORG)) {
+                $membershipType = MembershipType::RENEWALORG;
             } elseif (strtoupper($membershipType) == strtoupper(MembershipType::STROOM)) {
                 $membershipType = MembershipType::STROOM;
             } elseif (strtoupper($membershipType) == strtoupper(MembershipType::TEMPORARY)) {
@@ -118,6 +122,8 @@ class EnrolmentController
 
             if ($membershipType != MembershipType::REGULAR
                 && $membershipType != MembershipType::RENEWAL
+                && $membershipType != MembershipType::REGULARORG
+                && $membershipType != MembershipType::RENEWALORG
                 && $membershipType != MembershipType::STROOM
                 && $membershipType != MembershipType::TEMPORARY) {
                 $message = "Unknown/unsupported membership type: " . $membershipType;
@@ -175,6 +181,26 @@ class EnrolmentController
                     $message = "Renewal flag set for temporary membership type";
                     return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
                     ->withJson("Missing or invalid data: $message");
+                }
+                if ($paymentMode == PaymentMode::STROOM) {
+                    $message = "Payment mode Stroom specified, but membership type is set to " . $membershipType;
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                    ->withJson("Missing or invalid data: $message");
+                }
+            } else if ($membershipType == MembershipType::REGULARORG) {
+                if ($renewal) {
+                    $message = "Renewal flag set for regular membership type (organisation)";
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                    ->withJson("Missing or invalid data: $message");
+                }
+                if ($paymentMode == PaymentMode::STROOM) {
+                    $message = "Payment mode Stroom specified, but membership type is set to " . $membershipType;
+                    return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                    ->withJson("Missing or invalid data: $message");
+                }
+            } else if ($membershipType == MembershipType::RENEWALORG) {
+                if (!$renewal) {
+                    $renewal = true;
                 }
                 if ($paymentMode == PaymentMode::STROOM) {
                     $message = "Payment mode Stroom specified, but membership type is set to " . $membershipType;

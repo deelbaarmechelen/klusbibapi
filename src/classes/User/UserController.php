@@ -8,6 +8,7 @@ use Api\Model\PaymentMode;
 use Api\ModelMapper\DeliveryMapper;
 use Api\ModelMapper\MembershipMapper;
 use Api\Tool\ToolManager;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
 use Api\Model\User;
@@ -174,6 +175,8 @@ class UserController implements UserControllerInterface
             // set default values
             if (!isset($data["state"])) {
                 $user->state = UserState::DISABLED;
+            } else {
+                $user->state = $data["state"];
             }
 
         }
@@ -262,25 +265,25 @@ class UserController implements UserControllerInterface
         $this->logger->info("Klusbib PUT on '/users/id' route");
 
         if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner", "users.update.password"])) {
-            return $response->withStatus(403)->write("Token not allowed to update users.");
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token not allowed to update users.");
         }
 
         $currentUser = \Api\Model\User::find($this->token->getSub());
 
         $user = \Api\Model\User::find($args['userid']);
         if (null == $user) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
 
         if (false === $this->token->hasScope(["users.all", "users.update"]) &&
             $user->user_id != $this->token->decoded->sub) {
-            return $response->withStatus(403)->write("Token sub doesn't match user.");
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token sub doesn't match user.");
         }
         $data = $request->getParsedBody();
         $errors = array();
         if (empty($data) || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
             $this->logger->info("errors=" . json_encode($errors));
-            return $response->withStatus(400)->withJson($errors); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
 
         UserMapper::mapArrayToUser($data, $user, $currentUser->isAdmin(), $this->logger);
@@ -304,7 +307,7 @@ class UserController implements UserControllerInterface
 
         $user = \Api\Model\User::find($args['userid']);
         if (null == $user) {
-            return $response->withStatus(204);
+            return $response->withStatus(HttpResponseCode::NO_CONTENT);
         }
 
         // if last user on membership, mark membership as cancelled prior to user removal
@@ -318,7 +321,7 @@ class UserController implements UserControllerInterface
             }
         }
         $this->userManager->delete($user);
-        return $response->withStatus(200);
+        return $response->withStatus(HttpResponseCode::OK);
     }
 
     /**
