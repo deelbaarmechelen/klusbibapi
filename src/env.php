@@ -41,7 +41,7 @@ if (!defined('MAIL_HOST')) define("MAIL_HOST", getenv('MAIL_HOST')); // smtp hos
 // smtp auth type
 if (!defined('MAIL_AUTH_TYPE')) {
     $authType = getenv('MAIL_AUTH_TYPE');
-    define("MAIL_AUTH_TYPE", isset($authType) ? $authType : 'XOAUTH2');
+    define("MAIL_AUTH_TYPE", $authType != false ? $authType : 'XOAUTH2');
 }
 if (!defined('MAILER')) define("MAILER", getenv('MAILER'));
 if (!defined('OAUTH_CLIENT_ID')) define("OAUTH_CLIENT_ID", getenv('OAUTH_CLIENT_ID'));
@@ -61,3 +61,7 @@ if (!defined('STROOM_NOTIF_EMAIL')) define("STROOM_NOTIF_EMAIL", getenv('STROOM_
 if (!defined('MOLLIE_API_KEY')) define("MOLLIE_API_KEY", getenv('MOLLIE_API_KEY'));
 if (!defined('INVENTORY_API_KEY')) define("INVENTORY_API_KEY", getenv('INVENTORY_API_KEY'));
 if (!defined('INVENTORY_URL')) define("INVENTORY_URL", getenv('INVENTORY_URL'));
+if (!defined('WEB_URL')) {
+    $webUrl = getenv('WEB_URL');
+    define("WEB_URL", $webUrl != false ? $webUrl : 'https://www.klusbib.be');
+}

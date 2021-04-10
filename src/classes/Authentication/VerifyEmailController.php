@@ -81,6 +81,7 @@ class VerifyEmailController
      *  - user is not authorised to verify this email
      *  - no user can be found for the given email
      */
+    // TODO: replace this route by PUT on /users with a token containing 'dest' set to destination email in payload
     public function confirmEmail($request, $response, $args) {
         $token = $request->getQueryParam("token", $default = null);
         if (is_null($token)) {
@@ -118,10 +119,6 @@ class VerifyEmailController
             ]);
         }
 
-        // for backward compatibility (CONFIRM_EMAIL user state is deprecated)
-        if ($user->state === "CONFIRM_EMAIL") {
-            $user->state = UserState::CHECK_PAYMENT;
-        }
         $user->email_state = EmailState::CONFIRMED;
         $user->save();
 

@@ -103,7 +103,7 @@ class Membership extends Model
     {
         return $query->where('contact_id', '=', $userId);
     }
-
+    
     // Validation
     public static function isValidStatus($status) {
 	    if ($status == Membership::STATUS_PENDING

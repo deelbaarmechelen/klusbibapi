@@ -118,7 +118,11 @@ class User extends Model
         return false;
     }
 
-	// Query helpers
+    public function hasLoggedAtLeastOnce() {
+        return isset($this->last_login);
+    }
+
+    // Query helpers
     public function scopeMembers($query)
     {
         return $query->where('role', '=', UserRole::MEMBER)

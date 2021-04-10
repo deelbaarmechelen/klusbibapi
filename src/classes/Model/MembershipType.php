@@ -65,4 +65,7 @@ class MembershipType extends Model
     public function isYearlySubscription() {
         return $this->duration == 365 || $this->duration == 366;
     }
+    public function isCompanySubscription() : bool {
+        return $this->id == MembershipType::regularOrg()->id || $this->id == MembershipType::renewalOrg()->id;
+    }
 }

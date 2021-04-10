@@ -2,20 +2,38 @@
 
 {% block body %}
 Beste {{ user.firstname }},<br><br>
-<p>Op {{ user.membership_end_date | date("j-n-Y") }} {%  if user.membership_end_date < currentDate %}liep{% else %}loopt{% endif %} je lidmaatschap bij de Klusbib ten einde.<br>
+<p>
+{% if isCompany %}
+Op {{ user.membership_end_date | date("j-n-Y") }} {%  if user.membership_end_date < currentDate %}liep{% else %}loopt{% endif %} het Klusbib lidmaatschap voor {{ user.company }} ten einde.<br>
+We willen jullie alvast bedanken voor het vertrouwen en hopen dat jullie veel genot mochten hebben aan dit lidmaatschap.
+{% else %}
+Op {{ user.membership_end_date | date("j-n-Y") }} {%  if user.membership_end_date < currentDate %}liep{% else %}loopt{% endif %} je lidmaatschap bij de Klusbib ten einde.<br>
 We willen je alvast bedanken voor je vertrouwen en hopen dat je veel genot mocht hebben aan je lidmaatschap.
+{% endif %}
 </p><p>
+{% if isCompany %}
+Willen jullie graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, verleng dan vandaag nog<br>
+{% else %}
 Wil je graag blijven gebruik maken van ons materiaal en/of ons initiatief steunen, verleng dan vandaag nog<br>
+{% endif %}
 <ul><li>
 hetzij online <a href='{{ profileLink }}'>{{ profileLink }}</a>
 </li><li>
 hetzij via overschrijving: stort {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b>
+{% if isCompany %}
+met als mededeling <i>'{{ user.company }} - lidmaatschap {{ membership_year }}'</i>
+{% else %}
 met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>
+{% endif %}
 </li></ul>
 Voerde je onlangs een betaling via overschrijving uit, dan mag je dit bericht negeren. Je account wordt verlengd zodra deze op onze rekening staat
 </p>
 {%  if daysToExpiry < 0 %}<p>
+{% if isCompany %}
+Kiezen jullie toch om niet te verlengen laat ons dan hier in nog geen 5 seconden weten waarom<br>
+{% else %}
 Kies je toch om niet te verlengen laat ons dan hier in nog geen 5 seconden weten waarom<br>
+{% endif %}
 <a href='{{ evaluationLink }}'>Evaluatieformulier</a> (anoniem)
 </p>{% endif %}<p>
 Met vriendelijke groeten<br>

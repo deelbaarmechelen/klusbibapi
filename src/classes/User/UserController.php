@@ -31,7 +31,7 @@ class UserController implements UserControllerInterface
     protected $toolManager;
     protected $token;
 
-    public function __construct($logger, UserManager $userManager, ToolManager $toolManager, $token) {
+    public function __construct($logger, UserManager $userManager, ToolManager $toolManager, Token $token) {
         $this->logger = $logger;
         $this->userManager = $userManager;
         $this->toolManager = $toolManager;
@@ -88,22 +88,22 @@ class UserController implements UserControllerInterface
         $authorised = Authorisation::checkUserAccess($this->token, "read", $args['userid']);
         if (!$authorised) {
             $this->logger->warn("Access denied for user " . $args['userid']);
-            return $response->withStatus(403);
+            return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
         if (!is_numeric($args['userid'])) {
             $this->logger->warn("Invalid value provided for user id " . $args['userid']);
-            return $response->withStatus(400);
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST);
         }
         // FIXME: restrict access to owner only for users.read.owner
         try {
             $user = $this->userManager->getById($args['userid'], false);
             if (null == $user) {
-                return $response->withStatus(404);
+                return $response->withStatus(HttpResponseCode::NOT_FOUND);
             }
             $userArray = UserMapper::mapUserToArray($user);
         } catch (\Exception $ex) {
             $this->logger->error('Unexpected error on GET for user ' . $args['userid'] . ': ' . $ex->getMessage());
-            return $response->withStatus(500)
+            return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
                 ->withJson(array('error' => $ex->getMessage()));
         }
         $userArray["reservations"] = $this->addUserReservations($user);
@@ -130,7 +130,7 @@ class UserController implements UserControllerInterface
             || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
             $this->logger->info("errors=" . json_encode($errors));
 
-            return $response->withStatus(400)// Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson($errors);
         }
 
@@ -142,7 +142,7 @@ class UserController implements UserControllerInterface
             $currentUser = User::find($this->token->getSub());
             if (!isset($currentUser)) {
                 $this->logger->warn("No user found for token " + $this->token->getSub());
-                return $response->withStatus(403);
+                return $response->withStatus(HttpResponseCode::FORBIDDEN);
             }
             if ($currentUser->isAdmin()) {
                 $isAdmin = true;
@@ -161,8 +161,8 @@ class UserController implements UserControllerInterface
 //            $data["membership_start_date"] = strftime('%Y-%m-%d', time());
             if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {
                 $this->logger->warn('user ' . $data["firstname"] . ' ' . $data["lastname"] . ' did not accept terms (accept_terms=' . $data["accept_terms"] . ')');
-                return $response->withStatus(400)
-                    ->withJson(array('error' => array('status' => 400, 'message' => "user should accept terms")));
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                    ->withJson(array('error' => array('status' => HttpResponseCode::BAD_REQUEST, 'message' => "user should accept terms")));
             } else {
                 // set date on which terms were accepted
                 // FIXME: should be moved to membership entity?
@@ -197,8 +197,8 @@ class UserController implements UserControllerInterface
                     // For users that already initiated a Mollie payment, wait at least 1 hour until mollie payment is expired
                     $userByEmail->delete();
                 } else {
-                    return $response->withJson(array('error' => array('status' => 409, 'message' => 'A user with that email already exists')))
-                        ->withStatus(409);
+                    return $response->withJson(array('error' => array('status' => HttpResponseCode::CONFLICT, 'message' => 'A user with that email already exists')))
+                        ->withStatus(HttpResponseCode::CONFLICT);
                 }
             } else {
                 $this->logger->debug('No user found with email ' . $data["email"]);
@@ -213,8 +213,8 @@ class UserController implements UserControllerInterface
         } else {
             // check user_id is numeric
             if (!is_numeric($data["user_id"])) {
-                return $response->withStatus(400)
-                    ->withJson(array('error' => array('status' => 400, 'message' => "user_id is not numeric")));
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                    ->withJson(array('error' => array('status' => HttpResponseCode::BAD_REQUEST, 'message' => "user_id is not numeric")));
             }
         }
 //        if (!empty($data["membership_start_date"])) {
@@ -274,11 +274,14 @@ class UserController implements UserControllerInterface
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
-
+        if (!$user->isEmailConfirmed()) {
+            $this->confirmEmail($user);
+        }
         if (false === $this->token->hasScope(["users.all", "users.update"]) &&
             $user->user_id != $this->token->decoded->sub) {
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token sub doesn't match user.");
         }
+
         $data = $request->getParsedBody();
         $errors = array();
         if (empty($data) || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
@@ -324,6 +327,15 @@ class UserController implements UserControllerInterface
         return $response->withStatus(HttpResponseCode::OK);
     }
 
+    protected function confirmEmail(User $user) {
+        if ( $this->token->hasScope(["auth.confirm"])
+            && $this->token->getDest() != null ) {
+            if ($user->email == $this->token->getDest()) {
+                $user->email_state = EmailState::CONFIRMED;
+                $this->logger->info("Email address $user->email has been confirmed (user id $user->user_id)");
+            }
+        }
+    }
     /**
      * @param $request
      * @param $response
@@ -337,12 +349,12 @@ class UserController implements UserControllerInterface
             // Allow read of state to resume enrolment
             $email = $request->getQueryParam('email');
             if (!isset($email)) {
-                return $response->withStatus(400)
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson(array('message' => "Missing email parameter"));
             }
             $user = Capsule::table('users')->where('email', $email)->first();
             if (!isset($user)) {
-                return $response->withStatus(404)
+                return $response->withStatus(HttpResponseCode::NOT_FOUND)
                     ->withJson(array('message' => "Unknown email"));
             }
 
@@ -352,7 +364,7 @@ class UserController implements UserControllerInterface
             ));
         }
         $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
-        return $response->withStatus(403);
+        return $response->withStatus(HttpResponseCode::FORBIDDEN);
     }
 
     /**

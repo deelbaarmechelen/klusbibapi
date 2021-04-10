@@ -13,6 +13,7 @@ class HttpResponseCode
     const UNAUTHORIZED = 401;
     const FORBIDDEN = 403;
     const NOT_FOUND = 404;
+    const CONFLICT = 409;
     const INTERNAL_ERROR = 500;
     const NOT_IMPLEMENTED = 501;
 }

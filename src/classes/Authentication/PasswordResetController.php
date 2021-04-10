@@ -3,6 +3,7 @@
 namespace Api\Authentication;
 use Api\Token\Token;
 use Api\Mail\MailManager;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 
@@ -33,7 +34,7 @@ class PasswordResetController
         $this->logger->debug("email=" . $email);
         $user = Capsule::table('users')->where('email', $email)->first();
         if (null == $user) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
 
         if (isset($body["redirect_url"])) {
@@ -45,13 +46,11 @@ class PasswordResetController
         // generate temporary token allowing password change
         $sub = $user->user_id;
         $requested_scopes = Token::allowedScopes($user->role);
-        $this->logger->debug("user=" . json_encode($user));
         $scopes = array_filter($requested_scopes, function ($needle) {
             return in_array($needle, Token::resetPwdScopes());
         });
-        $this->logger->debug("requested_scopes=" . json_encode($requested_scopes));
+        $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " .  json_encode($sub));
         $token = Token::generateToken($scopes, $sub);
-        $this->logger->info("Token generated with scopes " . json_encode($scopes) . " and sub " .  json_encode($sub));
 
         // generate email
         $mailMgr = new MailManager();
@@ -59,7 +58,7 @@ class PasswordResetController
 
         if (!$result) { // error in mail send
             $error["message"] = $mailMgr->getLastMessage();
-            return $response->withStatus(500)
+            return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($error, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         }
@@ -68,7 +67,7 @@ class PasswordResetController
         $data["message"] = $mailMgr->getLastMessage();
         $data["token"] = $token;
 
-        return $response->withStatus(201)
+        return $response->withStatus(HttpResponseCode::CREATED)
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 

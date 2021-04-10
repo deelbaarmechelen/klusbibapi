@@ -869,10 +869,14 @@ class EnrolmentManager
      */
     protected function initiateMolliePayment($orderId, $amount, $redirectUrl, $requestedPaymentMean, $hostname, $protocol, $productId, $membershipEndDate = null)
     {
+        $userName = "{$this->user->firstname} {$this->user->lastname}";
+        if (isset($this->user->activeMembership) && $this->user->activeMembership->subscription->isCompanySubscription()) {
+            $userName = $this->user->company;
+        }
         if ($productId == Product::ENROLMENT) {
-            $description = "Klusbib inschrijving {$this->user->firstname} {$this->user->lastname}";
+            $description = "Klusbib inschrijving $userName";
         } elseif ($productId == Product::RENEWAL) {
-            $description = "Klusbib verlenging lidmaatschap {$this->user->firstname} {$this->user->lastname}";
+            $description = "Klusbib verlenging lidmaatschap $userName";
         }
         try {
             $this->mollie->setApiKey(MOLLIE_API_KEY);

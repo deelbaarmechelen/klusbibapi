@@ -9,7 +9,11 @@ Bedankt voor je blijvende steun!
 
 {% if paymentMode == 'TRANSFER' and not paymentCompleted %}<p>
 Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount }} &euro; op rekeningnummer <b>{{ account }}</b> te storten
-met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>.<br>
+{% if isCompany %}
+met als mededeling <i>'{{ user.company }} - lidmaatschap {{ membership_year }}'</i>
+{% else %}
+met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>
+{% endif %}<br>
 Van zodra we je betaling ontvangen zullen we je lidmaatschap verlengen.
 </p>{% elseif paymentMode == 'STROOM' %}<p>
 Je gaf aan je lidmaatschap te willen verlengen via het Stroom project.<br>
@@ -21,6 +25,11 @@ Mocht je echter niets meer vernemen binnen de komende 2 weken, dan liep er waars
 We hebben je betaling goed ontvangen.<br>
 {% endif %}
 Je lidmaatschap is nu verlengd tot {{ user.membership_end_date | date('Y-m-d') }}
+</p>{% endif %}
+{% if resetPwd %}<p>
+Alle gegevens over je lopende lidmaatschap kan je ook raadplegen op je profiel pagina.
+Om hier op in te loggen dien je wel eerst een paswoord te kiezen via deze link:<br>
+<a href='{{ resetPwdLink }}'>{{ resetPwdLink }}</a> (geldig gedurende 48u)<br><br>
 </p>{% endif %}
 {% if paymentMode == 'STROOM' %}<p>
 Ook vernemen we graag welk gereedschap je naar op zoek bent, zodat we gericht ons aanbod kunnen aanvullen.<br>

@@ -26,8 +26,11 @@ class Token
 	public function getSub() {
 		return $this->decoded->sub;
 	}
-	
-	static private function generatePayload($scopes, $sub, $future = null) {
+    public function getDest() {
+        return isset($this->decoded->dest) ? $this->decoded->dest : null;
+    }
+
+	static private function generatePayload($scopes, $sub, $future = null, $dest = null) {
 		$now = new \DateTime();
 		if (is_null($future)) { // default token validiy of 2 hours
             $future = new \DateTime("now +2 hours");
@@ -47,23 +50,22 @@ class Token
 				"sub" => $sub,
 				"scope" => array_values($scopes)    // drop keys of scopes array
 		];
+		if (isset($dest)) {
+		    $payload["dest"] = $dest;   // add token destination to payload, when token sent by email, this is the target email address
+        }
 		return $payload;
 	}
 	
-	static public function createToken($scopes, $sub, $future = null) {
+	static public function createToken($scopes, $sub, $future = null, $dest = null) {
 		$token = new Token();
-		if (is_null($future)) {
-		    $payload = Token::generatePayload($scopes, $sub);
-        } else {
-            $payload = Token::generatePayload($scopes, $sub, $future);
-        }
+        $payload = Token::generatePayload($scopes, $sub, $future, $dest);
 		// convert $payload from array to object and add to token object
 		$token->hydrate(json_decode(json_encode($payload), false, 512, JSON_BIGINT_AS_STRING));
 		return $token;
 	}
 	
-	static public function generateToken($scopes, $sub, $future = null) {
-		$payload = Token::generatePayload($scopes, $sub, $future);
+	static public function generateToken($scopes, $sub, $future = null, $dest = null) {
+		$payload = Token::generatePayload($scopes, $sub, $future, $dest);
 		
 		$secret = getenv("JWT_SECRET");
 		return JWT::encode($payload, $secret, "HS256");

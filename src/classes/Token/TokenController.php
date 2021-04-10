@@ -4,6 +4,7 @@ namespace Api\Token;
 
 use Api\Model\User;
 use Api\Model\UserState;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Psr\Container\ContainerInterface;
 
@@ -44,11 +45,11 @@ class TokenController implements TokenControllerInterface
             $user = Capsule::table('users')->where('email', $userEmail)->first();
             if (null == $user) {
                 $this->logger->info("User with email $userEmail could not be found");
-                return $response->withStatus(404);
+                return $response->withStatus(HttpResponseCode::NOT_FOUND);
             }
             if (UserState::ACTIVE != $user->state && UserState::EXPIRED != $user->state) {
                 $this->logger->info("Token creation denied for user with state " . $user->state);
-                return $response->withStatus(403);
+                return $response->withStatus(HttpResponseCode::FORBIDDEN);
             }
             $sub = $user->user_id;
             $requested_scopes = Token::allowedScopes($user->role);
@@ -56,8 +57,8 @@ class TokenController implements TokenControllerInterface
         $scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
             return in_array($needle, $valid_scopes);
         });
+        $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
         $token = Token::generateToken($scopes, $sub);
-        $this->logger->info("Token generated with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
 
         // update last_login timestamp
         if ($sub >= 0) { // not guest login
@@ -70,7 +71,7 @@ class TokenController implements TokenControllerInterface
         $data["status"] = "ok";
         $data["token"] = $token;
 
-        return $response->withStatus(201)
+        return $response->withStatus(HttpResponseCode::CREATED)
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     }

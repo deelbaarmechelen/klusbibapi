@@ -249,22 +249,34 @@ class MailManager {
     }
 
     public function sendEnrolmentConfirmation(User $user, $paymentMode, $paymentCompleted = false, Membership $membership = null) {
-        $scopes = ["auth.confirm"];
-        $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"));
-        $link = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
+        $confirmEmail = !$user->isEmailConfirmed();
+        $resetPwd = !$user->hasLoggedAtLeastOnce();
+        $dest = $user->email; // token destination
+
+        $scopes = array();
+        if ($confirmEmail) {
+            array_push($scopes, "auth.confirm");
+        }
+        if ($resetPwd) {
+            array_push($scopes, "users.update.password");
+        }
+        $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"), $dest);
+        $confirmEmailLink = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
+        $resetPwdLink = Settings::RESET_PWD_LINK . "?token=" . $token . "&name=" . $user->firstname . "&userId=" . $user->user_id;
+
+        $enrolmentAmount = isset($membership) && isset($membership->subscription) ? $membership->subscription->price : Settings::ENROLMENT_AMOUNT;
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
         $parameters = array(
             'user' => $user,
             'paymentMode' => $paymentMode,
             'account' => Settings::ACCOUNT_NBR,
-            // FIXME: amount may not be hardcoded as organisations have different pricing -> should be retrieved from membership
-            'amount' => Settings::ENROLMENT_AMOUNT,
-        // FIXME: if still to confirm, there will be no active membership -> should lookup pending membership!
-//            'amount' => $user->activeMembership && $user->activeMembership->subscription ? $user->activeMembership->subscription->price : Settings::ENROLMENT_AMOUNT,
+            'amount' => $enrolmentAmount,
             'membership_year' => $membership_year,
-            'confirmEmail' => !$user->isEmailConfirmed(),
+            'confirmEmail' => $confirmEmail && !$resetPwd, // omit confirmEmail link if resetPwd link is included as email can be confirmed through pwd reset
+            'confirmEmailLink' => $confirmEmailLink,
+            'resetPwd' => $resetPwd,
+            'resetPwdLink' => $resetPwdLink,
             'paymentCompleted' => $paymentCompleted,
-            'link' => $link,
             'enqueteLink' => Settings::ENQUETE_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
@@ -310,7 +322,10 @@ class MailManager {
         $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
         $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null
             ? $user->activeMembership->subscription->nextMembershipType->price : $user->activeMembership->subscription->price;
+        $isCompany = $user->activeMembership->subscription->isCompanySubscription();
+
         $parameters = array('user' => $user,
+            'isCompany' => $isCompany,
             'profileLink' => $link,
             'amount' => $renewalAmount,
             'account' => Settings::ACCOUNT_NBR,
@@ -340,11 +355,32 @@ class MailManager {
         return $this->sendTwigTemplate($user->email, 'resume_enrolment_reminder', $parameters);
     }
     public function sendRenewalConfirmation($user, $paymentMode, $paymentCompleted = false) {
+        $confirmEmail = !$user->isEmailConfirmed();
+        $resetPwd = !$user->hasLoggedAtLeastOnce();
+        $dest = $user->email; // token destination
+
+        $scopes = array();
+        if ($confirmEmail) {
+            array_push($scopes, "auth.confirm");
+        }
+        if ($resetPwd) {
+            array_push($scopes, "users.update.password");
+        }
+        $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"), $dest);
+        $confirmEmailLink = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
+        $resetPwdLink = Settings::RESET_PWD_LINK . "?token=" . $token . "&name=" . $user->firstname . "&userId=" . $user->user_id;
+
         $membership_year = $this->getMembershipYear($user->activeMembership->expires_at->format('Y-m-d'));
         $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null
             ? $user->activeMembership->subscription->nextMembershipType->price : $user->activeMembership->subscription->price;
+        $isCompany = $user->activeMembership->subscription->isCompanySubscription();
         $parameters = array(
             'user' => $user,
+            'isCompany' => $isCompany,
+            'confirmEmail' => $confirmEmail && !$resetPwd, // omit confirmEmail link if resetPwd link is included as email can be confirmed through pwd reset
+            'confirmEmailLink' => $confirmEmailLink,
+            'resetPwd' => $resetPwd,
+            'resetPwdLink' => $resetPwdLink,
             'paymentMode' => $paymentMode,
             'account' => Settings::ACCOUNT_NBR,
             'amount' => $renewalAmount,

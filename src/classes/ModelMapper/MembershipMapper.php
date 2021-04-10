@@ -15,11 +15,14 @@ class MembershipMapper
         if (!isset($membership)) {
             return array();
         }
+        $subscription = MembershipType::find($membership->subscription_id);
+
         $membershipArray = array("id" => $membership->id,
             "status" => $membership->status,
             "start_at" => $membership->start_at->format('Y-m-d'),
             "expires_at" => $membership->expires_at->format('Y-m-d'),
             "subscription_id" => $membership->subscription_id,
+            "subscription" => !$subscription ? array() : MembershipMapper::mapSubscriptionToArray($subscription),
             "contact_id" => $membership->contact_id,
             "last_payment_mode" => $membership->last_payment_mode,
             "comment" => $membership->comment,
@@ -34,6 +37,7 @@ class MembershipMapper
         if (!isset($membershipType)) {
             return array();
         }
+        $nextSubscription = MembershipType::find($membershipType->next_subscription_id);
         $membershipTypeArray = array("id" => $membershipType->id,
             "name" => $membershipType->name,
             "price" => $membershipType->price,
@@ -43,6 +47,7 @@ class MembershipMapper
             "max_items" => $membershipType->max_items,
             "is_active" => $membershipType->is_active,
             "next_subscription_id" => $membershipType->next_subscription_id,
+            "next_subscription_price" => !$nextSubscription ? 'N/A' : $nextSubscription->price,
             "created_at" => $membershipType->created_at,
             "updated_at" => $membershipType->updated_at
         );

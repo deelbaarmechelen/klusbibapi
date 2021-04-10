@@ -19,8 +19,13 @@ Mocht je echter niets meer vernemen binnen de komende 2 weken, dan liep er waars
 </p><br>{% endif %}
 {% if confirmEmail %}<p>
 Mogen we je vragen om alvast te bevestigen voor ontvangst door op onderstaande link te klikken:<br>
-<a href='{{ link }}'>{{ link }}</a> (geldig gedurende 48u)<br>
+<a href='{{ confirmEmailLink }}'>{{ confirmEmailLink }}</a> (geldig gedurende 48u)<br>
 Zo weten wij zeker dat er geen fout geslopen is in je email adres<br>
+</p><br>{% endif %}
+{% if resetPwd %}<p>
+Alle gegevens over je lopende lidmaatschap kan je ook raadplegen op je profiel pagina.
+Om hier op in te loggen dien je wel eerst een paswoord te kiezen via deze link:<br>
+<a href='{{ resetPwdLink }}'>{{ resetPwdLink }}</a> (geldig gedurende 48u)<br><br>
 </p><br>{% endif %}
 {% if paymentMode == 'STROOM' %}<p>
 Ook vernemen we graag welk gereedschap je naar op zoek bent, zodat we gericht ons aanbod kunnen aanvullen.<br>
