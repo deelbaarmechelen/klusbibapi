@@ -28,7 +28,7 @@ class UpdateInventoryAllowNull extends AbstractCapsuleMigration
         Capsule::schema()->table('inventory_item', function(Illuminate\Database\Schema\Blueprint $table){
             $table->string('experience_level', 50)->nullable()->default(null)->change();
             $table->string('safety_risk', 50)->nullable()->default(null)->change();
-            $table->boolean('deliverable')->default(true)->change();
+            $table->boolean('deliverable')->default(false)->change();
             $table->string('size', 50)->nullable()->default(null)->change();
         });
 	}
