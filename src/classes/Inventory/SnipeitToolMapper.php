@@ -93,6 +93,8 @@ abstract class SnipeitToolMapper
         $item->deposit_amount = null;//', 10,2)->nullable()->default(null);
         $item->donated_by = null; //')->unsigned()->nullable()->default(null);
         $item->owned_by = null; //')->unsigned()->nullable()->default(null);
+        $item->deliverable = false;
+
         // TODO: state, image, category
         return $item;
     }
