@@ -21,10 +21,13 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
         $this->truncateTable('activity_report');
         $this->truncateTable('consumers');
         $this->truncateTable('deliveries');
-        $this->truncateTable('delivery_item');
+        \Api\Model\DeliveryItem::query()->delete();
+//        $this->truncateTable('delivery_item');
         $this->truncateTable('events');
-        $this->truncateTable('inventory_item');
-        $this->truncateTable('lendings');
+//        $this->truncateTable('inventory_item');
+        \Api\Model\InventoryItem::query()->delete();
+//        $this->truncateTable('lendings');
+        \Api\Model\Lending::query()->delete();
         $this->truncateTable('project_user');
         \Api\Model\User::query()->delete();
         \Api\Model\Payment::query()->delete();
