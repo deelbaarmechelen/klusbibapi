@@ -2,7 +2,9 @@
 
 namespace Api\Payment;
 
+use Api\Model\PaymentState;
 use Api\Token\Token;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Model\PaymentMode;
 use Api\Model\Payment;
@@ -73,7 +75,7 @@ class PaymentController implements PaymentControllerInterface
         $this->logger->info("Klusbib GET '/payments/:paymentId' route (" . $args['paymentId'] . ")");
         $payment = \Api\Model\Payment::find($args['paymentId']);
         if (empty($payment)) {
-            return $response->withStatus(404) // Not found
+            return $response->withStatus(HttpResponseCode::NOT_FOUND) // Not found
             ->withJson(array(message => "No payment found for provided paymentId"));
         }
 //    $data = array();
@@ -87,7 +89,7 @@ class PaymentController implements PaymentControllerInterface
 //
 //    $data["paymentStatus"] = $payment->state; // NEW, SUCCESS, FAILED, OPEN
 //    $data["paymentMode"] = $payment->mode;
-        return $response->withStatus(200)
+        return $response->withStatus(HttpResponseCode::OK)
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode(PaymentMapper::mapPaymentToArray($payment), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     }
@@ -95,24 +97,25 @@ class PaymentController implements PaymentControllerInterface
     public function create($request, $response, $args)
     {
         $this->logger->info("Klusbib POST '/payments' route");
+        $this->mailManager->sendErrorNotif("Unexpected call to PaymentController.create, method considered as not yet operational / deprecated (hardcoded enrolment amount)");
 
         // Get data
         $data = $request->getParsedBody();
         if (empty($data["paymentMode"]) || empty($data["userId"]) ) {
             $message = "no paymentMode and/or userId provided";
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson("Missing or invalid data: $message");
         }
         if (empty($data["orderId"])  ) {
             $message = "no orderId provided";
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson("Missing or invalid data: $message");
         }
 
         $paymentMode = $data["paymentMode"];
         if ($paymentMode == PaymentMode::MOLLIE && empty($data["redirectUrl"])  ) {
             $message = "no redirectUrl provided (required for online payment)";
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson("Missing or invalid data: $message");
         }
 
@@ -120,7 +123,7 @@ class PaymentController implements PaymentControllerInterface
         $user = \Api\Model\User::find($userId);
         $orderId = $data["orderId"];
         if (null == $user) {
-            return $response->withStatus(400)
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");;
         }
         // Check payment mode
@@ -144,7 +147,7 @@ class PaymentController implements PaymentControllerInterface
                 $payment->payment_date = new \DateTime();
                 $payment->amount = \Api\Settings::ENROLMENT_AMOUNT;
                 $payment->currency = "EUR";
-                $payment->state = "OPEN";
+                $payment->state = PaymentState::OPEN;
                 $payment->save();
             };
             $this->mailManager->sendEnrolmentConfirmation($user, $paymentMode);
@@ -155,7 +158,7 @@ class PaymentController implements PaymentControllerInterface
             $data["paymentState"] = $payment->state;
             $data["mode"] = $payment->mode;
             $data["state"] = $payment->state;
-            return $response->withStatus(200)
+            return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         }
@@ -209,27 +212,28 @@ class PaymentController implements PaymentControllerInterface
                 $data["checkoutUrl"] = $payment->getCheckoutUrl();
                 $data["orderId"] = $orderId;
                 // FIXME: can we change this to 201? Impact on Mollie?
-                return $response->withStatus(200)
+                return $response->withStatus(HttpResponseCode::OK)
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
             } catch (\Mollie\Api\Exceptions\ApiException $e) {
                 echo "API call failed: " . htmlspecialchars($e->getMessage());
                 $this->logger->error("API call failed: " . htmlspecialchars($e->getMessage()));
-                return $response->withStatus(500) // Internal error
+                return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
                 ->withJson("API call failed: " . htmlspecialchars($e->getMessage()));
             }
         }
         $message = "Unsupported payment mode ($paymentMode)";
         $this->logger->warn("Invalid POST request on /payments received: $message");
-        return $response->withStatus(400) // Bad request
+        return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                         ->withJson($message);
     }
 
     public function createWithOrderId($request, $response, $args){
         $this->logger->info("Klusbib POST '/payments/{$args['orderId']}' route");
+        $this->mailManager->sendErrorNotif("Unexpected call to PaymentController.createWithOriderId, method considered as not yet operational / deprecated (hardcoded enrolment amount)");
         if (empty($args['orderId'])) {
             $this->logger->error("POST /payments/{orderId} failed due to missing orderId param");
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson("Missing or empty orderId");
         }
         // Get data
@@ -237,7 +241,7 @@ class PaymentController implements PaymentControllerInterface
         $paymentId = $_POST["id"];
         if (empty($paymentId)) {
             $this->logger->error("POST /payments/{orderId} failed due to missing id param (orderId=" . $args['orderId'] . "; parsed body=" . json_encode($data));
-            return $response->withStatus(400) // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson("Missing or empty paymentId");
         }
         try {
@@ -322,7 +326,7 @@ class PaymentController implements PaymentControllerInterface
             $user = \Api\Model\User::find($userId);
             if (null == $user) {
                 $this->logger->error("POST /payments/$orderId failed: user $userId is not found");
-                return $response->withStatus(400)
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson("No user found with id $userId");;
             }
             if ($payment->state == "SUCCESS") {
@@ -345,9 +349,9 @@ class PaymentController implements PaymentControllerInterface
 
         } catch (\Mollie\Api\Exceptions\ApiException $e) {
             echo "Webhook call failed: " . htmlspecialchars($e->getMessage());
-            return $response->withStatus(500);
+            return $response->withStatus(HttpResponseCode::INTERNAL_ERROR);
         }
-        return $response->withStatus(200)
+        return $response->withStatus(HttpResponseCode::OK)
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode([], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     }
@@ -363,11 +367,11 @@ class PaymentController implements PaymentControllerInterface
 //            }
         $payment = \Api\Model\Payment::find($args['paymentId']);
         if (empty($payment)) {
-            return $response->withStatus(404) // Not found
+            return $response->withStatus(HttpResponseCode::NOT_FOUND)
             ->withJson(array(message => "No payment found for provided paymentId"));
         }
         $payment->delete();
-        return $response->withStatus(200);
+        return $response->withStatus(HttpResponseCode::OK);
 
     }
 }
