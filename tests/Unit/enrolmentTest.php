@@ -64,6 +64,20 @@ class EnrolmentTest extends LocalDbWebTestCase
                     'max_items' => 5,
                     'next_subscription_id' => 3
                 ),
+                array('id' => 5, 'name' => 'RegularOrg', 'price' => 0,
+                    'duration' => 365,
+                    'self_serve' => 1,
+                    'is_active' => 1,
+                    'max_items' => 5,
+                    'next_subscription_id' => 6
+                ),
+                array('id' => 6, 'name' => 'RenewalOrg', 'price' => 0,
+                    'duration' => 365,
+                    'self_serve' => 0,
+                    'is_active' => 1,
+                    'max_items' => 5,
+                    'next_subscription_id' => 6
+                ),
             ),
             'membership' => array(
                 array('id' => 1, 'subscription_id' => 1, 'contact_id' => 1,
