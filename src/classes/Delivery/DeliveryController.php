@@ -32,45 +32,45 @@ class DeliveryController
     }
 
     public function getAll($request, $response, $args) {
-       $this->logger->info("Klusbib GET '/deliveries' route");
+        $this->logger->info("Klusbib GET '/deliveries' route");
 
-       try {
+        try {
            Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.list"]);
-       } catch (ForbiddenException $ex) {
+        } catch (ForbiddenException $ex) {
            return $response->withStatus($ex->getCode()); // Unauthorized
-       }
+        }
 
-        /*         $sortdir = $request->getQueryParam('_sortDir');
-               if (!isset($sortdir)) {
-                   $sortdir = 'asc';
-               }
-               $sortfield = $request->getQueryParam('_sortField');
-               if (!Reservation::canBeSortedOn($sortfield) ) {
-                   $sortfield = 'reservation_id';
-               }
-               $page = $request->getQueryParam('_page');
-               if (!isset($page)) {
-                   $page = '1';
-               }
-               $perPage = $request->getQueryParam('_perPage');
-               if (!isset($perPage)) {
-                   $perPage = '50';
-               }
-               $query= $request->getQueryParam('_query'); */
+        $sortdir = $request->getQueryParam('_sortDir');
+        if (!isset($sortdir)) {
+           $sortdir = 'asc';
+        }
+        $sortfield = $request->getQueryParam('_sortField');
+        if (!Delivery::canBeSortedOn($sortfield) ) {
+           $sortfield = 'reservation_id';
+        }
+        $page = $request->getQueryParam('_page');
+        if (!isset($page)) {
+           $page = '1';
+        }
+        $perPage = $request->getQueryParam('_perPage');
+        if (!isset($perPage)) {
+           $perPage = '50';
+        }
+        $query= $request->getQueryParam('_query'); // TODO: use query value
 
         $querybuilder = Capsule::table('deliveries')
             ->select('*');
 
-/*         if ($sortfield == "username") {
-            $sortfield = 'users.firstname';
-        } else {
-            $sortfield = 'reservations.' . $sortfield;
-        } */
-        $deliveries = $querybuilder->get();
+        $deliveries = $querybuilder->orderBy($sortfield, $sortdir)->get();
+        $deliveries_page = array_slice($deliveries->all(), ($page - 1) * $perPage, $perPage);
 
-        // FIXME: add items for each delivery to response
-
-        return $response->withJson($deliveries)
+        $data = array();
+        foreach ($deliveries as $delivery) {
+            $this->logger->info(\json_encode($delivery));
+            $deliveryData = DeliveryMapper::mapDeliveryToArray($delivery);
+            array_push($data, $deliveryData);
+        }
+        return $response->withJson($data)
             ->withHeader('X-Total-Count', count($deliveries));
     }
 

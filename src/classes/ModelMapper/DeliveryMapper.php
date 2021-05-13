@@ -2,15 +2,17 @@
 namespace Api\ModelMapper;
 
 use \Api\Model\Delivery;
+use Api\Model\DeliveryItem;
 
 class DeliveryMapper
 {
     static public function mapDeliveryToArray($delivery)
     {
 
-        $deliveryItems = array();
-        foreach ($delivery->deliveryItems as $item) {
-            array_push($deliveryItems, DeliveryMapper::mapDeliveryItemToArray($item));
+        $items = array();
+        $deliveryItems = DeliveryItem::where('delivery_id', $delivery->id)->get();
+        foreach ($deliveryItems as $item) {
+            array_push($items, DeliveryMapper::mapDeliveryItemToArray($item));
         }
         $deliveryArray = array(
             "id" => $delivery->id,
@@ -26,7 +28,7 @@ class DeliveryMapper
             "comment" => $delivery->comment,
             "price" => $delivery->price,
             "payment_id" => $delivery->payment_id,
-            "items" => $deliveryItems
+            "items" => $items
         );
 
         return $deliveryArray;
