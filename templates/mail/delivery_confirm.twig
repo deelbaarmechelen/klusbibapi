@@ -20,8 +20,17 @@ Beste {{ user.firstname }},<br><br>
     Opmerkingen: {{ delivery.comment }}
 </p>
 <p>
-    {% if delivery.type == 'PICKUP' %}De ophaling is voorzien voor {{ delivery.pick_up_date | date("Y-m-d") }} op volgend adres: {{ delivery.pick_up_address }}:{% endif %}
-    {% if delivery.type == 'DROPOFF' %}De levering is voorzien voor {{ delivery.drop_off_date | date("Y-m-d") }} op volgend adres: {{ delivery.drop_off_address }}:{% endif %}
+    {% if delivery.type == 'PICKUP' %}
+    De ophaling is voorzien voor {{ delivery.pick_up_date | date("Y-m-d") }} op volgend adres: {{ delivery.pick_up_address }}
+    {% endif %}
+    {% if delivery.type == 'DROPOFF' %}
+    De levering is voorzien voor {{ delivery.drop_off_date | date("Y-m-d") }} op volgend adres: {{ delivery.drop_off_address }}<br>
+    {% if delivery.price > 0 %}
+    Er zal een totale kostprijs aangerekend worden van {{ delivery.price }} euro (opgelet: enkel te betalen via Payconiq)
+    {% else %}
+    Deze levering is gratis
+    {% endif %}
+    {% endif %}
 </p>
 <p>
 Met vriendelijke groeten<br>

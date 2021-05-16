@@ -25,8 +25,17 @@ Extra verbruiksmaterialen / handgereedschap: {{ delivery.consumers }}<br/>
 Opmerkingen: {{ delivery.comment }}
 </p>
 <p>
-    {% if delivery.type == 'PICKUP' %}Adres voor ophaling: {{ delivery.pick_up_address }}:{% endif %}
-    {% if delivery.type == 'DROPOFF' %}Adres voor levering: {{ delivery.drop_off_address }}:{% endif %}
+    {% if delivery.type == 'PICKUP' %}
+    Adres voor ophaling: {{ delivery.pick_up_address }}
+    {% endif %}
+    {% if delivery.type == 'DROPOFF' %}
+    Adres voor levering: {{ delivery.drop_off_address }}<br/>
+    {% if delivery.price > 0 %}
+        Er zal een totale kostprijs aangerekend worden van {{ delivery.price }} euro (opgelet: enkel te betalen via Payconiq)
+    {% else %}
+        Deze levering is gratis
+    {% endif %}
+    {% endif %}
 </p>
 <p>
 Voor meer details, raadpleeg de levering op <a href="{{ inventoryLink }}" >inventaris</a> en/of neem contact op met de gebruiker voor verder praktische afspraken

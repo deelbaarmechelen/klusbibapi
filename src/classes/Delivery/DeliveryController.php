@@ -4,6 +4,7 @@ namespace Api\Delivery;
 
 use Api\Mail\MailManager;
 use Api\Model\DeliveryItem;
+use Api\Model\DeliveryType;
 use Api\Model\InventoryItem;
 use Api\Model\Lending;
 use Api\Model\Reservation;
@@ -121,6 +122,13 @@ class DeliveryController
         }
         if(isset($data["drop_off_address"])) {
             $delivery->drop_off_address = $data["drop_off_address"];
+        }
+        if(isset($data["price"])) {
+            $delivery->price = $data["price"];
+        } else {
+            if ($delivery->type == DeliveryType::PICK_UP) {
+                $delivery->price = 0; // pick up is free
+            }
         }
         if(isset($data["comment"])) {
             $delivery->comment = $data["comment"];
@@ -246,6 +254,14 @@ class DeliveryController
         if (isset($data["drop_off_date"])) {
             $this->logger->info("Klusbib PUT updating drop off date from " . $delivery->drop_off_date . " to " . $data["drop_off_date"]);
             $delivery->drop_off_date = $data["drop_off_date"];
+        }
+        if (isset($data["price"])) {
+            $this->logger->info("Klusbib PUT updating price from " . $delivery->price . " to " . $data["price"]);
+            $delivery->price = $data["price"];
+        }
+        if (isset($data["consumers"])) {
+            $this->logger->info("Klusbib PUT updating consumers from " . $delivery->consumers . " to " . $data["consumers"]);
+            $delivery->consumers = $data["consumers"];
         }
         if (isset($data["comment"])) {
             $this->logger->info("Klusbib PUT updating comment from " . $delivery->comment . " to " . $data["comment"]);
