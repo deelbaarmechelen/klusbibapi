@@ -135,10 +135,17 @@ class Token
 	}
 	static public function resetPwdScopes () {
 		$reset_pwd_scopes = [
-				"users.update.password"
+			"users.update.password"
 		];
 		return $reset_pwd_scopes;
 	}
+    static public function acceptTermsScopes () {
+        $accept_terms_scopes = [
+            "users.read.owner",
+            "users.update.owner"
+        ];
+        return $accept_terms_scopes;
+    }
 	static public function emailLinkScopes () {
 		$reset_pwd_scopes = [
             "users.read.owner", // not allowed to consult other users info

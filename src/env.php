@@ -65,3 +65,7 @@ if (!defined('WEB_URL')) {
     $webUrl = getenv('WEB_URL');
     define("WEB_URL", $webUrl != false ? $webUrl : 'https://www.klusbib.be');
 }
+if (!defined('LAST_TERMS_DATE')) {
+    $lastTermsDate = getenv('LAST_TERMS_DATE');
+    define("LAST_TERMS_DATE", $lastTermsDate != false ? $lastTermsDate : '2019-12-31');
+}

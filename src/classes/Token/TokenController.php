@@ -3,7 +3,9 @@
 namespace Api\Token;
 
 use Api\Model\User;
+use Api\Model\UserRole;
 use Api\Model\UserState;
+use Api\Settings;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Psr\Container\ContainerInterface;
@@ -51,6 +53,24 @@ class TokenController implements TokenControllerInterface
                 $this->logger->info("Token creation denied for user with state " . $user->state);
                 return $response->withStatus(HttpResponseCode::FORBIDDEN);
             }
+            // check terms have been accepted
+            if ($user->role == UserRole::MEMBER &&
+                $user->accept_terms_date < Settings::LAST_TERMS_DATE_UPDATE) {
+                $this->logger->info("Token creation denied for user with id " . $user->user_id
+                    . ", Terms need to be approved!");
+                $sub = $user->user_id;
+                $requested_scopes = Token::allowedScopes($user->role);
+                $scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
+                    return in_array($needle, $valid_scopes);
+                });
+                $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
+                $token = Token::generateToken($scopes, $sub); // Token authorizing the update of terms
+                $responseData = array("reason" => "Terms need to be approved", "code" => "ERR_TERMS_NOT_ACCEPTED",
+                    "token" => $token);
+                return $response->withStatus(HttpResponseCode::FORBIDDEN)
+                    ->withJson($responseData);
+            }
+
             $sub = $user->user_id;
             $requested_scopes = Token::allowedScopes($user->role);
         }

@@ -301,6 +301,28 @@ class UserController implements UserControllerInterface
         return $response->withJson(UserMapper::mapUserToArray($user));
     }
 
+    function updateTerms($request, $response, $args)
+    {
+        $this->logger->info("Klusbib PUT on '/users/id' route");
+
+        if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner"])) {
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token not allowed to update user terms.");
+        }
+        $user = \Api\Model\User::find($args['userid']);
+        if (null == $user) {
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
+        }
+        if (false === $this->token->hasScope(["users.all", "users.update"]) &&
+            $user->user_id != $this->token->decoded->sub) {
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token sub doesn't match user.");
+        }
+
+        $user->accept_terms_date = new \DateTime('now');
+        $this->userManager->update($user);
+
+        return $response->withJson(UserMapper::mapUserToArray($user));
+    }
+
     function delete($request, $response, $args) {
         $this->logger->info("Klusbib DELETE on '/users/id' route");
 

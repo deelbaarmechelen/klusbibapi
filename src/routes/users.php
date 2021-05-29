@@ -10,6 +10,7 @@ $app->get('/users/{userid}', UserController::class . ':getById');
 $app->get('/users', UserController::class . ':getAll');
 $app->post('/users', UserController::class . ':create');
 $app->put('/users/{userid}', UserController::class . ':update');
+$app->put('/users/{userid}/terms', UserController::class . ':updateTerms');
 $app->delete('/users/{userid}', UserController::class . ':delete');
 
 		
