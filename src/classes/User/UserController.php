@@ -317,7 +317,25 @@ class UserController implements UserControllerInterface
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token sub doesn't match user.");
         }
 
-        $user->accept_terms_date = new \DateTime('now');
+        $data = $request->getParsedBody();
+        $now = new \DateTime('now');
+        if (isset($data["accept_terms_date"])) {
+            // check terms date max 1 month in future
+            $termsDate = \DateTime::createFromFormat('Y-m-d', $data["accept_terms_date"]);
+            if (!$termsDate)
+            {
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                    ->write("Invalid accept_terms_date value (actual value: " . $data["accept_terms_date"] . ", expected format YYYY-MM-DD)");
+            }
+            if ($termsDate > $now->add(new \DateInterval('P1M')) ) {
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                    ->write("accept_terms_date value of more than 1 month in future not allowed (actual value: " . $data["accept_terms_date"] . ")");
+            }
+        } else {
+            $termsDate = new \DateTime('now');
+        }
+        // TODO: only update terms date if more recent than current value?
+        $user->accept_terms_date = $termsDate;
         $this->userManager->update($user);
 
         return $response->withJson(UserMapper::mapUserToArray($user));
