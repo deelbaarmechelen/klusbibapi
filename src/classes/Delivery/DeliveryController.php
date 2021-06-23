@@ -161,8 +161,9 @@ class DeliveryController
                 if (null != $item) {
                     $this->logger->info ("Adding Item to delivery: " . \json_encode($item) . "\n\n");
                     $deliveryItem = new DeliveryItem();
-                    $item->deliveryItems()->save($deliveryItem);
+                    $deliveryItem->inventory_item_id = $item->id;
                     $delivery->deliveryItems()->save($deliveryItem);
+                    $item->deliveryItems()->save($deliveryItem);
 
                     if (isset($rcvdItem["reservation_id"])) {
                         $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem) . "\n\n");
