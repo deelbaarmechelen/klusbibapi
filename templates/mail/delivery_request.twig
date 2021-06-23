@@ -1,0 +1,27 @@
+{% block subject 'Nieuwe levering/ophaling' %}
+
+{% block body %}
+Beste {{ user.firstname }},<br><br>
+<p>
+Wij hebben je leveringsaanvraag goed ontvangen. Je wenst volgende toestellen te laten
+    {% if delivery.type == 'PICKUP' %}ophalen op {{ delivery.pick_up_date | date("Y-m-d") }}:{% endif %}
+    {% if delivery.type == 'DROPOFF' %}leveren op {{ delivery.drop_off_date | date("Y-m-d") }}:{% endif %}
+    <ul>
+        {% for item in delivery.deliveryItems %}
+            <li>{{ item.inventoryItem.sku }} - {{ item.inventoryItem.name }} (merk: {{ item.inventoryItem.brand }})
+            </li>
+        {% endfor %}
+    </ul>
+    Extra verbruiksmaterialen / handgereedschap: {{ delivery.consumers }}<br/>
+    Opmerkingen: {{ delivery.comment }}
+</p>
+<p>
+Wij bekijken of dit ingepland kan worden en sturen je nog een bevestiging
+</p>
+<p>
+Met vriendelijke groeten<br>
+Het Klusbib-team<br>
+E: <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a><br>
+W: <a href="{{ webpageLink }}" >{{ webpageLink }}</a><br>
+</p>
+{% endblock %}

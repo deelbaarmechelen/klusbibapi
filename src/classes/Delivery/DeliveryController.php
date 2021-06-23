@@ -188,8 +188,24 @@ class DeliveryController
         }
 
         if ($delivery->state === DeliveryState::REQUESTED) {
-            $this->mailManager->sendDeliveryRequestNotification(DELIVERY_NOTIF_EMAIL, $delivery, $user);
+            $this->logger->info("Sending delivery request notification to " . DELIVERY_NOTIF_EMAIL . " (delivery: " . \json_encode($delivery) . ")");
+            $isSendSuccessful = $this->mailManager->sendDeliveryRequestNotification(DELIVERY_NOTIF_EMAIL, $delivery, $user);
+            if ($isSendSuccessful) {
+                $this->logger->info('notification email sent successfully to ' . DELIVERY_NOTIF_EMAIL);
+            } else {
+                $message = $this->mailManager->getLastMessage();
+                $this->logger->warn('Problem sending delivery notification email: '. $message);
+            }
+            $this->logger->info("Sending delivery request to " . $user->email . " (delivery: " . \json_encode($delivery) . ")");
+            $isSendSuccessful = $this->mailManager->sendDeliveryRequest($user->email, $delivery, $user);
+            if ($isSendSuccessful) {
+                $this->logger->info('delivery email sent successfully to ' . $user->email);
+            } else {
+                $message = $this->mailManager->getLastMessage();
+                $this->logger->warn('Problem sending delivery request email: '. $message);
+            }
         }
+
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery))
             ->withStatus(HttpResponseCode::CREATED);
     }
