@@ -178,6 +178,7 @@ class Token
 			return [
 					"tools.read",
 					"tools.list",
+                    "reservations.create",
 					"reservations.create.owner",
 					"reservations.read",
 					"reservations.update.owner",
@@ -189,6 +190,7 @@ class Token
 					"users.update.password",
 					"users.update.owner",// not allowed to update other users info
                     "lendings.list",
+                    "deliveries.create",
                     "deliveries.create.owner",
 					"deliveries.read",
 					"deliveries.update.owner",

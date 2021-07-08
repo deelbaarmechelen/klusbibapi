@@ -89,8 +89,12 @@ class DeliveryController
     public function create($request, $response, $args) {
         $this->logger->info("Klusbib POST '/deliveries' route");
 
-        Authorisation::checkAccessByToken($this->token,
-            ["deliveries.all", "deliveries.create", "deliveries.create.owner", "deliveries.create.owner.donation_only"]);
+        try {
+            Authorisation::checkAccessByToken($this->token,
+                ["deliveries.all", "deliveries.create", "deliveries.create.owner", "deliveries.create.owner.donation_only"]);
+        } catch (ForbiddenException $e) {
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "no applicable allowed scope in token"));
+        }
 
         $data = $request->getParsedBody();
         $errors = array();
@@ -300,7 +304,7 @@ class DeliveryController
         }
         if ($cancellation) {
             $reason = "cancellation";
-            // Send notification to confirm the delivery
+            // Send notification to cancel the delivery
             $this->logger->info('Sending notification for cancel of delivery ' . json_encode($delivery));
             $isSendSuccessful = $this->mailManager->sendDeliveryCancellation($delivery->user->email, $delivery, $delivery->user);
             if ($isSendSuccessful) {

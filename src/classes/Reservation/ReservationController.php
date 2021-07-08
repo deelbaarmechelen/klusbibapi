@@ -15,6 +15,7 @@ use Api\Model\Reservation;
 use Api\Model\ReservationState;
 use Api\Mail\MailManager;
 use DateInterval;
+use Illuminate\Support\Facades\Http;
 
 class ReservationController implements ReservationControllerInterface
 {
@@ -85,20 +86,25 @@ class ReservationController implements ReservationControllerInterface
         $this->logger->info("Klusbib GET '/reservations/id' route");
         $reservation = \Api\Model\Reservation::find($args['reservationid']);
         if (null == $reservation) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
 
         $data = ReservationMapper::mapReservationToArray($reservation);
         return $response->withJson($data);
     }
+
     public function create($request, $response, $args) {
         $this->logger->info("Klusbib POST '/reservations' route");
-        Authorisation::checkAccessByToken($this->token,
-            ["reservations.all", "reservations.create", "reservations.create.owner", "reservations.create.owner.donation_only"]);
+        try {
+            Authorisation::checkAccessByToken($this->token,
+                ["reservations.all", "reservations.create", "reservations.create.owner", "reservations.create.owner.donation_only"]);
+        } catch (ForbiddenException $e) {
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "no applicable allowed scope in token"));
+        }
         $data = $request->getParsedBody();
         $errors = array();
         if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
-            return $response->withStatus(400)->withJson($errors); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
         $this->logger->info("Reservation request is valid");
         $reservation = new \Api\Model\Reservation();
@@ -148,7 +154,7 @@ class ReservationController implements ReservationControllerInterface
         $access = Authorisation::checkReservationAccess($this->token, "create", $reservation, $toolOwnerId);
         $this->logger->info("Reservation access check: " . $access);
         if ($access === AccessType::NO_ACCESS) {
-            return $response->withStatus(403); // Unauthorized
+            return $response->withStatus(HttpResponseCode::FORBIDDEN); // Unauthorized
         }
         // TODO: add state on reservation: REQUESTED / CONFIRMED / CANCELLED / CLOSED
         if ($access !== AccessType::FULL_ACCESS) {
@@ -178,25 +184,25 @@ class ReservationController implements ReservationControllerInterface
             // TODO: also send a confirmation to requester?
         }
         return $response->withJson(ReservationMapper::mapReservationToArray($reservation))
-            ->withStatus(201);
+            ->withStatus(HttpResponseCode::CREATED);
     }
     public function update($request, $response, $args) {
         $this->logger->info("Klusbib PUT '/reservations/id' route" . $args['reservationid']);
         Authorisation::checkAccessByToken($this->token, ["reservations.all", "reservations.update", "reservations.update.owner"]);
         $reservation = \Api\Model\Reservation::find($args['reservationid']);
         if (null == $reservation) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         $data = $request->getParsedBody();
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
         $errors = array();
         if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
-            return $response->withStatus(400)->withJson($errors); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
         $toolOwnerId = isset($reservation->tool) ? $reservation->tool->owner_id : null;
         $access = Authorisation::checkReservationAccess($this->token, "update", $reservation, $toolOwnerId, $this->logger);
         if ($access === AccessType::NO_ACCESS) {
-            return $response->withStatus(403); // Unauthorized
+            return $response->withStatus(HttpResponseCode::FORBIDDEN); // Unauthorized
         }
         $confirmation = false;
         $cancellation = false;
