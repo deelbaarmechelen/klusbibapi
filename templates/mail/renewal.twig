@@ -28,7 +28,17 @@ met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {
 </li></ul>
 Voerde je onlangs een betaling via overschrijving uit, dan mag je dit bericht negeren. Je account wordt verlengd zodra deze op onze rekening staat
 </p>
-{%  if daysToExpiry < 0 %}<p>
+{% if termsUpdate %}<p>
+    Let wel: sinds aanvang van {% if isCompany %}jullie{% else %}je{% endif %} lidmaatchap werden de Klusbib afspraken en/of privacyverklaring bijgewerkt. De meest recente versie is online raadpleegbaar:
+    <ul>
+        <li><a href="{{ termsLink }}">Klusbib afspraken</a></li>
+        <li><a href="{{ privacyTermsLink }}">Privacyverklaring</a></li>
+    </ul>
+    Bij verlenging van {% if isCompany %}jullie{% else %}je{% endif %} lidmaatschap gaan we ervan uit dat {% if isCompany %}jullie{% else %}je{% endif %} deze gelezen en goedgekeurd {% if isCompany %}hebben{% else %}hebt{% endif %}.
+    Op {% if isCompany %}jullie{% else %}je{% endif %} <a href='{{ profileLink }}'>profielpagina</a> is een bondig overzicht van de aanpassingen terug te vinden.<br>
+    Neem bij vragen contact met ons op <a href="mailto:{{ emailLink }}" >{{ emailLink }}</a>, we geven graag extra uitleg.
+</p>{% endif %}
+{% if daysToExpiry < 0 %}<p>
 {% if isCompany %}
 Kiezen jullie toch om niet te verlengen laat ons dan hier in nog geen 5 seconden weten waarom<br>
 {% else %}

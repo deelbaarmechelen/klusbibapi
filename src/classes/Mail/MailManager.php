@@ -333,6 +333,7 @@ class MailManager {
         $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null
             ? $user->activeMembership->subscription->nextMembershipType->price : $user->activeMembership->subscription->price;
         $isCompany = $user->activeMembership->subscription->isCompanySubscription();
+        $termsUpdateRequired = $user->accept_terms_date < Settings::getLatestTermsDate();
 
         $parameters = array('user' => $user,
             'isCompany' => $isCompany,
@@ -345,7 +346,10 @@ class MailManager {
             'facebookLink' => Settings::FACEBOOK_LINK,
             'evaluationLink' => Settings::EVALUATION_LINK,
             'membership_year' => $membership_year,
-            'daysToExpiry' => $daysToExpiry);
+            'daysToExpiry' => $daysToExpiry,
+            'termsUpdate' => $termsUpdateRequired,
+            'termsLink' => Settings::GEN_CONDITIONS_URL,
+            'privacyTermsLink' => Settings::PRIVACY_STATEMENT_URL);
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
     public function sendResumeEnrolmentReminder($user, $token) {
