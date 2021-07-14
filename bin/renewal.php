@@ -15,6 +15,7 @@ $longopts  = array(
 $options = getopt("", $longopts);
 
 $delete = false;
+$singleuser = false;
 if (isset($options["user"]) ) {
     echo "Renewal for single user\n";
     $singleuser = true;
