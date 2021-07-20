@@ -126,7 +126,7 @@ abstract class SnipeitToolMapper
             // FIXME: not accessible without login!
             $tool->doc_url = isset($asset->custom_fields->doc_url) ? $asset->custom_fields->doc_url->value : null;
             $deliverable = isset($asset->custom_fields->leverbaar) ? $asset->custom_fields->leverbaar->value : "Nee";
-            $deliverable = ($deliverable === "Ja") ? true : false;
+            $deliverable = (strtoupper($deliverable) === "JA") ? true : false;
             $tool->deliverable = $deliverable;
             $tool->fee = isset($asset->custom_fields->forfait) ? $asset->custom_fields->forfait->value : null;
             $tool->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
