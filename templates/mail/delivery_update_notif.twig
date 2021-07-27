@@ -6,7 +6,7 @@ Beste,<br><br>
 {% if delivery.type == 'PICKUP' %}Er werd een ophaling gewijzigd<br>{% endif %}
 {% if delivery.type == 'DROPOFF' %}Er werd een levering gewijzigd<br>{% endif %}
 ID: {{ delivery.id }}<br>
-Reden voor wijziging: {{ reason }}<br>
+Reden voor wijziging: {% if reason is null %}Niet opgegeven{% else %}{{ reason }}{% endif %}<br>
 Huidige status: {{ delivery.state }}<br>
 </p><p>
 Details:<br>
@@ -30,11 +30,23 @@ Opmerkingen: {{ delivery.comment }}
     {% endif %}
     {% if delivery.type == 'DROPOFF' %}
     Adres voor levering: {{ delivery.drop_off_address }}<br/>
-    {% if delivery.price > 0 %}
+    // TODO: check if delivery price is set, if not add warning that delivery price should be set before confirmation
+
+    {% if delivery.price is null %}
+        Totale prijs voor deze levering moet nog bepaald worden
+    {% elseif delivery.price > 0 %}
         Er zal een totale kostprijs aangerekend worden van {{ delivery.price }} euro (opgelet: enkel te betalen via Payconiq)
     {% else %}
         Deze levering is gratis
     {% endif %}
+    {% endif %}
+</p>
+<p>
+    {% if delivery.price is null %}
+        Gelieve de totale prijs te bepalen van deze levering via de <a href="{{ inventoryLink }}" >inventaris</a>
+    {% elseif delivery.state == 'REQUESTED' %}
+        Gelieve de levering te bevestigen via de <a href="{{ inventoryLink }}" >inventaris</a> en/of contact op te nemen met de gebruiker voor verder praktische afspraken
+        (email: <a href="mailto:{{ user.email }}" >{{ user.email }}</a>)
     {% endif %}
 </p>
 <p>

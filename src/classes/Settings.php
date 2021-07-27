@@ -12,6 +12,7 @@ class Settings
     const MOLLIE_LOCALE = "nl_BE";
     const CURRENCY = "EUR";
     const LATEST_TERMS_VERSION = "20210701";
+    const LAST_TERMS_DATE_UPDATE = LAST_TERMS_DATE; // FIXME: how to avoid having to define this twice?
 
     const EMAIL_LINK = 'info@klusbib.be';
     const RESERVATION_EMAIL = 'reservatie@klusbib.be';
@@ -25,7 +26,6 @@ class Settings
     const GEN_CONDITIONS_URL = self::WEBPAGE_LINK . '/docs/KlusbibAfspraken-' . self::LATEST_TERMS_VERSION . '.pdf';
     const PRIVACY_STATEMENT_URL = self::WEBPAGE_LINK . '/docs/PrivacyVerklaring-' . self::LATEST_TERMS_VERSION . '.pdf';
     const INVENTORY_LINK = INVENTORY_URL;
-    const LAST_TERMS_DATE_UPDATE = LAST_TERMS_DATE;
 
     static function getLatestTermsDate () {
         return \DateTime::createFromFormat('Ymd', self::LATEST_TERMS_VERSION);

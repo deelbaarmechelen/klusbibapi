@@ -67,5 +67,5 @@ if (!defined('WEB_URL')) {
 }
 if (!defined('LAST_TERMS_DATE')) {
     $lastTermsDate = getenv('LAST_TERMS_DATE');
-    define("LAST_TERMS_DATE", $lastTermsDate != false ? $lastTermsDate : '2019-12-31');
+    define("LAST_TERMS_DATE", $lastTermsDate != false ? $lastTermsDate : '2019-12-02');
 }
