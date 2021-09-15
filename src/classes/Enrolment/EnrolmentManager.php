@@ -142,7 +142,7 @@ class EnrolmentManager
         // Block requests for enrolments more than 1 year in future
         $this->blockFutureRequests($startMembershipDate);
 
-        $payment = $this->lookupPayment($orderId, $paymentMode);
+        $payment = $this->lookupPaymentByOrderId($orderId, $paymentMode);
         if ($payment != null) { // payment already exists, check its state
             if ($paymentCompleted) {
                 if ($payment->state != PaymentState::OPEN) {
@@ -227,7 +227,7 @@ class EnrolmentManager
     function enrolmentByMollie($orderId, $redirectUrl, $requestedPaymentMean, $requestUri) {
         $this->checkUserStateEnrolment();
         $membershipType = MembershipType::regular();
-        $payment = $this->lookupPayment($orderId, PaymentMode::MOLLIE);
+        $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
         if ($payment == null) {
             // Create new payment
             $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, PaymentState::OPEN,
@@ -316,7 +316,7 @@ class EnrolmentManager
         // Block requests for renewals more than 1 year in future
         $this->blockFutureRequests();
 
-        $payment = $this->lookupPayment($orderId, $paymentMode);
+        $payment = $this->lookupPaymentByOrderId($orderId, $paymentMode);
         if ($payment != null) { // payment already exists -> check its state
             if ($paymentCompleted) {
                 if ($payment->state != PaymentState::SUCCESS) {
@@ -404,7 +404,7 @@ class EnrolmentManager
             $nextMembershipType = $membership->subscription;
         }
 
-        $payment = $this->lookupPayment($orderId, PaymentMode::MOLLIE);
+        $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
         if ($payment == null) {
             // Create new payment
             $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, PaymentState::OPEN,
@@ -449,39 +449,7 @@ class EnrolmentManager
 
         // lookup payment
         if ($payment == null) {
-            $payments = Payment::forMembership()->where([
-                ['user_id', '=', $this->user->user_id],
-                ['mode', '=', $paymentMode]
-            ])->get();
-
-            if (empty($payments) || count($payments) == 0)  {
-                $message = "Unexpected confirmation, no payment found for user " . $this->user->firstname .
-                    " (" . $this->user->user_id .") for payment mode (" . $paymentMode . ")";
-                $this->logger->warning($message);
-                // note: no payment, so unable to send 'enrolment failed' notification
-                throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-            } else {
-                $this->logger->info("payments found: " . \json_encode($payments));
-            }
-            if (count($payments) == 1) {
-                $payment = $payments[0];
-            } else {
-                // more than 1 payment, search OPEN payment
-                $payment = null;
-                foreach ($payments as $p) {
-                    if ($p->state == PaymentState::OPEN) {
-                        if ( $payment == null) {
-                            $payment = $p;
-                        } else { // more than 1 OPEN payment
-                            $message = "Unable to process confirmation, more than 1 open payments found (first payment is ["
-                                . \json_encode($payment) . "] - second payment is [" . \json_encode($p)."])";
-                            $this->logger->warning($message);
-                            $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payment, $renewal, $message);
-                            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);
-                        }
-                    }
-                }
-            }
+            $payment = $this->lookupPaymentByPaymentMode($paymentMode, $renewal);
         }
         if ($payment->state == PaymentState::SUCCESS || $payment->state == PaymentState::FAILED) {
             // payment already confirmed/declined
@@ -555,12 +523,19 @@ class EnrolmentManager
         $this->checkUserStateAtPayment($user);
 
         // update payment
-        $membership = $user->activeMembership()->first();
-        $payment = Payment::find($membership->payment->payment_id);
+        $payment = $this->lookupPaymentByPaymentMode($paymentMode, false);
         $payment->state = PaymentState::FAILED;
         $payment->save();
 
         // update status
+        $membership = Membership::find($payment->membership_id);
+        if ($membership->last_payment_mode != $paymentMode) {
+            $message = "Unexpected confirmation for payment mode ($paymentMode), expected payment mode $membership->last_payment_mode";
+            $this->logger->warning($message);
+            $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payment, $renewal, $message);
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
+        }
+
         $membership->status = Membership::STATUS_CANCELLED; // keep a cancelled membership for history
         $membership->save();
         $user->state = UserState::DELETED;
@@ -687,7 +662,7 @@ class EnrolmentManager
      * @param $orderId
      * @return Payment
      */
-    protected function lookupPayment($orderId, $paymentMode, $userId = null)
+    protected function lookupPaymentByOrderId($orderId, $paymentMode, $userId = null)
     {
         if ($userId == null) {
             $userId = $this->user->user_id;
@@ -936,7 +911,7 @@ class EnrolmentManager
             $productId = $paymentMollie->metadata->product_id;
             $newMembershipEndDate = $paymentMollie->metadata->membership_end_date;
 
-            $payment = $this->lookupPayment($orderId, PaymentMode::MOLLIE, $userId);
+            $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE, $userId);
             if ($payment == null) { // should no longer happen, payment is created at "POST enrolment"
                 $this->logger->error("POST /enrolment/$orderId failed: payment with orderid $orderId, payment mode " . PaymentMode::MOLLIE . " and user id $userId is not found");
                 throw new EnrolmentException("No payment found with orderid $orderId, payment mode " . PaymentMode::MOLLIE . " and user id $userId",
@@ -1125,5 +1100,50 @@ class EnrolmentManager
             $this->logger->warning($message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
         }
+    }
+
+    /**
+     * @param $paymentMode
+     * @param $renewal
+     * @param Payment $payment
+     * @return Payment|null
+     * @throws EnrolmentException
+     */
+    private function lookupPaymentByPaymentMode($paymentMode, $renewal)
+    {
+        $payments = Payment::forMembership()->where([
+            ['user_id', '=', $this->user->user_id],
+            ['mode', '=', $paymentMode]
+        ])->get();
+
+        if (empty($payments) || count($payments) == 0) {
+            $message = "Unexpected confirmation, no payment found for user " . $this->user->firstname .
+                " (" . $this->user->user_id . ") for payment mode (" . $paymentMode . ")";
+            $this->logger->warning($message);
+            // note: no payment, so unable to send 'enrolment failed' notification
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
+        } else {
+            $this->logger->info("payments found: " . \json_encode($payments));
+        }
+        if (count($payments) == 1) {
+            $payment = $payments[0];
+        } else {
+            // more than 1 payment, search OPEN payment
+            $payment = null;
+            foreach ($payments as $p) {
+                if ($p->state == PaymentState::OPEN) {
+                    if ($payment == null) {
+                        $payment = $p;
+                    } else { // more than 1 OPEN payment
+                        $message = "Unable to process confirmation, more than 1 open payments found (first payment is ["
+                            . \json_encode($payment) . "] - second payment is [" . \json_encode($p) . "])";
+                        $this->logger->warning($message);
+                        $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payment, $renewal, $message);
+                        throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);
+                    }
+                }
+            }
+        }
+        return $payment;
     }
 }
