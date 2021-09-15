@@ -2,10 +2,12 @@
 
 namespace Api\Tool;
 
+use Api\Exception\ForbiddenException;
 use Api\Exception\NotFoundException;
 use Api\Exception\NotImplementedException;
 use Api\Inventory\Inventory;
 use Api\Product\ProductControllerInterface;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\ModelMapper\ToolMapper;
 use Api\Model\Tool;
@@ -82,11 +84,11 @@ class ToolController implements ProductControllerInterface
         try {
             $tool = $this->toolManager->getById($args['toolid']);
         } catch (NotFoundException $nfe) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
 
         if (null == $tool) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
 
         $data = ToolMapper::mapToolToArray($tool);
@@ -103,11 +105,15 @@ class ToolController implements ProductControllerInterface
     function create($request, $response, $args) {
         $this->logger->info("Klusbib POST '/tools' route");
         /* Check if token has needed scope. */
-        Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.create"]);
+        try {
+            Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.create"]);
+        } catch (ForbiddenException $e) {
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => $e->getMessage()));
+        }
 
         $data = $request->getParsedBody();
         if (empty($data) || empty($data["name"])) {
-            return $response->withStatus(400); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST); // Bad request
         }
         $tool = new Tool();
         // 	$tool->name = filter_var($data['name'], FILTER_SANITIZE_STRING);
@@ -126,7 +132,7 @@ class ToolController implements ProductControllerInterface
 
         $tool = Tool::find($args['toolid']);
         if (null == $tool) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         // upload file and save location to tool img url
         $uploader = new UploadHandler($this->logger);
@@ -146,7 +152,7 @@ class ToolController implements ProductControllerInterface
         Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.update"]);
         $tool = Tool::find($args['toolid']);
         if (null == $tool) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         $data = $request->getParsedBody();
         ToolMapper::mapArrayToTool($data, $tool);
@@ -162,10 +168,10 @@ class ToolController implements ProductControllerInterface
     // 	}
         $tool = \Api\Model\Tool::find($args['toolid']);
         if (null == $tool) {
-            return $response->withStatus(204);
+            return $response->withStatus(HttpResponseCode::NO_CONTENT);
         }
         $tool->delete();
-        return $response->withStatus(200);
+        return $response->withStatus(HttpResponseCode::OK);
     }
 
     function add($request, $response, $args)
