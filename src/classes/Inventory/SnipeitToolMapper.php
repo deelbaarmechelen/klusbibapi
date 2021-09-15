@@ -14,15 +14,28 @@ abstract class SnipeitToolMapper
 {
 
     const ACCESSORY_OFFSET = 100000;
+    const LOCATION_ID_UNKNOWN = 0;
+    const LOCATION_ID_ON_LOAN = 1;
+    const LOCATION_ID_IN_STOCK = 2;
+    const LOCATION_ID_REPAIR = 3;
 
     static public function mapAssetToItem($asset) : ?InventoryItem  {
+        $toolstate = self::mapAssetStateToToolState($asset);
+        $currentLocationId = LOCATION_ID_UNKNOWN;
+        if ($toolstate == ToolState::READY) {
+            $currentLocationId = self::LOCATION_ID_IN_STOCK;
+        } elseif ($toolstate == ToolState::IN_USE) {
+            $currentLocationId = self::LOCATION_ID_ON_LOAN;
+        } elseif ($toolstate == ToolState::MAINTENANCE) {
+            $currentLocationId = self::LOCATION_ID_REPAIR;
+        }
         $item = new InventoryItem();
         $item->id = $asset->id;
         $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
-        $item->item_type = ToolType::TOOL;
+        $item->item_type = ToolType::TOOL; // FIXME: should be 'loan' to match lendengine meaning (item_type is one of 'loan', 'stock' (consumable), 'kit', 'service')
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
         $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
-        $item->current_location_id =  null;//')->unsigned()->nullable()->default(null);
+        $item->current_location_id = $currentLocationId;//')->unsigned()->nullable()->default(null);
         $item->item_condition = null;//')->unsigned()->nullable()->default(null);
         $item->sku = $asset->asset_tag;
 //        $item->description =  $asset->notes;//', 1024)->nullable()->default(null);
