@@ -35,6 +35,9 @@ class AddLendingTriggers extends AbstractCapsuleMigration
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
 
+        $this->query('DROP TRIGGER IF EXISTS `le_lending_ai`');
+        $this->query('DROP TRIGGER IF EXISTS `le_lending_au`');
+        $this->query('DROP TRIGGER IF EXISTS `le_lending_ad`');
         $sql = " 
 CREATE TRIGGER `le_lending_ai` AFTER INSERT ON `lendings`
  FOR EACH ROW 

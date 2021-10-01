@@ -28,6 +28,9 @@ class TriggersInventoryItem extends AbstractCapsuleMigration
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
 
+        $this->query('DROP TRIGGER IF EXISTS `le_inventory_item_ai`');
+        $this->query('DROP TRIGGER IF EXISTS `le_inventory_item_au`');
+        $this->query('DROP TRIGGER IF EXISTS `le_inventory_item_ad`');
         $sql = " 
 CREATE TRIGGER `le_inventory_item_ai` AFTER INSERT ON `inventory_item`
  FOR EACH ROW INSERT 
