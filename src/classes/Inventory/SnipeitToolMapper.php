@@ -5,6 +5,7 @@ namespace Api\Inventory;
 
 use Api\Model\Accessory;
 use Api\Model\InventoryItem;
+use Api\Model\ProductTag;
 use Api\Model\Tool;
 use Api\Model\ToolCategory;
 use Api\Model\ToolState;
@@ -21,7 +22,7 @@ abstract class SnipeitToolMapper
 
     static public function mapAssetToItem($asset) : ?InventoryItem  {
         $toolstate = self::mapAssetStateToToolState($asset);
-        $currentLocationId = LOCATION_ID_UNKNOWN;
+        $currentLocationId = self::LOCATION_ID_UNKNOWN;
         if ($toolstate == ToolState::READY) {
             $currentLocationId = self::LOCATION_ID_IN_STOCK;
         } elseif ($toolstate == ToolState::IN_USE) {
@@ -72,7 +73,16 @@ abstract class SnipeitToolMapper
             $item->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
         }
 
-        // TODO: state, description, category
+        // category
+        $assetCategory = strtolower($asset->category->name);
+        $item->save();
+        $tag = ProductTag::where('name', $assetCategory)->first();
+        if (isset($tag)) {
+            $item->tags()->sync($tag->id);
+        }
+
+        // TODO: state, description
+
         return $item;
     }
 
@@ -184,10 +194,13 @@ abstract class SnipeitToolMapper
     }
 
     protected static function mapAssetStateToToolState($asset) {
+        $status_name = $asset->status_label->status_name;
         $status_type = $asset->status_label->status_type;
         $status_meta = $asset->status_label->status_meta;
         if ($status_type == "deployable") {
-            if ($status_meta == "deployed") {
+            if ($status_name == "reservatie") {
+                return ToolState::RESERVED;
+            } else if ($status_meta == "deployed") {
                 return ToolState::IN_USE;
             }
             return ToolState::READY;

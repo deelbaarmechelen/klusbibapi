@@ -313,6 +313,7 @@ final class MailManagerTest extends LocalDbWebTestCase
 
     public function testSendNewGeneralConditionsNotification()
     {
+        $this->markTestSkipped('requires webpage to be started.');
         $user = new UserTest();
         $user->email = "info@klusbib.be";
         $user->firstname = "mijnNaam";
