@@ -194,11 +194,11 @@ abstract class SnipeitToolMapper
     }
 
     protected static function mapAssetStateToToolState($asset) {
-        $status_name = $asset->status_label->status_name;
+        $status_name = $asset->status_label->name;
         $status_type = $asset->status_label->status_type;
         $status_meta = $asset->status_label->status_meta;
         if ($status_type == "deployable") {
-            if ($status_name == "reservatie") {
+            if ($status_name == "Reservatie") {
                 return ToolState::RESERVED;
             } else if ($status_meta == "deployed") {
                 return ToolState::IN_USE;

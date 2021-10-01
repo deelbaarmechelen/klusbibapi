@@ -30,6 +30,8 @@ class AddLoanViews extends AbstractCapsuleMigration
 
         //note: to avoid conflicts with autoincrement id, increase it to a safe value on lend engine
         //      e.g. ALTER TABLE loan AUTO_INCREMENT=100001;
+        $this->query('DROP VIEW IF EXISTS `loan`');
+        $this->query('DROP VIEW IF EXISTS `loan_row`');
         $sql = "CREATE VIEW loan AS SELECT * FROM lendengine.loan";
         $db->exec($sql);
         $sql = "CREATE VIEW loan_row AS SELECT * FROM lendengine.loan_row";

@@ -28,6 +28,8 @@ class AddItemProductView extends AbstractCapsuleMigration
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
 
+        $this->query('DROP VIEW IF EXISTS `product_tag`');
+        $this->query('DROP VIEW IF EXISTS `inventory_item_product_tag`');
         $sql = "CREATE VIEW product_tag AS SELECT * FROM lendengine.product_tag";
         $db->exec($sql);
         $sql = "CREATE VIEW inventory_item_product_tag AS SELECT * FROM lendengine.inventory_item_product_tag";
