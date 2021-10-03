@@ -36,6 +36,12 @@ class AddLoanViews extends AbstractCapsuleMigration
         $db->exec($sql);
         $sql = "CREATE VIEW loan_row AS SELECT * FROM lendengine.loan_row";
         $db->exec($sql);
+        $sql = "CREATE VIEW item_movement AS SELECT * FROM lendengine.item_movement";
+        $db->exec($sql);
+        $sql = "CREATE VIEW note AS SELECT * FROM lendengine.note";
+        $db->exec($sql);
+        $sql = "CREATE VIEW contact AS SELECT * FROM lendengine.contact";
+        $db->exec($sql);
     }
     /**
      * Down Method.
@@ -46,6 +52,9 @@ class AddLoanViews extends AbstractCapsuleMigration
     {
         $this->query('DROP VIEW IF EXISTS `loan`');
         $this->query('DROP VIEW IF EXISTS `loan_row`');
+        $this->query('DROP VIEW IF EXISTS `item_movement`');
+        $this->query('DROP VIEW IF EXISTS `note`');
+        $this->query('DROP VIEW IF EXISTS `contact`');
     }
 
 }
