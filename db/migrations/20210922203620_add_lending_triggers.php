@@ -42,27 +42,30 @@ class AddLendingTriggers extends AbstractCapsuleMigration
 CREATE TRIGGER `le_lending_ai` AFTER INSERT ON `lendings`
  FOR EACH ROW 
 BEGIN
+IF EXISTS (SELECT 1 FROM lendengine.inventory_item WHERE id = NEW.`tool_id`) THEN
 INSERT INTO loan (
         id, datetime_out, datetime_in, status, total_fee, reference, created_at)
 SELECT
-NEW.`lending_id`, NEW.`start_date`, NEW.`due_date`, 
+NEW.`lending_id`, ifnull(NEW.`start_date`, CURRENT_TIMESTAMP), ifnull(NEW.`due_date`, ifnull(NEW.`start_date`, CURRENT_TIMESTAMP)), 
 CASE WHEN (NEW.`returned_date` IS NULL) THEN 'ACTIVE' ELSE 'CLOSED' END,
 0, NULL, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP);
 
 INSERT INTO loan_row (
         id, loan_id, inventory_item_id, product_quantity, due_out_at, due_in_at, checked_out_at, checked_in_at, fee, site_from, site_to)
 SELECT
-NEW.`lending_id`, NEW.`lending_id`, NEW.`tool_id`, 1, NEW.`start_date`, NEW.`due_date`, NEW.`start_date`, NEW.`returned_date`,0, 1, 1;
+NEW.`lending_id`, NEW.`lending_id`, NEW.`tool_id`, 1, NEW.`start_date`, ifnull(NEW.`due_date`, ifnull(NEW.`start_date`, CURRENT_TIMESTAMP)), NEW.`start_date`, NEW.`returned_date`,0, 1, 1;
+END IF;
 END";
         $db->exec($sql);
         $sql = " 
 CREATE TRIGGER `le_lending_au` AFTER UPDATE ON `lendings`
  FOR EACH ROW 
 BEGIN
+IF EXISTS (SELECT 1 FROM lendengine.inventory_item WHERE id = NEW.`tool_id`) THEN
 update loan_row 
 set inventory_item_id = NEW.`tool_id`, 
     due_out_at = NEW.`start_date`, 
-    due_in_at = NEW.`due_date`, 
+    due_in_at = ifnull(NEW.`due_date`, ifnull(NEW.`start_date`, CURRENT_TIMESTAMP)), 
     checked_out_at = NEW.`start_date`, 
     checked_in_at = NEW.`returned_date` 
 where id = NEW.lending_id;
@@ -71,6 +74,7 @@ set datetime_out = NEW.`start_date`,
     datetime_in = NEW.`due_date`, 
     status = CASE WHEN (NEW.`returned_date` IS NULL) THEN 'ACTIVE' ELSE 'CLOSED' END
 where id = NEW.lending_id;
+END IF;
 END";
         $db->exec($sql);
         $sql = " 
