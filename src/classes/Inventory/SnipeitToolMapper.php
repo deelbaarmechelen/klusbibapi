@@ -23,7 +23,7 @@ abstract class SnipeitToolMapper
     static public function mapAssetToItem($asset) : ?InventoryItem  {
         $toolstate = self::mapAssetStateToToolState($asset);
         $currentLocationId = self::LOCATION_ID_UNKNOWN;
-        if ($toolstate == ToolState::READY) {
+        if ($toolstate == ToolState::READY || $toolstate == ToolState::RESERVED) {
             $currentLocationId = self::LOCATION_ID_IN_STOCK;
         } elseif ($toolstate == ToolState::IN_USE) {
             $currentLocationId = self::LOCATION_ID_ON_LOAN;

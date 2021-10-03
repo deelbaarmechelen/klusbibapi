@@ -33,8 +33,8 @@ class TriggersInventoryItem extends AbstractCapsuleMigration
         $this->query('DROP TRIGGER IF EXISTS `le_inventory_item_ad`');
         $sql = " 
 CREATE TRIGGER `le_inventory_item_ai` AFTER INSERT ON `inventory_item`
- FOR EACH ROW INSERT 
-INTO lendengine.inventory_item (
+ FOR EACH ROW 
+ INSERT INTO lendengine.inventory_item (
 id, name, item_type, created_by, assigned_to, current_location_id, item_condition, sku, description, keywords, brand, care_information, component_information, loan_fee, max_loan_days, is_active, show_on_website, serial, note, price_cost, price_sell, short_url, item_sector, is_reservable, deposit_amount, donated_by, owned_by, created_at, updated_at)
 SELECT 
 NEW.`id`, NEW.`name`, 'loan', NEW.`created_by`, NEW.`assigned_to`, NEW.`current_location_id`, NEW.`item_condition`, NEW.`sku`, NEW.`description`, NEW.`keywords`, NEW.`brand`, NEW.`care_information`, NEW.`component_information`, NEW.`loan_fee`, NEW.`max_loan_days`, NEW.`is_active`, NEW.`show_on_website`, NEW.`serial`, NEW.`note`, NEW.`price_cost`, NEW.`price_sell`, substring(NEW.`short_url`,0,64), NEW.`item_sector`, NEW.`is_reservable`, NEW.`deposit_amount`, NEW.`donated_by`, NEW.`owned_by`, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
@@ -42,6 +42,8 @@ NEW.`id`, NEW.`name`, 'loan', NEW.`created_by`, NEW.`assigned_to`, NEW.`current_
         $db->exec($sql);
         $sql = " 
 CREATE TRIGGER `le_inventory_item_au` AFTER UPDATE ON `inventory_item` FOR EACH ROW 
+BEGIN
+IF EXISTS (SELECT 1 FROM lendengine.inventory_item WHERE id = OLD.id) THEN
 UPDATE lendengine.`inventory_item`
 SET name = NEW.`name`,
 item_type = 'loan',
@@ -71,7 +73,18 @@ donated_by = NEW.donated_by,
 owned_by = NEW.owned_by,
 created_at = ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), 
 updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
-where id = OLD.id
+where id = OLD.id;
+ELSE
+INSERT INTO lendengine.inventory_item (
+id, name, item_type, created_by, assigned_to, current_location_id, item_condition, sku, description, keywords, brand, care_information, 
+component_information, loan_fee, max_loan_days, is_active, show_on_website, serial, note, price_cost, price_sell, short_url, item_sector, 
+is_reservable, deposit_amount, donated_by, owned_by, created_at, updated_at)
+SELECT 
+NEW.`id`, NEW.`name`, 'loan', NEW.`created_by`, NEW.`assigned_to`, NEW.`current_location_id`, NEW.`item_condition`, NEW.`sku`, NEW.`description`, NEW.`keywords`, NEW.`brand`, NEW.`care_information`, 
+NEW.`component_information`, NEW.`loan_fee`, NEW.`max_loan_days`, NEW.`is_active`, NEW.`show_on_website`, NEW.`serial`, NEW.`note`, NEW.`price_cost`, NEW.`price_sell`, substring(NEW.`short_url`,0,64), NEW.`item_sector`, 
+NEW.`is_reservable`, NEW.`deposit_amount`, NEW.`donated_by`, NEW.`owned_by`, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
+END IF;
+END
 ";
         $db->exec($sql);
         $sql = " 
