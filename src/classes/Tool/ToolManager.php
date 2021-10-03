@@ -70,7 +70,8 @@ class ToolManager
 
     public function sync() {
         $syncTime = new \DateTime();
-        // sync tools
+        // sync assets
+        echo "Syncing assets\n";
         $toolItems = $this->inventory->getInventoryItems(ToolType::TOOL);
         foreach($toolItems as $item) {
             echo "Syncing tool with id " . $item->id . "\n";
@@ -93,6 +94,7 @@ class ToolManager
 
         }
         // sync accessories
+        echo "Syncing accessories\n";
         $accessories = $this->inventory->getInventoryItems(ToolType::ACCESSORY);
 //        $accessories = $this->getAllAccessories();
         foreach($accessories as $accessory) {
@@ -116,10 +118,8 @@ class ToolManager
         }
 
         // Delete all other items
+        echo "Deleting other items\n";
         InventoryItem::outOfSync($syncTime)->delete();
-    }
-    public function syncAccessory($id) {
-        $accessory = $this->getAccessoryByIdFromInventory($id);
     }
 
     protected function getByIdFromInventory($id) {
