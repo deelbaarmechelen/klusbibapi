@@ -30,8 +30,11 @@ abstract class SnipeitToolMapper
         } elseif ($toolstate == ToolState::MAINTENANCE) {
             $currentLocationId = self::LOCATION_ID_REPAIR;
         }
-        $item = new InventoryItem();
-        $item->id = $asset->id;
+        $item = InventoryItem::find($asset->id);
+        if (!isset($item)) {
+            $item = new InventoryItem();
+            $item->id = $asset->id;
+        }
         $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
         $item->item_type = ToolType::TOOL; // FIXME: should be 'loan' to match lendengine meaning (item_type is one of 'loan', 'stock' (consumable), 'kit', 'service')
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
@@ -87,8 +90,11 @@ abstract class SnipeitToolMapper
     }
 
     static public function mapAccessoryToItem($accessory) : ?InventoryItem  {
-        $item = new InventoryItem();
-        $item->id = $accessory->id + self::ACCESSORY_OFFSET;
+        $item = InventoryItem::find($accessory->id + self::ACCESSORY_OFFSET);
+        if (!isset($item)) {
+            $item = new InventoryItem();
+            $item->id = $accessory->id + self::ACCESSORY_OFFSET;
+        }
         $item->name = !empty($accessory->name) ? html_entity_decode ($accessory->name) : html_entity_decode ($accessory->category->name);
         $item->item_type = ToolType::ACCESSORY;
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
