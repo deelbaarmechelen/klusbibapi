@@ -74,6 +74,15 @@ abstract class SnipeitToolMapper
             $item->deliverable = $deliverable;
             $item->loan_fee = isset($asset->custom_fields->forfait) ? floatval($asset->custom_fields->forfait->value) : null;
             $item->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
+        } else {
+            // set default values
+            $item->price_sell = null;
+            $item->experience_level = null;
+            $item->safety_risk = null;
+            $item->short_url = null;
+            $item->deliverable = false;
+            $item->loan_fee = null;
+            $item->size = null;
         }
 
         // category
