@@ -31,7 +31,7 @@ class InventoryItem extends Model
 
     public function tags() {
         return $this->belongsToMany('Api\Model\ProductTag', 'inventory_item_product_tag',
-            'product_tag_id', 'inventory_item_id');
+            'inventory_item_id', 'product_tag_id');
     }
 
     public function scopeOutOfSync($query, $lastSyncDate)

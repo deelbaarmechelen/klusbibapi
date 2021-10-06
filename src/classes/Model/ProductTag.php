@@ -11,9 +11,8 @@ class ProductTag extends Model
     public $incrementing = false;
 
     public function items() {
-//        return $this->belongsToMany(Role::class, 'role_user');
         return $this->belongsToMany('Api\Model\InventoryItem', 'inventory_item_product_tag',
-            'inventory_item_id','product_tag_id' );
+            'product_tag_id', 'inventory_item_id' );
     }
 
 }
