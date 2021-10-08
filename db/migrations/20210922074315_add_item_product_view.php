@@ -34,6 +34,12 @@ class AddItemProductView extends AbstractCapsuleMigration
         $db->exec($sql);
         $sql = "CREATE VIEW inventory_item_product_tag AS SELECT * FROM lendengine.inventory_item_product_tag";
         $db->exec($sql);
+        $sql = "CREATE VIEW product_field AS SELECT * FROM lendengine.product_field";
+        $db->exec($sql);
+        $sql = "CREATE VIEW product_field_select_option AS SELECT * FROM lendengine.product_field_select_option";
+        $db->exec($sql);
+        $sql = "CREATE VIEW product_field_value AS SELECT * FROM lendengine.product_field_value";
+        $db->exec($sql);
 	}
     /**
      * Down Method.
@@ -44,5 +50,8 @@ class AddItemProductView extends AbstractCapsuleMigration
 	{
         $this->query('DROP VIEW IF EXISTS `product_tag`');
         $this->query('DROP VIEW IF EXISTS `inventory_item_product_tag`');
+        $this->query('DROP VIEW IF EXISTS `product_field`');
+        $this->query('DROP VIEW IF EXISTS `product_field_select_option`');
+        $this->query('DROP VIEW IF EXISTS `product_field_value`');
 	}
 }

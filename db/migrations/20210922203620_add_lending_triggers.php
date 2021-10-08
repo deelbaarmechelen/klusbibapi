@@ -108,7 +108,8 @@ IF EXISTS (SELECT 1 FROM lendengine.inventory_item WHERE id = NEW.`tool_id`)
              NEW.`start_date`, NEW.`returned_date`, 0, 1, 1;     
     END IF;
   
-    IF OLD.`start_date` IS NULL THEN
+    IF OLD.`start_date` IS NULL 
+    AND NOT EXISTS (SELECT 1 FROM item_movement WHERE loan_row_id = NEW.`lending_id`) THEN
         INSERT INTO item_movement (
             inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
         SELECT NEW.`tool_id`, 1, NEW.`lending_id`, NEW.`user_id`, CURRENT_TIMESTAMP, 1;
@@ -129,6 +130,8 @@ END";
 CREATE TRIGGER `le_lending_ad` AFTER DELETE ON `lendings`
  FOR EACH ROW 
 BEGIN
+delete from item_movement where loan_row_id = OLD.lending_id;
+delete from note where loan_id = OLD.lending_id;
 delete from loan_row where id = OLD.lending_id;
 delete from loan where id = OLD.lending_id;
 END";
