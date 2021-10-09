@@ -110,6 +110,10 @@ class EnrolmentController
                 $membershipType = MembershipType::REGULAR;
             } elseif (strtoupper($membershipType) == strtoupper(MembershipType::RENEWAL)) {
                 $membershipType = MembershipType::RENEWAL;
+            } elseif (strtoupper($membershipType) == strtoupper(MembershipType::REGULARREDUCED)) {
+                $membershipType = MembershipType::REGULARREDUCED;
+            } elseif (strtoupper($membershipType) == strtoupper(MembershipType::RENEWALREDUCED)) {
+                $membershipType = MembershipType::RENEWALREDUCED;
             } elseif (strtoupper($membershipType) == strtoupper(MembershipType::REGULARORG)) {
                 $membershipType = MembershipType::REGULARORG;
             } elseif (strtoupper($membershipType) == strtoupper(MembershipType::RENEWALORG)) {
@@ -122,6 +126,8 @@ class EnrolmentController
 
             if ($membershipType != MembershipType::REGULAR
                 && $membershipType != MembershipType::RENEWAL
+                && $membershipType != MembershipType::REGULARREDUCED
+                && $membershipType != MembershipType::RENEWALREDUCED
                 && $membershipType != MembershipType::REGULARORG
                 && $membershipType != MembershipType::RENEWALORG
                 && $membershipType != MembershipType::STROOM
@@ -137,7 +143,7 @@ class EnrolmentController
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
                 ->withJson("Missing or invalid data: $message");
             }
-            if ($membershipType == MembershipType::REGULAR) {
+            if ($membershipType == MembershipType::REGULAR || $membershipType == MembershipType::REGULARREDUCED) {
                 // Renewal with REGULAR membership is possible when current membership is TEMPORARY
                 // but only makes sense if membership is still active
                 if (  $user->activeMembership()->exists()
@@ -161,7 +167,7 @@ class EnrolmentController
                     return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
                     ->withJson("Missing or invalid data: $message");
                 }
-            } else if ($membershipType == MembershipType::RENEWAL) {
+            } else if ($membershipType == MembershipType::RENEWAL || $membershipType == MembershipType::RENEWALREDUCED) {
                 if (!$renewal) {
                     $renewal = true;
                 }

@@ -14,6 +14,8 @@ class MembershipType extends Model
 
     const REGULAR = 'Regular';
     const RENEWAL = 'Renewal';
+    const REGULARREDUCED = 'RegularReduced';
+    const RENEWALREDUCED = 'RenewalReduced';
     const REGULARORG = 'RegularOrg';
     const RENEWALORG = 'RenewalOrg';
     const STROOM = 'Stroom';
@@ -24,6 +26,12 @@ class MembershipType extends Model
     }
     static public function renewal() {
         return MembershipType::where('name', '=', self::RENEWAL)->firstOrFail();
+    }
+    static public function regularReduced() {
+	    return MembershipType::where('name', '=', self::REGULARREDUCED)->firstOrFail();
+    }
+    static public function renewalReduced() {
+        return MembershipType::where('name', '=', self::RENEWALREDUCED)->firstOrFail();
     }
     static public function regularOrg() {
         return MembershipType::where('name', '=', self::REGULARORG)->firstOrFail();
@@ -64,6 +72,9 @@ class MembershipType extends Model
 
     public function isYearlySubscription() {
         return $this->duration == 365 || $this->duration == 366;
+    }
+    public function isReducedSubscription() : bool {
+        return $this->id == MembershipType::regularReduced()->id || $this->id == MembershipType::renewalReduced()->id;
     }
     public function isCompanySubscription() : bool {
         return $this->id == MembershipType::regularOrg()->id || $this->id == MembershipType::renewalOrg()->id;

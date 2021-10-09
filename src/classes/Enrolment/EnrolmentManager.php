@@ -65,6 +65,8 @@ class EnrolmentManager
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
             $membershipType = MembershipType::temporary();
+        } elseif (strcasecmp ($membershipTypeName, MembershipType::REGULARREDUCED) == 0) {
+            $membershipType = MembershipType::regularReduced();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::REGULARORG) == 0) {
             $membershipType = MembershipType::regularOrg();
         } else {
@@ -91,6 +93,8 @@ class EnrolmentManager
             $membershipType = MembershipType::regular();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::TEMPORARY) == 0) {
             $membershipType = MembershipType::temporary();
+        } elseif (strcasecmp ($membershipTypeName, MembershipType::REGULARREDUCED) == 0) {
+            $membershipType = MembershipType::regularReduced();
         } elseif (strcasecmp ($membershipTypeName, MembershipType::REGULARORG) == 0) {
             $membershipType = MembershipType::regularOrg();
         } else {
