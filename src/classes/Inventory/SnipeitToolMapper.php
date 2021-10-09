@@ -142,6 +142,9 @@ abstract class SnipeitToolMapper
      * @return Tool the converted tool
      */
     static public function mapAssetToTool($asset) : Tool {
+        if ($asset == null || $asset->id == null) {
+            return null;
+        }
         $tool = new Tool();
         $tool->tool_id = $asset->id;
         $tool->tool_ext_id = $asset->id;
