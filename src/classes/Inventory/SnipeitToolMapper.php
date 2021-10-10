@@ -52,7 +52,7 @@ abstract class SnipeitToolMapper
         $item->is_active = true; // FIXME: check value based on state?
         $item->show_on_website =  self::isVisible($asset);
         $item->serial = $asset->serial;
-        $item->note = $asset->notes; // short description admin
+        $item->note = (strlen($asset->notes) > 128) ?  substr($asset->notes, 0, 128) : $asset->notes; // short description admin
         $item->price_cost =  null;//', 10,2)->nullable()->default(null);
         $item->price_sell =  null;//', 10,2)->nullable()->default(null);
         $item->image_name =  $asset->image;//', 255)->nullable()->default(null);
