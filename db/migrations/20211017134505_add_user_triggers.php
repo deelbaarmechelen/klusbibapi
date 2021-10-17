@@ -69,7 +69,7 @@ END IF;
 END";
         $db->exec($sql);
         $sql = "
-CREATE TRIGGER `le_user_ai` AFTER UPDATE ON `users` FOR EACH ROW 
+CREATE TRIGGER `le_user_au` AFTER UPDATE ON `users` FOR EACH ROW 
 BEGIN 
 IF NOT EXISTS (SELECT 1 FROM `contact` WHERE `contact`.id = NEW.user_id) THEN
     INSERT INTO `contact` 
