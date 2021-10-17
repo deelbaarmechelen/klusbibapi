@@ -133,7 +133,7 @@ BEGIN
 delete from item_movement where loan_row_id = OLD.lending_id;
 delete from note where loan_id = OLD.lending_id;
 delete from loan_row where id = OLD.lending_id;
-delete from loan where id = OLD.lending_id;
+delete from loan where id = OLD.lending_id AND NOT EXISTS (SELECT 1 FROM loan_row where loan_row.loan_id = loan.id);
 END";
         $db->exec($sql);
     }

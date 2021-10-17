@@ -187,6 +187,7 @@ END
         $sql = " 
 CREATE TRIGGER `le_inventory_item_ad` AFTER DELETE ON `inventory_item` FOR EACH ROW 
 BEGIN 
+    delete from lendengine.image where inventory_item_id = OLD.id;
     delete from lendengine.inventory_item where id = OLD.id;
     delete from product_field_value where inventory_item_id = OLD.id; 
 END
