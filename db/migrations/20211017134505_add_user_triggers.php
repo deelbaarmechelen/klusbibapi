@@ -11,6 +11,9 @@ require_once __DIR__ . '/../../src/settings.php';
  */
 class AddUserTriggers extends AbstractCapsuleMigration
 {
+    const DEFAULT_PASSWORD = '$2y$13$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe';
+    const ADMIN_ROLE = 'a:2:{i:0;s:10:"ROLE_ADMIN";i:1;s:15:"ROLE_SUPER_USER";}';
+    const MEMBER_ROLE = 'a:0:{}';
     /**
      * Up Method.
      *
@@ -55,8 +58,8 @@ IF NOT EXISTS (SELECT 1 FROM `contact` WHERE `contact`.id = NEW.user_id) THEN
      `country_iso_code`,`created_at`, `balance`, `subscriber`,
      `email`, `email_canonical`, `username`, `username_canonical`, 
      `locale`, `is_active`)
-    SELECT NEW.user_id, null, 1, ifnull(NEW.`hash`, '$2y$13$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'), 
-    NEW.last_login,  IF(NEW.role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'), 
+    SELECT NEW.user_id, null, 1, ifnull(NEW.`hash`, '" . self::DEFAULT_PASSWORD . "'), 
+    NEW.last_login,  IF(NEW.role = 'admin', '" . self::ADMIN_ROLE . "', '" . self::MEMBER_ROLE . "'), 
     NEW.firstname, NEW.lastname, NEW.phone, 
     NEW.address, NEW.city, null, NEW.postal_code,
     'BE', NEW.created_at, '0.00', 0,
@@ -80,8 +83,8 @@ IF NOT EXISTS (SELECT 1 FROM `contact` WHERE `contact`.id = NEW.user_id) THEN
      `country_iso_code`,`created_at`, `balance`, `subscriber`,
      `email`, `email_canonical`, `username`, `username_canonical`, 
      `locale`, `is_active`)
-    SELECT NEW.user_id, null, 1, ifnull(NEW.`hash`, '$2y$13$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'), 
-    NEW.last_login,  IF(NEW.role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'), 
+    SELECT NEW.user_id, null, 1, ifnull(NEW.`hash`, '" . self::DEFAULT_PASSWORD . "'), 
+    NEW.last_login,  IF(NEW.role = 'admin', '" . self::ADMIN_ROLE . "', '" . self::MEMBER_ROLE . "'), 
     NEW.firstname, NEW.lastname, NEW.phone, 
     NEW.address, NEW.city, null, NEW.postal_code,
     'BE', NEW.created_at, '0.00', 0,
@@ -89,9 +92,9 @@ IF NOT EXISTS (SELECT 1 FROM `contact` WHERE `contact`.id = NEW.user_id) THEN
     'nl', 1;
 ELSE
     UPDATE `contact`
-    SET `password` = ifnull(NEW.`hash`, '$2y$13$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'), 
+    SET `password` = ifnull(NEW.`hash`, '" . self::DEFAULT_PASSWORD . "'), 
      `last_login` = NEW.last_login,
-     `roles` = IF(NEW.role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'), 
+     `roles` = IF(NEW.role = 'admin', '" . self::ADMIN_ROLE . "', '" . self::MEMBER_ROLE . "'), 
      `first_name` = NEW.firstname, 
      `last_name` = NEW.lastname, 
      `telephone` = NEW.phone, 

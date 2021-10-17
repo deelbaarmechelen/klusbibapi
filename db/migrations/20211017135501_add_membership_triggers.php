@@ -37,7 +37,7 @@ class AddMembershipTriggers extends AbstractCapsuleMigration
         $this->query('DROP TRIGGER IF EXISTS `le_membership_ad`');
 
         $sql = "
-CREATE TRIGGER `le_membership_ai` AFTER INSERT ON `memberships` FOR EACH ROW 
+CREATE TRIGGER `le_membership_ai` AFTER INSERT ON `membership` FOR EACH ROW 
 BEGIN
 IF NOT EXISTS (SELECT 1 FROM `le_membership` WHERE id = NEW.id) THEN
     INSERT INTO `le_membership` 
@@ -54,7 +54,7 @@ END";
         $db->exec($sql);
 
         $sql = "
-CREATE TRIGGER `le_membership_au` AFTER UPDATE ON `memberships` FOR EACH ROW 
+CREATE TRIGGER `le_membership_au` AFTER UPDATE ON `membership` FOR EACH ROW 
 BEGIN
 IF EXISTS (SELECT 1 FROM `le_membership` WHERE id = NEW.id) THEN
     UPDATE `le_membership` 
@@ -80,7 +80,7 @@ END
         $db->exec($sql);
 
         $sql = "
-CREATE TRIGGER `le_membership_ad` AFTER DELETE ON `memberships` FOR EACH ROW 
+CREATE TRIGGER `le_membership_ad` AFTER DELETE ON `membership` FOR EACH ROW 
 BEGIN
     UPDATE `contact` c
     SET c.`active_membership` = NULL
