@@ -27,7 +27,7 @@ $today = new DateTime();
 echo "Syncing users\n";
 $userManager = new UserManager(SnipeitInventory::instance($logger), $logger, new \Api\Mail\MailManager(null, null, $logger));
 if ($force) {
-    $users = \Api\Model\User::all()->get(); // sync all users
+    $users = \Api\Model\User::all(); // sync all users
 } else {
     $users = \Api\Model\User::outOfSync()->get(); // filter users to be synced
 }
@@ -39,9 +39,10 @@ echo "Syncing tools\n";
 $toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger);
 $tools = $toolManager->sync();
 
+// For remaining models: just update last_sync_date to activate update trigger, which will take card of sync with Lend Engine
 echo "Syncing reservations\n";
 if ($force) {
-    $reservations = \Api\Model\Reservation::all()->get(); // sync all
+    $reservations = \Api\Model\Reservation::all(); // sync all
 } else {
     $reservations = \Api\Model\Reservation::outOfSync()->get(); // filter objects to be synced
 }
@@ -54,7 +55,7 @@ foreach($reservations as $reservation) {
 
 echo "Syncing lendings\n";
 if ($force) {
-    $lendings = \Api\Model\Lending::all()->get(); // sync all
+    $lendings = \Api\Model\Lending::all(); // sync all
 } else {
     $lendings = \Api\Model\Lending::outOfSync()->get(); // filter objects to be synced
 }
@@ -67,7 +68,7 @@ foreach($lendings as $lending) {
 
 echo "Syncing payments\n";
 if ($force) {
-    $payments = \Api\Model\Payment::all()->get(); // sync all
+    $payments = \Api\Model\Payment::all(); // sync all
 } else {
     $payments = \Api\Model\Payment::outOfSync()->get(); // filter objects to be synced
 }
@@ -80,7 +81,7 @@ foreach($payments as $payment) {
 
 echo "Syncing deliveries\n";
 if ($force) {
-    $deliveries = \Api\Model\Delivery::all()->get(); // sync all
+    $deliveries = \Api\Model\Delivery::all(); // sync all
 } else {
     $deliveries = \Api\Model\Delivery::outOfSync()->get(); // filter objects to be synced
 }
@@ -93,7 +94,7 @@ foreach($deliveries as $delivery) {
 
 echo "Syncing memberships\n";
 if ($force) {
-    $memberships = \Api\Model\Membership::all()->get(); // sync all
+    $memberships = \Api\Model\Membership::all(); // sync all
 } else {
     $memberships = \Api\Model\Membership::outOfSync()->get(); // filter objects to be synced
 }
