@@ -39,7 +39,8 @@ class AddMembershipTriggers extends AbstractCapsuleMigration
         $sql = "
 CREATE TRIGGER `le_membership_ai` AFTER INSERT ON `membership` FOR EACH ROW 
 BEGIN
-IF NOT EXISTS (SELECT 1 FROM `le_membership` WHERE id = NEW.id) THEN
+IF NOT EXISTS (SELECT 1 FROM `le_membership` WHERE id = NEW.id) 
+ AND EXISTS (SELECT 1 FROM `contact` WHERE id = NEW.contact_id) THEN
     INSERT INTO `le_membership` 
     (id, contact_id, created_at, starts_at, expires_at, `status`, subscription_id, price)
     SELECT NEW.id, NEW.contact_id, NEW.created_at, NEW.start_at, NEW.expires_at, NEW.`status`, NEW.subscription_id, '0.00';
@@ -47,7 +48,7 @@ IF NOT EXISTS (SELECT 1 FROM `le_membership` WHERE id = NEW.id) THEN
     IF NEW.status = 'ACTIVE' THEN
         UPDATE `contact` c
         SET c.`active_membership` = 
-        (select m.id FROM membership m WHERE m.contact_id = c.id AND m.status = 'ACTIVE');
+        (select m.id FROM le_membership m WHERE m.contact_id = c.id AND m.status = 'ACTIVE');
     END IF;
 END IF;
 END";
@@ -56,23 +57,26 @@ END";
         $sql = "
 CREATE TRIGGER `le_membership_au` AFTER UPDATE ON `membership` FOR EACH ROW 
 BEGIN
-IF EXISTS (SELECT 1 FROM `le_membership` WHERE id = NEW.id) THEN
-    UPDATE `le_membership` 
-    SET contact_id = NEW.contact_id,
-        starts_at = NEW.start_at,
-        expires_at = NEW.expires_at,
-        status = NEW.`status`,
-        subscription_id = NEW.subscription_id
-    WHERE id = NEW.id;
-ELSE 
-    INSERT INTO `le_membership` 
-    (id, contact_id, created_at, starts_at, expires_at, `status`, subscription_id, price)
-    SELECT NEW.id, NEW.contact_id, NEW.created_at, NEW.start_at, NEW.expires_at, NEW.`status`, NEW.subscription_id, '0.00';
-END IF;
-IF NEW.status = 'ACTIVE' THEN
-    UPDATE `contact` c
-    SET c.`active_membership` = 
-    (select m.id FROM membership m WHERE m.contact_id = c.id AND m.status = 'ACTIVE');
+IF EXISTS (SELECT 1 FROM `contact` WHERE id = NEW.contact_id) THEN
+
+    IF EXISTS (SELECT 1 FROM `le_membership` WHERE id = NEW.id) THEN
+        UPDATE `le_membership` 
+        SET contact_id = NEW.contact_id,
+            starts_at = NEW.start_at,
+            expires_at = NEW.expires_at,
+            status = NEW.`status`,
+            subscription_id = NEW.subscription_id
+        WHERE id = NEW.id;
+    ELSE 
+        INSERT INTO `le_membership` 
+        (id, contact_id, created_at, starts_at, expires_at, `status`, subscription_id, price)
+        SELECT NEW.id, NEW.contact_id, NEW.created_at, NEW.start_at, NEW.expires_at, NEW.`status`, NEW.subscription_id, '0.00';
+    END IF;
+    IF NEW.status = 'ACTIVE' THEN
+        UPDATE `contact` c
+        SET c.`active_membership` = 
+        (select m.id FROM le_membership m WHERE m.contact_id = c.id AND m.status = 'ACTIVE');
+    END IF;
 END IF;
 
 END
