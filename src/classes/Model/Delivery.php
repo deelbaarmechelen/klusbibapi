@@ -32,19 +32,10 @@ class Delivery extends Model
         return $this->belongsTo('Api\Model\User', 'user_id');
     }
 
-//    public function items() {
-//        return $this->belongsToMany('Api\Model\InventoryItem', 'delivery_item',
-//            'delivery_id', 'inventory_item_id')
-//            ->using(DeliveryItem::class)
-//            ->withPivot([
-//                'reservation_id',
-//                'comment',
-//                'fee',
-//                'size',
-//                'created_at',
-//                'updated_at',
-//            ])
-//            ->withTimestamps();
-//    }
+    public function scopeOutOfSync($query)
+    {
+        return $query->whereNull('last_sync_date')
+            ->orWhereColumn('last_sync_date', '<', 'updated_at');
+    }
 
 }

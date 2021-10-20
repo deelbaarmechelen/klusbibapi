@@ -50,5 +50,9 @@ class Payment extends Model
     {
         return $query->whereNotNull('loan_id');
     }
-
+    public function scopeOutOfSync($query)
+    {
+        return $query->whereNull('last_sync_date')
+            ->orWhereColumn('last_sync_date', '<', 'updated_at');
+    }
 }

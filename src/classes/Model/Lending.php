@@ -133,4 +133,9 @@ class Lending extends Model
             });
         });
     }
+    public function scopeOutOfSync($query)
+    {
+        return $query->whereNull('last_sync_date')
+            ->orWhereColumn('last_sync_date', '<', 'updated_at');
+    }
 }

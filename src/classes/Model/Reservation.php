@@ -41,4 +41,9 @@ class Reservation extends Model
     public function isCancelled() : bool {
 	    return $this->state == ReservationState::CANCELLED;
     }
+    public function scopeOutOfSync($query)
+    {
+        return $query->whereNull('last_sync_date')
+            ->orWhereColumn('last_sync_date', '<', 'updated_at');
+    }
 }
