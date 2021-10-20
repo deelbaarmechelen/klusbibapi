@@ -48,6 +48,7 @@ if ($force) {
 foreach($reservations as $reservation) {
     echo "Syncing reservation with id " . $reservation->reservation_id . "\n";
     $reservation->last_sync_date = $today;
+    $reservation->timestamps = false; // do not change updated_at column value
     $reservation->save();
 }
 
@@ -60,6 +61,7 @@ if ($force) {
 foreach($lendings as $lending) {
     echo "Syncing lending with id " . $lending->lending_id . "\n";
     $lending->last_sync_date = $today;
+    $lending->timestamps = false; // do not change updated_at column value
     $lending->save();
 }
 
@@ -72,6 +74,7 @@ if ($force) {
 foreach($payments as $payment) {
     echo "Syncing payment with id " . $payment->payment_id . "\n";
     $payment->last_sync_date = $today;
+    $payment->timestamps = false; // do not change updated_at column value
     $payment->save();
 }
 
@@ -84,6 +87,7 @@ if ($force) {
 foreach($deliveries as $delivery) {
     echo "Syncing delivery with id " . $delivery->id . "\n";
     $delivery->last_sync_date = $today;
+    $delivery->timestamps = false; // do not change updated_at column value
     $delivery->save();
 }
 
@@ -96,5 +100,6 @@ if ($force) {
 foreach($memberships as $membership) {
     echo "Syncing membership with id " . $membership->id . "\n";
     $membership->last_sync_date = $today;
+    $membership->timestamps = false; // do not change updated_at column value
     $membership->save();
 }
