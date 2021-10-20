@@ -33,7 +33,10 @@ if ($force) {
 }
 foreach($users as $user) {
     echo "Syncing user with id " . $user->user_id . "\n";
-    $userManager->getById($user->user_id);
+    $userManager->getById($user->user_id); // sync with inventory
+    $user->last_sync_date = $today; // sync with lend engine
+    $user->timestamps = false; // do not change updated_at column value
+    $user->save();
 }
 echo "Syncing tools\n";
 $toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger);
