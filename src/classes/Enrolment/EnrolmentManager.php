@@ -206,7 +206,7 @@ class EnrolmentManager
         if ($paymentCompleted) {
             // TODO: immediately confirm payment, but avoid too much extra mails!
             // + customize email message based on payment mode
-            $this->confirmPayment($paymentMode, false, $payment, false);
+            $this->confirmPayment($paymentMode, $payment, false, false);
         }
 
         // Send emails
@@ -370,7 +370,7 @@ class EnrolmentManager
             // TODO: check amount paid against enrolment amount
             // TODO: immediately confirm payment, but avoid too much extra mails! -> set email notif to false
             // + customize email message based on payment mode
-            $this->confirmPayment($paymentMode, true, $payment, false);
+            $this->confirmPayment($paymentMode, $payment, true, false);
         }
         $activeMembership = Membership::find($this->user->active_membership);
         $this->user->payment_mode = $activeMembership->last_payment_mode;
@@ -429,6 +429,31 @@ class EnrolmentManager
             $requestedPaymentMean, $requestUri->getHost(), $requestUri->getScheme(), Product::RENEWAL, $renewalMembership->expires_at);
     }
 
+    function confirmMembershipPayment($paymentMode, $membershipId, $renewal = false)
+    {
+        $payments = Payment::forMembership()->where([
+            ['membership_id', '=', $membershipId],
+            ['mode', '=', $paymentMode],
+            ['state', '=', PaymentState::OPEN]
+        ])->get();
+
+        if (empty($payments) || count($payments) == 0) {
+            $message = "Unexpected confirmation, no payment found for membership " . $membershipId .
+                " and payment mode (" . $paymentMode . ")";
+            $this->logger->warning($message);
+            // note: no payment, so unable to send 'enrolment failed' notification
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
+        } else if (count($payments) > 1) {
+            $message = "Unable to process confirmation, more than 1 open payments found (first payment is ["
+                . \json_encode($payments[0]) . "] - second payment is [" . \json_encode($payments[1]) . "])";
+            $this->logger->warning($message);
+            $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payments[0], $renewal, $message);
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);
+        } else {
+            $this->confirmPayment($paymentMode, $payments[0], $renewal);
+        }
+    }
+
     /**
      * Confirm an open payment
      * This method can be called directly after payment creation when the payment was already received (e.g. CASH or PAYCONIQ payment)
@@ -442,7 +467,7 @@ class EnrolmentManager
      * @throws \Api\Mail\EnrolmentException
      * @throws \Exception
      */
-    function confirmPayment($paymentMode, $renewal = false, Payment $payment = null, $sendEmailNotif = true) {
+    function confirmPayment($paymentMode, Payment $payment = null, $renewal = false, $sendEmailNotif = true) {
         if ($paymentMode == PaymentMode::MOLLIE) {
             $message = "Unexpected confirmation for payment mode ($paymentMode)";
             $this->logger->warning($message);
@@ -516,25 +541,54 @@ class EnrolmentManager
         return $state;
 
     }
+
+    function declineMembershipPayment($paymentMode, $user, $membershipId, $renewal = false)
+    {
+        $payments = Payment::forMembership()->where([
+            ['membership_id', '=', $membershipId],
+            ['mode', '=', $paymentMode],
+            ['state', '=', PaymentState::OPEN]
+        ])->get();
+
+        if (empty($payments) || count($payments) == 0) {
+            $message = "Unexpected decline, no payment found for membership " . $membershipId .
+                " and payment mode (" . $paymentMode . ")";
+            $this->logger->warning($message);
+            // note: no payment, so unable to send 'enrolment failed' notification
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
+        } else if (count($payments) > 1) {
+            $message = "Unable to process decline, more than 1 open payments found (first payment is ["
+                . \json_encode($payments[0]) . "] - second payment is [" . \json_encode($payments[1]) . "])";
+            $this->logger->warning($message);
+            $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payments[0], $renewal, $message);
+            throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);
+        } else {
+            $this->declinePayment($paymentMode, $user, $payments[0], $renewal);
+        }
+    }
+
     /**
      * @param $paymentMode
      * @param $user
      * @throws EnrolmentException
      */
-    function declinePayment($paymentMode, $user)
+    function declinePayment($paymentMode, $user, Payment $payment = null, $renewal = false)
     {
         $this->checkPaymentMode($paymentMode);
         $this->checkUserStateAtPayment($user);
 
         // update payment
-        $payment = $this->lookupPaymentByPaymentMode($paymentMode, false);
+        if ($payment == null) {
+            $payment = $this->lookupPaymentByPaymentMode($paymentMode, false);
+        }
+
         $payment->state = PaymentState::FAILED;
         $payment->save();
 
         // update status
         $membership = Membership::find($payment->membership_id);
         if ($membership->last_payment_mode != $paymentMode) {
-            $message = "Unexpected confirmation for payment mode ($paymentMode), expected payment mode $membership->last_payment_mode";
+            $message = "Unexpected decline for payment mode ($paymentMode), expected payment mode $membership->last_payment_mode";
             $this->logger->warning($message);
             $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payment, $renewal, $message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);

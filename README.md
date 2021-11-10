@@ -88,8 +88,10 @@ Note that PHPMailer 6.x contains an example script
 The generation of the refresh token can be done using the /test/get_oauth_token.php script (make sure to update values for client id and secret)
 
 The api needs a gmail account and corresponding OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET and OAUTH_TOKEN in its configuration. This
-can be set with dokku config:set api OAUTH_CLIENT_ID=clientid OAUTH_CLIENT_SECRET=secret OAUTH_TOKEN=token SENDER_EMAIL=account@klusbib.be
-
+can be set with 
+```
+dokku config:set api OAUTH_CLIENT_ID=clientid OAUTH_CLIENT_SECRET=secret OAUTH_TOKEN=token SENDER_EMAIL=account@klusbib.be
+```
 One potential issue is the invalid_grant error on send
 See also https://blog.timekit.io/google-oauth-invalid-grant-nightmare-and-how-to-fix-it-9f4efaf1da35
 

@@ -397,6 +397,10 @@ class EnrolmentController
         }
         $paymentMode = $data["paymentMode"];
         $userId = $data["userId"];
+        $membershipId = null;
+        if (isset($data["membershipId"])) {
+            $membershipId = $data["membershipId"];
+        }
         $user = \Api\Model\User::find($userId);
         $renewal = $this->isRenewal($data);
         if (null == $user) {
@@ -406,7 +410,11 @@ class EnrolmentController
 
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         try {
-            $enrolmentManager->confirmPayment($paymentMode, $renewal);
+            if (isset ($membershipId)) {
+                $enrolmentManager->confirmMembershipPayment($paymentMode, $membershipId, $renewal);
+            } else {
+                $enrolmentManager->confirmPayment($paymentMode, null, $renewal);
+            }
             $data = array();
             return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
@@ -448,13 +456,21 @@ class EnrolmentController
         $userId = $data["userId"];
         $user = \Api\Model\User::find($userId);
         $renewal = $this->isRenewal($data);
+        $membershipId = null;
+        if (isset($data["membershipId"])) {
+            $membershipId = $data["membershipId"];
+        }
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withJson("No user found with id $userId");
         }
         $enrolmentManager = $this->enrolmentFactory->createEnrolmentManager($this->logger, $user);
         try {
-            $enrolmentManager->declinePayment($paymentMode,$user);
+            if (isset ($membershipId)) {
+                $enrolmentManager->declineMembershipPayment($paymentMode, $user, $membershipId, $renewal);
+            } else {
+                $enrolmentManager->declinePayment($paymentMode, $user, $renewal);
+            }
             $data = array();
             return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
