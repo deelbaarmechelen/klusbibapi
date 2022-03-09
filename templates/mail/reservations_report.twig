@@ -1,0 +1,105 @@
+{% block subject 'Overzicht Klusbib leden' %}
+
+{% block body %}
+<h1>Klusbib leden  </h1>
+<p>Totaal:{{ users_count }}</p>
+<h2>Overzicht actieve leden (totaal:{{ active_users | length }}) </h2>
+<br>
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>Voornaam</th>
+        <th>Naam</th>
+        <th>Rol</th>
+        <th>Telefoon</th>
+        <th>GSM</th>
+        <th>E-mail</th>
+        <th>E-mail status</th>
+        <th>Begin lidmaatschap</th>
+        <th>Einde lidmaatschap</th>
+    </tr>
+    {% for user in active_users %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ user.firstname|e }}</td>
+            <td>{{ user.lastname|e }}</td>
+            <td>{{ user.role|e }}</td>
+            <td>{{ user.phone|e }}</td>
+            <td>{{ user.mobile|e }}</td>
+            <td>{{ user.email|e }}</td>
+            <td>{{ user.email_state|e }}</td>
+            <td>{{ user.membership_start_date|e }}</td>
+            <td>{{ user.membership_end_date|e }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<h2>Overzicht lidmaatschap vervallen (totaal:{{ expired_users | length }})</h2>
+<br>
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>Voornaam</th>
+        <th>Naam</th>
+        <th>Rol</th>
+        <th>Telefoon</th>
+        <th>GSM</th>
+        <th>E-mail</th>
+        <th>E-mail status</th>
+        <th>Begin lidmaatschap</th>
+        <th>Einde lidmaatschap</th>
+    </tr>
+    {% for user in expired_users %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ user.firstname|e }}</td>
+            <td>{{ user.lastname|e }}</td>
+            <td>{{ user.role|e }}</td>
+            <td>{{ user.phone|e }}</td>
+            <td>{{ user.mobile|e }}</td>
+            <td>{{ user.email|e }}</td>
+            <td>{{ user.email_state|e }}</td>
+            <td>{{ user.membership_start_date|e }}</td>
+            <td>{{ user.membership_end_date|e }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<h2>Overzicht niet-afgeronde inschrijvingen (totaal:{{ pending_users | length }})</h2>
+<br>
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>Voornaam</th>
+        <th>Naam</th>
+        <th>Status</th>
+        <th>Rol</th>
+        <th>Telefoon</th>
+        <th>GSM</th>
+        <th>E-mail</th>
+        <th>E-mail status</th>
+        <th>Begin lidmaatschap</th>
+        <th>Einde lidmaatschap</th>
+    </tr>
+    {% for user in pending_users %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ user.firstname|e }}</td>
+            <td>{{ user.lastname|e }}</td>
+            <td>{{ user.state|e }}</td>
+            <td>{{ user.role|e }}</td>
+            <td>{{ user.phone|e }}</td>
+            <td>{{ user.mobile|e }}</td>
+            <td>{{ user.email|e }}</td>
+            <td>{{ user.email_state|e }}</td>
+            <td>{{ user.membership_start_date|e }}</td>
+            <td>{{ user.membership_end_date|e }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<hr>
+<p>
+    Met vriendelijke groeten<br>
+    Het Klusbib-team<br>
+    E: <a href="mailto:info@klusbib.be" >info@klusbib.be</a><br>
+    W: <a href="https://www.klusbib.be" >www.klusbib.be</a><br>
+</p>
+{% endblock %}
