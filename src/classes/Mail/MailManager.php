@@ -418,6 +418,21 @@ class MailManager {
         return $this->sendTwigTemplate($reportEmail, 'users_report', $parameters);
     }
 
+    /**
+     * @param $requested_reservations requested reservations enriched with user and item relations
+     * @param $confirmed_reservations confirmed reservations enriched with user and item relations
+     * @return bool true when report successfully sent, false otherwise
+     */
+    public function sendReservationsReport($requested_reservations, $confirmed_reservations) {
+	    $reportEmail = 'info@klusbib.be';
+	    $current_day = date('Y-m-d');
+        $parameters = array('reservations_count' => count($requested_reservations) + count($confirmed_reservations),
+            'requested_reservations' => $requested_reservations,
+            'confirmed_reservations' => $confirmed_reservations,
+            'current_day' => $current_day);
+        return $this->sendTwigTemplate($reportEmail, 'reservations_report', $parameters);
+    }
+
     public function sendNewGeneralConditionsNotification($user) {
         $parameters = array(
             'user' => $user,
