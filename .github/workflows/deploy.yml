@@ -16,7 +16,7 @@ jobs:
   # This workflow contains a single job called "deploy"
   deploy:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -30,6 +30,6 @@ jobs:
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
-          git_remote_url: 'ssh://dokku@klusbib.be:22/testapi'
+          git_remote_url: 'ssh://dokku@test.klusbib.be:22/api'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           
