@@ -10,8 +10,11 @@ class InventoryItem extends Model
     protected $primaryKey = "id";
     public $incrementing = false;
     static protected $fieldArray = ['id',
-        // to be completed!
-        'created_at', 'updated_at'
+        'name', 'item_type', 'created_by', 'assigned_to', 'current_location_id', 'item_condition', 'sku', 'description',
+        'keywords', 'brand', 'care_information', 'component_information', 'loan_fee', 'max_loan_days', 'is_active',
+        'show_on_website', 'serial', 'note', 'price_cost', 'price_sell', 'image_name', 'short_url', 'item_sector',
+        'is_reservable', 'deposit_amount', 'donated_by', 'owned_by', 'last_sync_date', 'experience_level', 'safety_risk',
+        'deliverable', 'size', 'created_at', 'updated_at'
     ];
 
     public static function canBeSortedOn($field) {
