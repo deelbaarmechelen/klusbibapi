@@ -1,0 +1,77 @@
+{% block subject 'Overzicht Klusbib reservaties' %}
+
+{% block body %}
+<h1>Klusbib reservaties  </h1>
+<p>Totaal:{{ reservations_count }}</p>
+<h2>Overzicht aangevraagde reservaties (totaal:{{ requested_reservations | length }}) </h2>
+<br>
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>Begin reservatie</th>
+        <th>Einde reservatie</th>
+        <th>Voornaam</th>
+        <th>Naam</th>
+        <th>Telefoon</th>
+        <th>GSM</th>
+        <th>E-mail</th>
+        <th>Toestel</th>
+        <th>Toestel model</th>
+        <th>Opmerkingen</th>
+    </tr>
+    {% for reservation in requested_reservations %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ reservation.startsAt|e }}</td>
+            <td>{{ reservation.endsAt|e }}</td>
+            <td>{{ reservation.user.firstname|e }}</td>
+            <td>{{ reservation.user.lastname|e }}</td>
+            <td>{{ reservation.user.phone|e }}</td>
+            <td>{{ reservation.user.mobile|e }}</td>
+            <td>{{ reservation.user.email|e }}</td>
+            <td>{{ reservation.item.sku|e }}</td>
+            <td>{{ reservation.item.name|e }}</td>
+            <td>{{ reservation.comment|e }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<h2>Overzicht bevestigde reservaties (totaal:{{ confirmed_reservations | length }})</h2>
+<br>
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>Begin reservatie</th>
+        <th>Einde reservatie</th>
+        <th>Voornaam</th>
+        <th>Naam</th>
+        <th>Telefoon</th>
+        <th>GSM</th>
+        <th>E-mail</th>
+        <th>Toestel</th>
+        <th>Toestel model</th>
+        <th>Opmerkingen</th>
+    </tr>
+    {% for reservation in confirmed_reservations %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ reservation.startsAt|e }}</td>
+            <td>{{ reservation.endsAt|e }}</td>
+            <td>{{ reservation.user.firstname|e }}</td>
+            <td>{{ reservation.user.lastname|e }}</td>
+            <td>{{ reservation.user.phone|e }}</td>
+            <td>{{ reservation.user.mobile|e }}</td>
+            <td>{{ reservation.user.email|e }}</td>
+            <td>{{ reservation.item.sku|e }}</td>
+            <td>{{ reservation.item.name|e }}</td>
+            <td>{{ reservation.comment|e }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<hr>
+<p>
+    Met vriendelijke groeten<br>
+    Het Klusbib-team<br>
+    E: <a href="mailto:info@klusbib.be" >info@klusbib.be</a><br>
+    W: <a href="https://www.klusbib.be" >www.klusbib.be</a><br>
+</p>
+{% endblock %}

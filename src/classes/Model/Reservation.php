@@ -25,6 +25,10 @@ class Reservation extends Model
 	{
 		return $this->belongsTo('Api\Model\User', 'user_id');
 	}
+	public function item()
+	{
+		return $this->belongsTo('Api\Model\InventoryItem', 'tool_id');
+	}
 	public function tool()
 	{
 		return $this->belongsTo('Api\Model\Tool', 'tool_id');
@@ -33,9 +37,22 @@ class Reservation extends Model
     {
         return $this->hasOne('Api\Model\DeliveryItem', 'reservation_id');
     }
+    public function scopeIsRequested($query)
+    {
+        return $query->where('state', '=', ReservationState::REQUESTED);
+    }
+    public function scopeIsConfirmed($query)
+    {
+        return $query->where('state', '=', ReservationState::CONFIRMED);
+    }
     public function scopeIsDeleted($query)
     {
         return $query->where('state', '=', ReservationState::DELETED);
+    }
+    public function scopeNotExpired($query)
+    {
+        $currentDate = new \DateTime();
+        return $query->where('endsAt', '>=', $currentDate);
     }
 
     public function isCancelled() : bool {
