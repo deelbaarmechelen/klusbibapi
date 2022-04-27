@@ -1,8 +1,8 @@
 <?php
 // DIC configuration
 use Slim\Middleware\JwtAuthentication;
-use Slim\Middleware\HttpBasicAuthentication;
-use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Tuupola\Middleware\HttpBasicAuthentication;
+use Tuupola\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Api\Token\Token;
 use Api\Mail\MailManager;
 use Api\User\UserController;
@@ -96,7 +96,7 @@ $container["user"] = function (ContainerInterface $container) {
 $container["HttpBasicAuthentication"] = function (ContainerInterface $container) {
 	return new HttpBasicAuthentication([
 			"path" => "/token",
-			"passthrough" => "/token/guest",
+			"ignore" => "/token/guest",
 			"secure" => false,
 			"relaxed" => ["admin", "klusbib.deeleco"],
 			"authenticator" => new PdoAuthenticator([
