@@ -41,8 +41,9 @@ class Token
             }
         }
         // FIXME: update email verification email to add link for recovery in case token is expired (or redirect from webpage?)
-		$jti = Base62::encode(random_bytes(16));
-		
+        $base62 = new Base62;
+        $jti = $base62->encode(random_bytes(16));
+
 		$payload = [
 				"iat" => $now->getTimeStamp(), 		// issued at
 				"exp" => $future->getTimeStamp(),	// expiration

@@ -66,8 +66,9 @@ $container["token"] = function (ContainerInterface $container) {
 	$token = new Token;
 	$now = new \DateTime();
 	$future = new \DateTime("now +2 hours");
-	
-	$jti = Base62::encode(random_bytes(16));
+
+	$base62 = new Base62;
+	$jti = $base62->encode(random_bytes(16));
 	$scopes = [
 			"tools.create",
 			"tools.read",

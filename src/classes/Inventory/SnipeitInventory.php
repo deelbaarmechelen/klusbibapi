@@ -50,7 +50,7 @@ class SnipeitInventory implements Inventory
         $stack->push(new CacheMiddleware($strategy), 'cache');
 
         return new SnipeitInventory(new \GuzzleHttp\Client([
-                'base_uri' => INVENTORY_URL . '/api/v1/',
+              'base_uri' => INVENTORY_URL . '/api/v1/',
               'handler' => $stack
             ]),INVENTORY_API_KEY, $logger);
     }
