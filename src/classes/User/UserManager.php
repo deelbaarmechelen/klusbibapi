@@ -24,6 +24,8 @@ class UserManager
     private $inventory;
     private $logger;
     private $mailManager;
+    private $lastSyncAttempt;
+    private $lastSyncedUsers;
 
     /**
      * UserManager constructor.
@@ -33,6 +35,8 @@ class UserManager
         $this->inventory = $inventory;
         $this->logger = $logger;
         $this->mailManager = $mailManager;
+        $this->lastSyncAttempt = null;
+        $this->lastSyncedUsers = array();
     }
 
     // FIXME: catch Inventory exceptions to make it non blocking and avoid exposing internals to caller
@@ -139,7 +143,7 @@ class UserManager
         $inventoryUser = null;
         try {
             if (!$this->inventory->userExists($user)) {
-                $result = $this->inventory->syncUser($user);
+                $result = $this->syncUser($user);
                 if (isset($result) && $result == true) {
                     $user->last_sync_date = new \DateTime();
                     $user->save();
@@ -176,7 +180,7 @@ class UserManager
     protected function updateInventory($user) : bool {
         $this->logger->debug("Inventory update requested for user " . json_encode($user));
         try {
-            $result = $this->inventory->syncUser($user);
+            $result = $this->syncUser($user);
             if (isset($result) && $result == true) {
                 $user->last_sync_date = new \DateTime();
                 $user->save();
@@ -194,13 +198,46 @@ class UserManager
     }
 
     /**
+     * @param $user
+     * @return bool
+     */
+    protected function syncUser(User $user): bool
+    {
+        $this->lastSyncAttempt = new \DateTime('now');
+        array_push($this->lastSyncedUsers, $user->user_id);
+        $result = $this->inventory->syncUser($user);
+        return $result;
+    }
+
+    /**
      * Check if sync with inventory is needed
      * @param $user a local user
      * @return bool true if user needs to be synced with inventory
      */
     private function syncRequired(User $user): bool
     {
-        return $user->last_sync_date == null              // user has not been synced with inventory yet
-            || $user->last_sync_date < $user->updated_at; // user has been updated since last sync
+        return $this->syncAllowed($user)
+          && ($user->last_sync_date == null                 // user has not been synced with inventory yet
+             || $user->last_sync_date < $user->updated_at); // user has been updated since last sync
     }
+    
+    /**
+     * Check if sync with inventory is allowed
+     * Prevents reattempting sync in quick loops by forcing a wait time of 5 minutes between attempts for a given user
+     * @param $user a local user
+     * @return bool true if sync is allowed for user
+     */
+    private function syncAllowed(User $user): bool
+    {
+        if ($this->lastSyncAttempt != null) {
+            $now = new \DateTime();
+            $nextAllowedAttempt = clone $this->lastSyncAttempt;
+            $nextAllowedAttempt->add('P5I'); // add 5 minutes
+            if ($nextAllowedAttempt < $now) {
+                $this->lastSyncedUsers = array();
+            }
+        }
+        return $this->lastSyncAttempt == null || !in_array($user->user_id, $this->lastSyncUsers);
+    }
+
 }
