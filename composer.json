@@ -37,7 +37,8 @@
 		"slim/twig-view": "^2.4",
 		"guzzlehttp/guzzle": "~6.0",
 		"kevinrob/guzzle-cache-middleware": "^3.2",
-		"league/oauth2-google": "^3.0"
+		"league/oauth2-google": "^3.0",
+		"symfony/cache": "^5.4"
 	},
 	"require-dev" : {
 		"heroku/heroku-buildpack-php": "*",

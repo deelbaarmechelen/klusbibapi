@@ -9,7 +9,7 @@ use Api\Inventory\SnipeitToolMapper;
 use Api\Model\ToolType;
 use Api\Model\UserState;
 use Api\Tool\NotFoundException;
-use Doctrine\Common\Cache\FilesystemCache;
+//use Doctrine\Common\Cache\FilesystemCache;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\HandlerStack;
@@ -19,7 +19,9 @@ use Api\Model\Tool;
 use Illuminate\Database\Eloquent\Collection;
 use Kevinrob\GuzzleCache\CacheMiddleware;
 use Kevinrob\GuzzleCache\Storage\DoctrineCacheStorage;
+use Kevinrob\GuzzleCache\Storage\Psr6CacheStorage;
 use Kevinrob\GuzzleCache\Strategy;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 /**
  * Inventory implementation for Snipeit
@@ -31,13 +33,15 @@ class SnipeitInventory implements Inventory
     public static function instance($logger = null) {
         // Create default HandlerStack
         $stack = HandlerStack::create();
-
         $strategy = new Strategy\Delegate\DelegatingCacheStrategy($defaultStrategy = new Strategy\NullCacheStrategy());
         $strategy->registerRequestMatcher(new InventoryAssetsRequestMatcher(),
             new Strategy\GreedyCacheStrategy(
-                new DoctrineCacheStorage(
-                    new FilesystemCache('/tmp/snipeit-cache')
+                new Psr6CacheStorage(
+                    new FilesystemAdapter('', 1800,'/tmp/snipeit-cache')
                 ),
+//                new DoctrineCacheStorage(
+//                    new FilesystemCache('/tmp/snipeit-cache')
+//                ),
                 1800 // the TTL in seconds -> 30min
             )
         );
