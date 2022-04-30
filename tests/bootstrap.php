@@ -151,7 +151,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
 				self::$pdo = new \PDO('mysql:host=' . $this->settings["settings"]["db"]["host"]
 						. ';dbname=' . $this->settings["settings"]["db"]["dbname"],
 						$this->settings["settings"]["db"]["user"], $this->settings["settings"]["db"]["pass"]); //'sqlite::memory:?cache=shared'
-				self::initDatabase();
+				//self::initDatabase();
 			}
 			$this->conn = $this->createDefaultDBConnection(self::$pdo, ':memory:');
 		}

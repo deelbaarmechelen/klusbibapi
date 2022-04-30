@@ -199,8 +199,8 @@ class EnrolmentManager
 
         // Create payment
         if ($payment == null) {
-            $payment = $this->createNewPayment($orderId, $paymentMode, PaymentState::OPEN,
-                $membership->subscription->price, Settings::CURRENCY, $membership);
+            $payment = $this->createNewPayment($orderId, $paymentMode, $membership->subscription->price, Settings::CURRENCY,
+                PaymentState::OPEN, $membership);
         }
 
         if ($paymentCompleted) {
@@ -234,8 +234,8 @@ class EnrolmentManager
         $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
         if ($payment == null) {
             // Create new payment
-            $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, PaymentState::OPEN,
-                $membershipType->price, Settings::CURRENCY);
+            $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, $membershipType->price,
+                Settings::CURRENCY, PaymentState::OPEN);
 
             if ($this->user->active_membership != null) {
                 $membership = $this->user->activeMembership()->first();
@@ -348,8 +348,8 @@ class EnrolmentManager
         }
         // create payment and new membership
         if ($payment == null) {
-            $payment = $this->createNewPayment($orderId, $paymentMode, PaymentState::OPEN,
-                $nextMembershipType->price, Settings::CURRENCY);
+            $payment = $this->createNewPayment($orderId, $paymentMode,$nextMembershipType->price,
+                Settings::CURRENCY, PaymentState::OPEN);
 
             // Making sure "renew membership" is executed only once
             // -> only when a new payment is created and linked to the new membership
@@ -411,8 +411,8 @@ class EnrolmentManager
         $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
         if ($payment == null) {
             // Create new payment
-            $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, PaymentState::OPEN,
-                $nextMembershipType->price, Settings::CURRENCY);
+            $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, $nextMembershipType->price,
+                Settings::CURRENCY, PaymentState::OPEN);
 
             // Create renewal membership with status PENDING
             $renewalMembership = $this->renewMembership($nextMembershipType, $this->user->activeMembership);
@@ -738,7 +738,7 @@ class EnrolmentManager
      * @param $orderId
      * @return Payment
      */
-    protected function createNewPayment($orderId, $mode, $state = PaymentState::OPEN, $amount, $currency,
+    protected function createNewPayment($orderId, $mode, $amount, $currency, $state = PaymentState::OPEN,
         Membership $membership = null): Payment
     {
         $payment = new Payment();

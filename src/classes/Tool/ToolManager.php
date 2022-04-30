@@ -29,13 +29,13 @@ class ToolManager
 
     public function getAll($showAll = false, $category = null, $sortfield = "code", $sortdir = "asc",
         $page=1, $perPage = 1000, $query = null) {
-        $tools = $this->getAllFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage, $query);
+        $tools = $this->getAllFromInventory($showAll, $category, $page, $perPage, $query, $sortfield, $sortdir);
 //        $tools = $this->getAllFromDatabase($showAll, $category, $sortfield, $sortdir);
         return $tools;
     }
     public function getAllAccessories($showAll = false, $category = null, $sortfield = "code", $sortdir = "asc",
         $page=1, $perPage = 1000) {
-        $accessories = $this->getAllAccessoriesFromInventory($showAll, $category, $sortfield, $sortdir, $page, $perPage);
+        $accessories = $this->getAllAccessoriesFromInventory($showAll, $category, $page, $perPage, $sortfield, $sortdir);
         return $accessories;
     }
     public function toolExists($toolId) : bool
@@ -136,8 +136,8 @@ class ToolManager
      * @param $sortdir
      * @return mixed
      */
-    protected function getAllFromInventory($showAll, $categoryFilter, $sortfield = 'code', $sortdir = 'asc',
-                                           $page, $perPage, $query)
+    protected function getAllFromInventory($showAll, $categoryFilter, $page, $perPage, $query,
+                                           $sortfield = 'code', $sortdir = 'asc' )
     {
         $tools = new Collection();
         $inventoryTools = $this->inventory->getTools();
@@ -164,7 +164,7 @@ class ToolManager
      * @param $sortdir
      * @return mixed
      */
-    protected function getAllAccessoriesFromInventory($showAll, $categoryFilter, $sortfield = 'accessory_id', $sortdir = 'asc', $page, $perPage)
+    protected function getAllAccessoriesFromInventory($showAll, $categoryFilter, $page, $perPage, $sortfield = 'accessory_id', $sortdir = 'asc')
     {
         $accessories = new Collection();
         $inventoryAccessories = $this->inventory->getAccessories();

@@ -2,8 +2,8 @@
 // DIC configuration
 use Api\Token\Token;
 use Slim\Middleware\JwtAuthentication;
-use Slim\Middleware\HttpBasicAuthentication;
-use \Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Tuupola\Middleware\HttpBasicAuthentication;
+use Tuupola\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Tuupola\Base62;
 use Api\Mail\MailManager;
 use Api\User\UserController;

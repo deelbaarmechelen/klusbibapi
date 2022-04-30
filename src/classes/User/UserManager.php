@@ -232,7 +232,7 @@ class UserManager
         if ($this->lastSyncAttempt != null) {
             $now = new \DateTime();
             $nextAllowedAttempt = clone $this->lastSyncAttempt;
-            $nextAllowedAttempt->add('P5I'); // add 5 minutes
+            $nextAllowedAttempt->add(new \DateInterval('P5I')); // add 5 minutes
             if ($nextAllowedAttempt < $now) {
                 $this->lastSyncedUsers = array();
             }

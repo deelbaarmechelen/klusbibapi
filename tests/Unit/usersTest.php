@@ -3,8 +3,8 @@ use Api\Token\Token;
 use Tests\DbUnitArrayDataSet;
 use Slim\Http\Request;
 use Slim\Http\Response;
-use Slim\Middleware\HttpBasicAuthentication;
-use Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Tuupola\Middleware\HttpBasicAuthentication;
+use Tuupola\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Api\Model\UserState;
 use Api\Model\EmailState;
 
@@ -254,8 +254,8 @@ class UsersTest extends LocalDbWebTestCase
 		echo "test PUT users (password)\n";
 		$data = array("password" => "new pwd");
 		$header = array();
-// 		$newHash = password_hash("new pwd", PASSWORD_DEFAULT);
-// 		echo "expected new hash = $newHash \n";
+ 		$newHash = password_hash("new pwd", PASSWORD_DEFAULT);
+ 		echo "expected new hash = $newHash \n";
 		$this->setToken("1", null);
 		$responsePut = $this->client->put('/users/1', $data, $header);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
@@ -303,7 +303,7 @@ class UsersTest extends LocalDbWebTestCase
 		};
 		
 		$response = $auth($request, $response, $next);
-		
+
 		$this->assertEquals($expectedStatusCode, $response->getStatusCode());
 // 		$this->assertEquals("Success", $response->getBody());
 	}

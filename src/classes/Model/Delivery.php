@@ -1,10 +1,24 @@
 <?php
 namespace Api\Model;
 
+use Database\Factories\DeliveryFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Delivery extends Model
 {
+    use HasFactory;
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return DeliveryFactory::new();
+    }
+
     protected $primaryKey = "id";
 	static protected $fieldArray = ['id', 'user_id', 
 		'state', 'pick_up_address', 'reservation_id',
