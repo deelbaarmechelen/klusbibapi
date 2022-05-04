@@ -36,7 +36,7 @@
 		"mollie/mollie-api-php": "^2.0",
 		"slim/twig-view": "^3.3",
 		"guzzlehttp/guzzle": "^7.0.1",
-		"kevinrob/guzzle-cache-middleware": "^3.2",
+		"kevinrob/guzzle-cache-middleware": "^4.0.1",
 		"league/oauth2-google": "^3.0",
 		"symfony/cache": "^5.4",
 		"slim/psr7": "^1.5",
