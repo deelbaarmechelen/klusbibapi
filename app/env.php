@@ -4,21 +4,13 @@ if (file_exists(__DIR__ . '/../.env')) {
 	$dotenv->load();
 }
 
-use \AD7six\Dsn\Dsn;
 $url = getenv('DATABASE_URL');
 if (isset($url) && !empty($url)) {
-//	$dsn = Dsn::parse($url);
-//	$host = $dsn->host;
-//	$database = substr($dsn->path, 1);
-//	$user = $dsn->user;
-//	$pass = $dsn->pass;
-//	$port = $dsn->port;
     $host = parse_url($url, PHP_URL_HOST);
     $database = substr(parse_url($url, PHP_URL_PATH), 1);
     $user = parse_url($url, PHP_URL_USER);
     $pass = parse_url($url, PHP_URL_PASS);
     $port = parse_url($url, PHP_URL_PORT);
-
 }
 else {
 	$host = getenv('DB_HOST');
