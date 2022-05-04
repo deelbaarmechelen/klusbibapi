@@ -621,7 +621,7 @@ class EnrolmentTest extends LocalDbWebTestCase
     {
         $scopes = array("payments.all");
         $this->setToken(null, $scopes);
-        $bodyGet = $this->client->get('/payments?orderId=' . $orderId);
+        $bodyGet = $this->client->get('/payments', array('orderId' => $orderId));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $payments = json_decode($bodyGet);
         return $payments;
@@ -648,7 +648,7 @@ class EnrolmentTest extends LocalDbWebTestCase
      */
     protected function checkPayment($orderId, $userId): void
     {
-        $bodyGet = $this->client->get('/payments?orderId=' . $orderId);
+        $bodyGet = $this->client->get('/payments', array('orderId' => $orderId));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $payments = json_decode($bodyGet);
         $this->assertCount(1, $payments);

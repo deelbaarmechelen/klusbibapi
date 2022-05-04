@@ -3,6 +3,7 @@
 namespace Api\Enrolment;
 
 use Api\Model\MembershipType;
+use Api\Token\Token;
 use Api\Util\HttpResponseCode;
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -16,7 +17,10 @@ use Api\Authorisation;
 use Api\AccessType;
 use Api\Model\User;
 use Api\Exception\EnrolmentException;
-use Slim\Middleware\JwtAuthentication;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Tuupola\Middleware\JwtAuthentication;
+use Slim\Psr7\Request;
 
 class EnrolmentController
 {
@@ -41,7 +45,7 @@ class EnrolmentController
      * For online payment with MOLLIE an extra notification is received to process the enrolment
      * as POST to /enrolment/{orderId}
      */
-    public function postEnrolment($request, $response, $args)
+    public function postEnrolment(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib POST '/enrolment' route");
 
@@ -237,22 +241,11 @@ class EnrolmentController
         // we still need to do authentication, as this is skipped for /enrolment route
         if ($paymentCompleted || !empty($startMembershipDate)) {
 
-            /* If token cannot be found return with 401 Unauthorized. */
-            if (false === $token = $this->jwtAuthentication->fetchToken($request)) {
-                return $this->jwtAuthentication->error($request, $response->withStatus(HttpResponseCode::UNAUTHORIZED), [
-                    "message" => $this->jwtAuthentication->getMessage()
-                ]);
-            }
+            // Moved to extra middleware on /enrolment route
+            // FIXME: should use separate route for authenticated and unauthenticated users
 
-            /* If token cannot be decoded return with 401 Unauthorized. */
-            if (false === $decoded = $this->jwtAuthentication->decodeToken($token)) {
-                return $this->jwtAuthentication->error($request, $response->withStatus(HttpResponseCode::UNAUTHORIZED), [
-                    "message" => $this->jwtAuthentication->getMessage(),
-                    "token" => $token
-                ]);
-            }
-            $this->logger->info("Authentication ok for token: " . json_encode($decoded));
-            $this->token->hydrate($decoded);
+            // Note token is also available from request (added by jwt middleware)
+//            $decoded = $request->getAttribute("token"); // is decoded token from jwt
 
             $currentUser = User::find($this->token->getSub());
             if (!isset($currentUser)) {
@@ -380,7 +373,7 @@ class EnrolmentController
         ->withJson($message);
     }
 
-    public function postEnrolmentConfirm($request, $response, $args) {
+    public function postEnrolmentConfirm(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib POST '/enrolment_confirm' route");
 
         $access = Authorisation::checkEnrolmentAccess($this->token, "confirm");
@@ -436,7 +429,7 @@ class EnrolmentController
         }
     }
 
-    public function postEnrolmentDecline($request, $response, $args)
+    public function postEnrolmentDecline(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib POST '/enrolment_decline' route");
 
@@ -494,7 +487,7 @@ class EnrolmentController
     /**
      * Confirmation from payment processor (Mollie) on enrolment order
      */
-    public function postEnrolmentOrder($request, $response, $args) {
+    public function postEnrolmentOrder(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib POST '/enrolment/{$args['orderId']}' route");
         if (empty($args['orderId'])) {
             $this->logger->error("POST /enrolment/{orderId} failed due to missing orderId param");

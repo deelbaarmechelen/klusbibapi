@@ -3,13 +3,13 @@
 namespace Api\Lending;
 
 
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 interface LendingControllerInterface
 {
-    function getAll(Request $request, Response $response, $args);
-    function getById(Request $request, Response $response, $args);
-    function create(Request $request, Response $response, $args);
-    function update(Request $request, Response $response, $args);
+    function getAll(RequestInterface $request, ResponseInterface $response, $args);
+    function getById(RequestInterface $request, ResponseInterface $response, $args);
+    function create(RequestInterface $request, ResponseInterface $response, $args);
+    function update(RequestInterface $request, ResponseInterface $response, $args);
 }

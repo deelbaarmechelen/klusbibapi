@@ -1,7 +1,9 @@
 <?php
 namespace There4\Slim\Test;
 
+use DI\ContainerBuilder;
 use \Slim\App;
+use Tests\TestCase;
 
 /**
  * Static class to get configured Slim App Instance for use for TestCases

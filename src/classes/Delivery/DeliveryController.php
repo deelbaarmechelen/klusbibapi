@@ -19,6 +19,7 @@ use Api\AccessType;
 use Api\Model\Delivery;
 use Api\Model\DeliveryState;
 use DateInterval;
+use Slim\Psr7\Request;
 
 class DeliveryController 
 {
@@ -32,7 +33,7 @@ class DeliveryController
         $this->mailManager = $mailManager;
     }
 
-    public function getAll($request, $response, $args) {
+    public function getAll(Request $request, $response, $args) {
         $this->logger->info("Klusbib GET '/deliveries' route");
 
         try {
@@ -40,24 +41,24 @@ class DeliveryController
         } catch (ForbiddenException $ex) {
            return $response->withStatus($ex->getCode()); // Unauthorized
         }
-
-        $sortdir = $request->getQueryParam('_sortDir');
+        $queryParams = $request->getQueryParams();
+        $sortdir = $queryParams['_sortDir'] ?? null;
         if (!isset($sortdir)) {
            $sortdir = 'asc';
         }
-        $sortfield = $request->getQueryParam('_sortField');
+        $sortfield = $queryParams['_sortField'] ?? null;
         if (!Delivery::canBeSortedOn($sortfield) ) {
            $sortfield = 'reservation_id';
         }
-        $page = $request->getQueryParam('_page');
+        $page = $queryParams['_page'] ?? null;
         if (!isset($page)) {
            $page = '1';
         }
-        $perPage = $request->getQueryParam('_perPage');
+        $perPage = $queryParams['_perPage'] ?? null;
         if (!isset($perPage)) {
            $perPage = '50';
         }
-        $query= $request->getQueryParam('_query'); // TODO: use query value
+        $query= $queryParams['_query'] ?? null; // TODO: use query value
 
         $querybuilder = Capsule::table('deliveries')
             ->select('*');
@@ -66,7 +67,7 @@ class DeliveryController
         $deliveries_page = array_slice($deliveries->all(), ($page - 1) * $perPage, $perPage);
 
         $data = array();
-        foreach ($deliveries as $delivery) {
+        foreach ($deliveries_page as $delivery) {
             $this->logger->info(\json_encode($delivery));
             $deliveryData = DeliveryMapper::mapDeliveryToArray($delivery);
             array_push($data, $deliveryData);
@@ -377,25 +378,6 @@ class DeliveryController
             }
             $deliveryItem->save();
         }
-//        foreach( $delivery->items()->wherePivot('inventory_item_id', $args['itemid'])->get() as $inventoryItem) {
-//            if (isset($data["reservation_id"])) {
-//                $this->logger->info("Klusbib PUT updating reservation_id from " . $inventoryItem->pivot->reservation_id . " to " . $data["reservation_id"]);
-//                $inventoryItem->pivot->reservation_id = $data["reservation_id"];
-//            }
-//            if (isset($data["fee"])) {
-//                $this->logger->info("Klusbib PUT updating fee from " . $inventoryItem->pivot->fee . " to " . $data["fee"]);
-//                $inventoryItem->pivot->fee = $data["fee"];
-//            }
-//            if (isset($data["size"])) {
-//                $this->logger->info("Klusbib PUT updating size from " . $inventoryItem->pivot->size . " to " . $data["size"]);
-//                $inventoryItem->pivot->size = $data["size"];
-//            }
-//            if (isset($data["comment"])) {
-//                $this->logger->info("Klusbib PUT updating comment from " . $inventoryItem->pivot->comment . " to " . $data["comment"]);
-//                $inventoryItem->pivot->comment = $data["comment"];
-//            }
-//            $inventoryItem->pivot->save();
-//        }
         $delivery->refresh();
 
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery))->withStatus(HttpResponseCode::OK);

@@ -306,8 +306,8 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
         $enrolmentMgr = new EnrolmentManager($logger, $user, $mailMgr, $mollieApi);
         $orderId = "order123";
         $redirectUrl = "http://localhost/redirect";
-        $requestUri = new \Slim\Http\Uri("http", "localhost", 8080, "redirect");
-        $enrolmentMgr->renewalByMollie($orderId, $redirectUrl, \Api\Model\PaymentMode::MOLLIE,$requestUri);
+        $requestUri = new \Slim\Http\Uri(new \Slim\Psr7\Uri("http", "localhost", 8080, "redirect"));
+        $enrolmentMgr->renewalByMollie($orderId, $redirectUrl, \Api\Model\PaymentMode::MOLLIE, $requestUri);
         $user = \Api\Model\User::find($user->user_id);
         $this->assertEquals(\Api\Model\Membership::STATUS_ACTIVE,  $user->activeMembership->status); // unchanged status (FIXME: test with an expired account to assert there is no update?)
 

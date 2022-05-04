@@ -3,18 +3,20 @@
 namespace Api\User;
 
 
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
 interface UserControllerInterface
 {
     // duplicate name -> which shall we choose?
-    function add($request, $response, $args);
-    function create($request, $response, $args);
+    function add(RequestInterface $request, ResponseInterface $response, $args);
+    function create(RequestInterface $request, ResponseInterface $response, $args);
 
-    function getAll (Request $request, Response $response, $args);
-    function getById($request, $response, $args);
-    function update($request, $response, $args);
-    function delete($request, $response, $args);
+    function getAll (RequestInterface $request, ResponseInterface $response, $args);
+    function getById(RequestInterface $request, ResponseInterface $response, $args);
+    function update(RequestInterface $request, ResponseInterface $response, $args);
+    function delete(RequestInterface $request, ResponseInterface $response, $args);
 
 }

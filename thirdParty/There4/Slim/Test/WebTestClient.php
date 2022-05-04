@@ -2,6 +2,7 @@
 
 namespace There4\Slim\Test;
 
+use Psr\Http\Message\UriInterface;
 use Slim\App;
 use Slim\Http\Environment;
 use Slim\Http\Headers;
@@ -9,6 +10,8 @@ use Slim\Http\Request;
 use Slim\Http\RequestBody;
 use Slim\Http\Response;
 use Slim\Http\Uri;
+use Slim\Psr7\Factory\StreamFactory;
+use Slim\Psr7\Request as SlimRequest;
 
 class WebTestClient
 {
@@ -74,37 +77,20 @@ class WebTestClient
     {
         //Make method uppercase
         $method = strtoupper($method);
-        $options = array(
-            'REQUEST_METHOD' => $method,
-            'REQUEST_URI'    => $path
-        );
-
         if ($method === 'GET') {
-            $options['QUERY_STRING'] = http_build_query($data);
+            $queryString = http_build_query($data);
+            $this->request = $this->createRequest($method, $path, $queryString, $optionalHeaders);
         } else {
             $params  = json_encode($data);
+            $optionalHeaders['Content-Type'] = 'application/json;charset=utf8';
+            $this->request = $this->createRequest($method, $path, null, $optionalHeaders)
+                ->withParsedBody($data);
+            $this->request->getBody()->write($params);
         }
-
-        // Prepare a mock environment
-        $env = Environment::mock(array_merge($options, $optionalHeaders));
-        $uri = Uri::createFromEnvironment($env);
-        $headers = Headers::createFromEnvironment($env);
-        $cookies = $this->cookies;
-        $serverParams = $env->all();
-        $body = new RequestBody();
-
-        // Attach JSON request
-        if (isset($params)) {
-            $headers->set('Content-Type', 'application/json;charset=utf8');
-            $body->write($params);
-        }
-
-        $this->request  = new Request($method, $uri, $headers, $cookies, $serverParams, $body);
-        $response = new Response();
-
         // Process request
         $app = $this->app;
-        $this->response = $app->process($this->request, $response);
+
+        $this->response = $app->handle($this->request);
 
         // Return the application output.
         return (string)$this->response->getBody();
@@ -114,4 +100,35 @@ class WebTestClient
     {
         $this->cookies[$name] = $value;
     }
+    /**
+     * @param string $method
+     * @param string $path
+     * @param array  $headers
+     * @param array  $cookies
+     * @param array  $serverParams
+     * @return \Slim\Psr7\Request
+     */
+    protected function createRequest(
+        string $method,
+        string $path,
+        string $queryString = null,
+        array $headers = ['HTTP_ACCEPT' => 'application/json'],
+        array $cookies = [],
+        array $serverParams = []
+    ): \Slim\Psr7\Request {
+        if (isset($queryString)) {
+            $uri = new \Slim\Psr7\Uri('https', 'localhost', 80, $path, $queryString);
+        } else {
+            $uri = new \Slim\Psr7\Uri('https', 'localhost', 80, $path);
+        }
+        $handle = fopen('php://temp', 'w+');
+        $stream = (new StreamFactory())->createStreamFromResource($handle);
+        $h = new \Slim\Psr7\Headers();
+        foreach ($headers as $name => $value) {
+            $h->addHeader($name, $value);
+        }
+
+        return new SlimRequest($method, $uri, $h, $cookies, $serverParams, $stream);
+    }
+
 }

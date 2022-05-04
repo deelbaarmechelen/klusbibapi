@@ -11,7 +11,7 @@
  * Project home:
  *   https://github.com/tuupola/slim-image-resize
  *   
- * Adapted to run slim v3
+ * 2022 - Adapted to run on slim v4
  *
  */
 
@@ -19,8 +19,10 @@ namespace Api\Middleware;
 
 use Intervention\Image\Image;
 use Api\Middleware\ImageResize\DefaultMutator;
-use Psr\Http\Message\RequestInterface as Request;
+//use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 // use Slim\Http\Request;
 // use Slim\Http\Response;
 use Slim\Http\Body;
@@ -56,68 +58,34 @@ class ImageResize
         unset($this->options["mutator"]);
     }
 
-    function __invoke(Request $req,  Response $res, callable $next) {
-    	
-    	$request  = $req;
-    	$response = $res;
-    	
-    	$folder   = $request->getUri()->getBasePath();
-    	$resource = $request->getUri()->getPath();
-    	   
-    	$target   = $folder . $resource;
-    	if ($matched = $this->mutator->parse($target)) {
-    		/* Extract array variables to current symbol table */
-    		extract($matched);
-    	};
-    	
-    	if ($matched && $this->allowed(array("extension" => $extension, "size" => $size, "signature" => $signature))) {
-    		$this->mutator->execute();
-    	
-    		/* When requested save image to cache folder. */
-    		if ($this->options["cache"]) {
-    			/* TODO: Make this pretty. */
-    			$cache = $_SERVER["DOCUMENT_ROOT"] . $folder . "/" .
-    					$this->options["cache"] . $target;
-    	
-    					$dir = pathinfo($cache, PATHINFO_DIRNAME);
-    					if (false === is_dir($dir)) {
-    						mkdir($dir, 0777, true);
-    					}
-    					$this->mutator->save($cache);
-    		}
-    	
-    		$response = $response->withHeader("Content-type", $this->mutator->mime());
-    		$newResponse = $response->write($this->mutator->encode()->getEncoded());
-    	} else {
-    		return $next($req, $res);
-    	}
-   		return $newResponse; // continue
-    }
-    
-    public function call()
+    /**
+     * middleware invokable class (Slim v4)
+     *
+     * @param  ServerRequest  $request PSR-7 request
+     * @param  RequestHandler $handler PSR-15 request handler
+     *
+     * @return Response
+     */
+    public function __invoke(Request $request, RequestHandler $handler): Response
     {
-        $request  = $this->app->request;
-        $response = $this->app->response;
+        $url = $request->getUri()->getPath();
+        $path = parse_url($url, PHP_URL_PATH);
+        $folder = substr($path, 0,strrpos($path,'/')+1);
 
-        $folder   = $request->getRootUri();
-        $resource = $request->getResourceUri();
-
-        $target   = $folder . $resource;
-        if ($matched = $this->mutator->parse($target)) {
+        if ($matched = $this->mutator->parse($path)) {
             /* Extract array variables to current symbol table */
             extract($matched);
         };
 
+        $response = new \Slim\Psr7\Response();
         if ($matched && $this->allowed(array("extension" => $extension, "size" => $size, "signature" => $signature))) {
-
             $this->mutator->execute();
 
             /* When requested save image to cache folder. */
             if ($this->options["cache"]) {
                 /* TODO: Make this pretty. */
                 $cache = $_SERVER["DOCUMENT_ROOT"] . $folder . "/" .
-                         $this->options["cache"] . $target;
-
+                    $this->options["cache"] . $path;
                 $dir = pathinfo($cache, PATHINFO_DIRNAME);
                 if (false === is_dir($dir)) {
                     mkdir($dir, 0777, true);
@@ -125,11 +93,12 @@ class ImageResize
                 $this->mutator->save($cache);
             }
 
-            $response->header("Content-type", $this->mutator->mime());
-            $response->body($this->mutator->encode());
+            $response = $response->withHeader("Content-type", $this->mutator->mime());
+            $response->getBody()->write($this->mutator->encode()->getEncoded());
         } else {
-            $this->next->call();
+            $response = $handler->handle($request);
         }
+        return $response; // continue
     }
 
     public function allowed($parameters = array())

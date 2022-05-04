@@ -134,7 +134,7 @@ class ReservationsTest extends LocalDbWebTestCase
     public function testGetReservationsPage()
     {
         echo "test GET reservations\n";
-        $body = $this->client->get('/reservations?_perPage=2');
+        $body = $this->client->get('/reservations', array('_perPage'=>2));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $reservations = json_decode($body);
         $this->assertEquals(2, count($reservations));
@@ -142,7 +142,7 @@ class ReservationsTest extends LocalDbWebTestCase
     public function testGetReservationsSecondPage()
     {
         echo "test GET reservations\n";
-        $body = $this->client->get('/reservations?_perPage=2&_page=2');
+        $body = $this->client->get('/reservations', array('_perPage' => 2, '_page' => 2));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $reservations = json_decode($body);
         $this->assertEquals(1, count($reservations));
@@ -150,9 +150,7 @@ class ReservationsTest extends LocalDbWebTestCase
     public function testGetOpenReservations()
     {
         echo "test GET reservations\n";
-        $body = $this->client->get('/reservations?isOpen=true');
-//        print_r($body);
-        echo "\n";
+        $body = $this->client->get('/reservations', array('isOpen'=>'true'));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $reservations = json_decode($body);
         $this->assertEquals(2, count($reservations));

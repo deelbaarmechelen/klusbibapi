@@ -47,7 +47,7 @@ class ToolsTest extends LocalDbWebTestCase
     public function testGetToolsAll()
     {
         echo "test GET all tools\n";
-        $body = $this->client->get('/tools?_all=true');
+        $body = $this->client->get('/tools', array('_all'=> 'true'));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $tools = json_decode($body);
         $this->assertEquals(4, count($tools));
@@ -56,7 +56,7 @@ class ToolsTest extends LocalDbWebTestCase
     public function testGetToolsFilterCategory()
     {
         echo "test GET tools filter category\n";
-        $body = $this->client->get('/tools?category=wood');
+        $body = $this->client->get('/tools', array('category'=> 'wood'));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $tools = json_decode($body);
         $this->assertEquals(2, count($tools));
@@ -67,13 +67,13 @@ class ToolsTest extends LocalDbWebTestCase
     public function testGetToolsPagination()
     {
         echo "test GET tools filter category\n";
-        $body = $this->client->get('/tools?_perPage=2');
+        $body = $this->client->get('/tools', array('_perPage'=> '2'));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $tools = json_decode($body);
         $this->assertEquals(2, count($tools));
         $this->assertEquals('KB-000-17-001', $tools[0]->code);
         $this->assertEquals('KB-000-17-003', $tools[1]->code);
-        $body = $this->client->get('/tools?_page=2&_perPage=2');
+        $body = $this->client->get('/tools', array('_page'=> '2','_perPage'=> '2'));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $tools = json_decode($body);
         $this->assertEquals(1, count($tools));

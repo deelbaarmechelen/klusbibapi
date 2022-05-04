@@ -14,6 +14,8 @@ use Api\Model\Tool;
 use Api\ModelMapper\ReservationMapper;
 use Api\Authorisation;
 use Api\Upload\UploadHandler;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class ToolController implements ProductControllerInterface
 {
@@ -27,33 +29,34 @@ class ToolController implements ProductControllerInterface
         $this->token = $token;
     }
 
-    function getAll($request, $response, $args) {
+    function getAll(RequestInterface $request, ResponseInterface $response, $args) {
 
         $this->logger->info("Klusbib GET '/tools' route");
-        $sortdir = $request->getQueryParam('_sortDir');
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $sortdir = $queryParams['_sortDir'] ??  null;
         if (!isset($sortdir)) {
             $sortdir = 'asc';
         }
-        $sortfield = $request->getQueryParam('_sortField');
+        $sortfield = $queryParams['_sortField'] ??  null;
         if (!Tool::canBeSortedOn($sortfield) ) {
             $sortfield = 'code';
         }
-        $page = $request->getQueryParam('_page');
+        $page = $queryParams['_page'] ??  null;
         if (!isset($page)) {
             $page = '1';
         }
-        $perPage = $request->getQueryParam('_perPage');
+        $perPage = $queryParams['_perPage'] ??  null;
         if (!isset($perPage)) {
             $perPage = '1000';
         }
-        $showAll = $request->getQueryParam('_all');
+        $showAll = $queryParams['_all'] ??  null;
         if (isset($showAll) && $showAll == 'true') {
             $showAll = true;
         } else {
             $showAll = false;
         }
-        $query = $request->getQueryParam('_query');
-        $category = $request->getQueryParam('category');
+        $query = $queryParams['_query'] ??  null;
+        $category = $queryParams['category'] ??  null;;
         $tools = $this->toolManager->getAll($showAll, $category, $sortfield, $sortdir, $page, $perPage, $query);
 
         // TODO: if not admin, filter non visible tools
@@ -78,7 +81,7 @@ class ToolController implements ProductControllerInterface
             ->withHeader('X-Total-Count', count($tools));
     }
 
-    function getById($request, $response, $args) {
+    function getById(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib GET '/tools/id' route");
 
         try {
@@ -102,7 +105,7 @@ class ToolController implements ProductControllerInterface
         $data["reservations"] = $reservationsArray;
         return $response->withJson($data);
     }
-    function create($request, $response, $args) {
+    function create(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib POST '/tools' route");
         /* Check if token has needed scope. */
         try {
@@ -121,7 +124,7 @@ class ToolController implements ProductControllerInterface
         $tool->save();
         return $response->withJson(ToolMapper::mapToolToArray($tool));
     }
-    function uploadProductImage($request, $response, $args) {
+    function uploadProductImage(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib POST '/tools/{toolid}/upload' route");
         /* Check if token has needed scope. */
         Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.update"]);
@@ -147,7 +150,7 @@ class ToolController implements ProductControllerInterface
         return $response->withJson(ToolMapper::mapToolToArray($tool));
     }
 
-    function update($request, $response, $args) {
+    function update(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib PUT '/tools/id' route");
         Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.update"]);
         $tool = Tool::find($args['toolid']);
@@ -160,7 +163,7 @@ class ToolController implements ProductControllerInterface
         return $response->withJson(ToolMapper::mapToolToArray($tool));
     }
 
-    function delete($request, $response, $args) {
+    function delete(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib DELETE '/tools/id' route");
         Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.delete"]);
     // 	if (false === $this->token->hasScope(["tools.all", "tools.delete"])) {
@@ -174,7 +177,7 @@ class ToolController implements ProductControllerInterface
         return $response->withStatus(HttpResponseCode::OK);
     }
 
-    function add($request, $response, $args)
+    function add(RequestInterface $request, ResponseInterface $response, $args)
     {
         // TODO: Implement getDisabledDates() method.
         throw new NotImplementedException("Not supported in this version. Did you intend to use create()?");
@@ -184,13 +187,13 @@ class ToolController implements ProductControllerInterface
      * @deprecated
      * Use delete($request, $response, $args) instead
      */
-    function deleteByID($request, $response, $args)
+    function deleteByID(RequestInterface $request, ResponseInterface $response, $args)
     {
         trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
         return $this->delete($request, $response, $args);
     }
 
-    function getDisabledDates($request, $response, $args)
+    function getDisabledDates(RequestInterface $request, ResponseInterface $response, $args)
     {
         // TODO: Implement getDisabledDates() method.
         throw new NotImplementedException("Not supported in this version");

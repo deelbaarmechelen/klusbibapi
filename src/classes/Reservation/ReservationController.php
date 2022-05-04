@@ -34,27 +34,28 @@ class ReservationController implements ReservationControllerInterface
     public function getAll($request, $response, $args) {
         $this->logger->info("Klusbib GET '/reservations' route");
 
-        $sortdir = $request->getQueryParam('_sortDir');
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $sortdir = $queryParams['_sortDir'] ?? null;
         if (!isset($sortdir)) {
             $sortdir = 'asc';
         }
-        $sortfield = $request->getQueryParam('_sortField');
+        $sortfield = $queryParams['_sortField'] ?? null;
         if (!Reservation::canBeSortedOn($sortfield) ) {
             $sortfield = 'reservation_id';
         }
-        $page = $request->getQueryParam('_page');
+        $page = $queryParams['_page'] ?? null;
         if (!isset($page)) {
             $page = '1';
         }
-        $perPage = $request->getQueryParam('_perPage');
+        $perPage = $queryParams['_perPage'] ?? null;
         if (!isset($perPage)) {
             $perPage = '50';
         }
-        $query= $request->getQueryParam('_query');
+        $query= $queryParams['_query'] ?? null;
         $querybuilder = Capsule::table('reservations')
             ->join('users', 'reservations.user_id', '=', 'users.user_id')
             ->select('reservations.*', 'users.firstname', 'users.lastname');
-        $isOpen = $request->getQueryParam('isOpen');
+        $isOpen = $queryParams['isOpen'] ?? null;
         if (isset($isOpen) && $isOpen == 'true') {
             $querybuilder->whereIn('reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
         }

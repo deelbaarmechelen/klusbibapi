@@ -22,8 +22,8 @@ class TokenController implements TokenControllerInterface
         $this->container = $container;
     }
     public function create($request, $response, $args) {
-        $this->logger->info("Klusbib POST '/token' route (for user " . $this->container["user"] . ")");
-        return $this->createToken($response, $this->container["user"]);
+        $this->logger->info("Klusbib POST '/token' route (for user " . $this->container->get("user") . ")");
+        return $this->createToken($response, $this->container->get("user"));
     }
     public function createForGuest($request, $response, $args) {
         $this->logger->info("Klusbib POST '/token/guest' route");

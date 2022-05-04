@@ -18,12 +18,12 @@ class WebDbTestCase extends TestCase
     protected $conn;
 
     // Run for each unit test to setup our slim app environment
-    public function setup() : void
+    public function setup($app = null) : void
     {
         parent::setUp();
 
         // Establish a local reference to the Slim app object
-        $this->app    = $this->getSlimInstance();
+        $this->app    = $app != null ? $app : $this->getSlimInstance();
         $this->client = new WebTestClient($this->app);
     }
 

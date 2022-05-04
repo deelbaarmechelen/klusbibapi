@@ -34,6 +34,7 @@ defined('SENDER_NAME') or define("SENDER_NAME", "Unit tester");
 defined('SENDER_EMAIL') or define("SENDER_EMAIL", "test@klusbib.be");
 if (!defined('REPLYTO_NAME')) define("REPLYTO_NAME", "ReplyTo tester");
 if (!defined('REPLYTO_EMAIL')) define("REPLYTO_EMAIL", "replyto@klusbib.be");
+if (!defined('SUPPORT_NOTIF_EMAIL')) define("SUPPORT_NOTIF_EMAIL", "support@klusbib.be");
 defined('ENROLMENT_NOTIF_EMAIL') or define("ENROLMENT_NOTIF_EMAIL", "test@klusbib.be");
 defined('RESERVATION_NOTIF_EMAIL') or define("RESERVATION_NOTIF_EMAIL", "test@klusbib.be");
 if (!defined('DELIVERY_NOTIF_EMAIL')) define("DELIVERY_NOTIF_EMAIL", "delivery-test@klusbib.be");

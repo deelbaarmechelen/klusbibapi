@@ -39,23 +39,24 @@ class PaymentController implements PaymentControllerInterface
 //        return $response->withStatus(403);
 //    }
 
-        $sortdir = $request->getQueryParam('_sortDir');
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $sortdir = $queryParams['_sortDir'] ?? null;
         if (!isset($sortdir)) {
             $sortdir = 'asc';
         }
-        $sortfield = $request->getQueryParam('_sortField');
+        $sortfield = $queryParams['_sortField'] ?? null;
         if (!Payment::canBeSortedOn($sortfield)) {
             $sortfield = 'payment_id';
         }
-        $page = $request->getQueryParam('_page');
+        $page = $queryParams['_page'] ?? null;
         if (!isset($page)) {
             $page = '1';
         }
-        $perPage = $request->getQueryParam('_perPage');
+        $perPage = $queryParams['_perPage'] ?? null;
         if (!isset($perPage)) {
             $perPage = '100';
         }
-        $orderId = $request->getQueryParam('orderId');
+        $orderId = $queryParams['orderId'] ?? null;
         if (!isset($orderId)) {
             $builder = Payment::any();
         } else {
@@ -183,8 +184,6 @@ class PaymentController implements PaymentControllerInterface
 
             try {
 
-//                $mollie = new \Mollie\Api\MollieApiClient();
-//                $mollie->setApiKey(MOLLIE_API_KEY);
                 $paymentData = [
                     "amount" => [
                         "currency" => "EUR",
@@ -245,9 +244,6 @@ class PaymentController implements PaymentControllerInterface
             ->withJson("Missing or empty paymentId");
         }
         try {
-//            $mollie = new \Mollie\Api\MollieApiClient();
-//            $mollie->setApiKey(MOLLIE_API_KEY);
-
             /*
              * Retrieve the payment's current state.
              * See also https://docs.mollie.com/payments/status-changes

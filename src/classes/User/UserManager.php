@@ -237,7 +237,7 @@ class UserManager
                 $this->lastSyncedUsers = array();
             }
         }
-        return $this->lastSyncAttempt == null || !in_array($user->user_id, $this->lastSyncUsers);
+        return $this->lastSyncAttempt == null || !in_array($user->user_id, $this->lastSyncedUsers);
     }
 
 }

@@ -21,6 +21,7 @@ use DateTime;
 use DateInterval;
 use Illuminate\Support\Facades\Log;
 use Mollie\Api\MollieApiClient;
+use Psr\Http\Message\UriInterface;
 
 class EnrolmentManager
 {
@@ -228,7 +229,7 @@ class EnrolmentManager
      * @return \Mollie\Api\Resources\Payment
      * @throws EnrolmentException
      */
-    function enrolmentByMollie($orderId, $redirectUrl, $requestedPaymentMean, $requestUri) {
+    function enrolmentByMollie($orderId, $redirectUrl, $requestedPaymentMean, UriInterface $requestUri) {
         $this->checkUserStateEnrolment();
         $membershipType = MembershipType::regular();
         $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
@@ -261,7 +262,7 @@ class EnrolmentManager
         $this->user->refresh();
 
         return $this->initiateMolliePayment($orderId, $membership->subscription->price, $redirectUrl,
-            $requestedPaymentMean, $requestUri->getHost(), $requestUri->getScheme(), Product::ENROLMENT);
+            $requestedPaymentMean, $requestUri, Product::ENROLMENT);
     }
 
     /**
@@ -396,7 +397,7 @@ class EnrolmentManager
      * @throws EnrolmentException
      * @throws \Exception
      */
-    function renewalByMollie($orderId, $redirectUrl, $requestedPaymentMean, $requestUri) {
+    function renewalByMollie($orderId, $redirectUrl, $requestedPaymentMean, UriInterface $requestUri) {
         $this->checkUserStateRenewal();
         $membership = Membership::find($this->user->active_membership);
         if (!$membership) {
@@ -426,7 +427,7 @@ class EnrolmentManager
         //$this->user->save();
 
         return $this->initiateMolliePayment($orderId, $renewalMembership->subscription->price, $redirectUrl,
-            $requestedPaymentMean, $requestUri->getHost(), $requestUri->getScheme(), Product::RENEWAL, $renewalMembership->expires_at);
+            $requestedPaymentMean, $requestUri, Product::RENEWAL, $renewalMembership->expires_at);
     }
 
     function confirmMembershipPayment($paymentMode, $membershipId, $renewal = false)
@@ -900,8 +901,10 @@ class EnrolmentManager
      * @param $protocol protocol used in webhook url (http or https)
      * @throws EnrolmentException
      */
-    protected function initiateMolliePayment($orderId, $amount, $redirectUrl, $requestedPaymentMean, $hostname, $protocol, $productId, $membershipEndDate = null)
+    protected function initiateMolliePayment($orderId, $amount, $redirectUrl, $requestedPaymentMean, $requestUri, $productId, $membershipEndDate = null)
     {
+        $hostname = $requestUri->getHost();
+        $protocol = $requestUri->getScheme();
         $userName = "{$this->user->firstname} {$this->user->lastname}";
         if (isset($this->user->activeMembership) && $this->user->activeMembership->subscription->isCompanySubscription()) {
             $userName = $this->user->company;
@@ -911,6 +914,7 @@ class EnrolmentManager
         } elseif ($productId == Product::RENEWAL) {
             $description = "Klusbib verlenging lidmaatschap $userName";
         }
+
         try {
             $this->mollie->setApiKey(MOLLIE_API_KEY);
             $paymentData = [

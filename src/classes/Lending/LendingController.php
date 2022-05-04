@@ -13,8 +13,10 @@ use Api\User\UserManager;
 use Api\Validator\LendingValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Authorisation;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
 
 class LendingController implements LendingControllerInterface
 {
@@ -31,7 +33,7 @@ class LendingController implements LendingControllerInterface
         $this->userManager = $userManager;
     }
 
-    public function getAll(Request $request, Response $response, $args){
+    public function getAll(RequestInterface $request, ResponseInterface $response, $args){
         $this->logger->info("Klusbib GET '/lendings' route (params=" . \json_encode($request->getQueryParams()) . ")");
 
         $authorised = Authorisation::checkLendingAccess($this->token, "list");
@@ -39,40 +41,41 @@ class LendingController implements LendingControllerInterface
             $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
             return $response->withStatus(403);
         }
-        $sortdir = $request->getQueryParam('_sortDir');
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $sortdir = $queryParams['_sortDir'] ?? null;
         if (!isset($sortdir)) {
             $sortdir = 'desc';
         }
-        $sortfield = $request->getQueryParam('_sortField');
+        $sortfield = $queryParams['_sortField'] ?? null;
         if (!Lending::canBeSortedOn($sortfield) ) {
             $sortfield = 'created_at';
         }
-        $page = $request->getQueryParam('_page');
+        $page = $queryParams['_page'] ?? null;
         if (!isset($page)) {
             $page = '1';
         }
-        $perPage = $request->getQueryParam('_perPage');
+        $perPage = $queryParams['_perPage'] ?? null;
         if (!isset($perPage)) {
             $perPage = '1000';
         }
-        $expandTool = $request->getQueryParam('_expandTool');
+        $expandTool = $queryParams['_expandTool'] ?? null;
         if (!isset($expandTool)) {
             $expandTool = false; // tool is remote, so default to false
         } else {
             $expandTool = filter_var($expandTool, FILTER_VALIDATE_BOOLEAN);
         }
-        $expandUser = $request->getQueryParam('_expandUser');
+        $expandUser = $queryParams['_expandUser'] ?? null;
         if (!isset($expandUser)) {
             $expandUser = true; // user is local, so default to true
         } else {
             $expandUser = filter_var($expandUser, FILTER_VALIDATE_BOOLEAN);
         }
         $query = Lending::valid();
-        $userId = $request->getQueryParam('user_id');
-        $toolId = $request->getQueryParam('tool_id');
-        $toolType = $request->getQueryParam('tool_type');
-        $startDate = $request->getQueryParam('start_date');
-        $active = $request->getQueryParam('active');
+        $userId = $queryParams['user_id'] ?? null;
+        $toolId = $queryParams['tool_id'] ?? null;
+        $toolType = $queryParams['tool_type'] ?? null;
+        $startDate = $queryParams['start_date'] ?? null;
+        $active = $queryParams['active'] ?? null;
         if (isset($userId)) {
             $query = $query->withUser($userId);
         }
@@ -119,7 +122,7 @@ class LendingController implements LendingControllerInterface
             ->withHeader('X-Total-Count', count($lendings));
     }
 
-    public function getById(Request $request, Response $response, $args)
+    public function getById(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib GET '/lendings/id' route");
 
@@ -137,7 +140,7 @@ class LendingController implements LendingControllerInterface
         return $response->withJson(LendingMapper::mapLendingToArray($lending));
     }
 
-    public function create(Request $request, Response $response, $args)
+    public function create(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib " . $request->getMethod() . " " . $request->getRequestTarget()
             . " route. Body: " . $request->getBody()->read(100)
@@ -194,7 +197,7 @@ class LendingController implements LendingControllerInterface
         return $response->withJson(LendingMapper::mapLendingToArray($lending))
             ->withStatus(201);
     }
-    public function update(Request $request, Response $response, $args)
+    public function update(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib " . $request->getMethod() . " " . $request->getRequestTarget()
             . " route. Body: " . $request->getBody()->read(100)

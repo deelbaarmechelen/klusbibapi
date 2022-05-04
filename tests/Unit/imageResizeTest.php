@@ -9,17 +9,11 @@ use Slim\Http\RequestBody;
 use Slim\Http\Response;
 use Slim\Http\Uri;
 
-// class ImageResizeTest extends \PHPUnit_Framework_TestCase
 class ImageResizeTest extends LocalDbWebTestCase
 {
 	public function testShouldReturnImage()
 	{
-		Environment::mock(array(
-				/* TODO: Figure out why setting this breaks test. */
-// 				"SCRIPT_NAME" => "/index.php",
-				"PATH_INFO" => "/images/3-x200.jpg"
-		));
-		$app = new \Slim\App();
+		$app = \Slim\Factory\AppFactory::create();
 		$middleware = new \Api\Middleware\ImageResize([
 			"extensions" => ["jpg", "jpeg"],
 			"quality" => 90,
@@ -31,11 +25,9 @@ class ImageResizeTest extends LocalDbWebTestCase
 		});
 		$_SERVER["DOCUMENT_ROOT"] = __DIR__ . '/../../public';
 		
-		$uri = new Uri("http", "host", 8080, "/uploads/3-x200.jpg");
-		$headers = new Headers();
-		$request = new Request("GET", $uri, $headers, [], [], new RequestBody());
-		$response = new Response();
-		$response = $middleware->__invoke($request, $response, $app);
+		$uri = new Uri(new \Slim\Psr7\Uri("http", "host", 8080, "/uploads/3-x200.jpg"));
+        $request = $this->createRequest("GET", $uri, [], [], []);
+        $response = $app->handle($request);
 		$this->assertEquals(200, $response->getStatusCode());
 		$contentTypeHeaders = $response->getHeader("Content-Type");
 		$this->assertEquals("image/jpeg", $contentTypeHeaders[0]);
@@ -77,6 +69,6 @@ class MockMutator
 
 class MockImage {
 	public function getEncoded(){
-		
+		return "";
 	}
 }
