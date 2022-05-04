@@ -20,7 +20,7 @@ $settings = require __DIR__ . '/../app/settings.php';
 
 $container = new \DI\Container();
 
-AppFactory::setContainer($container);
+\Slim\Factory\AppFactory::setContainer($container);
 $app = \Slim\Factory\AppFactory::create();
 
 // Set up dependencies
