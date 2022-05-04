@@ -23,7 +23,7 @@
         "tuupola/base62": "^2.1.0",
         "intervention/image": "~2.0",
 		"robmorgan/phinx": "0.11.*",
-		"vlucas/phpdotenv": "^4.0",
+		"vlucas/phpdotenv": "^5.4.1",
 		"illuminate/database": "8.*",
 		"illuminate/console" : "8.*",
 		"illuminate/events" : "8.*",
