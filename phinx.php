@@ -71,6 +71,6 @@ $user = parse_url($url, PHP_URL_USER);
 $pass = parse_url($url, PHP_URL_PASS);
 $port = parse_url($url, PHP_URL_PORT);
 
-$settings = require __DIR__ . '/src/settings.php';
+$settings = require __DIR__ . '/app/settings.php';
 
 return $config;
