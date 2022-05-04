@@ -21,6 +21,7 @@ use Psr\Http\Message\ServerRequestInterface;
 $container = $app->getContainer();
 
 $container->set('settings', function (ContainerInterface $c) {
+    require __DIR__ . '/env.php';
     $settings = require __DIR__ . '/settings.php';
     return $settings['settings'];
 });
@@ -109,14 +110,14 @@ $container->set("HttpBasicAuthentication", function (ContainerInterface $contain
 			"path" => "/token",
 			"ignore" => "/token/guest",
 			"secure" => false,
-			"relaxed" => ["admin", "klusbib.deeleco"],
+			"relaxed" => ["admin"],
 			"authenticator" => new PdoAuthenticator([
 					"pdo" => $container->get('db'),
 					"table" => "users",
 					"user" => "email",
 					"hash" => "hash"
 			]),
-			"before" => function (ServerRequestInterface $request, ResponseInterface $response, $arguments) use ($container) {
+			"before" => function (ServerRequestInterface $request, $arguments) use ($container) {
 				$container->set("user", $arguments["user"]);
 // 				print_r($arguments);
 // 				print_r($container->get("user"));
@@ -127,8 +128,6 @@ $container->set("HttpBasicAuthentication", function (ContainerInterface $contain
 $container->set("JwtAuthentication", function (ContainerInterface $container) {
 	return new JwtAuthentication([
             "path" => "/",
-			"ignore" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
-                "/auth/reset", "/auth/verifyemail"],
 			"secret" => getenv("JWT_SECRET"),
 			"logger" => $container->get("logger"),
 //			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
@@ -141,13 +140,18 @@ $container->set("JwtAuthentication", function (ContainerInterface $container) {
 					->getBody()->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			},
 			"rules" => [
-					new \Api\Middleware\Jwt\JwtCustomRule([
+                new \Api\Middleware\Jwt\JwtCustomRule([
 //							"getignore" => ["/tools", "/consumers", "/auth/confirm"]
-							"getignore" => ["/tools", "/consumers"]
-					]),
-					new RequestMethodRule([
-							"ignore" => ["OPTIONS"]
-					])
+                        "getignore" => ["/tools", "/consumers"]
+                ]),
+                new RequestMethodRule([
+                    "ignore" => ["OPTIONS"]
+                ]),
+                new JwtAuthentication\RequestPathRule([
+                    "path" => "/",
+                    "ignore" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
+                        "/auth/reset", "/auth/verifyemail"]
+                ])
 			],
 			"before" => function (ServerRequestInterface $request, $arguments) use ($container) {
 				$container->get('logger')->debug("Authentication ok for token: " . json_encode($arguments["decoded"]));
