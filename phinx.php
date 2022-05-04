@@ -1,7 +1,7 @@
 <?php
 
 if (file_exists(__DIR__ . '/.env')) {
-	$dotenv = new Dotenv\Dotenv(__DIR__);
+	$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
 	$dotenv->load();
 }
 // define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
