@@ -4,8 +4,8 @@
 if (isset($_SERVER['REMOTE_ADDR'])) die('Permission denied.');
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../src/env.php';
-$settings = require __DIR__ . '/../src/settings.php';
+require __DIR__ . '/../app/env.php';
+$settings = require __DIR__ . '/../app/settings.php';
 echo "Generating report on users\n";
 
 // Expected result:

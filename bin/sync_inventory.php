@@ -15,8 +15,8 @@ if (isset($val["force"]) || isset($val["f"])) {
 }
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../src/env.php';
-$settings = require __DIR__ . '/../src/settings.php';
+require __DIR__ . '/../app/env.php';
+$settings = require __DIR__ . '/../app/settings.php';
 $logger_settings = $settings['settings']['logger'];
 
 $logger = new Monolog\Logger($logger_settings['name']);

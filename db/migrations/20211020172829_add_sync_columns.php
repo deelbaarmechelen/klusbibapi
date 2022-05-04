@@ -3,8 +3,8 @@
 use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-require_once __DIR__ . '/../../src/env.php';
-require_once __DIR__ . '/../../src/settings.php';
+require_once __DIR__ . '/../../app/env.php';
+require_once __DIR__ . '/../../app/settings.php';
 /**
  * Custom template for database migration with Illuminate\Database
  * 
