@@ -19,6 +19,8 @@ use Api\AccessType;
 use Api\Model\Delivery;
 use Api\Model\DeliveryState;
 use DateInterval;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Request;
 
 class DeliveryController 
@@ -33,7 +35,7 @@ class DeliveryController
         $this->mailManager = $mailManager;
     }
 
-    public function getAll(Request $request, $response, $args) {
+    public function getAll(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib GET '/deliveries' route");
 
         try {
@@ -41,7 +43,7 @@ class DeliveryController
         } catch (ForbiddenException $ex) {
            return $response->withStatus($ex->getCode()); // Unauthorized
         }
-        $queryParams = $request->getQueryParams();
+        parse_str($request->getUri()->getQuery(), $queryParams);
         $sortdir = $queryParams['_sortDir'] ?? null;
         if (!isset($sortdir)) {
            $sortdir = 'asc';
@@ -76,7 +78,7 @@ class DeliveryController
             ->withHeader('X-Total-Count', count($deliveries));
     }
 
-    public function getByID($request, $response, $args) {
+    public function getByID(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib GET '/deliveries/id' route");
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
         if (null == $delivery) {
@@ -87,7 +89,7 @@ class DeliveryController
         return $response->withJson($data);
     }
 
-    public function create($request, $response, $args) {
+    public function create(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib POST '/deliveries' route");
 
         try {
@@ -97,7 +99,7 @@ class DeliveryController
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "no applicable allowed scope in token"));
         }
 
-        $data = $request->getParsedBody();
+        parse_str($request->getUri()->getQuery(), $data);
         $errors = array();
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
@@ -216,14 +218,14 @@ class DeliveryController
             ->withStatus(HttpResponseCode::CREATED);
     }
     
-    public function update($request, $response, $args) {
+    public function update(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib PUT '/delivery/id' route" . $args['deliveryid']);
         Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
         if (null == $delivery) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
-        $data = $request->getParsedBody();
+        parse_str($request->getUri()->getQuery(), $data);
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
         $errors = array();
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors, false)) {
@@ -319,7 +321,7 @@ class DeliveryController
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery));
     }
 
-    public function delete($request, $response, $args) {
+    public function delete(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib DELETE '/deliveries/id' route");
         Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.delete", "deliveries.delete.owner"]);
         // TODO: only allow delete of own reservations if access is reservations.delete.owner
@@ -331,7 +333,7 @@ class DeliveryController
         return $response->withStatus(HttpResponseCode::OK);
     }
 
-    public function addItem($request, $response, $args) {
+    public function addItem(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib POST '/deliveries/{delivery_id}/items' route");
         Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
@@ -349,7 +351,7 @@ class DeliveryController
 
         return $response->withStatus(HttpResponseCode::CREATED);
     }
-    public function updateItem($request, $response, $args) {
+    public function updateItem(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib PUT '/deliveries/{deliveryid}/items/{itemid}' route");
         // update quantity?
         Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
@@ -382,7 +384,7 @@ class DeliveryController
 
         return $response->withJson(DeliveryMapper::mapDeliveryToArray($delivery))->withStatus(HttpResponseCode::OK);
     }
-    public function removeItem($request, $response, $args) {
+    public function removeItem(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib DELETE '/deliveries/{delivery_id}/items/{item_id}' route");
         Authorisation::checkAccessByToken($this->token, ["deliveries.all", "deliveries.update", "deliveries.update.owner"]);
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);

@@ -462,7 +462,7 @@ class EnrolmentController
             if (isset ($membershipId)) {
                 $enrolmentManager->declineMembershipPayment($paymentMode, $user, $membershipId, $renewal);
             } else {
-                $enrolmentManager->declinePayment($paymentMode, $user, $renewal);
+                $enrolmentManager->declinePayment($paymentMode, $user, null, $renewal);
             }
             $data = array();
             return $response->withStatus(HttpResponseCode::OK)
