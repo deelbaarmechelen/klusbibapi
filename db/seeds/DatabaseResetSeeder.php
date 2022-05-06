@@ -25,6 +25,12 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
 //        $this->truncateTable('delivery_item');
         $this->truncateTable('events');
 
+        $this->query("DELETE FROM payment");
+        $this->query("DELETE FROM inventory_item_product_tag");
+        $this->query("DELETE FROM product_field_value");
+        $this->query("DELETE FROM product_field_value");
+        $this->query("DELETE FROM note");
+        $this->query("DELETE FROM item_movement");
         $this->query("DELETE FROM loan_row");
         $this->query("DELETE FROM loan");
 //        $this->truncateTable('inventory_item');
