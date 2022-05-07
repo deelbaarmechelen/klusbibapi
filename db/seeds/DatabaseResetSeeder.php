@@ -36,7 +36,7 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
         $this->query("DELETE FROM item_movement");
         $this->query("DELETE FROM loan_row");
         $this->query("DELETE FROM loan");
-        $this->query("DELETE FROM contact");
+        $this->query("DELETE FROM contact where id > 1002"); // keep first 2 rows: admin users of lendengine (id 1001 and 1002)
 //        $this->truncateTable('inventory_item');
         \Api\Model\InventoryItem::query()->delete();
 //        $this->truncateTable('lendings');
