@@ -25,6 +25,9 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
 //        $this->truncateTable('delivery_item');
         $this->truncateTable('events');
 
+        $this->query("UPDATE `contact` c SET c.`balance` = 0");
+        $this->query("UPDATE `contact` c SET c.`active_membership` = null");
+        $this->query("DELETE FROM le_membership");
         $this->query("DELETE FROM payment");
         $this->query("DELETE FROM inventory_item_product_tag");
         $this->query("DELETE FROM product_field_value");
@@ -33,6 +36,7 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
         $this->query("DELETE FROM item_movement");
         $this->query("DELETE FROM loan_row");
         $this->query("DELETE FROM loan");
+        $this->query("DELETE FROM contact");
 //        $this->truncateTable('inventory_item');
         \Api\Model\InventoryItem::query()->delete();
 //        $this->truncateTable('lendings');
