@@ -26,8 +26,8 @@ if (isset($val["delete"]) || isset($val["d"])) {
 }
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../src/env.php';
-$settings = require __DIR__ . '/../src/settings.php';
+require __DIR__ . '/../app/env.php';
+$settings = require __DIR__ . '/../app/settings.php';
 echo "Start cleanup cron\n";
 
 $lastYear = date('Y-m-d' . ' 00:00:00', strtotime("-1 year"));

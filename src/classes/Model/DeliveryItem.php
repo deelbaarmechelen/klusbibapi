@@ -1,11 +1,25 @@
 <?php
 
 namespace Api\Model;
+use Database\Factories\DeliveryItemFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Model;
 
 class DeliveryItem extends Model
 {
+    use HasFactory;
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return DeliveryItemFactory::new();
+    }
+
     protected $table = 'delivery_item';
     public function delivery()
     {

@@ -11,6 +11,7 @@ use Api\Token\Token;
 use Tuupola\Base62;
 use Api\User\UserManager;
 use Api\User\UserController;
+use Tests\SlimTestCaseTrait;
 
 define('PROJECT_ROOT', realpath(__DIR__ . '/..'));
 
@@ -27,18 +28,22 @@ require_once __DIR__ . '/test_env.php';
 // Initialize our own copy of the slim application
 class LocalWebTestCase extends WebTestCase {
 	public function getSlimInstance() {
-		$settings = require __DIR__ . '/test_settings.php';
-		$app = new \Slim\App($settings);
+//		$settings = require __DIR__ . '/test_settings.php';
+//		$app = new \Slim\App($settings);
+        $container = new \DI\Container();
+
+        \Slim\Factory\AppFactory::setContainer($container);
+        $app = \Slim\Factory\AppFactory::create();
 
 		// Include our core application file
 		// Set up dependencies
 		require __DIR__ . '/dependencies.php';
 		
 		// Register middleware
-		require PROJECT_ROOT . '/src/middleware.php';
+		require PROJECT_ROOT . '/app/middleware.php';
 		
 		// Register routes
-		require PROJECT_ROOT . '/src/routes.php';
+		require PROJECT_ROOT . '/app/routes.php';
 		
 		return $app;
 	}
@@ -48,6 +53,8 @@ class LocalWebTestCase extends WebTestCase {
 };
 
 class LocalDbWebTestCase extends WebDbTestCase {
+
+    use SlimTestCaseTrait;
 
 	/**
 	 * @var type \PDO
@@ -60,12 +67,14 @@ class LocalDbWebTestCase extends WebDbTestCase {
 	// Run for each unit test to setup our slim app environment
 	public function setup($dependencies = null, WebTestClient $client = NULL, $useMiddleware = false) : void
 	{
-        $this->settings = require __DIR__ . '/test_settings.php';
+	    $this->settings = require __DIR__ . '/test_settings.php';
 		$this->dependencies = $dependencies;
 		$this->useMiddleware = $useMiddleware;
 
 		\Tests\Mock\InventoryMock::clearUsers();
-		parent::setUp();
+//        $app = $this->getAppInstance();
+		$app = $this->getSlimInstance();
+		parent::setUp($app);
 	
 		if (isset($client)) {
 			$this->client = $client;
@@ -151,7 +160,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
 				self::$pdo = new \PDO('mysql:host=' . $this->settings["settings"]["db"]["host"]
 						. ';dbname=' . $this->settings["settings"]["db"]["dbname"],
 						$this->settings["settings"]["db"]["user"], $this->settings["settings"]["db"]["pass"]); //'sqlite::memory:?cache=shared'
-				self::initDatabase();
+				//self::initDatabase();
 			}
 			$this->conn = $this->createDefaultDBConnection(self::$pdo, ':memory:');
 		}
@@ -176,7 +185,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
 
     public function setUser($user) {
     	$container = $this->app->getContainer();
-    	$container["user"] = $user;
+    	$container->set("user", $user);
     }
     public function setToken($sub, $scopes) {
     	if (!isset($sub)) {
@@ -212,7 +221,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
     	}
     	$container = $this->app->getContainer();
     	$decoded = json_decode(json_encode($this->generatePayload($sub, $scopes)));
-        $container["token"]->hydrate($decoded);
+        $container->get("token")->hydrate($decoded);
     }
 
     /**
@@ -238,7 +247,11 @@ class LocalDbWebTestCase extends WebDbTestCase {
     }
 
     public function getSlimInstance() {
-    	$app = new \Slim\App($this->settings);
+    	//$app = new \Slim\App($this->settings);
+        $container = new \DI\Container();
+
+        \Slim\Factory\AppFactory::setContainer($container);
+    	$app = \Slim\Factory\AppFactory::create();
     
     	// Include our core application file
     	// Set up dependencies
@@ -246,11 +259,11 @@ class LocalDbWebTestCase extends WebDbTestCase {
     	 
     	// Register middleware
         if ($this->useMiddleware) {
-            require PROJECT_ROOT . '/src/middleware.php';
+            require PROJECT_ROOT . '/app/middleware.php';
         }
 
     	// Register routes
-    	require PROJECT_ROOT . '/src/routes.php';
+    	require PROJECT_ROOT . '/app/routes.php';
     	 
     	return $app;
     }

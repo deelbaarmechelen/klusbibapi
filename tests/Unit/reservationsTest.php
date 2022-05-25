@@ -134,7 +134,7 @@ class ReservationsTest extends LocalDbWebTestCase
     public function testGetReservationsPage()
     {
         echo "test GET reservations\n";
-        $body = $this->client->get('/reservations?_perPage=2');
+        $body = $this->client->get('/reservations', array('_perPage'=>2));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $reservations = json_decode($body);
         $this->assertEquals(2, count($reservations));
@@ -142,7 +142,7 @@ class ReservationsTest extends LocalDbWebTestCase
     public function testGetReservationsSecondPage()
     {
         echo "test GET reservations\n";
-        $body = $this->client->get('/reservations?_perPage=2&_page=2');
+        $body = $this->client->get('/reservations', array('_perPage' => 2, '_page' => 2));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $reservations = json_decode($body);
         $this->assertEquals(1, count($reservations));
@@ -150,9 +150,7 @@ class ReservationsTest extends LocalDbWebTestCase
     public function testGetOpenReservations()
     {
         echo "test GET reservations\n";
-        $body = $this->client->get('/reservations?isOpen=true');
-//        print_r($body);
-        echo "\n";
+        $body = $this->client->get('/reservations', array('isOpen'=>'true'));
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $reservations = json_decode($body);
         $this->assertEquals(2, count($reservations));
@@ -321,26 +319,26 @@ class ReservationsTest extends LocalDbWebTestCase
         echo "test PUT reservation with delivery\n";
 
         // create reservation and delivery
-        $user = factory(\Api\Model\User::class)->create([
+        $user = \Api\Model\User::factory()->create([
             'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
         ]);
-        $tool = factory(\Api\Model\Tool::class)->create([
+        $tool = \Api\Model\Tool::factory()->create([
             'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
         ]);
         $reservationStart = new DateTime();
         $reservationEnd = clone $reservationStart;
         $reservationEnd->add(new DateInterval('P7D'));
-        $reservation = factory(\Api\Model\Reservation::class)->create([
+        $reservation = \Api\Model\Reservation::factory()->create([
             'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
         ]);
-        $inventoryItem = factory(\Api\Model\InventoryItem::class)->create([]);
+        $inventoryItem = \Api\Model\InventoryItem::factory()->create([]);
         $deliveryDropOff = clone $reservationStart;
         $deliveryDropOff->add(new DateInterval('P2D'));
-        $delivery = factory(\Api\Model\Delivery::class)->create([
+        $delivery = \Api\Model\Delivery::factory()->create([
             'comment' => 'opm', 'consumers' => 'hamer+beitel',
             'pick_up_date' => $reservationStart->format('Y-m-d'), 'drop_off_date' => $deliveryDropOff->format('Y-m-d')
         ]);
-        $item = factory(\Api\Model\DeliveryItem::class)->create([
+        $item = \Api\Model\DeliveryItem::factory()->create([
             'delivery_id' => $delivery->id, 'inventory_item_id' => $inventoryItem->id, 'reservation_id' => $reservation->reservation_id
         ]);
         $delivery = $this->lookupDelivery($delivery->id);
@@ -384,21 +382,21 @@ class ReservationsTest extends LocalDbWebTestCase
     {
         echo "test DELETE reservation linked to delivery\n";
 
-        $user = factory(\Api\Model\User::class)->create([
+        $user = \Api\Model\User::factory()->create([
             'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
         ]);
-        $tool = factory(\Api\Model\Tool::class)->create([
+        $tool = \Api\Model\Tool::factory()->create([
             'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
         ]);
         $reservationStart = new DateTime();
         $reservationEnd = clone $reservationStart;
         $reservationEnd->add(new DateInterval('P7D'));
-        $reservation = factory(\Api\Model\Reservation::class)->create([
+        $reservation = \Api\Model\Reservation::factory()->create([
             'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
         ]);
-        $inventoryItem = factory(\Api\Model\InventoryItem::class)->create([]);
-        $delivery = factory(\Api\Model\Delivery::class)->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
-        $item = factory(\Api\Model\DeliveryItem::class)->create([
+        $inventoryItem = \Api\Model\InventoryItem::factory()->create([]);
+        $delivery = \Api\Model\Delivery::factory()->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
+        $item = \Api\Model\DeliveryItem::factory()->create([
             'delivery_id' => $delivery->id, 'inventory_item_id' => $inventoryItem->id, 'reservation_id' => $reservation->reservation_id
         ]);
         $delivery = $this->lookupDelivery($delivery->id);

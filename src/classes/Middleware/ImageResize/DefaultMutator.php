@@ -22,7 +22,7 @@ class DefaultMutator extends MutatorAbstract
     public function execute()
     {
         /* Fit or resize. */
-        extract($this->options);
+        extract($this->options); // converts keys from options array into variables
         if (null !== $width && null !== $height) {
             $this->image->fit($width, $height);
         } else {

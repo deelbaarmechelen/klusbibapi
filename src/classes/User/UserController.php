@@ -21,6 +21,8 @@ use Api\Exception\ForbiddenException;
 use Api\Mail\MailManager;
 use Api\Authorisation;
 use Api\Token\Token;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -38,35 +40,35 @@ class UserController implements UserControllerInterface
         $this->token = $token;
     }
 
-    public function getAll (Request $request, Response $response, $args) {
+    public function getAll (RequestInterface $request, ResponseInterface $response, $args) {
         // TODO: remove state, membership_start_date and membership_end_date once clients have been updated
         $this->logger->info("Klusbib GET on '/users' route (params=" . \json_encode($request->getQueryParams()) . ")");
         // query params snipe: deleted=false&company_id=&search=&sort=state&order=desc&offset=0&limit=500
         $authorised = Authorisation::checkUserAccess($this->token, "list", null);
-        $email = $request->getQueryParam('email');
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $email = $queryParams['email'] ??  null;
         if (!$authorised || isset($email)) {
             // Not authorised? Only allow getUserState
             // email param present? Only interested in state of user with that specific email address
             return $this->getUserState($request, $response, $email);
         }
-        $sortdir = $request->getQueryParam('_sortDir');
+        $sortdir = $queryParams['_sortDir'] ??  null;
         if (!isset($sortdir)) {
             $sortdir = 'asc';
         }
-        $sortfield = $request->getQueryParam('_sortField');
+        $sortfield = $queryParams['_sortField'] ??  null;
         if (!User::canBeSortedOn($sortfield) ) {
             $sortfield = 'lastname';
         }
-        $page = $request->getQueryParam('_page');
+        $page = $queryParams['_page'] ??  null;
         if (!isset($page)) {
             $page = '1';
         }
-        $perPage = $request->getQueryParam('_perPage');
+        $perPage = $queryParams['_perPage'] ??  null;
         if (!isset($perPage)) {
             $perPage = '1000';
         }
-        $query = $request->getQueryParam('_query');
-//        $userQuery = Capsule::table('users');
+        $query = $queryParams['_query'] ??  null;
         $userQuery = User::notDeleted();
         if (isset($query)) {
             $userQuery->searchName($query);
@@ -81,10 +83,9 @@ class UserController implements UserControllerInterface
             ->withHeader('X-Total-Count', count($users));
     }
 
-    public function getById($request, $response, $args) {
+    public function getById(RequestInterface $request, ResponseInterface $response, $args) {
         // TODO: remove state, membership_start_date and membership_end_date once clients have been updated
         $this->logger->info("Klusbib GET on '/users/id' route");
-    // 	Authorisation::checkAccessByToken($this->token, ["users.all", "users.read", "users.read.owner"]);
         $authorised = Authorisation::checkUserAccess($this->token, "read", $args['userid']);
         if (!$authorised) {
             $this->logger->warn("Access denied for user " . $args['userid']);
@@ -116,10 +117,10 @@ class UserController implements UserControllerInterface
     /**
      * @deprecated use create instead
      */
-    function add($request, $response, $args){
+    function add(RequestInterface $request, ResponseInterface $response, $args){
         return $this->create($request, $response, $args);
     }
-    function create($request, $response, $args)
+    function create(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib POST on '/users' route");
         $data = $request->getParsedBody();
@@ -260,7 +261,7 @@ class UserController implements UserControllerInterface
             ->withStatus(201);
     }
 
-    function update($request, $response, $args) {
+    function update(RequestInterface $request, ResponseInterface $response, $args) {
         // TODO: remove state, membership_start_date and membership_end_date once clients have been updated
         $this->logger->info("Klusbib PUT on '/users/id' route");
 
@@ -301,7 +302,7 @@ class UserController implements UserControllerInterface
         return $response->withJson(UserMapper::mapUserToArray($user));
     }
 
-    function updateTerms($request, $response, $args)
+    function updateTerms(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib PUT on '/users/id' route");
 
@@ -341,7 +342,7 @@ class UserController implements UserControllerInterface
         return $response->withJson(UserMapper::mapUserToArray($user));
     }
 
-    function delete($request, $response, $args) {
+    function delete(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib DELETE on '/users/id' route");
 
         if (false === $this->token->hasScope(["users.all", "users.delete"])) {
@@ -381,13 +382,15 @@ class UserController implements UserControllerInterface
      * @param $response
      * @return mixed
      */
-    protected function getUserState($request, $response, $email)
+    protected function getUserState(RequestInterface $request, ResponseInterface $response, $email)
     {
         // TODO: create method to return membership state instead
         $this->logger->warn("User state is deprecated and replaced by membership status");
         if (Authorisation::checkUserAccess($this->token, "read.state", null)) {
             // Allow read of state to resume enrolment
-            $email = $request->getQueryParam('email');
+            parse_str($request->getUri()->getQuery(), $queryParams);
+//            $email = $request->getQueryParam('email');
+            $email = $queryParams['email'] ??  null;
             if (!isset($email)) {
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson(array('message' => "Missing email parameter"));

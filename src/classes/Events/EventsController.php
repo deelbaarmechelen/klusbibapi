@@ -6,6 +6,9 @@ use Api\ModelMapper\EventMapper;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Model\Event;
 use Api\Authorisation;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Psr7\Request;
 
 class EventsController implements EventsControllerInterface
 {
@@ -18,7 +21,7 @@ class EventsController implements EventsControllerInterface
         $this->token = $token;
     }
 
-    public function getAll($request, $response, $args)
+    public function getAll(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib GET '/events' route");
 
@@ -27,19 +30,20 @@ class EventsController implements EventsControllerInterface
             $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
             return $response->withStatus(403);
         }
-        $sortdir = $request->getQueryParam('_sortDir');
+        $queryParams = $request->getQueryParams();
+        $sortdir = $queryParams['_sortDir'] ?? null;
         if (!isset($sortdir)) {
             $sortdir = 'desc';
         }
-        $sortfield = $request->getQueryParam('_sortField');
-//    if (!User::canBeSortedOn($sortfield) ) {
-        $sortfield = 'created_at';
-//    }
-        $page = $request->getQueryParam('_page');
+        $sortfield = $queryParams['_sortField'] ?? null;
+        if (!Event::canBeSortedOn($sortfield) ) {
+            $sortfield = 'created_at';
+        }
+        $page = $queryParams['_page'] ?? null;
         if (!isset($page)) {
             $page = '1';
         }
-        $perPage = $request->getQueryParam('_perPage');
+        $perPage = $queryParams['_perPage'] ?? null;
         if (!isset($perPage)) {
             $perPage = '1000';
         }
@@ -53,7 +57,7 @@ class EventsController implements EventsControllerInterface
             ->withHeader('X-Total-Count', count($events));
     }
 
-    public function create($request, $response, $args)
+    public function create(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib POST on '/events' route");
         $data = $request->getParsedBody();

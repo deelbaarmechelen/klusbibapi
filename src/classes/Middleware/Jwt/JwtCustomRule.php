@@ -15,8 +15,9 @@
 
 namespace Api\Middleware\Jwt;
 
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\RequestInterface;
-use Slim\Middleware\JwtAuthentication\RuleInterface;
+use Tuupola\Middleware\JwtAuthentication\RuleInterface;
 
 /**
  * Rule to decide by request path whether the request should be authenticated or not.
@@ -29,9 +30,9 @@ class JwtCustomRule implements RuleInterface
      */
     protected $options = [
         "path" => ["/"],
-        "passthrough" => [],
-    	"getpassthrough" => [],
-    	"postpassthrough" => []
+        "ignore" => [],
+    	"getignore" => [],
+    	"postignore" => []
     ];
 
     /**
@@ -49,13 +50,13 @@ class JwtCustomRule implements RuleInterface
      * @param \Psr\Http\Message\RequestInterface $request
      * @return boolean
      */
-    public function __invoke(RequestInterface $request)
+    public function __invoke(ServerRequestInterface $request): bool
     {
         $uri = "/" . $request->getUri()->getPath();
         $uri = preg_replace("#/+#", "/", $uri);
 
         /* If request path is matches passthrough should not authenticate. */
-        foreach ((array)$this->options["passthrough"] as $passthrough) {
+        foreach ((array)$this->options["ignore"] as $passthrough) {
             $passthrough = rtrim($passthrough, "/");
             if (!!preg_match("@^{$passthrough}(/.*)?$@", $uri)) {
                 return false;
@@ -63,7 +64,7 @@ class JwtCustomRule implements RuleInterface
         }
 
         if ($request->getMethod() == "GET") {
-        	foreach ((array)$this->options["getpassthrough"] as $passthrough) {
+        	foreach ((array)$this->options["getignore"] as $passthrough) {
         		$passthrough = rtrim($passthrough, "/");
         		if (!!preg_match("@^{$passthrough}(/.*)?$@", $uri)) {
         			return false;
@@ -71,7 +72,7 @@ class JwtCustomRule implements RuleInterface
         	}
         }
         if ($request->getMethod() == "POST") {
-        	foreach ((array)$this->options["postpassthrough"] as $passthrough) {
+        	foreach ((array)$this->options["postignore"] as $passthrough) {
         		$passthrough = rtrim($passthrough, "/");
         		if (!!preg_match("@^{$passthrough}(/.*)?$@", $uri)) {
         			return false;

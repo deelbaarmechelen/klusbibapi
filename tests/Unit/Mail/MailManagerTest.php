@@ -152,8 +152,9 @@ final class MailManagerTest extends LocalDbWebTestCase
         $reservation->endsAt = clone $reservationStart;
         $reservation->endsAt->add(new DateInterval('P7D'));
 
-        $delivery = factory(Delivery::class)->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
-        $items = factory(DeliveryItem::class, 2)->create(['delivery_id' => $delivery->id, 'inventory_item_id' => 1]);
+        $delivery = Delivery::factory(Delivery::class)->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
+//        $items = factory(DeliveryItem::class, 2)->create(['delivery_id' => $delivery->id, 'inventory_item_id' => 1]);
+        $items = DeliveryItem::factory()->count(2)->create(['delivery_id' => $delivery->id, 'inventory_item_id' => 1]);
 
         $result = $mailmgr->sendDeliveryRequestNotification("info@klusbib.be", $delivery, $user);
         $this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
@@ -168,20 +169,23 @@ final class MailManagerTest extends LocalDbWebTestCase
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
 
-        $user = factory(User::class)->create([
+        $user = User::factory()->create([
             'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
         ]);
-        $tool = factory(Tool::class)->create([
+//        $user = factory(User::class)->create([
+//            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+//        ]);
+        $tool = Tool::factory()->create([
             'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
         ]);
         $reservationStart = new DateTime();
         $reservationEnd = clone $reservationStart;
         $reservationEnd->add(new DateInterval('P7D'));
-        $reservation = factory(Reservation::class)->create([
+        $reservation = Reservation::factory()->create([
             'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
         ]);
-        $delivery = factory(Delivery::class)->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
-        $items = factory(DeliveryItem::class, 2)->create([
+        $delivery = Delivery::factory()->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
+        $items = DeliveryItem::factory()->count(2)->create([
             'delivery_id' => $delivery->id, 'inventory_item_id' => 1, 'reservation_id' => $reservation->reservation_id
         ]);
 

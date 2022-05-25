@@ -9,6 +9,8 @@ use Api\Model\Tool;
 use Api\Model\ToolState;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use DateTime;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -38,7 +40,7 @@ class StatController
      * @param $response
      * @param $args
      */
-    function monthly(Request $request, Response $response, $args) {
+    function monthly(RequestInterface $request, ResponseInterface $response, $args) {
         $data = array();
 
         // if month param given, lookup stat for that month, else stat of current month
@@ -64,7 +66,7 @@ class StatController
         return $response->withJson($data);
     }
 
-    function yearly($request, $response, $args) {
+    function yearly(RequestInterface $request, ResponseInterface $response, $args) {
 
     }
 

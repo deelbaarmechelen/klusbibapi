@@ -33,9 +33,9 @@ class MailManager {
 			$this->mailer = $mailer;
 		}
         $this->twig = $twig;
-		if (is_null($this->twig)) {
-            $loader = new \Twig_Loader_Filesystem(__DIR__ . '/../../../templates');
-            $this->twig = new Twig_Environment($loader, array(
+        if (is_null($this->twig)) {
+            $loader = new \Twig\Loader\FilesystemLoader(__DIR__ . '/../../../templates');
+            $this->twig = new \Twig\Environment($loader, array(
                 'cache' => __DIR__ . '/../../../public/cache/twig_compilations',
                 'auto_reload' => true
             ));
@@ -448,7 +448,7 @@ class MailManager {
             $this->logger->debug("Sending email with twig template to " . $to . " (identifier=" . $identifier . ")");
         }
         setlocale(LC_ALL, 'nl_BE');
-        $template = $this->twig->loadTemplate('/mail/'.$identifier.'.twig');
+        $template = $this->twig->load('/mail/'.$identifier.'.twig');
         $subject  = $template->renderBlock('subject',   $parameters);
         $body = $template->renderBlock('body', $parameters);
         if (empty($attachments)) {

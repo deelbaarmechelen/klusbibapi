@@ -1,7 +1,9 @@
 <?php
 namespace Api\Model;
 
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Api\Model\UserRole;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,6 +11,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class User extends Model
 {
 //    use SoftDeletes;
+    use HasFactory;
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return UserFactory::new();
+    }
 
     protected $primaryKey = "user_id";
 	public $incrementing = false;

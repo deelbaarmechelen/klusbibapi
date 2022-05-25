@@ -9,8 +9,8 @@ use Api\Token\Token;
 if (isset($_SERVER['REMOTE_ADDR'])) die('Permission denied.');
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../src/env.php';
-$settings = require __DIR__ . '/../src/settings.php';
+require __DIR__ . '/../app/env.php';
+$settings = require __DIR__ . '/../app/settings.php';
 echo "Extend memberships with 1 month\n";
 
 echo "selecting active members\n";

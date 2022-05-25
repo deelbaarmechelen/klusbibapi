@@ -10,6 +10,9 @@ class Token
 	public $decoded;
 	public function hydrate($decoded)
 	{
+	    if (is_array($decoded)) {
+	        $decoded = json_decode(json_encode($decoded), FALSE);
+        }
 		$this->decoded = $decoded;
 	}
 	public function hasScope(array $scope)

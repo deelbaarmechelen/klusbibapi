@@ -3,8 +3,8 @@ use Api\Token\Token;
 use Tests\DbUnitArrayDataSet;
 use Slim\Http\Request;
 use Slim\Http\Response;
-use Slim\Middleware\HttpBasicAuthentication;
-use Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
+use Tuupola\Middleware\HttpBasicAuthentication;
+use Tuupola\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Api\Model\UserState;
 use Api\Model\EmailState;
 
@@ -107,7 +107,6 @@ class UsersTest extends LocalDbWebTestCase
         );
         $this->setToken('guest', ["users.read.state"]);
         $body = $this->client->get('/users', $data);
-// 		print_r($body);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
         $user = json_decode($body);
 		$this->assertEquals(3, $user->user_id);
@@ -254,8 +253,8 @@ class UsersTest extends LocalDbWebTestCase
 		echo "test PUT users (password)\n";
 		$data = array("password" => "new pwd");
 		$header = array();
-// 		$newHash = password_hash("new pwd", PASSWORD_DEFAULT);
-// 		echo "expected new hash = $newHash \n";
+ 		$newHash = password_hash("new pwd", PASSWORD_DEFAULT);
+ 		echo "expected new hash = $newHash \n";
 		$this->setToken("1", null);
 		$responsePut = $this->client->put('/users/1', $data, $header);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
@@ -271,24 +270,18 @@ class UsersTest extends LocalDbWebTestCase
 	}
 	
 	private function callBasicAuthMw($user, $pwd, $expectedStatusCode = 200) {
-		$query = array();
-		$env = \Slim\Http\Environment::mock([
-				'REQUEST_METHOD' => 'POST',
-				'REQUEST_URI' => '/token',
-				'AUTH_TYPE' => 'Basic',
-				'PHP_AUTH_USER' => $user,
-				'PHP_AUTH_PW' => $pwd,
-				'SERVER_NAME' => 'example.com',
-				'CONTENT_TYPE' => 'application/json;charset=utf8',
-				'CONTENT_LENGTH' => 15
-		]);
-		$request = Request::createFromEnvironment($env);
+
+		$request = $this->createRequest('POST','/token', array(
+            'SERVER_NAME' => 'example.com',
+            'CONTENT_TYPE' => 'application/json;charset=utf8',
+            'CONTENT_LENGTH' => 15,
+            'AUTHORIZATION' => 'Basic ' . base64_encode($user.':'.$pwd)
+        ));
 		
-		$response = new Response;
 		$auth = new HttpBasicAuthentication([
 			"path" => "/token",
 			"secure" => false,
-			"relaxed" => ["admin", "klusbib.deeleco"],
+			"relaxed" => ["admin"],
 			"authenticator" => new PdoAuthenticator([
 					"pdo" => $this->getPdo(),
 					"table" => "users",
@@ -297,15 +290,21 @@ class UsersTest extends LocalDbWebTestCase
 			]),
 		]);
 		
-		$next = function (Request $request, Response $response) {
-			$response->getBody()->write("Success");
-			return $response;
-		};
-		
-		$response = $auth($request, $response, $next);
-		
+		$handler = new class() implements \Psr\Http\Server\RequestHandlerInterface {
+		    public function handle(\Psr\Http\Message\ServerRequestInterface $request): \Psr\Http\Message\ResponseInterface
+            {
+                echo "in handler";
+                $response = new \Slim\Psr7\Response();
+                $response->getBody()->write("Success");
+                return $response;
+            }
+        };
+        $response = $auth->process($request, $handler);
 		$this->assertEquals($expectedStatusCode, $response->getStatusCode());
-// 		$this->assertEquals("Success", $response->getBody());
+		if ($expectedStatusCode == \Api\Util\HttpResponseCode::OK) {
+		    // check handler is called when auth is successful
+            $this->assertEquals("Success", (string) $response->getBody());
+        }
 	}
 	
 	public function testPutUserNotFound()

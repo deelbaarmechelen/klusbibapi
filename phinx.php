@@ -1,7 +1,7 @@
 <?php
 
 if (file_exists(__DIR__ . '/.env')) {
-	$dotenv = new Dotenv\Dotenv(__DIR__);
+	$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
 	$dotenv->load();
 }
 // define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
@@ -71,6 +71,6 @@ $user = parse_url($url, PHP_URL_USER);
 $pass = parse_url($url, PHP_URL_PASS);
 $port = parse_url($url, PHP_URL_PORT);
 
-$settings = require __DIR__ . '/src/settings.php';
+$settings = require __DIR__ . '/app/settings.php';
 
 return $config;

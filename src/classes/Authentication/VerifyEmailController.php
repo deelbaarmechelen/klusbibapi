@@ -7,7 +7,9 @@ use Api\Model\UserState;
 use Api\Model\EmailState;
 use Api\Mail\MailManager;
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Slim\Middleware\JwtAuthentication;
+use Tuupola\Middleware\JwtAuthentication;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
 
 class VerifyEmailController
 {
@@ -16,7 +18,7 @@ class VerifyEmailController
     protected $jwtAuthentication;
     protected $view;
 
-    public function __construct($logger, JwtAuthentication $jwtAuthentication,$view) {
+    public function __construct($logger, JwtAuthentication $jwtAuthentication, $view) {
         $this->logger = $logger;
         $this->jwtAuthentication = $jwtAuthentication;
         $this->view = $view;
@@ -82,25 +84,14 @@ class VerifyEmailController
      *  - no user can be found for the given email
      */
     // TODO: replace this route by PUT on /users with a token containing 'dest' set to destination email in payload
-    public function confirmEmail($request, $response, $args) {
-        $token = $request->getQueryParam("token", $default = null);
-        if (is_null($token)) {
-            $this->logger->warn("Missing token or user id in email confirmation");
-            return $this->view->render($response, 'confirm_email.twig', [
-                'userId' => $args['userId'],
-                'result' => "MISSING_TOKEN_OR_EMAIL"
-            ]);
-        }
+    public function confirmEmail(Request $request, $response, $args) {
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $token = $queryParams['token'] ??  null;
+
+        $decoded = $request->getAttribute("token"); // is decoded token from jwt
 
         // Check token
-        $decoded = $this->jwtAuthentication->decodeToken($token);
         $this->logger->debug("decoded token=" . json_encode($decoded));
-        if (false === $decoded) {
-            return $this->view->render($response, 'confirm_email.twig', [
-                'userId' => $args['userId'],
-                'result' => "INVALID_TOKEN"
-            ]);
-        }
         $token = new Token();
         $token->hydrate($decoded);
         if ($args["userId"] != $token->getSub()) {

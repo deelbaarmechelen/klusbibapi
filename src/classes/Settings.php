@@ -1,7 +1,7 @@
 <?php
 
 namespace Api;
-require_once __DIR__ . '/../../src/env.php';
+require_once __DIR__ . '/../../app/env.php';
 
 class Settings
 {

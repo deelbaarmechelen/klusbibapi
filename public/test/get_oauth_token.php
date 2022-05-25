@@ -16,7 +16,7 @@
 namespace League\OAuth2\Client\Provider;
 
 require __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../../src/env.php';
+require_once __DIR__ . '/../../app/env.php';
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
