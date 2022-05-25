@@ -36,14 +36,14 @@ if (!defined('MAIL_AUTH_TYPE')) {
     define("MAIL_AUTH_TYPE", $authType != false ? $authType : 'XOAUTH2');
 }
 if (!defined('MAILER')) define("MAILER", $_ENV['MAILER'] );
-if (!defined('OAUTH_CLIENT_ID')) define("OAUTH_CLIENT_ID", $_ENV['OAUTH_CLIENT_ID'] );
-if (!defined('OAUTH_CLIENT_SECRET')) define("OAUTH_CLIENT_SECRET", $_ENV['OAUTH_CLIENT_SECRET'] );
-if (!defined('OAUTH_TOKEN')) define("OAUTH_TOKEN", $_ENV['OAUTH_TOKEN'] );
+if (!defined('OAUTH_CLIENT_ID')) define("OAUTH_CLIENT_ID", isset($_ENV['OAUTH_CLIENT_ID']) ? $_ENV['OAUTH_CLIENT_ID'] : "");
+if (!defined('OAUTH_CLIENT_SECRET')) define("OAUTH_CLIENT_SECRET", isset($_ENV['OAUTH_CLIENT_SECRET']) ? $_ENV['OAUTH_CLIENT_SECRET'] : "");
+if (!defined('OAUTH_TOKEN')) define("OAUTH_TOKEN", isset($_ENV['OAUTH_TOKEN']) ? $_ENV['OAUTH_TOKEN'] : "" );
 
-if (!defined('SENDER_NAME')) define("SENDER_NAME", $_ENV['SENDER_NAME'] );
-if (!defined('SENDER_EMAIL')) define("SENDER_EMAIL", $_ENV['SENDER_EMAIL'] );
-if (!defined('REPLYTO_NAME')) define("REPLYTO_NAME", $_ENV['REPLYTO_NAME'] );
-if (!defined('REPLYTO_EMAIL')) define("REPLYTO_EMAIL", $_ENV['REPLYTO_EMAIL'] );
+if (!defined('SENDER_NAME')) define("SENDER_NAME", isset($_ENV['SENDER_NAME']) ? $_ENV['SENDER_NAME'] : "" );
+if (!defined('SENDER_EMAIL')) define("SENDER_EMAIL", isset($_ENV['SENDER_EMAIL']) ? $_ENV['SENDER_EMAIL'] : "" );
+if (!defined('REPLYTO_NAME')) define("REPLYTO_NAME", isset($_ENV['REPLYTO_NAME']) ? $_ENV['REPLYTO_NAME'] : "" );
+if (!defined('REPLYTO_EMAIL')) define("REPLYTO_EMAIL", isset($_ENV['REPLYTO_EMAIL']) ? $_ENV['REPLYTO_EMAIL'] : "" );
 if (!defined('SUPPORT_NOTIF_EMAIL')) define("SUPPORT_NOTIF_EMAIL", $_ENV['SUPPORT_NOTIF_EMAIL'] );
 if (!defined('ENROLMENT_NOTIF_EMAIL')) define("ENROLMENT_NOTIF_EMAIL", $_ENV['ENROLMENT_NOTIF_EMAIL'] );
 if (!defined('RESERVATION_NOTIF_EMAIL')) define("RESERVATION_NOTIF_EMAIL", $_ENV['RESERVATION_NOTIF_EMAIL'] );
