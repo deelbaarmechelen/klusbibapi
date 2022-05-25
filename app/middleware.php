@@ -53,7 +53,8 @@ $app->addRoutingMiddleware();
  * Note: This middleware should be added last. It will not handle any exceptions/errors
  * for middleware added after it.
  */
-$displayErrorDetails = APP_ENV != 'production' ? true : false;
+//$displayErrorDetails = APP_ENV != 'production' ? true : false;
+$displayErrorDetails = APP_ENV == 'development' ? true : false;
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
 
 // Add any middleware which may modify the response body before adding the ContentLengthMiddleware
