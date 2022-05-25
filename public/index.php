@@ -11,6 +11,8 @@ if (PHP_SAPI == 'cli-server') {
 
 require __DIR__ . '/../vendor/autoload.php';
 
+ini_set('display_errors', 0); // force disable of errors in output -> avoids showing env vars in case of errors loading them
+
 session_start();
 
 // Instantiate the app
