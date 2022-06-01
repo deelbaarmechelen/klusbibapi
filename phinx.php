@@ -1,9 +1,9 @@
 <?php
 
-if (file_exists(__DIR__ . '/.env')) {
-	$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
-	$dotenv->load();
-}
+//if (file_exists(__DIR__ . '/.env')) {
+//	$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
+//	$dotenv->load();
+//}
 // define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
 $defaultUrl = "mysql://root:@127.0.0.1:3306/klusbibapi";
 $url = getenv('DATABASE_URL');
