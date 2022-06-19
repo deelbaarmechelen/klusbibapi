@@ -128,9 +128,11 @@ class EnrolmentManager
      */
     function enrolment($orderId, $paymentMode, $membershipType, $paymentCompleted = false,
                        $startMembershipDate = null, $acceptTermsDate = null){
+        $userStateUpdated = false;
         if ($this->user->state == UserState::DISABLED) {
             // enrolment for a disabled user -> enable the user and check payment as first step of enrolment
             $this->user->state = UserState::CHECK_PAYMENT;
+            $userStateUpdated = true;
         }
         // Validations
         $this->checkUserStateEnrolment();
@@ -196,7 +198,7 @@ class EnrolmentManager
         if ($this->user->role != UserRole::ADMIN && $this->user->role != UserRole::MEMBER) {
             $this->user->role = UserRole::MEMBER;
         }
-        $this->userMgr->update($this->user, false, false, false, false);
+        $this->userMgr->update($this->user, false, false, false, $userStateUpdated);
 
         // Create payment
         if ($payment == null) {
