@@ -78,7 +78,8 @@ class TokenController implements TokenControllerInterface
             return in_array($needle, $valid_scopes);
         });
         $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
-        $token = Token::generateToken($scopes, $sub);
+        $future = new \DateTime("now +24 hours");
+        $token = Token::generateToken($scopes, $sub, $future);
 
         // update last_login timestamp
         if ($sub >= 0) { // not guest login

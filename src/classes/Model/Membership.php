@@ -11,11 +11,6 @@ class Membership extends Model
 {
     use SoftDeletes;
 
-    const STATUS_PENDING = 'PENDING';
-    const STATUS_ACTIVE = 'ACTIVE';
-    const STATUS_CANCELLED = 'CANCELLED';
-    const STATUS_EXPIRED = 'EXPIRED';
-
     protected $table = "membership";
     protected $casts = [
         'start_at'  => 'date:Y-m-d',
@@ -72,20 +67,20 @@ class Membership extends Model
     }
     public function scopeActive($query)
     {
-        return $query->where('status', '=', Membership::STATUS_ACTIVE);
+        return $query->where('status', '=', MembershipState::STATUS_ACTIVE);
     }
     public function scopePending($query)
     {
-        return $query->where('status', '=', Membership::STATUS_PENDING);
+        return $query->where('status', '=', MembershipState::STATUS_PENDING);
     }
     public function scopeOpen($query)
     {
-        return $query->where('status', '=', Membership::STATUS_ACTIVE)
-            ->orWhere('status', '=', Membership::STATUS_PENDING);
+        return $query->where('status', '=', MembershipState::STATUS_ACTIVE)
+            ->orWhere('status', '=', MembershipState::STATUS_PENDING);
     }
     public function scopeExpired($query)
     {
-        return $query->where('status', '=', Membership::STATUS_EXPIRED);
+        return $query->where('status', '=', MembershipState::STATUS_EXPIRED);
     }
     public function scopeWithStatus($query, $status)
     {
@@ -116,10 +111,10 @@ class Membership extends Model
 
     // Validation
     public static function isValidStatus($status) {
-	    if ($status == Membership::STATUS_PENDING
-         || $status == Membership::STATUS_ACTIVE
-         || $status == Membership::STATUS_CANCELLED
-         || $status == Membership::STATUS_EXPIRED
+	    if ($status == MembershipState::STATUS_PENDING
+         || $status == MembershipState::STATUS_ACTIVE
+         || $status == MembershipState::STATUS_CANCELLED
+         || $status == MembershipState::STATUS_EXPIRED
         ) {
 	        return true;
         }

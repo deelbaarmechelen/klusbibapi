@@ -3,6 +3,7 @@
 namespace Api\User;
 
 use Api\Model\Membership;
+use Api\Model\MembershipState;
 use Api\Model\MembershipType;
 use Api\Model\PaymentMode;
 use Api\ModelMapper\DeliveryMapper;
@@ -360,7 +361,7 @@ class UserController implements UserControllerInterface
             $user->activeMembership()->dissociate($membership);
             $user->save();
             if ($membership->members()->count() <= 1) {
-                $membership->status = Membership::STATUS_CANCELLED;
+                $membership->status = MembershipState::STATUS_CANCELLED;
                 $membership->save();
             }
         }

@@ -30,7 +30,7 @@ foreach ($users as $user) {
     echo "email: " . $user->email . "\n";
     if ($user->activeMembership()->exists()) {
         $membership = $user->activeMembership()->first();
-        $membership->status = \Api\Model\Membership::STATUS_EXPIRED;
+        $membership->status = \Api\Model\MembershipState::STATUS_EXPIRED;
         $membership->save();
         $user->state = \Api\Model\UserState::EXPIRED;
         $user->save();

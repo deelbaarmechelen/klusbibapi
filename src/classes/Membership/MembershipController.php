@@ -5,10 +5,16 @@ namespace Api\Membership;
 
 use Api\Authorisation;
 use Api\Model\Membership;
+use Api\Model\MembershipState;
 use Api\Model\MembershipType;
+use Api\Model\User;
 use Api\ModelMapper\MembershipMapper;
 use Api\ModelMapper\UserMapper;
 use Api\User\UserManager;
+use Api\Util\HttpResponseCode;
+use Api\Validator\MembershipValidator;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class MembershipController
 {
@@ -86,16 +92,16 @@ class MembershipController
         $userId = $request->getQueryParam('user_id');
         $status = $request->getQueryParam('status');
         if (!isset($status)) {
-            $status = Membership::STATUS_ACTIVE;
+            $status = MembershipState::STATUS_ACTIVE;
         }
         $subscriptionId = $request->getQueryParam('subscription_id');
         $startAt = $request->getQueryParam('start_at');
 
-        if ($status == Membership::STATUS_ACTIVE) {
+        if ($status === MembershipState::STATUS_ACTIVE) {
             $query = Membership::active();
-        } elseif ($status == "OPEN") {
+        } elseif ($status === "OPEN") {
             $query = Membership::open();
-        } elseif ($status == "ALL") {
+        } elseif ($status === "ALL") {
             $query = Membership::anyStatus();
         } else {
             $query = Membership::withStatus($status);
@@ -134,5 +140,83 @@ class MembershipController
         $this->logger->info(count($memberships) . ' membership(s) found!');
         return $response->withJson($data)
             ->withHeader('X-Total-Count', count($memberships));
+    }
+
+    function update(RequestInterface $request, ResponseInterface $response, $args)
+    {
+        $this->logger->info("Klusbib PUT on '/membership/id' route");
+
+        if (false === $this->token->hasScope(["memberships.all", "memberships.update", "memberships.update.owner"])) {
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token not allowed to update memberships.");
+        }
+
+        $currentUser = User::find($this->token->getSub());
+
+        $membership = Membership::find($args['membershipId']);
+        if (null == $membership) {
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
+        }
+        $data = $request->getParsedBody();
+        $errors = array();
+        if (empty($data) || !MembershipValidator::isValidMembershipData($data, $this->logger, $errors)) {
+            $this->logger->info("errors=" . json_encode($errors));
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
+        }
+        $updateMembershipUsers = false;
+        if ($currentUser->isAdmin()) {
+            if (isset($data["status"]) && $data["status"] !== $membership->status) {
+                $this->logger->info("Klusbib PUT updating status from " . $membership->status . " to " . $data["status"]);
+                $membership->status = $data["status"];
+                $updateMembershipUsers = true;
+            }
+            if (isset($data["last_payment_mode"]) && $data["last_payment_mode"] !== $membership->last_payment_mode) {
+                $this->logger->info("Klusbib PUT updating last_payment_mode from " . $membership->last_payment_mode . " to " . $data["last_payment_mode"]);
+                $membership->last_payment_mode = $data["last_payment_mode"];
+                $updateMembershipUsers = true;
+            }
+            if (isset($data["start_at"]) && $data["start_at"] !== $membership->start_at) {
+                $this->logger->info("Klusbib PUT updating start_at from " . $membership->start_at . " to " . $data["start_at"]);
+                $membership->start_at = $data["start_at"];
+                $updateMembershipUsers = true;
+            }
+            if (isset($data["expires_at"]) && $data["expires_at"] !== $membership->expires_at) {
+                $this->logger->info("Klusbib PUT updating expires_at from " . $membership->expires_at . " to " . $data["expires_at"]);
+                $membership->expires_at = $data["expires_at"];
+                $updateMembershipUsers = true;
+            }
+            if (isset($data["subscription_id"]) && $data["subscription_id"] !== $membership->subscription_id) {
+                $this->logger->info("Klusbib PUT updating subscription_id from " . $membership->subscription_id . " to " . $data["subscription_id"]);
+                $membership->subscription_id = $data["subscription_id"];
+            }
+            if (isset($data["contact_id"]) && $data["contact_id"] !== $membership->contact_id) {
+                $this->logger->info("Klusbib PUT updating contact_id from " . $membership->contact_id . " to " . $data["contact_id"]);
+                $membership->contact_id = $data["contact_id"];
+            }
+            if (isset($data["comment"]) && $data["comment"] !== $membership->comment) {
+                $this->logger->info("Klusbib PUT updating comment from " . $membership->comment . " to " . $data["comment"]);
+                $membership->comment = $data["comment"];
+            }
+        }
+        if ($updateMembershipUsers) {
+            // lookup users for this membership
+            $this->logger->info("Klusbib PUT updating membership users... ");
+            $users = User::notDeleted()->hasMembership($membership->id)->get();
+            $this->logger->info("Klusbib PUT updating users " . \json_encode($users));
+            if ($users) {
+                foreach ($users as $user) {
+                    // FIXME: update active_membership if status becomes inactive (expired or cancelled?) ?
+//                    $user->membership_start_date = $membership->start_at;
+//                    $user->membership_end_date = $membership->expires_at;
+//                    $user->payment_mode = $membership->last_payment_mode;
+//                    $user->save();
+                }
+            }
+            $this->logger->info("Klusbib PUT membership users updated ! ");
+        }
+        $this->logger->info("Klusbib PUT saving updated membership: " . \json_encode($membership));
+        $membership->save();
+
+        return $response->withJson(MembershipMapper::mapMembershipToArray($membership));
+
     }
 }

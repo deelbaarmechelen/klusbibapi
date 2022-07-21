@@ -4,12 +4,22 @@ namespace Api\ModelMapper;
 
 
 use Api\Model\Membership;
+use Api\Model\MembershipState;
 use Api\Model\MembershipType;
 use Api\Model\User;
 use Api\Model\UserState;
 
 class MembershipMapper
 {
+
+    static public function mapArrayToMembership($data)
+    {
+        if (!is_array($data)) {
+            return null;
+        }
+        $membership = new Membership();
+
+    }
     static public function mapMembershipToArray($membership)
     {
         if (!isset($membership)) {
@@ -76,14 +86,14 @@ class MembershipMapper
     static public function getMembershipStatus($userState, $userId = "unknown"): string
     {
         if ($userState == UserState::ACTIVE) {
-            $status = Membership::STATUS_ACTIVE;
+            $status = MembershipState::STATUS_ACTIVE;
         } elseif ($userState == UserState::EXPIRED) {
-            $status = Membership::STATUS_EXPIRED;
+            $status = MembershipState::STATUS_EXPIRED;
         } elseif ($userState == UserState::CHECK_PAYMENT) {
-            $status = Membership::STATUS_PENDING;
+            $status = MembershipState::STATUS_PENDING;
         } elseif ($userState == UserState::DELETED
             || $userState == UserState::DISABLED) {
-            $status = Membership::STATUS_CANCELLED;
+            $status = MembershipState::STATUS_CANCELLED;
         } else {
             throw new \Exception("Invalid user state value $userState for user with id $userId");
         }

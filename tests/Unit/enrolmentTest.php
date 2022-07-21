@@ -81,37 +81,37 @@ class EnrolmentTest extends LocalDbWebTestCase
             ),
             'membership' => array(
                 array('id' => 1, 'subscription_id' => 1, 'contact_id' => 1,
-                    'status' => \Api\Model\Membership::STATUS_ACTIVE,
+                    'status' => \Api\Model\MembershipState::STATUS_ACTIVE,
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
                     'start_at' => $this->startdate->format('Y-m-d H:i:s'),
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
                 array('id' => 2, 'subscription_id' => 1, 'contact_id' => 2,
-                    'status' => \Api\Model\Membership::STATUS_ACTIVE,
+                    'status' => \Api\Model\MembershipState::STATUS_ACTIVE,
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
                     'start_at' => $this->startdate->format('Y-m-d H:i:s'),
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
                 array('id' => 3, 'subscription_id' => 1, 'contact_id' => 4,
-                    'status' => \Api\Model\Membership::STATUS_ACTIVE,
+                    'status' => \Api\Model\MembershipState::STATUS_ACTIVE,
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
                     'start_at' => $this->expiredStartDate->format('Y-m-d'),
                     'expires_at' => $this->expiredEndDate->format('Y-m-d')
                 ),
                 array('id' => 4, 'subscription_id' => 3, 'contact_id' => 4,
-                    'status' => \Api\Model\Membership::STATUS_PENDING,
+                    'status' => \Api\Model\MembershipState::STATUS_PENDING,
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
                     'start_at' => $this->expiredStartDate->format('Y-m-d'),
                     'expires_at' => $this->renewalEndDate->format('Y-m-d')
                 ),
                 array('id' => 5, 'subscription_id' => 1, 'contact_id' => 6,
-                    'status' => \Api\Model\Membership::STATUS_PENDING,
+                    'status' => \Api\Model\MembershipState::STATUS_PENDING,
                     'last_payment_mode' => \Api\Model\PaymentMode::MOLLIE,
                     'start_at' => $this->startdate->format('Y-m-d'),
                     'expires_at' => $this->enddate->format('Y-m-d')
                 ),
                 array('id' => 6, 'subscription_id' => 4, 'contact_id' => 8,
-                    'status' => \Api\Model\Membership::STATUS_ACTIVE,
+                    'status' => \Api\Model\MembershipState::STATUS_ACTIVE,
                     'last_payment_mode' => \Api\Model\PaymentMode::STROOM,
                     'start_at' => $this->startdate->format('Y-m-d'),
                     'expires_at' => $this->enddate->format('Y-m-d')

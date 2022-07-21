@@ -149,14 +149,14 @@ class User extends Model
     {
 //        return $query->where('state', '=', UserState::ACTIVE);
         return $query->whereHas('activeMembership', function (Builder $query) {
-            $query->where('status', '=', Membership::STATUS_ACTIVE);
+            $query->where('status', '=', MembershipState::STATUS_ACTIVE);
         });
     }
     public function scopeExpired($query)
     {
 //        return $query->where('state', '=', UserState::EXPIRED);
         return $query->whereHas('activeMembership', function (Builder $query) {
-            $query->where('status', '=', Membership::STATUS_EXPIRED);
+            $query->where('status', '=', MembershipState::STATUS_EXPIRED);
         });
     }
     public function scopeIsDeleted($query)
@@ -171,7 +171,7 @@ class User extends Model
     {
 //        return $query->where('state', '=', UserState::CHECK_PAYMENT);
         return $query->whereHas('activeMembership', function (Builder $query) {
-            $query->where('status', '=', Membership::STATUS_PENDING);
+            $query->where('status', '=', MembershipState::STATUS_PENDING);
         });
     }
     public function scopeAdmin($query)
@@ -181,6 +181,10 @@ class User extends Model
     public function scopeNotAdmin($query)
     {
         return $query->where('role', '<>', UserRole::ADMIN);
+    }
+    public function scopeHasMembership($query, $membershipId)
+    {
+        return $query->where('active_membership', '=', $membershipId);
     }
     public function scopeSearchName($query, $search)
     {

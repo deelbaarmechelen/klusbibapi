@@ -5,6 +5,7 @@ namespace Api\Enrolment;
 use Api\Exception\EnrolmentException;
 use Api\Mail\MailManager;
 use Api\Model\Membership;
+use Api\Model\MembershipState;
 use Api\Model\MembershipType;
 use Api\Model\PaymentState;
 use Api\Model\Product;
@@ -172,7 +173,7 @@ class EnrolmentManager
 
         // FIXME: status should no longer be based on user state...
 //        $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->user_id);
-        $status = Membership::STATUS_PENDING;
+        $status = MembershipState::STATUS_PENDING;
         if (empty($startMembershipDate) ) {
             $start_date = strftime('%Y-%m-%d', time());
         } else {
@@ -183,7 +184,7 @@ class EnrolmentManager
         // cancel eventual pending memberships
         $pendingMemberships = $this->user->memberships()->pending()->get();
         foreach($pendingMemberships as $pending) {
-            $pending->status = Membership::STATUS_CANCELLED;
+            $pending->status = MembershipState::STATUS_CANCELLED;
             $pending->save();
         }
         $membership = $this->createMembership($membershipType, $start_date, $end_date, $this->user, $status);
@@ -245,7 +246,7 @@ class EnrolmentManager
             } else {
                 $start_date = strftime('%Y-%m-%d', time());
                 $end_date = self::getMembershipEndDate($start_date, $membershipType);
-                $membership = self::createMembership($membershipType, $start_date, $end_date, $this->user, Membership::STATUS_PENDING);
+                $membership = self::createMembership($membershipType, $start_date, $end_date, $this->user, MembershipState::STATUS_PENDING);
             }
 
 //            $membershipId = $this->createUserMembership($membershipType);
@@ -530,13 +531,13 @@ class EnrolmentManager
     }
 
     function getUserState($membershipStatus) {
-        if ($membershipStatus == Membership::STATUS_ACTIVE) {
+        if ($membershipStatus == MembershipState::STATUS_ACTIVE) {
             $state = UserState::ACTIVE;
-        } elseif ($membershipStatus == Membership::STATUS_EXPIRED) {
+        } elseif ($membershipStatus == MembershipState::STATUS_EXPIRED) {
             $state = UserState::EXPIRED;
-        } elseif ($membershipStatus == Membership::STATUS_PENDING) {
+        } elseif ($membershipStatus == MembershipState::STATUS_PENDING) {
             $state = UserState::CHECK_PAYMENT;
-        } elseif ($membershipStatus == Membership::STATUS_CANCELLED) {
+        } elseif ($membershipStatus == MembershipState::STATUS_CANCELLED) {
             $state = UserState::DISABLED;
         } else {
             throw new \Exception("Invalid user state value $membershipStatus for user with id $this->user->user_id");
@@ -597,7 +598,7 @@ class EnrolmentManager
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_MODE);
         }
 
-        $membership->status = Membership::STATUS_CANCELLED; // keep a cancelled membership for history
+        $membership->status = MembershipState::STATUS_CANCELLED; // keep a cancelled membership for history
         $membership->save();
         $user->state = UserState::DELETED;
         // update user through user manager to also sync inventory!
@@ -638,17 +639,17 @@ class EnrolmentManager
     function renewMembership(MembershipType $newType, Membership $membership) : Membership {
         $end_date = self::getMembershipEndDate($membership->expires_at->format('Y-m-d'), $newType);
 
-        $renewalMembership = self::createMembership($newType, $membership->start_at, $end_date, null, Membership::STATUS_PENDING);
+        $renewalMembership = self::createMembership($newType, $membership->start_at, $end_date, null, MembershipState::STATUS_PENDING);
         return $renewalMembership;
     }
 
     function activateMembership(?Membership $currentMembership, Membership $renewedMembership) {
         if ($currentMembership != null) {
-            $currentMembership->status = Membership::STATUS_EXPIRED;
+            $currentMembership->status = MembershipState::STATUS_EXPIRED;
             $currentMembership->save();
         }
 
-        $renewedMembership->status = Membership::STATUS_ACTIVE;
+        $renewedMembership->status = MembershipState::STATUS_ACTIVE;
         $renewedMembership->save();
         if (isset($this->user)) {
             $this->logger->info("associating new membership");
@@ -711,7 +712,7 @@ class EnrolmentManager
         $membership->status = $status;
         $membership->save();
 
-        if (isset($user) && $status == Membership::STATUS_ACTIVE) {
+        if (isset($user) && $status == MembershipState::STATUS_ACTIVE) {
             $user->activeMembership()->associate($membership);
             //$this->userMgr->update($user); FIXME: -> not accessible, static method...
             $user->save();
@@ -1056,7 +1057,7 @@ class EnrolmentManager
             if ($productId == \Api\Model\Product::ENROLMENT) {
                 if ($payment->state == PaymentState::SUCCESS) {
                     // FIXME: should be based on membership status instead of user state!
-                    if ($user->state != UserState::ACTIVE || $membership->status != Membership::STATUS_ACTIVE) {
+                    if ($user->state != UserState::ACTIVE || $membership->status != MembershipState::STATUS_ACTIVE) {
                         $this->activateMembership(null, $membership);
 //                        $membership->status = Membership::STATUS_ACTIVE;
 //                        $membership->save();
@@ -1120,7 +1121,7 @@ class EnrolmentManager
                     || $payment->state == PaymentState::CHARGEBACK) {
                     // update renewal membership status
                     $renewalMembership = $payment->membership()->first();
-                    $renewalMembership->status = Membership::STATUS_CANCELLED;
+                    $renewalMembership->status = MembershipState::STATUS_CANCELLED;
                     $renewalMembership->save();
 
                     // Permanent failure, or special case -> send notification for manual follow up

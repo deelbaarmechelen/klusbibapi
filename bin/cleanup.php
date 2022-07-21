@@ -125,7 +125,7 @@ function markAsDeleted($users)
             // cancel membership
             if ($user->activeMembership()->exists()) {
                 $membership = $user->activeMembership()->first();
-                $membership->status = \Api\Model\Membership::STATUS_CANCELLED;
+                $membership->status = \Api\Model\MembershipState::STATUS_CANCELLED;
                 $membership->save();
             }
             $user->state = UserState::DELETED;
