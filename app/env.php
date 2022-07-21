@@ -1,8 +1,8 @@
 <?php
-//if (file_exists(__DIR__ . '/../.env')) {
-//	$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-//	$dotenv->load();
-//}
+if (file_exists(__DIR__ . '/../.env.dev')) {
+	$dotenv = \Dotenv\Dotenv::createMutable(__DIR__ . '/../', '.env.dev');
+	$envs = $dotenv->safeLoad();
+}
 
 $url = $_ENV['DATABASE_URL'];
 if (isset($url) && !empty($url)) {
