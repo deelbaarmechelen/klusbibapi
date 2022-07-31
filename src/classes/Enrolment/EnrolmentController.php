@@ -84,7 +84,13 @@ class EnrolmentController
         }
 
         if (!empty($data["acceptTermsDate"]) ) {
-            $acceptTermsDate = Carbon::createFromFormat('Y-m-d', $data["acceptTermsDate"]);
+            try {
+                $acceptTermsDate = Carbon::createFromFormat('Y-m-d', $data["acceptTermsDate"]);
+
+            } catch (\Exception $ex) {
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                ->withJson("Invalid acceptTermsDate: " . $ex->getMessage());
+            }
             if (Carbon::now()->lt($acceptTermsDate)) {
 
                 $message = "Not possible to accept future terms";
@@ -102,7 +108,12 @@ class EnrolmentController
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
                 ->withJson("Missing or invalid data: $message");
             }
-            $startMembershipDate = Carbon::createFromFormat('Y-m-d', $data["startMembershipDate"]);
+            try {
+                $startMembershipDate = Carbon::createFromFormat('Y-m-d', $data["startMembershipDate"]);
+            } catch (\Exception $ex) {
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)// Bad request
+                ->withJson("Invalid startMembershipDate: " . $ex->getMessage());
+            }
         }
 
         if (empty($data["membershipType"])) { // set default values for backward compatibility
