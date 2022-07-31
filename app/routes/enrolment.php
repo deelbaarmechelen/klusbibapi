@@ -9,35 +9,39 @@ $container = $app->getContainer();
  * Add Authentication middleware
  */
 $mw = function (Request $request, RequestHandler $handler) use ($container) {
+
+    /**
+     * @param $paymentMode
+     * @param $data
+     * @return bool true when payment has already been completed
+     */
+    function isPaymentCompleted($data): bool
+    {
+        $paymentMode = $data["paymentMode"];
+        $paymentCompleted = false;
+        if ($paymentMode == \Api\Model\PaymentMode::CASH
+            || $paymentMode == PaymentMode::PAYCONIQ
+            || $paymentMode == PaymentMode::LETS
+            || $paymentMode == PaymentMode::OVAM
+            || $paymentMode == PaymentMode::MBON
+            || $paymentMode == PaymentMode::KDOBON
+            || $paymentMode == PaymentMode::SPONSORING
+            || $paymentMode == PaymentMode::OTHER) {
+            $paymentCompleted = true;
+        } elseif ($paymentMode == PaymentMode::TRANSFER
+            && isset($data["paymentCompleted"])
+            && ($data["paymentCompleted"] === true || strcasecmp($data["paymentCompleted"], 'true') == 0)) {
+            // boolean true or string value "true"
+            $paymentCompleted = true;
+        }
+        return $paymentCompleted;
+    }
+
     $data = $request->getParsedBody();
-    $paymentMode = $data["paymentMode"];
-    if (empty($data["startMembershipDate"])) {
-        $startMembershipDate = null;
-    } else {
-        $startMembershipDate = \Carbon\Carbon::createFromFormat('Y-m-d', $data["startMembershipDate"]);
-    }
-
-    $paymentCompleted = false;
-    if ($paymentMode == \Api\Model\PaymentMode::CASH
-        || $paymentMode == PaymentMode::PAYCONIQ
-        || $paymentMode == PaymentMode::LETS
-        || $paymentMode == PaymentMode::OVAM
-        || $paymentMode == PaymentMode::MBON
-        || $paymentMode == PaymentMode::KDOBON
-        || $paymentMode == PaymentMode::SPONSORING
-        || $paymentMode == PaymentMode::OTHER) {
-        $paymentCompleted = true;
-    } elseif ($paymentMode == PaymentMode::TRANSFER
-        && isset($data["paymentCompleted"])
-        && ($data["paymentCompleted"] === true || strcasecmp ($data["paymentCompleted"], 'true') == 0 )) {
-        // boolean true or string value "true"
-        $paymentCompleted = true;
-    }
-
-    // registering a completed payment requires admin rights
-    // Only admin can specify explicit membership start date
-    // we still need to do authentication, as this is skipped for /enrolment route
-    if ($paymentCompleted || !empty($startMembershipDate)) {
+    // Add JWT authentication when admin rights are required:
+    // - registering a completed payment
+    // - an explicit membership start date is specified
+    if (isPaymentCompleted($data) || !empty($data["startMembershipDate"])) {
         $jwtAuth = new \Tuupola\Middleware\JwtAuthentication([
             "path" => "/",
             "ignore" => ["/token", "/welcome", "/upload", "/payments", "/stats",
