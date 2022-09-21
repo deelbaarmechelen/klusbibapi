@@ -1,7 +1,11 @@
 <?php
 if (file_exists(__DIR__ . '/../.env')) {
-	$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-	$dotenv->load();
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv->load();
+}
+if (file_exists(__DIR__ . '/../.env.test')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv->load();
 }
 
 // define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
@@ -16,7 +20,8 @@ $usertst = parse_url($urltst, PHP_URL_USER);
 $passtst = parse_url($urltst, PHP_URL_PASS);
 $porttst = parse_url($urltst, PHP_URL_PORT);
 
-defined('PROJECT_HOME') or define("PROJECT_HOME",getenv('PROJECT_HOME'));
+defined('PROJECT_HOME') or define("PROJECT_HOME",$_ENV['PROJECT_HOME']);
+defined('JWT_SECRET') or define("JWT_SECRET",$_ENV['JWT_SECRET']);
 defined('APP_ENV') or define("APP_ENV",'development');
 
 defined('MAIL_PORT') or define("MAIL_PORT", "26"); // smtp port number

@@ -148,7 +148,7 @@ $container->set("JwtAuthentication", function (ContainerInterface $container) {
 			"path" => "/",
 			"ignore" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
                 "/auth/reset", "/auth/verifyemail"],
-			"secret" => getenv("JWT_SECRET"),
+			"secret" => JWT_SECRET,
 			"logger" => $container->get("logger"),
 			"secure" => false, // FIXME: enable HTTPS and switch this to true
 			"relaxed" => ["admin"], // list hosts allowed without HTTPS for DEV
