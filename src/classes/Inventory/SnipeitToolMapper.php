@@ -42,7 +42,6 @@ abstract class SnipeitToolMapper
         $item->current_location_id = $currentLocationId;//')->unsigned()->nullable()->default(null);
         $item->item_condition = null;//')->unsigned()->nullable()->default(null);
         $item->sku = $asset->asset_tag;
-//        $item->description =  $asset->notes;//', 1024)->nullable()->default(null);
         $item->keywords =  self::mapAssetCategoryToToolCategory($asset);
         $item->brand =  html_entity_decode ($asset->manufacturer->name);//', 1024)->nullable()->default(null);
         $item->care_information =  null;//', 1024)->nullable()->default(null); - full description - shown online
@@ -64,6 +63,7 @@ abstract class SnipeitToolMapper
         $item->owned_by = null; //')->unsigned()->nullable()->default(null);
 
         if (isset($asset->custom_fields) && !empty($asset->custom_fields)) {
+            $item->description = isset($asset->custom_fields->public_description) ? $asset->custom_fields->public_description->value : null;
             $item->price_sell = isset($asset->custom_fields->replacement_value) ? floatval($asset->custom_fields->replacement_value->value) : null; // FIXME: derive from depreciation rules?
             $item->experience_level = isset($asset->custom_fields->experience_level) ? $asset->custom_fields->experience_level->value : null;
             $item->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
@@ -149,7 +149,7 @@ abstract class SnipeitToolMapper
         $tool->tool_id = $asset->id;
         $tool->tool_ext_id = $asset->id;
         $tool->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
-//        $tool->description = $asset->notes;
+//        $tool->description = $asset->notes; -> notes is for internal use, and may not be shown on public website
         $tool->code = $asset->asset_tag;
 //        $tool->owner_id = $data["owner_id"]; // FIXME: should match supplier??
 //        $tool->reception_date = $data["reception_date"];
@@ -161,6 +161,7 @@ abstract class SnipeitToolMapper
 //        $tool->manufacturer_url = $data["manufacturer_url"];
         $tool->img = $asset->image;
         if (isset($asset->custom_fields) && !empty($asset->custom_fields)) {
+            $tool->description = isset($asset->custom_fields->public_description) ? $asset->custom_fields->public_description->value : null;
             $tool->replacement_value = isset($asset->custom_fields->replacement_value) ? $asset->custom_fields->replacement_value->value : null; // FIXME: derive from depreciation rules?
             $tool->experience_level = isset($asset->custom_fields->experience_level) ? $asset->custom_fields->experience_level->value : null;
             $tool->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
