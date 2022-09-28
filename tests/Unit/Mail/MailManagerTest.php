@@ -415,8 +415,8 @@ if (!class_exists('ContactTest')) {
         protected $table = 'users';
         public $incrementing = false;
         //['user_id', 'state', 'first_name', 'last_name', 'role', 'email',
-        //'membership_start_date', 'membership_end_date', 'birth_date', 'address_line_1', 'postal_code', 'city',
-        //'telephone', 'mobile', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
+        //'membership_start_date', 'membership_end_date', 'address_line_1', 'postal_code', 'city',
+        //'telephone', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
         public $id = 999;
         public $first_name;
         public $last_name;

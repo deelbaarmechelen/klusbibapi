@@ -2,11 +2,11 @@
 namespace Api\ModelMapper;
 
 use Api\Model\Membership;
-use \Api\Model\Contact;
+use Api\Model\Contact;
 
 class UserMapper
 {
-	static public function mapUserToArray($user) {
+	static public function mapUserToArray(Contact $user) {
         $membership = Membership::find($user->active_membership);
 		$userArray = array("user_id" => $user->id,
             "user_ext_id" => $user->user_ext_id,
@@ -21,12 +21,11 @@ class UserMapper
             //"membership_start_date" => !$membership ? $user->membership_start_date : $membership->start_at,
             "membership_end_date" => $user->membership_end_date,
             //"membership_end_date" => !$membership ? $user->membership_end_date : $membership->expires_at,
-            "birth_date" => $user->birth_date,
             "address" => $user->address,
             "postal_code" => $user->postal_code,
             "city" => $user->city,
-            "phone" => $user->phone,
-            "mobile" => $user->mobile,
+            "phone" => $user->telephone,
+            "mobile" => $user->telephone,
             "registration_number" => $user->registration_number,
             "payment_mode" => $user->payment_mode,
             "accept_terms_date" => !$user->accept_terms_date ? null : $user->accept_terms_date->format('Y-m-d'),
@@ -40,7 +39,7 @@ class UserMapper
 		
 		return $userArray;
 	}
-	static public function mapArrayToUser($data, $user, $isAdmin = false, $logger = null) {
+	static public function mapArrayToUser($data, Contact $user, $isAdmin = false, $logger = null) {
 		if (isset($data["user_id"]) && !empty($data["user_id"]) && $isAdmin) {
 			$user->id= $data["user_id"];
 		}
@@ -90,10 +89,10 @@ class UserMapper
 			$user->city = $data["city"];
 		}
 		if (isset($data["phone"])) {
-			$user->phone = $data["phone"];
+			$user->telephone = $data["phone"];
 		}
 		if (isset($data["mobile"])) {
-			$user->mobile = $data["mobile"];
+			$user->telephone = $data["mobile"];
 		}
 		if (isset($data["registration_number"])) {
 			$user->registration_number = $data["registration_number"];

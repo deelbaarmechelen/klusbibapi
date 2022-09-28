@@ -46,7 +46,7 @@ class UserManager
      * @param $sync when true, force sync of user with inventory
      * @return mixed
      */
-    function getById($id, $sync = false) {
+    function getById($id, $sync = false) : ?Contact {
         $this->logger->debug("UserManager.getById: Get user by ID $id");
 
         try {

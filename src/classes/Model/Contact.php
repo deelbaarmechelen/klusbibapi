@@ -29,8 +29,8 @@ class Contact extends Model
 	public $incrementing = false;
 
 	static protected $fieldArray = ['id', 'state', 'first_name', 'last_name', 'role', 'email', 'email_state',
-			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
-			'phone', 'mobile', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
+			'membership_start_date', 'membership_end_date', 'address', 'postal_code', 'city',
+			'phone', 'telephone', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
             'last_sync_date', 'active_membership', 'company', 'comment', 'last_login', 'created_at', 'updated_at'
 	];
 

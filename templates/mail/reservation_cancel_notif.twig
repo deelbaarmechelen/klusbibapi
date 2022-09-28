@@ -12,8 +12,7 @@ De reservatie stond op naam van {{ user.first_name }} {{ user.last_name }} (user
 liep van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}<br/>
 Contactgegevens:<br/>
 Adress: {{ user.address }} {{ user.postal_code}} {{ user.city }}<br/>
-Telefoon: {{ user.phone }}<br/>
-GSM: {{ user.mobile }}<br/>
+Telefoon: {{ user.telephone }}<br/>
 Email: {{ user.email }} ({{ user.email_state }})<br/>
 </p>
 <p>
