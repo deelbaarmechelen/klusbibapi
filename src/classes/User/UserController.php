@@ -12,7 +12,7 @@ use Api\Tool\ToolManager;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Model\UserState;
 use Api\Model\EmailState;
 use Api\ModelMapper\UserMapper;
@@ -58,8 +58,8 @@ class UserController implements UserControllerInterface
             $sortdir = 'asc';
         }
         $sortfield = $queryParams['_sortField'] ??  null;
-        if (!User::canBeSortedOn($sortfield) ) {
-            $sortfield = 'lastname';
+        if (!Contact::canBeSortedOn($sortfield) ) {
+            $sortfield = 'last_name';
         }
         $page = $queryParams['_page'] ??  null;
         if (!isset($page)) {
@@ -70,7 +70,7 @@ class UserController implements UserControllerInterface
             $perPage = '1000';
         }
         $query = $queryParams['_query'] ??  null;
-        $userQuery = User::notDeleted();
+        $userQuery = Contact::notDeleted();
         if (isset($query)) {
             $userQuery->searchName($query);
         }
@@ -137,11 +137,11 @@ class UserController implements UserControllerInterface
         }
 
         $isAdmin = false;
-        $user = new User;
+        $user = new Contact;
         $authorised = Authorisation::checkUserAccess($this->token, "create", null);
         if ($authorised) {
             // check if authenticated user is also admin
-            $currentUser = User::find($this->token->getSub());
+            $currentUser = Contact::find($this->token->getSub());
             if (!isset($currentUser)) {
                 $this->logger->warn("No user found for token " + $this->token->getSub());
                 return $response->withStatus(HttpResponseCode::FORBIDDEN);
@@ -184,7 +184,7 @@ class UserController implements UserControllerInterface
         }
         if (isset($data["email"])) {
             $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');
-            $userByEmail = User::where('email', $data["email"])->first();
+            $userByEmail = Contact::where('email', $data["email"])->first();
             if (isset($userByEmail)) {
                 $this->logger->info('user with email ' . $data["email"] . ' already exists');
                 // user already exists
@@ -209,9 +209,9 @@ class UserController implements UserControllerInterface
         // TODO: else : check user exists based on name? or registration id?
 
         if (!isset($data["user_id"]) || empty($data["user_id"])) {
-            $max_user_id = Capsule::table('users')->max('user_id');
-            $user->user_id = $max_user_id + 1;
-            $this->logger->info("New user will be assigned id " . $user->user_id);
+            $max_user_id = Capsule::table('contact')->max('id');
+            $user->id = $max_user_id + 1;
+            $this->logger->info("New user will be assigned id " . $user->id);
         } else {
             // check user_id is numeric
             if (!is_numeric($data["user_id"])) {
@@ -235,7 +235,7 @@ class UserController implements UserControllerInterface
         // FIXME: check if this can be removed and call "POST enrolment" instead
 //        if (!empty($user->membership_start_date) && empty($user->active_membership)) {
 //            // create membership
-//            $status = MembershipMapper::getMembershipStatus($user->state, $user->user_id);
+//            $status = MembershipMapper::getMembershipStatus($user->state, $user->id);
 //            // FIXME: membership type not known yet. Could be stroom if payment mode STROOM is chosen in next step
 //            \Api\Enrolment\EnrolmentManager::createMembership(MembershipType::regular(), $user->membership_start_date,
 //                $user->membership_end_date, $user, $status);
@@ -244,9 +244,9 @@ class UserController implements UserControllerInterface
         $this->logger->info("User created!");
         if ($sendEmailVerification) {
             $this->logger->info("Sending email verification");
-            $sub = $user->user_id;
+            $sub = $user->id;
             $scopes = ["auth.confirm"];
-            $result = $mailmgr->sendEmailVerification($user->user_id, $user->firstname, $user->email,
+            $result = $mailmgr->sendEmailVerification($user->id, $user->first_name, $user->email,
                 Token::generateToken($scopes, $sub));
             $this->logger->info('Sending email verification result: ' . $mailmgr->getLastMessage());
         }
@@ -256,7 +256,7 @@ class UserController implements UserControllerInterface
             $result = $mailmgr->sendEnrolmentNotification(ENROLMENT_NOTIF_EMAIL, $user);
             $this->logger->info('Sending enrolment notification result: ' . $mailmgr->getLastMessage());
         }
-        $resourceUri = '/users/' . $user->user_id;
+        $resourceUri = '/users/' . $user->id;
         return $response->withAddedHeader('Location', $resourceUri)
             ->withJson(UserMapper::mapUserToArray($user))
             ->withStatus(201);
@@ -270,9 +270,9 @@ class UserController implements UserControllerInterface
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token not allowed to update users.");
         }
 
-        $currentUser = \Api\Model\User::find($this->token->getSub());
+        $currentUser = \Api\Model\Contact::find($this->token->getSub());
 
-        $user = \Api\Model\User::find($args['userid']);
+        $user = \Api\Model\Contact::find($args['userid']);
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
@@ -280,7 +280,7 @@ class UserController implements UserControllerInterface
             $this->confirmEmail($user);
         }
         if (false === $this->token->hasScope(["users.all", "users.update"]) &&
-            $user->user_id != $this->token->decoded->sub) {
+            $user->id != $this->token->decoded->sub) {
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token sub doesn't match user.");
         }
 
@@ -310,12 +310,12 @@ class UserController implements UserControllerInterface
         if (false === $this->token->hasScope(["users.all", "users.update", "users.update.owner"])) {
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token not allowed to update user terms.");
         }
-        $user = \Api\Model\User::find($args['userid']);
+        $user = \Api\Model\Contact::find($args['userid']);
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         if (false === $this->token->hasScope(["users.all", "users.update"]) &&
-            $user->user_id != $this->token->decoded->sub) {
+            $user->id != $this->token->decoded->sub) {
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token sub doesn't match user.");
         }
 
@@ -350,7 +350,7 @@ class UserController implements UserControllerInterface
             throw new ForbiddenException("Token not allowed to delete users.", 403);
         }
 
-        $user = \Api\Model\User::find($args['userid']);
+        $user = \Api\Model\Contact::find($args['userid']);
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::NO_CONTENT);
         }
@@ -369,12 +369,12 @@ class UserController implements UserControllerInterface
         return $response->withStatus(HttpResponseCode::OK);
     }
 
-    protected function confirmEmail(User $user) {
+    protected function confirmEmail(Contact $user) {
         if ( $this->token->hasScope(["auth.confirm"])
             && $this->token->getDest() != null ) {
             if ($user->email == $this->token->getDest()) {
                 $user->email_state = EmailState::CONFIRMED;
-                $this->logger->info("Email address $user->email has been confirmed (user id $user->user_id)");
+                $this->logger->info("Email address $user->email has been confirmed (user id $user->id)");
             }
         }
     }
@@ -396,15 +396,15 @@ class UserController implements UserControllerInterface
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson(array('message' => "Missing email parameter"));
             }
-            $user = Capsule::table('users')->where('email', $email)->first();
-            if (!isset($user)) {
+            $contact = Capsule::table('contact')->where('email', $email)->first();
+            if (!isset($contact)) {
                 return $response->withStatus(HttpResponseCode::NOT_FOUND)
                     ->withJson(array('message' => "Unknown email"));
             }
 
-            return $response->withJson(array("user_id" => $user->user_id,
-                "state" => $user->state,
-                "membership_end_date" => $user->membership_end_date
+            return $response->withJson(array("user_id" => $contact->id,
+                "state" => $contact->state,
+                "membership_end_date" => $contact->membership_end_date
             ));
         }
         $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));

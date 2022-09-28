@@ -128,7 +128,7 @@ $container->set("HttpBasicAuthentication", function (ContainerInterface $contain
 $container->set("JwtAuthentication", function (ContainerInterface $container) {
 	return new JwtAuthentication([
             "path" => "/",
-			"secret" => getenv("JWT_SECRET"),
+			"secret" => JWT_SECRET,
 			"logger" => $container->get("logger"),
 //			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
 			"secure" => false, // disable -> scheme not always correctly set on request!

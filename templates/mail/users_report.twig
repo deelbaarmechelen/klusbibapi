@@ -21,10 +21,10 @@
     {% for user in active_users %}
         <tr>
             <td>{{ loop.index }}</td>
-            <td>{{ user.firstname|e }}</td>
-            <td>{{ user.lastname|e }}</td>
+            <td>{{ user.first_name|e }}</td>
+            <td>{{ user.last_name|e }}</td>
             <td>{{ user.role|e }}</td>
-            <td>{{ user.phone|e }}</td>
+            <td>{{ user.telephone|e }}</td>
             <td>{{ user.mobile|e }}</td>
             <td>{{ user.email|e }}</td>
             <td>{{ user.email_state|e }}</td>
@@ -51,10 +51,10 @@
     {% for user in expired_users %}
         <tr>
             <td>{{ loop.index }}</td>
-            <td>{{ user.firstname|e }}</td>
-            <td>{{ user.lastname|e }}</td>
+            <td>{{ user.first_name|e }}</td>
+            <td>{{ user.last_name|e }}</td>
             <td>{{ user.role|e }}</td>
-            <td>{{ user.phone|e }}</td>
+            <td>{{ user.telephone|e }}</td>
             <td>{{ user.mobile|e }}</td>
             <td>{{ user.email|e }}</td>
             <td>{{ user.email_state|e }}</td>
@@ -82,11 +82,11 @@
     {% for user in pending_users %}
         <tr>
             <td>{{ loop.index }}</td>
-            <td>{{ user.firstname|e }}</td>
-            <td>{{ user.lastname|e }}</td>
+            <td>{{ user.first_name|e }}</td>
+            <td>{{ user.last_name|e }}</td>
             <td>{{ user.state|e }}</td>
             <td>{{ user.role|e }}</td>
-            <td>{{ user.phone|e }}</td>
+            <td>{{ user.telephone|e }}</td>
             <td>{{ user.mobile|e }}</td>
             <td>{{ user.email|e }}</td>
             <td>{{ user.email_state|e }}</td>

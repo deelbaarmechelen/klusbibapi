@@ -44,7 +44,7 @@ class PasswordResetController
         }
 
         // generate temporary token allowing password change
-        $sub = $user->user_id;
+        $sub = $user->id;
         $requested_scopes = Token::allowedScopes($user->role);
         $scopes = array_filter($requested_scopes, function ($needle) {
             return in_array($needle, Token::resetPwdScopes());
@@ -54,7 +54,7 @@ class PasswordResetController
 
         // generate email
         $mailMgr = new MailManager();
-        $result = $mailMgr->sendPwdRecoveryMail($user->user_id, $user->firstname, $email, $token, $redirectUrl);
+        $result = $mailMgr->sendPwdRecoveryMail($user->id, $user->first_name, $email, $token, $redirectUrl);
 
         if (!$result) { // error in mail send
             $error["message"] = $mailMgr->getLastMessage();

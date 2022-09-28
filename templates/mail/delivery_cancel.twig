@@ -1,7 +1,7 @@
 {% block subject 'Annulatie van levering/ophaling' %}
 
 {% block body %}
-Beste {{ user.firstname }},<br><br>
+Beste {{ user.first_name }},<br><br>
 <p>{% if delivery.type == 'PICKUP' %}
     De ophaling van volgende toestellen werd geschrapt
 {% endif %}

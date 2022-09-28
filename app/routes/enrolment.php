@@ -10,31 +10,34 @@ $container = $app->getContainer();
  */
 $mw = function (Request $request, RequestHandler $handler) use ($container) {
 
-    /**
-     * @param $paymentMode
-     * @param $data
-     * @return bool true when payment has already been completed
-     */
-    function isPaymentCompleted($data): bool
-    {
-        $paymentMode = $data["paymentMode"];
-        $paymentCompleted = false;
-        if ($paymentMode == \Api\Model\PaymentMode::CASH
-            || $paymentMode == PaymentMode::PAYCONIQ
-            || $paymentMode == PaymentMode::LETS
-            || $paymentMode == PaymentMode::OVAM
-            || $paymentMode == PaymentMode::MBON
-            || $paymentMode == PaymentMode::KDOBON
-            || $paymentMode == PaymentMode::SPONSORING
-            || $paymentMode == PaymentMode::OTHER) {
-            $paymentCompleted = true;
-        } elseif ($paymentMode == PaymentMode::TRANSFER
-            && isset($data["paymentCompleted"])
-            && ($data["paymentCompleted"] === true || strcasecmp($data["paymentCompleted"], 'true') == 0)) {
-            // boolean true or string value "true"
-            $paymentCompleted = true;
+    if(!function_exists('isPaymentCompleted')){
+
+        /**
+         * @param $paymentMode
+         * @param $data
+         * @return bool true when payment has already been completed
+         */
+        function isPaymentCompleted($data): bool
+        {
+            $paymentMode = $data["paymentMode"];
+            $paymentCompleted = false;
+            if ($paymentMode == \Api\Model\PaymentMode::CASH
+                || $paymentMode == PaymentMode::PAYCONIQ
+                || $paymentMode == PaymentMode::LETS
+                || $paymentMode == PaymentMode::OVAM
+                || $paymentMode == PaymentMode::MBON
+                || $paymentMode == PaymentMode::KDOBON
+                || $paymentMode == PaymentMode::SPONSORING
+                || $paymentMode == PaymentMode::OTHER) {
+                $paymentCompleted = true;
+            } elseif ($paymentMode == PaymentMode::TRANSFER
+                && isset($data["paymentCompleted"])
+                && ($data["paymentCompleted"] === true || strcasecmp($data["paymentCompleted"], 'true') == 0)) {
+                // boolean true or string value "true"
+                $paymentCompleted = true;
+            }
+            return $paymentCompleted;
         }
-        return $paymentCompleted;
     }
 
     $data = $request->getParsedBody();
@@ -46,7 +49,7 @@ $mw = function (Request $request, RequestHandler $handler) use ($container) {
             "path" => "/",
             "ignore" => ["/token", "/welcome", "/upload", "/payments", "/stats",
                 "/auth/reset", "/auth/verifyemail"],
-            "secret" => getenv("JWT_SECRET"),
+            "secret" => JWT_SECRET,
             "logger" => $container->get("logger"),
 //			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
             "secure" => false, // disable -> scheme not always correctly set on request!

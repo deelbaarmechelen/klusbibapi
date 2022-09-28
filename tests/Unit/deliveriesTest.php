@@ -20,8 +20,8 @@ class DeliveryTest extends LocalDbWebTestCase
 		$this->dropOffDate->add(new DateInterval('P2D'));
 
 		return new DbUnitArrayDataSet(array(
-            'users' => array(
-                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+            'contact' => array(
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                 ),
@@ -132,6 +132,7 @@ class DeliveryTest extends LocalDbWebTestCase
             "drop_off_address" => "not there"
         );
         $body = $this->client->put('/deliveries/1', $data);
+        print_r($body);
         $delivery = json_decode($body);
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $this->assertEquals("not here", $delivery->pick_up_address);

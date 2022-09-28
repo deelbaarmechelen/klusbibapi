@@ -22,8 +22,8 @@ class EventsTest extends LocalDbWebTestCase
 //		$this->enddate->add(new DateInterval('P365D'));
 		
 		return new DbUnitArrayDataSet(array(
-            'users' => array(
-                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+            'contact' => array(
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                 ),

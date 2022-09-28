@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Api\Model\UserRole;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Model
+class Contact extends Model
 {
-//    use SoftDeletes;
+    //    use SoftDeletes;
     use HasFactory;
+
+    protected $table = 'contact';
 
     /**
      * Create a new factory instance for the model.
@@ -23,15 +25,87 @@ class User extends Model
         return UserFactory::new();
     }
 
-    protected $primaryKey = "user_id";
+    protected $primaryKey = "id";
 	public $incrementing = false;
 
-	static protected $fieldArray = ['user_id', 'state', 'firstname', 'lastname', 'role', 'email', 'email_state',
+	static protected $fieldArray = ['id', 'state', 'first_name', 'last_name', 'role', 'email', 'email_state',
 			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
 			'phone', 'mobile', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
             'last_sync_date', 'active_membership', 'company', 'comment', 'last_login', 'created_at', 'updated_at'
 	];
 
+
+    /**
+     * id Primaire sleutel	int(11)			Nee	Geen		AUTO_INCREMENT	Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    2	created_by Index	int(11)			Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    3	active_membership Index	int(11)			Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    4	enabled	tinyint(1)			Nee	Geen			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    5	salt	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    6	password	varchar(255)	utf8mb4_unicode_ci		Nee	Geen			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    7	last_login	datetime			Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    8	confirmation_token Index	varchar(180)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    9	password_requested_at	datetime			Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    10	roles	longtext	utf8mb4_unicode_ci		Nee	Geen	(DC2Type:array)		Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    11	first_name	varchar(32)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    12	last_name	varchar(32)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    13	telephone	varchar(64)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    14	address_line_1	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    15	address_line_2	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    16	address_line_3	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    17	address_line_4	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    18	country_iso_code	varchar(3)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    19	latitude	varchar(32)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    20	longitude	varchar(32)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    21	gender	varchar(1)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    22	created_at	datetime			Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    23	balance	decimal(10,2)			Nee	Geen			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    24	stripe_customer_id	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    25	subscriber	tinyint(1)			Nee	Geen			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    26	email	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    27	email_canonical	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    28	username	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    29	username_canonical	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    30	active_site Index	int(11)			Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    31	created_at_site Index	int(11)			Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    32	locale	varchar(255)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    33	is_active	tinyint(1)			Nee	1			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    34	membership_number	varchar(64)	utf8mb4_unicode_ci		Ja	NULL			Veranderen Veranderen	Verwijderen Verwijderen
+    Meer Meer
+    35	secure_access_token	varchar(255)	utf8mb4_unicode_ci		Ja	NULL
+     */
     /**
      * The attributes that should be cast.
      *
@@ -51,14 +125,14 @@ class User extends Model
     }
 
     public function getFullNameAttribute() {
-        return "{$this->firstname} {$this->lastname}";
+        return "{$this->first_name} {$this->last_name}";
     }
     // public methods
 	public static function canBeSortedOn($field) {
 		if (!isset($field)) {
 			return false;
 		}
-		return in_array($field, User::$fieldArray);
+		return in_array($field, Contact::$fieldArray);
 	}
 	
 	public function reservations()
@@ -84,12 +158,12 @@ class User extends Model
         return $this->belongsTo('Api\Model\Membership', 'active_membership');
     }
     public function memberships() {
-        return $this->hasMany('Api\Model\Membership', 'contact_id', 'user_id');
+        return $this->hasMany('Api\Model\Membership', 'contact_id', 'id');
     }
 
     public function payments()
     {
-        return $this->hasMany('Api\Model\Payment', 'user_id', 'user_id');
+        return $this->hasMany('Api\Model\Payment', 'user_id', 'id');
     }
 
     public function isAdmin() {
@@ -189,8 +263,8 @@ class User extends Model
     public function scopeSearchName($query, $search)
     {
         if ($search) {
-            $query->where('firstname', 'LIKE', '%'.$search.'%' )
-                  ->orWhere('lastname', 'LIKE', '%'.$search.'%' );
+            $query->where('first_name', 'LIKE', '%'.$search.'%' )
+                  ->orWhere('last_name', 'LIKE', '%'.$search.'%' );
         }
     }
     public function scopeStroom($query)

@@ -121,7 +121,7 @@ class PaymentController implements PaymentControllerInterface
         }
 
         $userId = $data["userId"];
-        $user = \Api\Model\User::find($userId);
+        $user = \Api\Model\Contact::find($userId);
         $orderId = $data["orderId"];
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
@@ -189,7 +189,7 @@ class PaymentController implements PaymentControllerInterface
                         "currency" => "EUR",
                         "value" => number_format(\Api\Settings::ENROLMENT_AMOUNT , 2,"." )
                     ],
-                    "description" => "Klusbib inschrijving {$user->firstname} {$user->lastname}",
+                    "description" => "Klusbib inschrijving {$user->first_name} {$user->last_name}",
                     "redirectUrl" => "{$redirectUrl}?orderId={$orderId}",
 //                "webhookUrl" => "{$protocol}://{$hostname}/payments/{$orderId}",
                     "webhookUrl" => "https://{$hostname}/payments/{$orderId}",
@@ -319,7 +319,7 @@ class PaymentController implements PaymentControllerInterface
             $payment->save();
 
             // Lookup user and update state
-            $user = \Api\Model\User::find($userId);
+            $user = \Api\Model\Contact::find($userId);
             if (null == $user) {
                 $this->logger->error("POST /payments/$orderId failed: user $userId is not found");
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)

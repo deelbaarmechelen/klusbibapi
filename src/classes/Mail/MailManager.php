@@ -3,7 +3,7 @@ namespace Api\Mail;
 
 use Api\Model\Membership;
 use Api\Model\MembershipType;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Token\Token;
 use PHPMailer\PHPMailer\OAuth;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -158,9 +158,9 @@ class MailManager {
         if (isset($notifyTeamAddress)) {
             $this->sendTwigTemplate($notifyTeamAddress, 'reservation_cancel_notif', $parameters);
         }
-        if ($user->user_id == $cancelledBy) { // do not notify user if he/she requested the cancel
+        if ($user->id == $cancelledBy) { // do not notify user if he/she requested the cancel
             if ($this->logger) {
-                $this->logger->info("Send of reservation cancel notification has been skipped (user $user->firstname with id $cancelledBy requested cancel himself)");
+                $this->logger->info("Send of reservation cancel notification has been skipped (user $user->first_name with id $cancelledBy requested cancel himself)");
             }
             return true;
         }
@@ -258,7 +258,7 @@ class MailManager {
         return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
     }
 
-    public function sendEnrolmentConfirmation(User $user, $paymentMode, $paymentCompleted = false, Membership $membership = null) {
+    public function sendEnrolmentConfirmation(Contact $user, $paymentMode, $paymentCompleted = false, Membership $membership = null) {
         $confirmEmail = !$user->isEmailConfirmed();
         $resetPwd = !$user->hasLoggedAtLeastOnce();
         $dest = $user->email; // token destination
@@ -270,9 +270,9 @@ class MailManager {
         if ($resetPwd) {
             array_push($scopes, "users.update.password");
         }
-        $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"), $dest);
-        $confirmEmailLink = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
-        $resetPwdLink = Settings::RESET_PWD_LINK . "?token=" . $token . "&name=" . $user->firstname . "&userId=" . $user->user_id;
+        $token = Token::generateToken($scopes, $user->id, new \DateTime("now +2 days"), $dest);
+        $confirmEmailLink = PROJECT_HOME . "auth/confirm/" . $user->id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->first_name;
+        $resetPwdLink = Settings::RESET_PWD_LINK . "?token=" . $token . "&name=" . $user->first_name . "&userId=" . $user->id;
 
         $enrolmentAmount = isset($membership) && isset($membership->subscription) ? $membership->subscription->price : Settings::ENROLMENT_AMOUNT;
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
@@ -329,7 +329,7 @@ class MailManager {
      */
     public function sendRenewal($user, $daysToExpiry, $token) {
         $membership_year = $this->getMembershipYear($user->activeMembership->expires_at->format('Y-m-d'));
-        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
+        $link = Settings::PROFILE_LINK . $user->id . "?token=" . $token;
         $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null
             ? $user->activeMembership->subscription->nextMembershipType->price : $user->activeMembership->subscription->price;
         $isCompany = $user->activeMembership->subscription->isCompanySubscription();
@@ -355,7 +355,7 @@ class MailManager {
     public function sendResumeEnrolmentReminder($user, $token) {
         echo "Resume enrolment reminder called with token $token\n";
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
-        $link = Settings::PROFILE_LINK . $user->user_id . "?token=" . $token;
+        $link = Settings::PROFILE_LINK . $user->id . "?token=" . $token;
         $parameters = array('user' => $user,
             'link' => $link,
             'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
@@ -380,9 +380,9 @@ class MailManager {
         if ($resetPwd) {
             array_push($scopes, "users.update.password");
         }
-        $token = Token::generateToken($scopes, $user->user_id, new \DateTime("now +2 days"), $dest);
-        $confirmEmailLink = PROJECT_HOME . "auth/confirm/" . $user->user_id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->firstname;
-        $resetPwdLink = Settings::RESET_PWD_LINK . "?token=" . $token . "&name=" . $user->firstname . "&userId=" . $user->user_id;
+        $token = Token::generateToken($scopes, $user->id, new \DateTime("now +2 days"), $dest);
+        $confirmEmailLink = PROJECT_HOME . "auth/confirm/" . $user->id . "?token=" . $token . "&email=" . $user->email . "&name=" . $user->first_name;
+        $resetPwdLink = Settings::RESET_PWD_LINK . "?token=" . $token . "&name=" . $user->first_name . "&userId=" . $user->id;
 
         $membership_year = $this->getMembershipYear($user->activeMembership->expires_at->format('Y-m-d'));
         $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null

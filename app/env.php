@@ -25,6 +25,7 @@ if (!defined('APP_ENV')) {
     define('APP_ENV',(isset($appEnv) ? $appEnv : 'production') ); // defaults to production
 }
 if (!defined('PROJECT_HOME')) define("PROJECT_HOME", $_ENV['PROJECT_HOME']);
+if (!defined('JWT_SECRET')) define("JWT_SECRET",$_ENV['JWT_SECRET']);
 
 if (!defined('MAIL_PORT')) define("MAIL_PORT", $_ENV['MAIL_PORT']); // smtp port number
 if (!defined('MAIL_USERNAME')) define("MAIL_USERNAME", $_ENV['MAIL_USERNAME'] ); // smtp username

@@ -38,7 +38,7 @@ class Membership extends Model
 	}
 	
 	public function members() {
-		return $this->hasMany('Api\Model\User', 'active_membership');
+		return $this->hasMany('Api\Model\Contact', 'active_membership');
 	}
 
     public function subscription() {
@@ -51,7 +51,7 @@ class Membership extends Model
     }
 
     public function contact() {
-        return $this->belongsTo('Api\Model\User', 'contact_id', 'user_id');
+        return $this->belongsTo('Api\Model\Contact', 'contact_id', 'id');
     }
 
     // Query helpers

@@ -6,11 +6,11 @@
     <p>Via de website werd een {% if isRenewal %}lidmaatschap hernieuwing{% else %}nieuw lidmaatschap{% endif %} geregistreerd,
         maar er trad een probleem op bij de verwerking van de betaling ({{ message }})<br/>
         {% if isRenewal %}
-        Gebruiker {{ newUser.firstname }} {{ newUser.lastname }} probeerde zijn lidmaatschap te verlengen
-        en heeft nu status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )
+        Gebruiker {{ newUser.first_name }} {{ newUser.last_name }} probeerde zijn lidmaatschap te verlengen
+        en heeft nu status '{{ newUser.state }}' (user id: {{ newUser.id }} )
         {% else %}
-        Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
-        aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )
+        Er werd een nieuwe gebruiker {{ newUser.first_name }} {{ newUser.last_name }}
+        aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.id }} )
         {% endif %}<br/>
         Deze gebruiker koos ervoor om te betalen via {{ newUser.payment_mode }}  <br/>
     </p>

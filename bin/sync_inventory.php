@@ -27,13 +27,13 @@ $today = new DateTime();
 echo "Syncing users\n";
 $userManager = new UserManager(SnipeitInventory::instance($logger), $logger, new \Api\Mail\MailManager(null, null, $logger));
 if ($force) {
-    $users = \Api\Model\User::all(); // sync all users
+    $users = \Api\Model\Contact::all(); // sync all users
 } else {
-    $users = \Api\Model\User::outOfSync()->get(); // filter users to be synced
+    $users = \Api\Model\Contact::outOfSync()->get(); // filter users to be synced
 }
 foreach($users as $user) {
-    echo "Syncing user with id " . $user->user_id . "\n";
-    $userManager->getById($user->user_id); // sync with inventory
+    echo "Syncing user with id " . $user->id . "\n";
+    $userManager->getById($user->id); // sync with inventory
     $user->last_sync_date = $today; // sync with lend engine
     $user->timestamps = false; // do not change updated_at column value
     $user->save();

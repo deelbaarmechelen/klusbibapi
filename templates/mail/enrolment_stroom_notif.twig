@@ -5,9 +5,9 @@
 {% block body %}
 <p>Beste,</p>
 <p>
-De {% if not isRenewal %}nieuwe{% endif %} gebruiker {{ newUser.firstname }} {{ newUser.lastname }} gaf aan {% if isRenewal %}zijn/haar lidmaatschap te verlengen{% else %}in te schrijven{% endif %} via het STROOM project<br/>
+De {% if not isRenewal %}nieuwe{% endif %} gebruiker {{ newUser.first_name }} {{ newUser.last_name }} gaf aan {% if isRenewal %}zijn/haar lidmaatschap te verlengen{% else %}in te schrijven{% endif %} via het STROOM project<br/>
 Gelieve te verifiëren of deze gebruiker aan alle voorwaarden voldoet (adres binnen STROOM wijk) en manueel de {% if isRenewal %}verlenging{% else %}inschrijving{% endif %} te bevestigen<br/>
-Huidige status: '{{ newUser.state }}' (user id: {{ newUser.user_id }} )<br/>
+Huidige status: '{{ newUser.state }}' (user id: {{ newUser.id }} )<br/>
 Adres: {{ newUser.address }}, {{ newUser.postal_code }} {{ newUser.city }}
 </p>
 <p>

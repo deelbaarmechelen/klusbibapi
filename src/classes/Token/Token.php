@@ -71,7 +71,7 @@ class Token
 	static public function generateToken($scopes, $sub, $future = null, $dest = null) {
 		$payload = Token::generatePayload($scopes, $sub, $future, $dest);
 		
-		$secret = getenv("JWT_SECRET");
+		$secret = JWT_SECRET;
 		return JWT::encode($payload, $secret, "HS256");
 	}
 	

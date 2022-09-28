@@ -81,11 +81,11 @@ class StatController
         $startLastMonth = new DateTime('first day of last month', $utc);
         $startThisMonth = new DateTime('first day of this month', $utc);
 
-        $activeCount = \Api\Model\User::active()->members()->count();
-        $expiredCount = \Api\Model\User::where('state', \Api\Model\UserState::EXPIRED)->count();
-        $deletedCount = \Api\Model\User::where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCount = \Api\Model\User::members()->where('created_at', '>', new DateTime('first day of this month'))->count();
-        $newUsersPrevMonthCount = \Api\Model\User::members()
+        $activeCount = \Api\Model\Contact::active()->members()->count();
+        $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
+        $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
+        $newUsersCurrMonthCount = \Api\Model\Contact::members()->where('created_at', '>', new DateTime('first day of this month'))->count();
+        $newUsersPrevMonthCount = \Api\Model\Contact::members()
             ->where('created_at', '>', $startLastMonth)
             ->where('created_at', '<', $startThisMonth)->count();
         $userStats = array();
@@ -97,11 +97,11 @@ class StatController
         $userStats["new-users-prev-month-count"] = $newUsersPrevMonthCount;
 
         // Stroom
-        $activeCountStroom = \Api\Model\User::stroom()->count();
-        $expiredCountStroom = \Api\Model\User::stroom()->where('state', \Api\Model\UserState::EXPIRED)->count();
-        $deletedCountStroom = \Api\Model\User::stroom()->where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCountStroom = \Api\Model\User::stroom()->members()->where('created_at', '>', new DateTime('first day of this month'))->count();
-        $newUsersPrevMonthCountStroom = \Api\Model\User::stroom()
+        $activeCountStroom = \Api\Model\Contact::stroom()->count();
+        $expiredCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::EXPIRED)->count();
+        $deletedCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::DELETED)->count();
+        $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->where('created_at', '>', new DateTime('first day of this month'))->count();
+        $newUsersPrevMonthCountStroom = \Api\Model\Contact::stroom()
             ->where('created_at', '>', $startLastMonth)
             ->where('created_at', '<', $startThisMonth)->count();
         $stroomStats = array();

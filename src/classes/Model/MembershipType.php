@@ -51,7 +51,7 @@ class MembershipType extends Model
 		if (!isset($field)) {
 			return false;
 		}
-		return in_array($field, User::$fieldArray);
+		return in_array($field, Contact::$fieldArray);
 	}
 	
 	public function memberships()

@@ -2,7 +2,7 @@
 use PHPUnit\Framework\TestCase;
 use Api\Mail\MailManager;
 use Tests\Mock\PHPMailerMock;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Model\Tool;
 use Api\Model\Reservation;
 use Api\Inventory\SnipeitInventory;
@@ -62,7 +62,7 @@ final class InventoryIntegration extends TestCase
     /**
      * lookup user by email
      * @param $email
-     * @return User the user or null if not found
+     * @return Contact the user or null if not found
      */
     public function testGetUserByEmail(){
         $email = 'me@klusbib.be';

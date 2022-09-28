@@ -44,22 +44,22 @@ class UsersTest extends LocalDbWebTestCase
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
             ),
-			'users' => array(
-				array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
+			'contact' => array(
+				array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
                     'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 1
                 ),
-				array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
+				array('id' => 2, 'first_name' => 'harry', 'last_name' => 'De Handige',
                     'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => 'ACTIVE',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 2
                 ),
-				array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+				array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => 'ACTIVE',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
@@ -146,7 +146,7 @@ class UsersTest extends LocalDbWebTestCase
 		$scopes = array("users.all");
 		$this->setToken(null, $scopes);
 		$bodyGet = $this->client->get('/users/' . $user->user_id);
-        print_r($bodyGet);
+//        print_r($bodyGet);
 		$this->assertEquals(200, $this->client->response->getStatusCode());
 		$user = json_decode($bodyGet);
 		$this->assertEquals($data["firstname"], $user->firstname);
@@ -284,7 +284,7 @@ class UsersTest extends LocalDbWebTestCase
 			"relaxed" => ["admin"],
 			"authenticator" => new PdoAuthenticator([
 					"pdo" => $this->getPdo(),
-					"table" => "users",
+					"table" => "contact",
 					"user" => "email",
 					"hash" => "hash"
 			]),

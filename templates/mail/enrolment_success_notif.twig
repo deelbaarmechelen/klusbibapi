@@ -4,10 +4,10 @@
 <p>Beste,</p>
 <p>Via de website werd een {% if isRenewal %}lidmaatschap hernieuwing{% else %}nieuw lidmaatschap{% endif %} succesvol afgerond<br/>
     {% if isRenewal %}
-    {{ newUser.firstname }} {{ newUser.lastname }} verlengde zijn lidmaatschap en heeft nu status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )
+    {{ newUser.first_name }} {{ newUser.last_name }} verlengde zijn lidmaatschap en heeft nu status '{{ newUser.state }}' (user id: {{ newUser.id }} )
     {% else %}
-    Er werd een nieuwe gebruiker {{ newUser.firstname }} {{ newUser.lastname }}
-    aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.user_id }} )
+    Er werd een nieuwe gebruiker {{ newUser.first_name }} {{ newUser.last_name }}
+    aangemaakt met status '{{ newUser.state }}' (user id: {{ newUser.id }} )
     {% endif %}<br/>
     Deze gebruiker koos ervoor om te betalen via {{ newUser.payment_mode }}  <br/>
     Lidmaatschap loopt van {{ newUser.membership_start_date }} tot {{ newUser.membership_end_date }}

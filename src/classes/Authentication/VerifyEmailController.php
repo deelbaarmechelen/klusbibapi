@@ -54,10 +54,10 @@ class VerifyEmailController
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         }
         $mailmgr = new MailManager();
-        $sub = $user->user_id;
+        $sub = $user->id;
         $scopes = ["auth.confirm"];
         $future = new \DateTime("now +2 weeks");
-        $result = $mailmgr->sendEmailVerification($user->user_id, $user->firstname, $user->email,
+        $result = $mailmgr->sendEmailVerification($user->id, $user->first_name, $user->email,
             Token::generateToken($scopes, $sub, $future));
         $message = $mailmgr->getLastMessage();
         $this->logger->info('Sending email verification result: ' . $message);
@@ -102,7 +102,7 @@ class VerifyEmailController
             ]);
         }
         try {
-            $user = \Api\Model\User::findOrFail($token->getSub());
+            $user = \Api\Model\Contact::findOrFail($token->getSub());
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $modelNotFoundException) {
             return $this->view->render($response, 'confirm_email.twig', [
                 'userId' => $args['userId'],
@@ -116,7 +116,7 @@ class VerifyEmailController
         // Render email confirmation view
         return $this->view->render($response, 'confirm_email.twig', [
             'userId' => $args['userId'],
-            'userName' => $user->firstname,
+            'userName' => $user->first_name,
             'result' => "SUCCESS"
         ]);
     }

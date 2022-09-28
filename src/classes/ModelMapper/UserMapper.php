@@ -2,18 +2,18 @@
 namespace Api\ModelMapper;
 
 use Api\Model\Membership;
-use \Api\Model\User;
+use \Api\Model\Contact;
 
 class UserMapper
 {
 	static public function mapUserToArray($user) {
         $membership = Membership::find($user->active_membership);
-		$userArray = array("user_id" => $user->user_id,
+		$userArray = array("user_id" => $user->id,
             "user_ext_id" => $user->user_ext_id,
             "state" => $user->state,
             //"state" => !$membership ? $user->state : $membership->status,
-            "firstname" => $user->firstname,
-            "lastname" => $user->lastname,
+            "firstname" => $user->first_name,
+            "lastname" => $user->last_name,
             "email" => $user->email,
             "email_state" => $user->email_state,
             "role" => $user->role,
@@ -42,17 +42,17 @@ class UserMapper
 	}
 	static public function mapArrayToUser($data, $user, $isAdmin = false, $logger = null) {
 		if (isset($data["user_id"]) && !empty($data["user_id"]) && $isAdmin) {
-			$user->user_id= $data["user_id"];
+			$user->id= $data["user_id"];
 		}
 		// No longer allow update of state -> should be set based on membership
 //		if (isset($data["state"]) && $isAdmin) {
 //			$user->state = $data["state"];
 //		}
 		if (isset($data["firstname"])) {
-			$user->firstname = $data["firstname"];
+			$user->first_name = $data["firstname"];
 		}
 		if (isset($data["lastname"])) {
-			$user->lastname = $data["lastname"];
+			$user->last_name = $data["lastname"];
 		}
 		if (isset($data["email"])) {
 			$user->email = $data["email"];
@@ -65,7 +65,7 @@ class UserMapper
 		}
 		if (isset($data["password"])) {
 			if (isset($logger)) {
-				$logger->info("Updating password for user " . $user->user_id . " - " . $user->firstname . " " . $user->lastname);
+				$logger->info("Updating password for user " . $user->id . " - " . $user->first_name . " " . $user->last_name);
 			}
 			$user->hash = password_hash($data["password"], PASSWORD_DEFAULT);
 		}

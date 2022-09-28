@@ -16,11 +16,11 @@ echo "Send notifications for new general conditions\n";
 $mailMgr = new MailManager();
 
 echo "selecting active members\n";
-$users = \Api\Model\User::members()->active()->get();
+$users = \Api\Model\Contact::members()->active()->get();
 echo "selected users: " . count($users) . "\n";
 foreach ($users as $user) {
-    echo "notification required for user $user->user_id\n";
-    echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+    echo "notification required for user $user->id\n";
+    echo "name: " . $user->first_name . " " . $user->last_name . "\n";
     echo "state: " . $user->state . "\n";
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";

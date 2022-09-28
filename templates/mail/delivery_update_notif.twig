@@ -10,7 +10,7 @@ Reden voor wijziging: {% if reason is null %}Niet opgegeven{% else %}{{ reason }
 Huidige status: {{ delivery.state }}<br>
 </p><p>
 Details:<br>
-Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }}) wenst volgende toestellen te laten
+Gebruiker {{ user.first_name }} {{ user.last_name }} (user id: {{ user.id }}) wenst volgende toestellen te laten
 {% if delivery.type == 'PICKUP' %}ophalen op {{ delivery.pick_up_date | date("Y-m-d") }}:{% endif %}
 {% if delivery.type == 'DROPOFF' %}leveren op {{ delivery.drop_off_date | date("Y-m-d") }}:{% endif %}
 <br/>

@@ -17,7 +17,7 @@ class Project extends Model
      */
     public function users()
     {
-        return $this->belongsToMany('Api\Model\User', 'project_user', 'project_id','user_id')
+        return $this->belongsToMany('Api\Model\Contact', 'project_user', 'project_id','user_id')
             ->withTimestamps();
     }
 

@@ -53,19 +53,19 @@ class ReservationController implements ReservationControllerInterface
         }
         $query= $queryParams['_query'] ?? null;
         $querybuilder = Capsule::table('reservations')
-            ->join('users', 'reservations.user_id', '=', 'users.user_id')
-            ->select('reservations.*', 'users.firstname', 'users.lastname');
+            ->join('contact', 'reservations.user_id', '=', 'contact.id')
+            ->select('reservations.*', 'contact.first_name', 'contact.last_name');
         $isOpen = $queryParams['isOpen'] ?? null;
         if (isset($isOpen) && $isOpen == 'true') {
             $querybuilder->whereIn('reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
         }
         if (isset($query)) {
-            $querybuilder->where('users.firstname', 'LIKE', '%'.$query.'%' )
-                ->orWhere('users.lastname', 'LIKE', '%'.$query.'%' );
+            $querybuilder->where('users.first_name', 'LIKE', '%'.$query.'%' )
+                ->orWhere('users.last_name', 'LIKE', '%'.$query.'%' );
         }
 
         if ($sortfield == "username") {
-            $sortfield = 'users.firstname';
+            $sortfield = 'users.first_name';
         } else {
             $sortfield = 'reservations.' . $sortfield;
         }
@@ -75,7 +75,7 @@ class ReservationController implements ReservationControllerInterface
         $data = array();
         foreach ($reservations_page as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
-            $reservationData["username"] = $reservation->firstname . " " . $reservation->lastname;
+            $reservationData["username"] = $reservation->first_name . " " . $reservation->last_name;
             $tool = $this->toolManager->getById($reservation->tool_id);
             $reservationData["deliverable"] = $tool != null ? $tool->deliverable : false;
             array_push($data, $reservationData);

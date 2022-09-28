@@ -15,7 +15,7 @@ use Api\Enrolment\EnrolmentManager;
 use Api\Enrolment\EnrolmentFactory;
 use Api\Authorisation;
 use Api\AccessType;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Exception\EnrolmentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -74,7 +74,7 @@ class EnrolmentController
 
         $paymentMode = $data["paymentMode"];
         $userId = $data["userId"];
-        $user = \Api\Model\User::find($userId);
+        $user = \Api\Model\Contact::find($userId);
         $orderId = $data["orderId"];
         $renewal = $this->isRenewal($data);
 
@@ -258,7 +258,7 @@ class EnrolmentController
             // Note token is also available from request (added by jwt middleware)
 //            $decoded = $request->getAttribute("token"); // is decoded token from jwt
 
-            $currentUser = User::find($this->token->getSub());
+            $currentUser = Contact::find($this->token->getSub());
             if (!isset($currentUser)) {
                 $this->logger->warn("No user found for token " . $this->token->getSub());
                 return $response->withStatus(HttpResponseCode::FORBIDDEN)
@@ -266,7 +266,7 @@ class EnrolmentController
             }
             if (!$currentUser->isAdmin()) {
                 $this->logger->warn("Enrolment attempt for payment mode $paymentMode by user "
-                    . $currentUser->firstName . " " . $currentUser->lastName . "("
+                    . $currentUser->first_name . " " . $currentUser->last_name . "("
                     . $this->token->getSub() . ")");
                 return $response->withStatus(HttpResponseCode::FORBIDDEN)
                     ->withJson("{ message: 'Not allowed, please login with an admin user'}");
@@ -405,7 +405,7 @@ class EnrolmentController
         if (isset($data["membershipId"])) {
             $membershipId = $data["membershipId"];
         }
-        $user = \Api\Model\User::find($userId);
+        $user = \Api\Model\Contact::find($userId);
         $renewal = $this->isRenewal($data);
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
@@ -458,7 +458,7 @@ class EnrolmentController
         }
         $paymentMode = $data["paymentMode"];
         $userId = $data["userId"];
-        $user = \Api\Model\User::find($userId);
+        $user = \Api\Model\Contact::find($userId);
         $renewal = $this->isRenewal($data);
         $membershipId = null;
         if (isset($data["membershipId"])) {

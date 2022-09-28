@@ -1,7 +1,7 @@
 {% block subject 'Klusbib lidmaatschap' %}
 
 {% block body %}
-Beste {{ user.firstname }},<br><br>
+Beste {{ user.first_name }},<br><br>
 <p>
 {% if isCompany %}
 Op {{ user.membership_end_date | date("j-n-Y") }} {%  if user.membership_end_date < currentDate %}liep{% else %}loopt{% endif %} het Klusbib lidmaatschap voor {{ user.company }} ten einde.<br>
@@ -23,7 +23,7 @@ hetzij via overschrijving: stort {{ amount }} &euro; op rekeningnummer <b>{{ acc
 {% if isCompany %}
 met als mededeling <i>'{{ user.company }} - lidmaatschap {{ membership_year }}'</i>
 {% else %}
-met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>
+met als mededeling <i>'{{ user.first_name }} {{ user.last_name }} - lidmaatschap {{ membership_year }}'</i>
 {% endif %}
 </li></ul>
 Voerde je onlangs een betaling via overschrijving uit, dan mag je dit bericht negeren. Je account wordt verlengd zodra deze op onze rekening staat

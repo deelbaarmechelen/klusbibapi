@@ -3,7 +3,7 @@ namespace Api\Inventory;
 
 use Api\Model\Accessory;
 use Api\Model\ToolState;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Model\Tool;
 
 /**
@@ -27,22 +27,22 @@ interface Inventory {
     public function toolExists($toolId) : bool;
     public function accessoryExists($accessoryId) : bool;
 
-    public function syncUser(User $user) : bool;
-    public function postUser(User $user);
+    public function syncUser(Contact $user) : bool;
+    public function postUser(Contact $user);
 
     /**
      * lookup user by user_ext_id
      * @param $id
-     * @return User the user or null if not found
+     * @return Contact the user or null if not found
      */
-    public function getUserByExtId($id) : ?User;
+    public function getUserByExtId($id) : ?Contact;
 
     /**
      * lookup user by email
      * @param $email
-     * @return User the user or null if not found
+     * @return Contact the user or null if not found
      */
-    public function getUserByEmail($email) : ?User;
+    public function getUserByEmail($email) : ?Contact;
 
     /**
      * lookup all tools assigned to this user
@@ -53,25 +53,25 @@ interface Inventory {
 
     /**
      * check user exists in inventory (check based on user_ext_id and email)
-     * @param User $user
+     * @param Contact $user
      * @return bool true if the user exists in inventory
      */
-    public function userExists(User $user) : bool;
+    public function userExists(Contact $user) : bool;
 
     /**
      * update the user (only provided user fields are updated, null fields are ignored)
-     * @param User $user
+     * @param Contact $user
      * @return mixed
      * @deprecated Use syncUser instead
      */
-    public function updateUser(User $user);
+    public function updateUser(Contact $user);
 
     /**
-     * @param User $user
+     * @param Contact $user
      * @return mixed
      * @deprecated Use syncUser instead
      */
-    public function updateUserState(User $user);
+    public function updateUserState(Contact $user);
     public function deleteUser($id) : bool;
 
 //    public function getActivity($offset = 0, $limit=1000);

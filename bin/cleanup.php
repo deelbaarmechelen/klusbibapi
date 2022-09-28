@@ -60,18 +60,18 @@ echo "Deleted reservations: $deletedCount\n";
 
 // Delete users when membership expired for more than 1 year
 echo "selecting expired users for more than 1 year (on $lastYear)\n";
-$users = \Api\Model\User::expired()->notAdmin()->whereDate('membership_end_date' , '<', $lastYear)->get();
+$users = \Api\Model\Contact::expired()->notAdmin()->whereDate('membership_end_date' , '<', $lastYear)->get();
 echo "selected expired users: " . count($users) . "\n";
 markAsDeleted($users);
 
 echo "selecting pending users for more than 1 year (on $lastYear)\n";
-$pending_users = \Api\Model\User::pending()->notAdmin()->whereDate('membership_end_date' , '<', $lastYear)->get();
+$pending_users = \Api\Model\Contact::pending()->notAdmin()->whereDate('membership_end_date' , '<', $lastYear)->get();
 echo "selected pending users: " . count($pending_users) . "\n";
 markAsDeleted($pending_users);
 
-$activeCount = \Api\Model\User::active()->members()->count();
-$expiredCount = \Api\Model\User::expired()->count();
-$deletedCount = \Api\Model\User::isDeleted()->count();
+$activeCount = \Api\Model\Contact::active()->members()->count();
+$expiredCount = \Api\Model\Contact::expired()->count();
+$deletedCount = \Api\Model\Contact::isDeleted()->count();
 echo "Active users: $activeCount\n";
 echo "Expired users: $expiredCount\n";
 echo "Deleted users: $deletedCount\n";
@@ -88,10 +88,10 @@ if ($delete) {
         echo "comment: " . $reservation->comment . "\n";
         $reservation->delete();
     }
-    $usersToDelete = \Api\Model\User::isDeleted()->get();
+    $usersToDelete = \Api\Model\Contact::isDeleted()->get();
     foreach ($usersToDelete as $user) {
-        echo "Real delete for user $user->user_id\n";
-        echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+        echo "Real delete for user $user->id\n";
+        echo "name: " . $user->first_name . " " . $user->last_name . "\n";
         echo "state: " . $user->state . "\n";
         echo "membership start: " . $user->membership_start_date . "\n";
         echo "membership end: " . $user->membership_end_date . "\n";
@@ -109,13 +109,13 @@ echo "End of cleanup cron\n";
 function markAsDeleted($users)
 {
     foreach ($users as $user) {
-        echo "Removal required for user $user->user_id\n";
-        echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+        echo "Removal required for user $user->id\n";
+        echo "name: " . $user->first_name . " " . $user->last_name . "\n";
         echo "state: " . $user->state . "\n";
         echo "membership start: " . $user->membership_start_date . "\n";
         echo "membership end: " . $user->membership_end_date . "\n";
         echo "email: " . $user->email . "\n";
-        $toolsCount = \Api\Model\Tool::where('owner_id', '=', $user->user_id)->count();
+        $toolsCount = \Api\Model\Tool::where('owner_id', '=', $user->id)->count();
         if ($toolsCount > 0) {
             // User donated tool(s) -> keep user active but switch role to supporter
             echo "Donated tools: " . $toolsCount . "\n";

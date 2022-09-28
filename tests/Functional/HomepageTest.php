@@ -15,8 +15,8 @@ class HomepageTest extends BaseDBTestCase
 		$this->enddate->add(new DateInterval('P365D'));
 		
 		return new DbUnitArrayDataSet(array(
-				'users' => array(
-						array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
+				'contact' => array(
+						array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
 								'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
 								'hash' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),

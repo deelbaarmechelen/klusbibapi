@@ -8,7 +8,7 @@ use Api\Mail\MailManager;
 use Api\Model\UserState;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\ModelMapper\UserMapper;
 
 /**
@@ -50,7 +50,7 @@ class UserManager
         $this->logger->debug("UserManager.getById: Get user by ID $id");
 
         try {
-            $user = User::find($id);
+            $user = Contact::find($id);
             if ($user == null) {
                 return null;
             }
@@ -83,7 +83,7 @@ class UserManager
      * Creates a local user and sync to inventory
      * @param $user the user to be created
      */
-    function create(User $user) {
+    function create(Contact $user) {
         $this->addToInventory($user);
         $user->save();
     }
@@ -98,7 +98,7 @@ class UserManager
      * @param $emailUpdated true if email has been modified
      * @param $stateUpdated true if user state has been modified
      */
-    function update(User $user, $firstnameUpdated = true, $lastnameUpdate = true, $emailUpdated = true, $stateUpdated = true) {
+    function update(Contact $user, $firstnameUpdated = true, $lastnameUpdate = true, $emailUpdated = true, $stateUpdated = true) {
         $this->logger->debug("Update user: " . json_encode($user));
         if ($firstnameUpdated || $lastnameUpdate || $emailUpdated || $stateUpdated) {
             $this->updateInventory($user);
@@ -110,7 +110,7 @@ class UserManager
      * Deletes a local user and sync to inventory
      * @param $user the user to be deleted
      */
-    function delete(User $user) {
+    function delete(Contact $user) {
         if (isset($user->user_ext_id)) {
             $this->inventory->deleteUser($user->user_ext_id);
         }
@@ -118,15 +118,15 @@ class UserManager
     }
     /**
      * Returns true if inventory user data matches local user data
-     * Relevant data to be checked: firstname, lastname, email, user_ext_id
+     * Relevant data to be checked: first_name, last_name, email, user_ext_id
      * @param $user
      * @param $inventoryUser
      * @return bool
      */
     protected function inventoryUpToDate($user, $inventoryUser) {
         $this->logger->debug("Comparing users (model<->inventory):" . json_encode($user) . " - " . json_encode($inventoryUser));
-        if ($user->firstname != $inventoryUser->firstname
-        || $user->lastname != $inventoryUser->lastname
+        if ($user->first_name != $inventoryUser->first_name
+        || $user->last_name != $inventoryUser->las_tname
         || $user->email != $inventoryUser->email
         || $user->user_ext_id != $inventoryUser->user_ext_id) {
             return false;
@@ -164,7 +164,7 @@ class UserManager
 //        $user->user_ext_id = $inventoryUser->user_ext_id;
 //        $user->save();
         } catch (\Exception $ex) {
-            $this->logger->error('Error adding user ' . $user->user_id . ' to inventory: ' . $ex->getMessage());
+            $this->logger->error('Error adding user ' . $user->id . ' to inventory: ' . $ex->getMessage());
             $context = "UserManager::addToInventory; user=" . \json_encode($user);
             $this->mailManager->sendErrorNotif($ex->getMessage(), $context);
             return false;
@@ -187,7 +187,7 @@ class UserManager
             }
             return $result;
         } catch (\Exception $ex) {
-            $this->logger->error('Error updating user ' . $user->user_id . ' to inventory: ' . $ex->getMessage());
+            $this->logger->error('Error updating user ' . $user->id . ' to inventory: ' . $ex->getMessage());
             $context = "UserManager::updateInventory; user=" . \json_encode($user);
             $this->mailManager->sendErrorNotif($ex->getMessage(), $context);
             return false;
@@ -201,10 +201,10 @@ class UserManager
      * @param $user
      * @return bool
      */
-    protected function syncUser(User $user): bool
+    protected function syncUser(Contact $user): bool
     {
         $this->lastSyncAttempt = new \DateTime('now');
-        array_push($this->lastSyncedUsers, $user->user_id);
+        array_push($this->lastSyncedUsers, $user->id);
         $result = $this->inventory->syncUser($user);
         return $result;
     }
@@ -214,7 +214,7 @@ class UserManager
      * @param $user a local user
      * @return bool true if user needs to be synced with inventory
      */
-    private function syncRequired(User $user): bool
+    private function syncRequired(Contact $user): bool
     {
         return $this->syncAllowed($user)
           && ($user->last_sync_date == null                 // user has not been synced with inventory yet
@@ -227,7 +227,7 @@ class UserManager
      * @param $user a local user
      * @return bool true if sync is allowed for user
      */
-    private function syncAllowed(User $user): bool
+    private function syncAllowed(Contact $user): bool
     {
         if ($this->lastSyncAttempt != null) {
             $now = new \DateTime();
@@ -237,7 +237,7 @@ class UserManager
                 $this->lastSyncedUsers = array();
             }
         }
-        return $this->lastSyncAttempt == null || !in_array($user->user_id, $this->lastSyncedUsers);
+        return $this->lastSyncAttempt == null || !in_array($user->id, $this->lastSyncedUsers);
     }
 
 }

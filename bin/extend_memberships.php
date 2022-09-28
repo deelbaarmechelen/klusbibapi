@@ -14,11 +14,11 @@ $settings = require __DIR__ . '/../app/settings.php';
 echo "Extend memberships with 1 month\n";
 
 echo "selecting active members\n";
-$users = \Api\Model\User::members()->active()->get();
+$users = \Api\Model\Contact::members()->active()->get();
 echo "selected users: " . count($users) . "\n";
 foreach ($users as $user) {
-    echo "membership extend required for user $user->user_id\n";
-    echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+    echo "membership extend required for user $user->id\n";
+    echo "name: " . $user->first_name . " " . $user->last_name . "\n";
     echo "state: " . $user->state . "\n";
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
@@ -32,10 +32,10 @@ foreach ($users as $user) {
         echo "No membership end update needed!\n\n";
     }
 }
-$users = \Api\Model\User::expired()->members()->whereDate('membership_end_date', '<=', date('Y-m-d'))->get();
+$users = \Api\Model\Contact::expired()->members()->whereDate('membership_end_date', '<=', date('Y-m-d'))->get();
 foreach ($users as $user) {
-    echo "membership extend required for user $user->user_id\n";
-    echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+    echo "membership extend required for user $user->id\n";
+    echo "name: " . $user->first_name . " " . $user->last_name . "\n";
     echo "state: " . $user->state . "\n";
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";

@@ -36,7 +36,7 @@ class Reservation extends Model
 	 */
 	public function user()
 	{
-		return $this->belongsTo('Api\Model\User', 'user_id');
+		return $this->belongsTo('Api\Model\Contact', 'user_id');
 	}
 	public function item()
 	{

@@ -23,20 +23,20 @@ final class ReservationValidatorTest extends LocalDbWebTestCase
         $this->enddate = clone $this->startdate;
         $this->enddate->add(new DateInterval('P7D'));
         return new DbUnitArrayDataSet(array(
-            'users' => array(
-                array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
+            'contact' => array(
+                array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
                     'role' => 'admin', 'email' => 'admin@klusbib.be',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
                 ),
-                array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
+                array('id' => 2, 'first_name' => 'harry', 'last_name' => 'De Handige',
                     'role' => 'volunteer', 'email' => 'harry@klusbib.be',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
                 ),
-                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
                     'hash' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),

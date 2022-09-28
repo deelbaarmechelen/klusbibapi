@@ -1,6 +1,6 @@
 <?php
 namespace Api\Validator;
-use Api\Model\User;
+use Api\Model\Contact;
 
 class UserValidator 
 {
@@ -34,7 +34,7 @@ class UserValidator
 	}
 
     /**
-     * @param $user user to be validated as received from POST or PUT request
+     * @param $user Contact to be validated as received from POST or PUT request
      * @param $logger to sent messages to
      * @param $errors array containing previous and new errors
      * @return bool
@@ -88,7 +88,7 @@ class UserValidator
 	}
 	
 	static function userExists($userid, $logger) {
-		$userCount = User::where('user_id', $userid)->count();
+		$userCount = Contact::where('id', $userid)->count();
 		if ($userCount == 0) {
 			return false;
 		}

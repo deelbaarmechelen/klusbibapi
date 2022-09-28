@@ -3,7 +3,7 @@
 {% block body %}
 Beste,<br><br>
 <p>Via de website werd een aanvraag voor een levering geregistreerd<br>
-Gebruiker {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }})
+Gebruiker {{ user.first_name }} {{ user.last_name }} (user id: {{ user.id }})
 wenst volgende toestellen te laten
 {% if delivery.type == 'PICKUP' %}ophalen op {{ delivery.pick_up_date | date("Y-m-d") }}:{% endif %}
 {% if delivery.type == 'DROPOFF' %}leveren op {{ delivery.drop_off_date | date("Y-m-d") }}:{% endif %}

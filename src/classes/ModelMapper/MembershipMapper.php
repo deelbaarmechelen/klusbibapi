@@ -6,7 +6,7 @@ namespace Api\ModelMapper;
 use Api\Model\Membership;
 use Api\Model\MembershipState;
 use Api\Model\MembershipType;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Model\UserState;
 
 class MembershipMapper

@@ -1,7 +1,7 @@
 {% block subject 'Klusbib hernieuwing lidmaatschap' %}
 
 {% block body %}
-Beste {{ user.firstname }},<br><br>
+Beste {{ user.first_name }},<br><br>
 
 <p>
 Bedankt voor je blijvende steun!
@@ -12,7 +12,7 @@ Je koos voor een betaling via overschrijving. Mogen we je vragen om {{ amount }}
 {% if isCompany %}
 met als mededeling <i>'{{ user.company }} - lidmaatschap {{ membership_year }}'</i>
 {% else %}
-met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>
+met als mededeling <i>'{{ user.first_name }} {{ user.last_name }} - lidmaatschap {{ membership_year }}'</i>
 {% endif %}<br>
 Van zodra we je betaling ontvangen zullen we je lidmaatschap verlengen.
 </p>{% elseif paymentMode == 'STROOM' %}<p>

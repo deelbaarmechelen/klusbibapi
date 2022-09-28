@@ -16,9 +16,9 @@ echo "Generating report on users\n";
 // - payments follow  up: list of users with date + mode of first payment, renewal(s) (track payments within klusbibapi?)
 
 $mailmgr = new \Api\Mail\MailManager();
-$active_users = \Api\Model\User::active()->members()->orderBy('firstname', 'asc')->get();
-$expired_users = \Api\Model\User::expired()->orderBy('firstname', 'asc')->get();
-$pending_users = \Api\Model\User::pending()->orderBy('firstname', 'asc')->get();
+$active_users = \Api\Model\Contact::active()->members()->orderBy('first_name', 'asc')->get();
+$expired_users = \Api\Model\Contact::expired()->orderBy('first_name', 'asc')->get();
+$pending_users = \Api\Model\Contact::pending()->orderBy('first_name', 'asc')->get();
 echo "Active users count: " . count($active_users) . "\n";
 echo "calling sendUsersReport\n";
 try {
