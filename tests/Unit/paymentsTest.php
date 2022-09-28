@@ -26,7 +26,7 @@ class PaymentsTest extends LocalDbWebTestCase
             'contact' => array(
                 array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
 			'payments' => array(

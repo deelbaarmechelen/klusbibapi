@@ -30,7 +30,7 @@ class UsersTableSeeder extends AbstractCapsuleSeeder
                 'email' => 'admin@klusbib.be',
                 'state' => 'ACTIVE',
                 'email_state' => 'CONFIRMED',
-                'hash' => password_hash("test", PASSWORD_DEFAULT),
+                'password' => password_hash("test", PASSWORD_DEFAULT),
                 'membership_start_date' => $startdate,
                 'membership_end_date' => $enddate,
                 'created_at' => $startdate,

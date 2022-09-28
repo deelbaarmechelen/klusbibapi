@@ -68,7 +68,6 @@ class CreateContact extends AbstractCapsuleMigration
             $table->string('secure_access_token', 255)->nullable()->default(null);
             // Klusbib API specific
             $table->string('role', 20)->nullable()->default(null); // admin, member, ...
-            $table->string('hash', 255)->nullable()->default(null); // password hash
             $table->date('membership_start_date')->nullable()->default(null);
             $table->date('membership_end_date')->nullable()->default(null);
             $table->date('birth_date')->nullable()->default(null);
@@ -87,6 +86,27 @@ class CreateContact extends AbstractCapsuleMigration
             $table->softDeletes();
             $table->timestamps();
 		});
+        Capsule::update("INSERT INTO `contact`"
+    . "  (`id`, `created_by`, `active_membership`, `enabled`, `salt`, `password`,"
+    . "   `last_login`, `confirmation_token`, `password_requested_at`, `roles`,"
+    . "   `first_name`, `last_name`, `telephone`,"
+    . "   `address_line_1`, `address_line_2`, `address_line_3`, `address_line_4`,"
+    . "  `country_iso_code`, `latitude`, `longitude`,`gender`, `created_at`, `balance`, `stripe_customer_id`,"
+    . "  `subscriber`, `email`, `email_canonical`, `username`,`username_canonical`,"
+    . "  `active_site`, `created_at_site`, `locale`, `is_active`, `membership_number`, `secure_access_token`,"
+    . "  role, membership_start_date, membership_end_date, birth_date, mobile,state,"
+    . "  registration_number, payment_mode, accept_terms_date, email_state, user_ext_id, last_sync_date, company, comment)"
+    . "SELECT user_id, null, null, 1, null, ifnull(`hash`, '\$2y\$13\$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'),"
+    . "last_login, null , null, IF(role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'),"
+    . "firstname, lastname, phone,"
+    . "address, city, null, postal_code,"
+    . "'BE', null, null, null, created_at, '0.00', null,"
+    . "0, email, email, email, email,"
+    . "null, null, 'nl', 1, null, null,"
+    . "role, membership_start_date, membership_end_date, birth_date, mobile,state,"
+    . "registration_number, payment_mode, accept_terms_date, email_state, user_ext_id, last_sync_date, company, comment "
+    . "FROM `users`");
+
 	}
     /**
      * Down Method.

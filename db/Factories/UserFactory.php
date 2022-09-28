@@ -28,7 +28,7 @@ class UserFactory extends Factory
             'first_name' => $this->faker->name,
             'last_name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
-            'hash' => $password ?: $password = password_hash('secret', PASSWORD_BCRYPT)
+            'password' => $password ?: $password = password_hash('secret', PASSWORD_BCRYPT)
         ];
     }
 

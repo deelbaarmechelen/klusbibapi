@@ -67,7 +67,7 @@ class UserMapper
 			if (isset($logger)) {
 				$logger->info("Updating password for user " . $user->id . " - " . $user->first_name . " " . $user->last_name);
 			}
-			$user->hash = password_hash($data["password"], PASSWORD_DEFAULT);
+			$user->password = password_hash($data["password"], PASSWORD_DEFAULT);
 		}
 		// No longer allow update of membership start and end date -> should be set based on active membership
 //		if (!empty($data["membership_start_date"])

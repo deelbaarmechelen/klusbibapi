@@ -92,7 +92,7 @@ class LocalDbWebTestCase extends WebDbTestCase {
 				`last_name` varchar(50) DEFAULT NULL,
 				`role` varchar(20) DEFAULT NULL,
 				`email` varchar(50) DEFAULT NULL,
-				`hash` varchar(255) DEFAULT NULL,
+				`password` varchar(255) DEFAULT NULL,
 				`membership_start_date` date DEFAULT NULL,
 				`membership_end_date` date DEFAULT NULL,
 				`created_at` timestamp NULL DEFAULT NULL,

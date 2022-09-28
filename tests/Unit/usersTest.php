@@ -47,21 +47,21 @@ class UsersTest extends LocalDbWebTestCase
 			'contact' => array(
 				array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
                     'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 1
                 ),
 				array('id' => 2, 'first_name' => 'harry', 'last_name' => 'De Handige',
                     'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => 'ACTIVE',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 2
                 ),
 				array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => 'ACTIVE',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
                     'active_membership' => 2
@@ -286,7 +286,7 @@ class UsersTest extends LocalDbWebTestCase
 					"pdo" => $this->getPdo(),
 					"table" => "contact",
 					"user" => "email",
-					"hash" => "hash"
+					"hash" => "password"
 			]),
 		]);
 		
