@@ -62,7 +62,7 @@ class DeliveryController
         }
         $query= $queryParams['_query'] ?? null; // TODO: use query value
 
-        $querybuilder = Capsule::table('deliveries')
+        $querybuilder = Capsule::table('kb_deliveries')
             ->select('*');
 
         $deliveries = $querybuilder->orderBy($sortfield, $sortdir)->get();

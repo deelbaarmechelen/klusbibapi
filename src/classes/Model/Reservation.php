@@ -18,6 +18,7 @@ class Reservation extends Model
     {
         return ReservationFactory::new();
     }
+    protected $table = 'kb_reservations';
 	protected $primaryKey = "reservation_id";
 	
 	static protected $fieldArray = ['reservation_id', 'user_id', 'tool_id', 'state', 'startsAt', 'endsAt', 

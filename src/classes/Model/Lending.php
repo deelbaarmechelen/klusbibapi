@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lending extends Model
 {
+    protected $table = 'kb_lendings';
     protected $primaryKey = "lending_id";
     /**
      * The storage format of the model's date columns.

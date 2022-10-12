@@ -28,19 +28,19 @@ class UsersTest extends LocalDbWebTestCase
                 array('id' => 1, 'subscription_id' => 1, 'contact_id' => 1,
                     'status' => 'ACTIVE',
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
-                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'starts_at' => $this->startdate->format('Y-m-d H:i:s'),
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
                 array('id' => 2, 'subscription_id' => 1, 'contact_id' => 2,
                     'status' => 'ACTIVE',
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
-                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'starts_at' => $this->startdate->format('Y-m-d H:i:s'),
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
-                array('id' => 3, 'subscription_id' => 1, 'contact_id' => 4,
+                array('id' => 3, 'subscription_id' => 1, 'contact_id' => 3,
                     'status' => 'ACTIVE',
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
-                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'starts_at' => $this->startdate->format('Y-m-d H:i:s'),
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
             ),
@@ -64,10 +64,10 @@ class UsersTest extends LocalDbWebTestCase
                     'password' => password_hash("test", PASSWORD_DEFAULT),
                     'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
                     'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
-                    'active_membership' => 2
+                    'active_membership' => 3
                 ),
 			),
-			'reservations' => array(
+			'kb_reservations' => array(
 					array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
 							'title' => 'title 1',
 							'startsAt' => $this->startdate->format('Y-m-d H:i:s'),

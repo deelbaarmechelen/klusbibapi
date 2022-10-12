@@ -703,7 +703,7 @@ class EnrolmentManager
     public static function createMembership(MembershipType $type, $start_date, $end_date, ?Contact $user, $status) : Membership {
         $membership = new Membership();
         $membership->subscription_id = $type->id;
-        $membership->start_at = $start_date;
+        $membership->starts_at = $start_date;
         $membership->expires_at = $end_date;
         if (isset($user)) {
             $membership->contact_id = $user->id;
@@ -826,10 +826,10 @@ class EnrolmentManager
         if (empty($this->user->address_line_1) || empty($this->user->address_line_2)) {
             throw new EnrolmentException("User address is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
-        if (empty($this->user->postal_code) ) {
+        if (empty($this->user->address_line_4) ) {
             throw new EnrolmentException("User postal code is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
-        if (empty($this->user->city) ) {
+        if (empty($this->user->address_line_2) ) {
             throw new EnrolmentException("User city is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
         if (empty($this->user->registration_number) ) {

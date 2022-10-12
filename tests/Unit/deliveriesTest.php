@@ -26,7 +26,7 @@ class DeliveryTest extends LocalDbWebTestCase
                     'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
-			'deliveries' => array(
+			'kb_deliveries' => array(
 				array('id' => 1, 'user_id' => 3, 'state' => 1,
 						'pick_up_date' => $this->pickUpDate->format('Y-m-d H:i:s'),
                         'drop_off_date' => $this->dropOffDate->format('Y-m-d H:i:s'),
@@ -48,7 +48,7 @@ class DeliveryTest extends LocalDbWebTestCase
 						'updated_at' => $this->updatedate->format('Y-m-d H:i:s')
 						),
 			),
-			'delivery_item' => array(
+			'kb_delivery_item' => array(
 				array('delivery_id' => 1, 'inventory_item_id' => 1),
 			),
 		));

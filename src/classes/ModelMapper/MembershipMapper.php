@@ -29,7 +29,7 @@ class MembershipMapper
 
         $membershipArray = array("id" => $membership->id,
             "status" => $membership->status,
-            "start_at" => $membership->start_at->format('Y-m-d'),
+            "start_at" => $membership->starts_at->format('Y-m-d'),
             "expires_at" => $membership->expires_at->format('Y-m-d'),
             "subscription_id" => $membership->subscription_id,
             "subscription" => !$subscription ? array() : MembershipMapper::mapSubscriptionToArray($subscription),

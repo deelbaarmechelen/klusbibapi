@@ -21,9 +21,9 @@ class UserMapper
             //"membership_start_date" => !$membership ? $user->membership_start_date : $membership->start_at,
             "membership_end_date" => $user->membership_end_date,
             //"membership_end_date" => !$membership ? $user->membership_end_date : $membership->expires_at,
-            "address" => $user->address,
-            "postal_code" => $user->postal_code,
-            "city" => $user->city,
+            "address" => $user->address_line_1,
+            "postal_code" => $user->address_line_4,
+            "city" => $user->address_line_2,
             "phone" => $user->telephone,
             "mobile" => $user->telephone,
             "registration_number" => $user->registration_number,
@@ -80,13 +80,13 @@ class UserMapper
 //			}
 //		}
 		if (isset($data["address"])) {
-			$user->address = $data["address"];
+			$user->address_line_1 = $data["address"];
 		}
 		if (isset($data["postal_code"])) {
-			$user->postal_code = $data["postal_code"];
+			$user->address_line_4 = $data["postal_code"];
 		}
 		if (isset($data["city"])) {
-			$user->city = $data["city"];
+			$user->address_line_2 = $data["city"];
 		}
 		if (isset($data["phone"])) {
 			$user->telephone = $data["phone"];

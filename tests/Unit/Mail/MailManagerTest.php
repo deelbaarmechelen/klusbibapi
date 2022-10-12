@@ -33,7 +33,7 @@ final class MailManagerTest extends LocalDbWebTestCase
                     'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
-            'deliveries' => array(
+            'kb_deliveries' => array(
                 array('id' => 1, 'user_id' => 3, 'state' => 1,
                     'pick_up_date' => $this->pickUpDate->format('Y-m-d H:i:s'),
                     'drop_off_date' => $this->dropOffDate->format('Y-m-d H:i:s'),
@@ -55,7 +55,7 @@ final class MailManagerTest extends LocalDbWebTestCase
                     'updated_at' => $this->updatedate->format('Y-m-d H:i:s')
                 ),
             ),
-            'delivery_item' => array(
+            'kb_delivery_item' => array(
                 array('delivery_id' => 1, 'inventory_item_id' => 1),
             ),
         ));
@@ -345,8 +345,8 @@ final class MailManagerTest extends LocalDbWebTestCase
         $user->last_name = "mijnFamilieNaam";
         $user->state = \Api\Model\UserState::CHECK_PAYMENT;
         $user->address = "Mijnthuisstraat 123";
-        $user->postal_code = "2800";
-        $user->city = "Mechelen";
+        $user->address_line_4 = "2800";
+        $user->address_line_2 = "Mechelen";
         $user->membership_end_date = new DateTime();
         $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
 
@@ -368,8 +368,8 @@ final class MailManagerTest extends LocalDbWebTestCase
         $user->last_name = "mijnFamilieNaam";
         $user->state = \Api\Model\UserState::CHECK_PAYMENT;
         $user->address = "Mijnthuisstraat 123";
-        $user->postal_code = "2800";
-        $user->city = "Mechelen";
+        $user->address_line_4 = "2800";
+        $user->address_line_2 = "Mechelen";
         $user->membership_end_date = new DateTime();
         $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
 
@@ -415,7 +415,7 @@ if (!class_exists('ContactTest')) {
         protected $table = 'users';
         public $incrementing = false;
         //['user_id', 'state', 'first_name', 'last_name', 'role', 'email',
-        //'membership_start_date', 'membership_end_date', 'address_line_1', 'postal_code', 'city',
+        //'membership_start_date', 'membership_end_date', 'address_line_1', 'address_line_4', 'address_line_2',
         //'telephone', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
         public $id = 999;
         public $first_name;
@@ -523,7 +523,7 @@ if (!class_exists('ReservationTest')) {
 if (!class_exists('MembershipTest')) {
     class MembershipTest extends Membership
     {
-        //'id', 'status', 'start_at', 'expires_at', 'subscription_id', 'contact_id',
+        //'id', 'status', 'starts_at', 'expires_at', 'subscription_id', 'contact_id',
         // 'last_payment_mode', 'comment', 'created_at', 'updated_at', 'deleted_at
         public $id = 999;
         public $status;

@@ -19,6 +19,7 @@ class Delivery extends Model
         return DeliveryFactory::new();
     }
 
+    protected $table = 'kb_deliveries';
     protected $primaryKey = "id";
 	static protected $fieldArray = ['id', 'user_id', 
 		'state', 'pick_up_address', 'reservation_id',

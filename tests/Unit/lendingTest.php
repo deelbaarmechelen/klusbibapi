@@ -26,7 +26,7 @@ class LendingTest extends LocalDbWebTestCase
                     'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
-			'lendings' => array(
+			'kb_lendings' => array(
 				array('lending_id' => 1, 'user_id' => 3, 'tool_id' => 1,
 						'start_date' => $this->startdate->format('Y-m-d H:i:s'),
                         'due_date' => $this->duedate->format('Y-m-d H:i:s'),

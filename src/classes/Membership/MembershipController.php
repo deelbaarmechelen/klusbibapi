@@ -95,7 +95,7 @@ class MembershipController
             $status = MembershipState::STATUS_ACTIVE;
         }
         $subscriptionId = $request->getQueryParam('subscription_id');
-        $startAt = $request->getQueryParam('start_at');
+        $startAt = $request->getQueryParam('starts_at');
 
         if ($status === MembershipState::STATUS_ACTIVE) {
             $query = Membership::active();

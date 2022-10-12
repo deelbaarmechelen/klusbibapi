@@ -13,7 +13,7 @@ class Membership extends Model
 
     protected $table = "membership";
     protected $casts = [
-        'start_at'  => 'date:Y-m-d',
+        'starts_at'  => 'date:Y-m-d',
         'expires_at' => 'date:Y-m-d',
     ];
     /**
@@ -22,10 +22,10 @@ class Membership extends Model
      * @var array
      */
     protected $dates = [
-        'start_at','expires_at'
+        'starts_at','expires_at'
     ];
 
-	static protected $fieldArray = ['id', 'status', 'start_at', 'expires_at', 'subscription_id', 'contact_id',
+	static protected $fieldArray = ['id', 'status', 'starts_at', 'expires_at', 'subscription_id', 'contact_id',
         'last_payment_mode', 'comment', 'created_at', 'updated_at', 'deleted_at'
 	];
 	
@@ -92,7 +92,7 @@ class Membership extends Model
     }
     public function scopeWithStartAt($query, $startAt)
     {
-        return $query->where('start_at', '=', $startAt);
+        return $query->where('starts_at', '=', $startAt);
     }
     public function scopeWithUser($query, $userId)
     {

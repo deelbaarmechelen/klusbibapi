@@ -59,7 +59,7 @@ class InventoryMock implements Inventory
 //        }
 //        $tools = $builder->orderBy($sortfield, $sortdir)->get();
 //        return $tools;
-        return Capsule::table('tools')->get();
+        return Capsule::table('kb_tools')->get();
     }
 
     public function getToolById($id) : ?Tool

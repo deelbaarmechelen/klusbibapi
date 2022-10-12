@@ -18,7 +18,7 @@ class HomepageTest extends BaseDBTestCase
 				'contact' => array(
 						array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
 								'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => 'ACTIVE',
-								'hash' => password_hash("test", PASSWORD_DEFAULT),
+								'password' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
 								'state' => 'ACTIVE'

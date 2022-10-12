@@ -360,10 +360,13 @@ class UserController implements UserControllerInterface
          && $membership = Membership::find($user->active_membership)) {
             $user->activeMembership()->dissociate($membership);
             $user->save();
+            if ($membership->contact_id == $user->id) {
+                $membership->contact_id = null;
+            }
             if ($membership->members()->count() <= 1) {
                 $membership->status = MembershipState::STATUS_CANCELLED;
-                $membership->save();
             }
+            $membership->save();
         }
         $this->userManager->delete($user);
         return $response->withStatus(HttpResponseCode::OK);

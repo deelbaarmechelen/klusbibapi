@@ -29,7 +29,7 @@ class Contact extends Model
 	public $incrementing = false;
 
 	static protected $fieldArray = ['id', 'state', 'first_name', 'last_name', 'role', 'email', 'email_state',
-			'membership_start_date', 'membership_end_date', 'address', 'postal_code', 'city',
+			'membership_start_date', 'membership_end_date', 'address_line_1', 'address_line_4', 'address_line_2',
 			'phone', 'telephone', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
             'last_sync_date', 'active_membership', 'company', 'comment', 'last_login', 'created_at', 'updated_at'
 	];
@@ -149,7 +149,7 @@ class Contact extends Model
      */
     public function projects()
     {
-        return $this->belongsToMany('Api\Model\Project', 'project_user', 'user_id', 'project_id')
+        return $this->belongsToMany('Api\Model\Project', 'kb_project_user', 'user_id', 'project_id')
             ->as('membership')
             ->withTimestamps();
     }

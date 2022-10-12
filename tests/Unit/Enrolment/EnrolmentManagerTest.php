@@ -65,41 +65,103 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                     'next_subscription_id' => 6
                 ),
             ),
+            'contact' => array(
+                array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
+                    'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
+                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+                    'active_membership' => 1
+                ),
+                array('id' => 2, 'first_name' => 'harry', 'last_name' => 'De Handige',
+                    'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
+                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+                    'active_membership' => 2
+                ),
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
+                    'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
+                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
+                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
+                    'active_membership' => 6
+                ),
+                array('id' => 4, 'first_name' => 'nele', 'last_name' => 'HippeDame',
+                    'role' => 'member', 'email' => 'nele@klusbib.be', 'state' => \Api\Model\UserState::EXPIRED,
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
+                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
+                    'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
+                    'active_membership' => 3
+                ),
+                array('id' => 5, 'first_name' => 'tom', 'last_name' => 'DoetMee',
+                    'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => \Api\Model\UserState::CHECK_PAYMENT,
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
+                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
+                    'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
+                    'active_membership' => 5
+                ),
+                array('id' => 6, 'first_name' => 'newt', 'last_name' => 'NewUser',
+                    'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => \Api\Model\UserState::CHECK_PAYMENT,
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
+                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800',
+                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
+                    'membership_start_date' => null,
+                    'membership_end_date' => null,
+                    'active_membership' => null
+                ),
+            ),
             'membership' => array(
                 array('id' => 1, 'subscription_id' => 1, 'contact_id' => 1,
                     'status' => 'ACTIVE',
                     'last_payment_mode' => \Api\Model\PaymentMode::CASH,
-                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'starts_at' => $this->startdate->format('Y-m-d H:i:s'),
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
                 array('id' => 2, 'subscription_id' => 1, 'contact_id' => 2,
                     'status' => 'ACTIVE',
                     'last_payment_mode' => \Api\Model\PaymentMode::STROOM,
-                    'start_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'starts_at' => $this->startdate->format('Y-m-d H:i:s'),
                     'expires_at' => $this->enddate->format('Y-m-d H:i:s')
                 ),
                 array('id' => 3, 'subscription_id' => 1, 'contact_id' => 4,
                     'status' => 'PENDING',
                     'last_payment_mode' => \Api\Model\PaymentMode::MOLLIE,
-                    'start_at' => $this->expiredStartDate->format('Y-m-d'),
+                    'starts_at' => $this->expiredStartDate->format('Y-m-d'),
                     'expires_at' => $this->expiredEndDate->format('Y-m-d')
                 ),
                 // membership renewal - not yet confirmed
                 array('id' => 4, 'subscription_id' => 3, 'contact_id' => 4,
                     'status' => 'PENDING',
                     'last_payment_mode' => \Api\Model\PaymentMode::MOLLIE,
-                    'start_at' => $this->expiredStartDate->format('Y-m-d'),
+                    'starts_at' => $this->expiredStartDate->format('Y-m-d'),
                     'expires_at' => $this->expiredEndDate->format('Y-m-d')
                 ),
                 // membership new mollie enrolment - not yet confirmed
                 array('id' => 5, 'subscription_id' => 1, 'contact_id' => 5,
                     'status' => 'PENDING',
                     'last_payment_mode' => \Api\Model\PaymentMode::MOLLIE,
-                    'start_at' => $this->expiredStartDate->format('Y-m-d'),
+                    'starts_at' => $this->expiredStartDate->format('Y-m-d'),
                     'expires_at' => $this->expiredEndDate->format('Y-m-d')
                 ),
+                array('id' => 6, 'subscription_id' => 1, 'contact_id' => 3,
+                    'status' => 'ACTIVE',
+                    'last_payment_mode' => \Api\Model\PaymentMode::STROOM,
+                    'starts_at' => $this->startdate->format('Y-m-d H:i:s'),
+                    'expires_at' => $this->enddate->format('Y-m-d H:i:s')
+                ),
             ),
-            'payments' => array(
+            'kb_payments' => array(
                 array('payment_id' => 1, 'user_id' => 1, 'membership_id' => 1,
                     'state' => \Api\Model\PaymentState::SUCCESS,
                     'mode' => \Api\Model\PaymentMode::CASH,
@@ -107,7 +169,7 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                     'amount' => 30,
                     'currency' => 'EUR'
                 ),
-                array('payment_id' => 2, 'user_id' => 3, 'membership_id' => 2,
+                array('payment_id' => 2, 'user_id' => 3, 'membership_id' => 6,
                     'state' => \Api\Model\PaymentState::OPEN,
                     'mode' => \Api\Model\PaymentMode::STROOM,
                     'order_id' => 'orderId3-20200901',
@@ -131,66 +193,9 @@ final class EnrolmentManagerTest extends LocalDbWebTestCase
                     'currency' => 'EUR'
                 ),
             ),
-            'contact' => array(
-                array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
-                    'role' => 'admin', 'email' => 'admin@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
-                    'password' => password_hash("test", PASSWORD_DEFAULT),
-                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800',
-                    'postal_code' => '2800', 'city' => 'Mechelen',
-                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
-                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
-                    'active_membership' => 1
-                ),
-                array('id' => 2, 'first_name' => 'harry', 'last_name' => 'De Handige',
-                    'role' => 'volunteer', 'email' => 'harry@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
-                    'password' => password_hash("test", PASSWORD_DEFAULT),
-                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800', 'postal_code' => '2800', 'city' => 'Mechelen',
-                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
-                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
-                    'active_membership' => 2
-                ),
-                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
-                    'role' => 'member', 'email' => 'daniel@klusbib.be', 'state' => \Api\Model\UserState::ACTIVE,
-                    'password' => password_hash("test", PASSWORD_DEFAULT),
-                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800', 'postal_code' => '2800', 'city' => 'Mechelen',
-                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
-                    'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
-                    'membership_end_date' => $this->enddate->format('Y-m-d H:i:s'),
-                    'active_membership' => 2
-                ),
-                array('id' => 4, 'first_name' => 'nele', 'last_name' => 'HippeDame',
-                    'role' => 'member', 'email' => 'nele@klusbib.be', 'state' => \Api\Model\UserState::EXPIRED,
-                    'password' => password_hash("test", PASSWORD_DEFAULT),
-                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800', 'postal_code' => '2800', 'city' => 'Mechelen',
-                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
-                    'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
-                    'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
-                    'active_membership' => 3
-                ),
-                array('id' => 5, 'first_name' => 'tom', 'last_name' => 'DoetMee',
-                    'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => \Api\Model\UserState::CHECK_PAYMENT,
-                    'password' => password_hash("test", PASSWORD_DEFAULT),
-                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800', 'postal_code' => '2800', 'city' => 'Mechelen',
-                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
-                    'membership_start_date' => $this->expiredStartDate->format('Y-m-d'),
-                    'membership_end_date' => $this->expiredEndDate->format('Y-m-d'),
-                    'active_membership' => 5
-                ),
-                array('id' => 6, 'first_name' => 'newt', 'last_name' => 'NewUser',
-                    'role' => 'member', 'email' => 'tom@klusbib.be', 'state' => \Api\Model\UserState::CHECK_PAYMENT,
-                    'password' => password_hash("test", PASSWORD_DEFAULT),
-                    'address_line_1' => 'here', 'address_line_2' => 'Mechelen', 'address_line_4' => '2800', 'postal_code' => '2800', 'city' => 'Mechelen',
-                    'registration_number' => '00010112345', 'accept_terms_date' => $this->acceptTermsDate->format('Y-m-d'),
-                    'membership_start_date' => null,
-                    'membership_end_date' => null,
-                    'active_membership' => null
-                ),
+            'kb_project_user' => array(
             ),
-            'project_user' => array(
-            ),
-            'projects' => array(
+            'kb_projects' => array(
                 array('id' => 1, 'name' => 'STROOM')
             ),
         ));
@@ -554,7 +559,7 @@ if (!class_exists('ContactTest')) {
         }
 
         //['user_id', 'state', 'first_name', 'last_name', 'role', 'email',
-        //'membership_start_date', 'membership_end_date', 'address_line_1', 'postal_code', 'city',
+        //'membership_start_date', 'membership_end_date', 'address_line_1', 'address_line_4' (postal_code), 'address_line_2' (city),
         //'telephone', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
         public $user_id = 999;
         public $first_name;

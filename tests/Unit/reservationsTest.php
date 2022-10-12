@@ -65,7 +65,7 @@ class ReservationsTest extends LocalDbWebTestCase
 								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
 				),
-				'tools' => array(
+				'kb_tools' => array(
 						array('tool_id' => 1, 'name' => 'tool 1', 'description' => 'description 1',
 								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
 								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
@@ -85,7 +85,7 @@ class ReservationsTest extends LocalDbWebTestCase
 								'code' => 'KB-000-17-002', 'owner_id' => 0
 						)
 				),
-				'reservations' => array(
+				'kb_reservations' => array(
                     array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
                             'title' => 'title 1',
                             'startsAt' => $this->startdate->format('Y-m-d H:i:s'),

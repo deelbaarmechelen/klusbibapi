@@ -52,22 +52,22 @@ class ReservationController implements ReservationControllerInterface
             $perPage = '50';
         }
         $query= $queryParams['_query'] ?? null;
-        $querybuilder = Capsule::table('reservations')
-            ->join('contact', 'reservations.user_id', '=', 'contact.id')
-            ->select('reservations.*', 'contact.first_name', 'contact.last_name');
+        $querybuilder = Capsule::table('kb_reservations')
+            ->join('contact', 'kb_reservations.user_id', '=', 'contact.id')
+            ->select('kb_reservations.*', 'contact.first_name', 'contact.last_name');
         $isOpen = $queryParams['isOpen'] ?? null;
         if (isset($isOpen) && $isOpen == 'true') {
-            $querybuilder->whereIn('reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
+            $querybuilder->whereIn('kb_reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
         }
         if (isset($query)) {
-            $querybuilder->where('users.first_name', 'LIKE', '%'.$query.'%' )
-                ->orWhere('users.last_name', 'LIKE', '%'.$query.'%' );
+            $querybuilder->where('contact.first_name', 'LIKE', '%'.$query.'%' )
+                ->orWhere('contact.last_name', 'LIKE', '%'.$query.'%' );
         }
 
         if ($sortfield == "username") {
-            $sortfield = 'users.first_name';
+            $sortfield = 'contact.first_name';
         } else {
-            $sortfield = 'reservations.' . $sortfield;
+            $sortfield = 'kb_reservations.' . $sortfield;
         }
         $reservations = $querybuilder->orderBy($sortfield, $sortdir)->get();
         $reservations_page = array_slice($reservations->all(), ($page - 1) * $perPage, $perPage);
