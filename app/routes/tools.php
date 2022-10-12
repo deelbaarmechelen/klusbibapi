@@ -1,13 +1,7 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
-use Api\ModelMapper\ToolMapper;
-use Api\Authorisation;
-use Api\Model\Tool;
 use Api\Tool\ToolController;
 use Api\Tool\AccessoryController;
-use Api\ModelMapper\ReservationMapper;
-use Api\Upload\UploadHandler;
 
 $app->get('/tools', ToolController::class . ':getAll');
 $app->get('/tools/{toolid}', ToolController::class . ':getById');
