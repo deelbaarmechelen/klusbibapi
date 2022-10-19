@@ -42,7 +42,7 @@ echo "Syncing tools\n";
 $toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger);
 $tools = $toolManager->sync();
 
-// For remaining models: just update last_sync_date to activate update trigger, which will take card of sync with Lend Engine
+// For remaining models: just update last_sync_date to activate update trigger, which will take care of sync with Lend Engine
 echo "Syncing reservations\n";
 if ($force) {
     $reservations = \Api\Model\Reservation::all(); // sync all

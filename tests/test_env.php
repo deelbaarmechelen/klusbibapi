@@ -5,7 +5,7 @@ if (file_exists(__DIR__ . '/../.env.dev')) {
 }
 
 // define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
-$defaultTstUrl = "mysql://root:@127.0.0.1:3306/klusbibapi_tst";
+$defaultTstUrl = "mysql://root:@127.0.0.1:3306/lendenginetst";
 $urltst = getenv('TEST_DATABASE_URL');
 if (!isset($urltst) || empty($urltst)) {
 	$urltst = $defaultTstUrl;
