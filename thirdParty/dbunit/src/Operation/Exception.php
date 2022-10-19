@@ -18,7 +18,7 @@ use PHPUnit\DbUnit\RuntimeException;
  * information regarding which operations failed and the query (if any) it
  * failed on.
  */
-class Exception extends RuntimeException
+class Exception extends \RuntimeException
 {
     /**
      * @var string
