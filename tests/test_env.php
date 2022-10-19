@@ -3,6 +3,10 @@ if (file_exists(__DIR__ . '/../.env.dev')) {
     $dotenv = \Dotenv\Dotenv::createMutable(__DIR__ . '/../', '.env.dev');
     $envs = $dotenv->safeLoad();
 }
+if (file_exists(__DIR__ . '/../.env.test')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../', '.env.test');
+    $dotenv->load();
+}
 
 // define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
 $defaultTstUrl = "mysql://root:@127.0.0.1:3306/lendenginetst";
@@ -16,9 +20,8 @@ $usertst = parse_url($urltst, PHP_URL_USER);
 $passtst = parse_url($urltst, PHP_URL_PASS);
 $porttst = parse_url($urltst, PHP_URL_PORT);
 
-if (!defined('PROJECT_HOME')) define("PROJECT_HOME", $_ENV['PROJECT_HOME']);
-if (!defined('JWT_SECRET')) define("JWT_SECRET", $_ENV['JWT_SECRET']);
-//defined('JWT_SECRET') or define("JWT_SECRET","yoursecret");
+defined('PROJECT_HOME') or define("PROJECT_HOME",$_ENV['PROJECT_HOME']);
+defined('JWT_SECRET') or define("JWT_SECRET",$_ENV['JWT_SECRET']);
 defined('APP_ENV') or define("APP_ENV",'development');
 
 defined('MAIL_PORT') or define("MAIL_PORT", "26"); // smtp port number

@@ -42,8 +42,6 @@ abstract class SnipeitToolMapper
         $item->current_location_id = $currentLocationId;//')->unsigned()->nullable()->default(null);
         $item->item_condition = null;//')->unsigned()->nullable()->default(null);
         $item->sku = $asset->asset_tag;
-
-//        $item->description =  $asset->notes;//', 1024)->nullable()->default(null);
         $item->keywords =  self::mapAssetCategoryToToolCategory($asset);
         $item->brand =  html_entity_decode ($asset->manufacturer->name);//', 1024)->nullable()->default(null);
         $item->care_information =  null;//', 1024)->nullable()->default(null); - full description - shown online
@@ -151,7 +149,7 @@ abstract class SnipeitToolMapper
         $tool->tool_id = $asset->id;
         $tool->tool_ext_id = $asset->id;
         $tool->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
-//        $tool->description = $asset->notes; -> disable, notes is for internal use, and may not be shown on public website
+//        $tool->description = $asset->notes; -> notes is for internal use, and may not be shown on public website
         $tool->code = $asset->asset_tag;
 //        $tool->owner_id = $data["owner_id"]; // FIXME: should match supplier??
 //        $tool->reception_date = $data["reception_date"];
