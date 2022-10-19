@@ -1,0 +1,21 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6ab4d7dd0
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1666039359699
+created: 1665868323838
+url: "{{ base_url }}/tools"
+name: /tools
+description: ""
+method: GET
+body: {}
+parameters: []
+headers: []
+authentication: {}
+metaSortKey: -1665871682805
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

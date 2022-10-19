@@ -1,0 +1,28 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6ffe606d6
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1665871682783
+created: 1665871682783
+url: "{{ base_url }}/deliveries/{{ deliveryId }}/items/{{ itemId }}"
+name: /deliveries/{deliveryId}/items/{itemId}
+description: ""
+method: PUT
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "comment": "string"
+    }
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1665871682783
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

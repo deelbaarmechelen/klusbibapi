@@ -1,0 +1,29 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b658d554d7
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1665871682820
+created: 1665871682820
+url: "{{ base_url }}/enrolment_confirm"
+name: /enrolment_confirm
+description: ""
+method: POST
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "userId": 0,
+      "paymentMode": "string"
+    }
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1665871682820
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

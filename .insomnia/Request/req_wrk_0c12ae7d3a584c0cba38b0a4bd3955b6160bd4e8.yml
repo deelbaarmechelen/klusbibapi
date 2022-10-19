@@ -1,0 +1,27 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6160bd4e8
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1666039489326
+created: 1665868323832
+url: "{{ base_url }}/token"
+name: /token
+description: ""
+method: POST
+body:
+  mimeType: application/json;charset=UTF-8
+parameters: []
+headers: []
+authentication:
+  type: basic
+  useISO88591: false
+  disabled: false
+  username: admin@klusbib.be
+  password: test
+metaSortKey: -1665871682849
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

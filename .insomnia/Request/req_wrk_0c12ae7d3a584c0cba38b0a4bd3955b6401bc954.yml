@@ -1,0 +1,36 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6401bc954
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1665871682793
+created: 1665871682793
+url: "{{ base_url }}/reservations"
+name: /reservations
+description: ""
+method: GET
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "reservation_id": 0,
+      "tool_id": 0,
+      "user_id": 0,
+      "title": "string",
+      "startsAt": "string",
+      "endsAt": "string",
+      "type": "string",
+      "state": "string",
+      "comment": "string"
+    }
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1665871682793
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

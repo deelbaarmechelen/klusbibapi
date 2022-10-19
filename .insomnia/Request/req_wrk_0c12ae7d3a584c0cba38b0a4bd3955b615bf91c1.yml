@@ -1,0 +1,21 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b615bf91c1
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1666039416035
+created: 1665871682804
+url: "{{ base_url }}/lendings"
+name: /lendings
+description: ""
+method: POST
+body: {}
+parameters: []
+headers: []
+authentication: {}
+metaSortKey: -1665871682801.5
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

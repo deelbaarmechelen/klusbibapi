@@ -1,0 +1,21 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b69ff8e4d0
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1666039354932
+created: 1665871682816
+url: "{{ base_url }}/accessories"
+name: /accessories
+description: ""
+method: GET
+body: {}
+parameters: []
+headers: []
+authentication: {}
+metaSortKey: -1665871682806
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global
