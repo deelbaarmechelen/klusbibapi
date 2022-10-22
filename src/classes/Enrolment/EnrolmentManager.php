@@ -871,14 +871,19 @@ class EnrolmentManager
     protected function checkUserStateEnrolment()
     {
         $this->logger->info(\json_encode($this->user->activeMembership));
-        if ( ($this->user->state == UserState::ACTIVE || $this->user->state == UserState::EXPIRED)
-            && !$this->isTempMembership($this->user->activeMembership) ) {
-            throw new EnrolmentException("User already enrolled, consider a renewal", EnrolmentException::ALREADY_ENROLLED);
-        }
+        // normal case, no other checks needed
         // Note: DISABLED users should get a state update to CHECK_PAYMENT prior to this call
-        if ($this->user->state != UserState::CHECK_PAYMENT) {
-            throw new EnrolmentException("User state unsupported for enrolment", EnrolmentException::UNSUPPORTED_STATE);
+        if ($this->user->state == UserState::CHECK_PAYMENT) {
+            return;
         }
+        if ($this->user->state == UserState::ACTIVE || $this->user->state == UserState::EXPIRED) {
+            if ($this->isTempMembership($this->user->activeMembership) ) {
+                return;
+            } else {
+                throw new EnrolmentException("User already enrolled, consider a renewal", EnrolmentException::ALREADY_ENROLLED);
+            }
+        }
+        throw new EnrolmentException("User state unsupported for enrolment", EnrolmentException::UNSUPPORTED_STATE);
     }
 
     /**
