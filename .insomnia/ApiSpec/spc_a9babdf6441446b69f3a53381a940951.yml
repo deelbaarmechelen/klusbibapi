@@ -1,7 +1,7 @@
 _id: spc_a9babdf6441446b69f3a53381a940951
 type: ApiSpec
 parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
-modified: 1666216976414
+modified: 1666789048898
 created: 1665862443978
 fileName: KlusbibAPI
 contents: "openapi: 3.0.0
