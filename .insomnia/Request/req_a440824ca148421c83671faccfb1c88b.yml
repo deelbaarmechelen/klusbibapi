@@ -1,10 +1,10 @@
-_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b674d41e77
+_id: req_a440824ca148421c83671faccfb1c88b
 type: Request
 parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
-modified: 1668799830542
-created: 1666041975401
+modified: 1668799728455
+created: 1668799718287
 url: "{{ base_url }}/users"
-name: /users
+name: /users for enrolment
 description: ""
 method: POST
 body:
@@ -21,8 +21,6 @@ body:
       "user_ext_id": "999",
       "state": "DISABLED",
       "email_state": "CONFIRM_EMAIL",
-      "membership_start_date": "{% now 'custom', 'YYYY-MM-DD' %}",
-      "membership_end_date": "{% now 'custom', 'YYYY-MM-DD' %}",
       "address": "anywhere",
       "postal_code": "2800",
       "city": "Mechelen",
@@ -39,7 +37,7 @@ authentication:
   type: bearer
   token: "{% response 'body', 'req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6160bd4e8',
     'b64::JC50b2tlbg==::46b', 'no-history', 60 %}"
-metaSortKey: -1665871682821.0625
+metaSortKey: -1665871682821.0312
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

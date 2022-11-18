@@ -1,25 +1,25 @@
-_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6761c69fe
+_id: req_e9a965faafb44d518d04e6ee68031e81
 type: Request
 parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
-modified: 1668797956331
-created: 1665871682818
-url: "{{ base_url }}/enrolment_decline"
-name: /enrolment_decline
+modified: 1668797660051
+created: 1668797610875
+url: "{{ base_url }}/auth/verifyemail"
+name: /auth/verifyemail unknown usr
 description: ""
 method: POST
 body:
   mimeType: application/json
   text: |-
     {
-      "paymentMode": "string",
-      "userId": 0
+      "email": "unknown"
     }
 parameters: []
 headers:
   - name: Content-Type
     value: application/json
+    id: pair_45737d64fa674b72832ba6d1b8252204
 authentication: {}
-metaSortKey: -1665871682818
+metaSortKey: -1665871682821.5
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true
