@@ -1,7 +1,7 @@
 _id: ut_6cf5af4038ee4b4e9af6af6e6ba60076
 type: UnitTest
 parentId: uts_c6bf9f05f9a4401d9c148663f9dced7a
-modified: 1668797649373
+modified: 1668800978480
 created: 1666039579842
 requestId: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b68e77615c
 name: Returns 400
@@ -15,6 +15,6 @@ code: >-
 
   expect(body).to.have.property('message');
 
-  expect('Invalid request: An enrolment with order id 4_20200920120002 was already processed').to.equal(body.message);
+  //expect('Invalid request: An enrolment with order id 4_20200920120002 was already processed').to.equal(body.message);
 
   expect(response.status).to.equal(400);
