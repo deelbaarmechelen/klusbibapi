@@ -1,0 +1,44 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6e684c3f6
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1665871682810
+created: 1665871682810
+url: "{{ base_url }}/users/{{ userId }}"
+name: /users/{userId}
+description: ""
+method: PUT
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "user_ext_id": "string",
+      "state": "string",
+      "firstname": "string",
+      "lastname": "string",
+      "email": "string",
+      "email_state": "string",
+      "role": "string",
+      "membership_start_date": "string",
+      "membership_end_date": "string",
+      "address": "string",
+      "postal_code": "string",
+      "city": "string",
+      "phone": "string",
+      "mobile": "string",
+      "registration_number": "string",
+      "payment_mode": "string",
+      "accept_terms_date": "string"
+    }
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1665871682810
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

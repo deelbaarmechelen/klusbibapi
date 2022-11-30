@@ -1,0 +1,46 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6ca32f8b9
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1666041974369
+created: 1665868323836
+url: "{{ base_url }}/users"
+name: /users
+description: ""
+method: OPTIONS
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "webenrolment": true,
+      "payment_mode": "string",
+      "accept_terms": true,
+      "email": "string",
+      "firstname": "string",
+      "lastname": "string",
+      "role": "string",
+      "user_ext_id": "string",
+      "state": "string",
+      "email_state": "string",
+      "membership_start_date": "string",
+      "membership_end_date": "string",
+      "address": "string",
+      "postal_code": "string",
+      "city": "string",
+      "phone": "string",
+      "mobile": "string",
+      "registration_number": "string",
+      "accept_terms_date": "string"
+    }
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1665871682814
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

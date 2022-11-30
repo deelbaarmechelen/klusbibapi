@@ -1,0 +1,1996 @@
+_id: spc_a9babdf6441446b69f3a53381a940951
+type: ApiSpec
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1666216976414
+created: 1665862443978
+fileName: KlusbibAPI
+contents: "openapi: 3.0.0
+
+  info:
+
+  \  title: Klusbib API
+
+  \  version: 1.0.0
+
+  paths:
+
+  \  /token:
+
+  \    options:
+
+  \      responses:
+
+  \        '200':
+
+  \          description: successful operation
+
+  \    post:
+
+  \      responses:
+
+  \        '201':
+
+  \          description: successful operation
+
+  \          content:
+
+  \            application/json:
+
+  \              schema:
+
+  \                type: object
+
+  \                properties:
+
+  \                  status:
+
+  \                    type: string
+
+  \                  token:
+
+  \                    type: string
+
+  \                required:
+
+  \                  - status
+
+  \                  - token
+
+  \        '401':
+
+  \          description: automatically documented through Optic
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json;charset=UTF-8:
+
+  \            schema:
+
+  \              type: array
+
+  \              items:
+
+  \                type: string
+
+  \  /token/guest:
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \  /auth/verifyemail:
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                email:
+
+  \                  type: string
+
+  \              required:
+
+  \                - email
+
+  \  /enrolment:
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                userId:
+
+  \                  type: number
+
+  \                orderId:
+
+  \                  type: string
+
+  \                paymentMode:
+
+  \                  type: string
+
+  \                membershipType:
+
+  \                  type: string
+
+  \              required:
+
+  \                - userId
+
+  \                - orderId
+
+  \                - paymentMode
+
+  \                - membershipType
+
+  \  /enrolment_confirm:
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                userId:
+
+  \                  type: number
+
+  \                paymentMode:
+
+  \                  type: string
+
+  \              required:
+
+  \                - userId
+
+  \                - paymentMode
+
+  \  /enrolment_decline:
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                paymentMode:
+
+  \                  type: string
+
+  \                userId:
+
+  \                  type: number
+
+  \              required:
+
+  \                - paymentMode
+
+  \                - userId
+
+  \  /tools:
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \  /accessories:
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \  /users:
+
+  \    post:
+
+  \      responses:
+
+  \        '200':
+
+  \          description: successful operation
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                webenrolment:
+
+  \                  type: boolean
+
+  \                payment_mode:
+
+  \                  type: string
+
+  \                accept_terms:
+
+  \                  type: boolean
+
+  \                email:
+
+  \                  type: string
+
+  \                firstname:
+
+  \                  type: string
+
+  \                lastname:
+
+  \                  type: string
+
+  \                role:
+
+  \                  type: string
+
+  \                user_ext_id:
+
+  \                  type: string
+
+  \                state:
+
+  \                  type: string
+
+  \                email_state:
+
+  \                  type: string
+
+  \                membership_start_date:
+
+  \                  type: string
+
+  \                membership_end_date:
+
+  \                  type: string
+
+  \                address:
+
+  \                  type: string
+
+  \                postal_code:
+
+  \                  type: string
+
+  \                city:
+
+  \                  type: string
+
+  \                phone:
+
+  \                  type: string
+
+  \                mobile:
+
+  \                  type: string
+
+  \                registration_number:
+
+  \                  type: string
+
+  \                accept_terms_date:
+
+  \                  type: string
+
+  \              required:
+
+  \                - payment_mode
+
+  \                - email
+
+  \                - firstname
+
+  \                - lastname
+
+  \                - role
+
+  \                - user_ext_id
+
+  \                - state
+
+  \                - email_state
+
+  \                - membership_start_date
+
+  \                - membership_end_date
+
+  \                - address
+
+  \                - postal_code
+
+  \                - city
+
+  \                - phone
+
+  \                - mobile
+
+  \                - registration_number
+
+  \                - accept_terms_date
+
+  \  /users/{userId}:
+
+  \    options:
+
+  \      parameters:
+
+  \        - name: userId
+
+  \          in: path
+
+  \          description: ID of user to return
+
+  \          required: true
+
+  \          schema:
+
+  \            type: integer
+
+  \            format: int64
+
+  \      responses:
+
+  \        '200':
+
+  \          description: successful operation
+
+  \    get:
+
+  \      summary: Find user by ID
+
+  \      description: Returns a single user
+
+  \      operationId: getUserById
+
+  \      parameters:
+
+  \        - name: userId
+
+  \          in: path
+
+  \          description: ID of user to return
+
+  \          required: true
+
+  \          schema:
+
+  \            type: integer
+
+  \            format: int64
+
+  \      responses:
+
+  \        '200':
+
+  \          description: successful operation
+
+  \          content:
+
+  \            application/json:
+
+  \              schema:
+
+  \                type: object
+
+  \                properties:
+
+  \                  user_id:
+
+  \                    type: number
+
+  \                  user_ext_id:
+
+  \                    type: string
+
+  \                  state:
+
+  \                    type: string
+
+  \                  firstname:
+
+  \                    type: string
+
+  \                  lastname:
+
+  \                    type: string
+
+  \                  email:
+
+  \                    type: string
+
+  \                  email_state:
+
+  \                    type: string
+
+  \                  role:
+
+  \                    type: string
+
+  \                  membership_start_date:
+
+  \                    type: string
+
+  \                  membership_end_date:
+
+  \                    type: string
+
+  \                  birth_date:
+
+  \                    type: string
+
+  \                  address:
+
+  \                    type: string
+
+  \                  postal_code:
+
+  \                    type: string
+
+  \                  city:
+
+  \                    type: string
+
+  \                  phone:
+
+  \                    type: string
+
+  \                  mobile:
+
+  \                    type: string
+
+  \                  registration_number:
+
+  \                    type: string
+
+  \                  payment_mode:
+
+  \                    type: string
+
+  \                  accept_terms_date:
+
+  \                    type: string
+
+  \                  last_sync_date:
+
+  \                    type: object
+
+  \                    properties:
+
+  \                      date:
+
+  \                        type: string
+
+  \                      timezone_type:
+
+  \                        type: number
+
+  \                      timezone:
+
+  \                        type: string
+
+  \                    required:
+
+  \                      - date
+
+  \                      - timezone_type
+
+  \                      - timezone
+
+  \                  active_membership:
+
+  \                    type: object
+
+  \                    properties:
+
+  \                      id:
+
+  \                        type: number
+
+  \                      status:
+
+  \                        type: string
+
+  \                      start_at:
+
+  \                        type: string
+
+  \                      expires_at:
+
+  \                        type: string
+
+  \                      subscription_id:
+
+  \                        type: number
+
+  \                      subscription:
+
+  \                        type: object
+
+  \                        properties:
+
+  \                          id:
+
+  \                            type: number
+
+  \                          name:
+
+  \                            type: string
+
+  \                          price:
+
+  \                            type: string
+
+  \                          duration:
+
+  \                            type: number
+
+  \                          discount:
+
+  \                            type: number
+
+  \                          self_serve:
+
+  \                            type: number
+
+  \                          max_items:
+
+  \                            type: number
+
+  \                          is_active:
+
+  \                            type: number
+
+  \                          next_subscription_id:
+
+  \                            type: number
+
+  \                          next_subscription_price:
+
+  \                            type: string
+
+  \                          created_at:
+
+  \                            type: string
+
+  \                          updated_at:
+
+  \                            type: string
+
+  \                        required:
+
+  \                          - id
+
+  \                          - name
+
+  \                          - price
+
+  \                          - duration
+
+  \                          - discount
+
+  \                          - self_serve
+
+  \                          - max_items
+
+  \                          - is_active
+
+  \                          - next_subscription_id
+
+  \                          - next_subscription_price
+
+  \                          - created_at
+
+  \                          - updated_at
+
+  \                      contact_id:
+
+  \                        type: number
+
+  \                      last_payment_mode:
+
+  \                        type: string
+
+  \                      comment:
+
+  \                        type: string
+
+  \                      created_at:
+
+  \                        type: string
+
+  \                      updated_at:
+
+  \                        type: string
+
+  \                      deleted_at:
+
+  \                        type: string
+
+  \                    required:
+
+  \                      - id
+
+  \                      - status
+
+  \                      - start_at
+
+  \                      - expires_at
+
+  \                      - subscription_id
+
+  \                      - subscription
+
+  \                      - contact_id
+
+  \                      - last_payment_mode
+
+  \                      - comment
+
+  \                      - created_at
+
+  \                      - updated_at
+
+  \                      - deleted_at
+
+  \                  company:
+
+  \                    type: string
+
+  \                  comment:
+
+  \                    type: string
+
+  \                  created_at:
+
+  \                    type: string
+
+  \                  updated_at:
+
+  \                    type: string
+
+  \                  reservations:
+
+  \                    type: array
+
+  \                    items:
+
+  \                      type: object
+
+  \                      properties:
+
+  \                        reservation_id:
+
+  \                          type: number
+
+  \                        tool_id:
+
+  \                          type: number
+
+  \                        user_id:
+
+  \                          type: number
+
+  \                        title:
+
+  \                          type: string
+
+  \                        startsAt:
+
+  \                          type: string
+
+  \                        endsAt:
+
+  \                          type: string
+
+  \                        type:
+
+  \                          type: string
+
+  \                        state:
+
+  \                          type: string
+
+  \                        comment:
+
+  \                          type: string
+
+  \                        tool_code:
+
+  \                          type: string
+
+  \                        tool_name:
+
+  \                          type: string
+
+  \                        tool_brand:
+
+  \                          type: string
+
+  \                        tool_type:
+
+  \                          type: string
+
+  \                        tool_size:
+
+  \                          type: string
+
+  \                        tool_fee:
+
+  \                          type: number
+
+  \                        deliverable:
+
+  \                          type: boolean
+
+  \                      required:
+
+  \                        - reservation_id
+
+  \                        - tool_id
+
+  \                        - user_id
+
+  \                        - title
+
+  \                        - startsAt
+
+  \                        - endsAt
+
+  \                        - type
+
+  \                        - state
+
+  \                        - comment
+
+  \                        - tool_code
+
+  \                        - tool_name
+
+  \                        - tool_brand
+
+  \                        - tool_type
+
+  \                        - tool_size
+
+  \                        - tool_fee
+
+  \                        - deliverable
+
+  \                  deliveries:
+
+  \                    type: array
+
+  \                    items:
+
+  \                      type: object
+
+  \                      properties:
+
+  \                        id:
+
+  \                          type: number
+
+  \                        reservation_id:
+
+  \                          type: integer
+
+  \                        user_id:
+
+  \                          type: number
+
+  \                        state:
+
+  \                          type: string
+
+  \                        type:
+
+  \                          type: string
+
+  \                        pick_up_address:
+
+  \                          type: string
+
+  \                        drop_off_address:
+
+  \                          type: string
+
+  \                        pick_up_date:
+
+  \                          type: string
+
+  \                        drop_off_date:
+
+  \                          type: string
+
+  \                        consumers:
+
+  \                          type: string
+
+  \                        comment:
+
+  \                          type: string
+
+  \                        price:
+
+  \                          type: string
+
+  \                        payment_id:
+
+  \                          type: integer
+
+  \                        items:
+
+  \                          type: array
+
+  \                          items: {}
+
+  \                      required:
+
+  \                        - id
+
+  \                        - reservation_id
+
+  \                        - user_id
+
+  \                        - state
+
+  \                        - type
+
+  \                        - pick_up_address
+
+  \                        - drop_off_address
+
+  \                        - pick_up_date
+
+  \                        - drop_off_date
+
+  \                        - consumers
+
+  \                        - comment
+
+  \                        - price
+
+  \                        - payment_id
+
+  \                        - items
+
+  \                  projects:
+
+  \                    type: array
+
+  \                    items:
+
+  \                      type: object
+
+  \                      properties:
+
+  \                        id:
+
+  \                          type: number
+
+  \                        name:
+
+  \                          type: string
+
+  \                      required:
+
+  \                        - id
+
+  \                        - name
+
+  \                required:
+
+  \                  - user_id
+
+  \                  - user_ext_id
+
+  \                  - state
+
+  \                  - firstname
+
+  \                  - lastname
+
+  \                  - email
+
+  \                  - email_state
+
+  \                  - role
+
+  \                  - membership_start_date
+
+  \                  - membership_end_date
+
+  \                  - birth_date
+
+  \                  - address
+
+  \                  - postal_code
+
+  \                  - city
+
+  \                  - phone
+
+  \                  - mobile
+
+  \                  - registration_number
+
+  \                  - payment_mode
+
+  \                  - accept_terms_date
+
+  \                  - last_sync_date
+
+  \                  - active_membership
+
+  \                  - company
+
+  \                  - comment
+
+  \                  - created_at
+
+  \                  - updated_at
+
+  \                  - reservations
+
+  \                  - deliveries
+
+  \                  - projects
+
+  \    put:
+
+  \      parameters:
+
+  \        - name: userId
+
+  \          in: path
+
+  \          description: ID of user to return
+
+  \          required: true
+
+  \          schema:
+
+  \            type: integer
+
+  \            format: int64
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                user_ext_id:
+
+  \                  type: string
+
+  \                state:
+
+  \                  type: string
+
+  \                firstname:
+
+  \                  type: string
+
+  \                lastname:
+
+  \                  type: string
+
+  \                email:
+
+  \                  type: string
+
+  \                email_state:
+
+  \                  type: string
+
+  \                role:
+
+  \                  type: string
+
+  \                membership_start_date:
+
+  \                  type: string
+
+  \                membership_end_date:
+
+  \                  type: string
+
+  \                address:
+
+  \                  type: string
+
+  \                postal_code:
+
+  \                  type: string
+
+  \                city:
+
+  \                  type: string
+
+  \                phone:
+
+  \                  type: string
+
+  \                mobile:
+
+  \                  type: string
+
+  \                registration_number:
+
+  \                  type: string
+
+  \                payment_mode:
+
+  \                  type: string
+
+  \                accept_terms_date:
+
+  \                  type: string
+
+  \              required:
+
+  \                - user_ext_id
+
+  \                - state
+
+  \                - firstname
+
+  \                - lastname
+
+  \                - email
+
+  \                - email_state
+
+  \                - role
+
+  \                - membership_start_date
+
+  \                - membership_end_date
+
+  \                - address
+
+  \                - postal_code
+
+  \                - city
+
+  \                - phone
+
+  \                - mobile
+
+  \                - registration_number
+
+  \                - payment_mode
+
+  \                - accept_terms_date
+
+  \    delete:
+
+  \      parameters:
+
+  \        - name: userId
+
+  \          in: path
+
+  \          description: ID of user to return
+
+  \          required: true
+
+  \          schema:
+
+  \            type: integer
+
+  \            format: int64
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json: {}
+
+  \  /users/{userId}/terms:
+
+  \    put:
+
+  \      parameters:
+
+  \        - name: userId
+
+  \          in: path
+
+  \          description: ID of user to return
+
+  \          required: true
+
+  \          schema:
+
+  \            type: integer
+
+  \            format: int64
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                accept_terms_date:
+
+  \                  type: string
+
+  \              required:
+
+  \                - accept_terms_date
+
+  \  /lendings:
+
+  \    options:
+
+  \      responses:
+
+  \        '200':
+
+  \          description: automatically documented through Optic
+
+  \    get:
+
+  \      responses:
+
+  \        '200':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            application/json:
+
+  \              schema:
+
+  \                type: array
+
+  \                items: {}
+
+  \    post:
+
+  \      responses:
+
+  \        '201':
+
+  \          description: automatically documented through Optic
+
+  \  /lendings/{lendingId}:
+
+  \    parameters:
+
+  \      - name: lendingId
+
+  \        in: path
+
+  \        description: ID of user to return
+
+  \        required: true
+
+  \        schema:
+
+  \          type: integer
+
+  \          format: int64
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \    put:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                start_date:
+
+  \                  type: string
+
+  \                due_date:
+
+  \                  type: string
+
+  \                returned_date:
+
+  \                  type: string
+
+  \                comments:
+
+  \                  type: string
+
+  \                created_by:
+
+  \                  type: string
+
+  \              required:
+
+  \                - start_date
+
+  \                - due_date
+
+  \                - returned_date
+
+  \                - comments
+
+  \                - created_by
+
+  \  /membership:
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \  /membership/{membershipId}:
+
+  \    parameters:
+
+  \      - name: membershipId
+
+  \        in: path
+
+  \        description: ID of user to return
+
+  \        required: true
+
+  \        schema:
+
+  \          type: integer
+
+  \          format: int64
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \    put:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                status:
+
+  \                  type: string
+
+  \                start_at:
+
+  \                  type: string
+
+  \                expires_at:
+
+  \                  type: string
+
+  \                subscription_id:
+
+  \                  type: number
+
+  \                contact_id:
+
+  \                  type: number
+
+  \                last_payment_mode:
+
+  \                  type: string
+
+  \                comment:
+
+  \                  type: string
+
+  \              required:
+
+  \                - status
+
+  \                - start_at
+
+  \                - expires_at
+
+  \                - subscription_id
+
+  \                - contact_id
+
+  \                - last_payment_mode
+
+  \                - comment
+
+  \  /payments:
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \  /reservations:
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                user_id:
+
+  \                  type: number
+
+  \                tool_id:
+
+  \                  type: number
+
+  \                title:
+
+  \                  type: string
+
+  \                startsAt:
+
+  \                  type: string
+
+  \                endsAt:
+
+  \                  type: string
+
+  \              required:
+
+  \                - user_id
+
+  \                - tool_id
+
+  \                - title
+
+  \                - startsAt
+
+  \                - endsAt
+
+  \    put:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                reservation_id:
+
+  \                  type: number
+
+  \                tool_id:
+
+  \                  type: number
+
+  \                title:
+
+  \                  type: string
+
+  \                startsAt:
+
+  \                  type: string
+
+  \                endsAt:
+
+  \                  type: string
+
+  \                type:
+
+  \                  type: string
+
+  \                state:
+
+  \                  type: string
+
+  \                comment:
+
+  \                  type: string
+
+  \              required:
+
+  \                - reservation_id
+
+  \                - tool_id
+
+  \                - title
+
+  \                - startsAt
+
+  \                - endsAt
+
+  \                - type
+
+  \                - state
+
+  \                - comment
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                reservation_id:
+
+  \                  type: number
+
+  \                tool_id:
+
+  \                  type: number
+
+  \                user_id:
+
+  \                  type: number
+
+  \                title:
+
+  \                  type: string
+
+  \                startsAt:
+
+  \                  type: string
+
+  \                endsAt:
+
+  \                  type: string
+
+  \                type:
+
+  \                  type: string
+
+  \                state:
+
+  \                  type: string
+
+  \                comment:
+
+  \                  type: string
+
+  \              required:
+
+  \                - reservation_id
+
+  \                - tool_id
+
+  \                - user_id
+
+  \                - title
+
+  \                - startsAt
+
+  \                - endsAt
+
+  \                - type
+
+  \                - state
+
+  \                - comment
+
+  \  /deliveries:
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                user_id:
+
+  \                  type: number
+
+  \                state:
+
+  \                  type: string
+
+  \                pick_up_address:
+
+  \                  type: string
+
+  \                drop_off_address:
+
+  \                  type: string
+
+  \                drop_off_date:
+
+  \                  type: string
+
+  \              required:
+
+  \                - user_id
+
+  \                - state
+
+  \                - pick_up_address
+
+  \                - drop_off_address
+
+  \                - drop_off_date
+
+  \  /deliveries/{deliveryId}:
+
+  \    parameters:
+
+  \      - name: deliveryId
+
+  \        in: path
+
+  \        description: ID of delivery
+
+  \        required: true
+
+  \        schema:
+
+  \          type: integer
+
+  \          format: int64
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \    put:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                state:
+
+  \                  type: string
+
+  \              required:
+
+  \                - state
+
+  \  /deliveries/{deliveryId}/items:
+
+  \    parameters:
+
+  \      - name: deliveryId
+
+  \        in: path
+
+  \        description: ID of delivery
+
+  \        required: true
+
+  \        schema:
+
+  \          type: integer
+
+  \          format: int64
+
+  \    post:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                item_id:
+
+  \                  type: number
+
+  \              required:
+
+  \                - item_id
+
+  \  /deliveries/{deliveryId}/items/{itemId}:
+
+  \    parameters:
+
+  \      - name: deliveryId
+
+  \        in: path
+
+  \        description: ID of delivery
+
+  \        required: true
+
+  \        schema:
+
+  \          type: integer
+
+  \          format: int64
+
+  \      - name: itemId
+
+  \        in: path
+
+  \        description: ID of delivery item
+
+  \        required: true
+
+  \        schema:
+
+  \          type: integer
+
+  \          format: int64
+
+  \    put:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \      requestBody:
+
+  \        content:
+
+  \          application/json:
+
+  \            schema:
+
+  \              type: object
+
+  \              properties:
+
+  \                comment:
+
+  \                  type: string
+
+  \              required:
+
+  \                - comment
+
+  \  /stats/monthly:
+
+  \    get:
+
+  \      responses:
+
+  \        '301':
+
+  \          description: automatically documented through Optic
+
+  \          content:
+
+  \            text/html: {}
+
+  \                "
+contentType: yaml
