@@ -9,7 +9,7 @@ echo " today is $dt" >> $LOGFILE
 
 BACKUP_PATH=remote:dokku/mysql/$(date +"%Y")/$(date +"%B")
 TEMP_DIR=/tmp/backup
-LENDENGINE_PWD=<pwd>
+LENDENGINE_PWD=${LENDENGINE_PWD}
 
 echo " creating $TEMP_DIR .." >> $LOGFILE
 mkdir -p $TEMP_DIR >> $LOGFILE

@@ -1,0 +1,10 @@
+#!/bin/bash
+LOGFILE=/var/log/dokku/letsencrypt-renewal.log
+echo "Triggering letsencrypt certificate renewal..." >> $LOGFILE
+
+dt=$(date +"%Y-%m-%d")
+
+echo " today is $dt" >> $LOGFILE
+
+dokku letsencrypt:auto-renew >> $LOGFILE
+echo " certificate renewal completed" >> $LOGFILE
