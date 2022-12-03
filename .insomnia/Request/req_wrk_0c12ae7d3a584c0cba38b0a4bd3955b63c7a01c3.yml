@@ -1,0 +1,34 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b63c7a01c3
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1665871682798
+created: 1665871682798
+url: "{{ base_url }}/membership/{{ membershipId }}"
+name: /membership/{membershipId}
+description: ""
+method: PUT
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "status": "string",
+      "start_at": "string",
+      "expires_at": "string",
+      "subscription_id": 0,
+      "contact_id": 0,
+      "last_payment_mode": "string",
+      "comment": "string"
+    }
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1665871682798
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

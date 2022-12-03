@@ -1,0 +1,22 @@
+_id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6c2f2b9d3
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1665871682809
+created: 1665871682809
+url: "{{ base_url }}/users/{{ userId }}"
+name: /users/{userId}
+description: ""
+method: DELETE
+body:
+  mimeType: application/json
+parameters: []
+headers: []
+authentication: {}
+metaSortKey: -1665871682809
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global
