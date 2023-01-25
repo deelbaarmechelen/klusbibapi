@@ -62,3 +62,8 @@ if (!defined('LAST_TERMS_DATE')) {
     $lastTermsDate = $_ENV['LAST_TERMS_DATE'] ;
     define("LAST_TERMS_DATE", $lastTermsDate != false ? $lastTermsDate : '2019-12-02');
 }
+if (!defined('SSL_CERTIFICATE_VERIFICATION')) {
+    $sslCertificateVerification = $_ENV['SSL_CERTIFICATE_VERIFICATION'] ;
+    define("SSL_CERTIFICATE_VERIFICATION", $sslCertificateVerification != false ? $sslCertificateVerification : 'true');
+}
+

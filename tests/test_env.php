@@ -48,4 +48,4 @@ if (!defined('INVENTORY_API_KEY')) define("INVENTORY_API_KEY", "dummy");
 if (!defined('INVENTORY_URL')) define("INVENTORY_URL", "http://snipeit");
 defined('TEST_INVENTORY_API_KEY') or define("TEST_INVENTORY_API_KEY",getenv('TEST_INVENTORY_API_KEY'));
 defined('TEST_INVENTORY_URL') or define("TEST_INVENTORY_URL",getenv('TEST_INVENTORY_URL'));
-
+defined('SSL_CERTIFICATE_VERIFICATION') or define("SSL_CERTIFICATE_VERIFICATION", "false");
