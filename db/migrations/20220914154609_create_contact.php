@@ -84,6 +84,8 @@ class CreateContact extends AbstractCapsuleMigration
             $table->softDeletes();
             $table->timestamps();
 		});
+        Capsule::update("select @ai := (select max(user_id)+1 from users);set @qry = concat('alter table contact auto_increment=',@ai);prepare stmt from @qry; execute stmt;");
+        //Capsule::update("ALTER TABLE `contact` AUTO_INCREMENT = (SELECT MAX(user_id)+1 FROM `users`)");
         Capsule::update("INSERT INTO `contact`"
     . "  (`id`, `created_by`, `active_membership`, `enabled`, `salt`, `password`,"
     . "   `last_login`, `confirmation_token`, `password_requested_at`, `roles`,"
