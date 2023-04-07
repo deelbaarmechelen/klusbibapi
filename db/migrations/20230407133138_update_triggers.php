@@ -1,6 +1,5 @@
 <?php
 
-use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require_once __DIR__ . '/../../app/env.php';
@@ -29,10 +28,10 @@ class UpdateTriggers extends AbstractCapsuleMigration
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
 
-        updateLendingTriggers($db);
-        updateReservationTriggers($db);
-        updateContactTriggers($db);
-        updateMembershipTriggers($db);
+        $this->updateLendingTriggers($db);
+        $this->updateReservationTriggers($db);
+        $this->updateContactTriggers($db);
+        $this->updateMembershipTriggers($db);
     }
 
     public function updateContactTriggers($db) {
@@ -45,32 +44,32 @@ class UpdateTriggers extends AbstractCapsuleMigration
 CREATE TRIGGER `kb_contact_bd` BEFORE DELETE ON `contact` FOR EACH ROW 
 BEGIN
     declare msg varchar(128);
-    IF (SELECT balance from contact WHERE id = OLD.user_id) > 0 THEN
-        set msg = concat('kb_contact_ad trigger: Trying to delete a contact with positive balance - ID: ', cast(OLD.user_id as char));
+    IF (SELECT balance from contact WHERE id = OLD.id) > 0 THEN
+        set msg = concat('kb_contact_ad trigger: Trying to delete a contact with positive balance - ID: ', cast(OLD.id as char));
         signal sqlstate '45000' set message_text = msg;
     ELSE
-        update attendee set contact_id = null where contact_id = OLD.user_id;
-        update attendee set created_by = null where created_by = OLD.user_id;
-        update child set contact_id = null where contact_id = OLD.user_id;
-        update deposit set contact_id = null where contact_id = OLD.user_id;
-        update deposit set created_by = null where created_by = OLD.user_id;
-        update loan set contact_id = null where contact_id = OLD.user_id;
-        update loan set created_by = null where created_by = OLD.user_id;
-        update membership set contact_id = null where contact_id = OLD.user_id;
-        update membership set created_by = null where created_by = OLD.user_id;
-        update note set contact_id = null where contact_id = OLD.user_id;
-        update payment set contact_id = null where contact_id = OLD.user_id;
-        update payment set created_by = null where created_by = OLD.user_id;
-        update page set created_by = null where created_by = OLD.user_id;
-        update page set updated_by = null where updated_by = OLD.user_id;
-        update maintenance set completed_by = null where completed_by = OLD.user_id;
-        update item_movement set created_by = null where created_by = OLD.user_id;
-        update inventory_item set created_by = null where created_by = OLD.user_id;
-        update event set created_by = null where created_by = OLD.user_id;
+        update attendee set contact_id = null where contact_id = OLD.id;
+        update attendee set created_by = null where created_by = OLD.id;
+        update child set contact_id = null where contact_id = OLD.id;
+        update deposit set contact_id = null where contact_id = OLD.id;
+        update deposit set created_by = null where created_by = OLD.id;
+        update loan set contact_id = null where contact_id = OLD.id;
+        update loan set created_by = null where created_by = OLD.id;
+        update membership set contact_id = null where contact_id = OLD.id;
+        update membership set created_by = null where created_by = OLD.id;
+        update note set contact_id = null where contact_id = OLD.id;
+        update payment set contact_id = null where contact_id = OLD.id;
+        update payment set created_by = null where created_by = OLD.id;
+        update page set created_by = null where created_by = OLD.id;
+        update page set updated_by = null where updated_by = OLD.id;
+        update maintenance set completed_by = null where completed_by = OLD.id;
+        update item_movement set created_by = null where created_by = OLD.id;
+        update inventory_item set created_by = null where created_by = OLD.id;
+        update event set created_by = null where created_by = OLD.id;
         
-        delete from waiting_list_item where contact_id = OLD.user_id;
-        delete from file_attachment where contact_id = OLD.user_id;
-        delete from contact_field_value where contact_id = OLD.user_id;
+        delete from waiting_list_item where contact_id = OLD.id;
+        delete from file_attachment where contact_id = OLD.id;
+        delete from contact_field_value where contact_id = OLD.id;
     END IF;
 
 END
@@ -129,11 +128,11 @@ CREATE TRIGGER `kb_membership_ad` AFTER DELETE ON `membership` FOR EACH ROW
         $this->query('DROP TRIGGER IF EXISTS `le_reservation_ai`');
         $this->query('DROP TRIGGER IF EXISTS `le_reservation_au`');
         $this->query('DROP TRIGGER IF EXISTS `le_reservation_ad`');
-        $this->query('DROP TRIGGER IF EXISTS `kb_reservation_ai`');
-        $this->query('DROP TRIGGER IF EXISTS `kb_reservation_au`');
-        $this->query('DROP TRIGGER IF EXISTS `kb_reservation_ad`');
+        $this->query('DROP TRIGGER IF EXISTS `kb_reservations_ai`');
+        $this->query('DROP TRIGGER IF EXISTS `kb_reservations_au`');
+        $this->query('DROP TRIGGER IF EXISTS `kb_reservations_ad`');
         $sql = "
-CREATE TRIGGER `kb_reservation_ai` AFTER INSERT ON `kb_reservations` FOR EACH ROW 
+CREATE TRIGGER `kb_reservations_ai` AFTER INSERT ON `kb_reservations` FOR EACH ROW 
 BEGIN 
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = NEW.`tool_id`) 
  AND EXISTS (SELECT 1 FROM contact WHERE id = NEW.`user_id`)
@@ -167,7 +166,7 @@ END
         $db->exec($sql);
 
         $sql = "
-CREATE TRIGGER `kb_reservation_au` AFTER UPDATE ON `kb_reservations` FOR EACH ROW 
+CREATE TRIGGER `kb_reservations_au` AFTER UPDATE ON `kb_reservations` FOR EACH ROW 
 BEGIN 
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = NEW.`tool_id`) 
  AND EXISTS (SELECT 1 FROM contact WHERE id = NEW.`user_id`) THEN
@@ -225,7 +224,7 @@ END
         $db->exec($sql);
 
         $sql = "
-CREATE TRIGGER `kb_reservation_ad` AFTER DELETE ON `kb_reservations` FOR EACH ROW 
+CREATE TRIGGER `kb_reservations_ad` AFTER DELETE ON `kb_reservations` FOR EACH ROW 
 BEGIN
  delete from note where loan_id = OLD.reservation_id; 
  delete from loan_row where id = OLD.reservation_id AND loan_row.checked_out_at IS NULL; 

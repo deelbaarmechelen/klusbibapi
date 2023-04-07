@@ -1,6 +1,5 @@
 <?php
 
-use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require_once __DIR__ . '/../../app/env.php';
@@ -68,7 +67,7 @@ END";
         . " (`id`, `created_by`, `assigned_to`, `current_location_id`, `item_condition`, `created_at`, `updated_at`,"
         . " `name`, `sku`, `description`, `keywords`, `brand`, `care_information`, `component_information`, `loan_fee`,"
         . " `max_loan_days`, `is_active`, `show_on_website`, `serial`, `note`, `price_cost`, `price_sell`, `image_name`,"
-        . " `short_url`, `item_sector`, `is_reservable`, `deposit_amount`, `item_type`, `donated_by`, `owned_by`"
+        . " `short_url`, `item_sector`, `is_reservable`, `deposit_amount`, `item_type`, `donated_by`, `owned_by`,"
         . " `last_sync_date`, `experience_level`, `safety_risk`, `deliverable`, `size`) "
         . " SELECT `id`, `created_by`, `assigned_to`, `current_location_id`, `item_condition`, `created_at`, `updated_at`,"
         . " `name`, `sku`, `description`, `keywords`, `brand`, `care_information`, `component_information`, `loan_fee`,"
@@ -96,11 +95,11 @@ END";
      */
 	public function down()
 	{
-        $this->initCapsule();
-        $this->query('DROP TRIGGER IF EXISTS `inventory_item_bi`');
-        $this->query('DROP TRIGGER IF EXISTS `inventory_item_bu`');
+    $this->initCapsule();
+    $this->query('DROP TRIGGER IF EXISTS `inventory_item_bi`');
+    $this->query('DROP TRIGGER IF EXISTS `inventory_item_bu`');
 		Capsule::schema()->drop('klusbibdb.inventory_item');
-        // rename existing tables
-        $this->query('ALTER TABLE klusbibdb.kb_inventory_item RENAME klusbibdb.inventory_item');
+    // rename existing tables
+    $this->query('ALTER TABLE klusbibdb.kb_inventory_item RENAME klusbibdb.inventory_item');
 	}
 }

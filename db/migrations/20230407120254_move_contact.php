@@ -1,6 +1,5 @@
 <?php
 
-use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require_once __DIR__ . '/../../app/env.php';
@@ -129,13 +128,15 @@ END";
         // copy data
         Capsule::update("INSERT INTO klusbibdb.contact"
         . " (`id`, `created_by`, `active_membership`, `enabled`, `salt`, `password`, `last_login`, `confirmation_token`,"
-        . " `password_requested_at`, IF(role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'), `first_name`, `last_name`, `telephone`, `address_line_1`, `address_line_2`,"
+        . " `password_requested_at`, `roles`, `first_name`, `last_name`, `telephone`, `address_line_1`, `address_line_2`,"
         . " `address_line_3`, `address_line_4`, `country_iso_code`, `latitude`, `longitude`, `gender`, `created_at`,"
         . " `balance`, `stripe_customer_id`, `subscriber`, `email`, `email_canonical`, `username`, `username_canonical`,"
-        . " `active_site`, `created_at_site`, `locale`, `is_active`, `membership_number`, `secure_access_token`) "
+        . " `active_site`, `created_at_site`, `locale`, `is_active`, `membership_number`, `secure_access_token`,"
+        . " `role`, `membership_start_date`, `membership_end_date`, `state`, `registration_number`, `payment_mode`,"
+        . " `accept_terms_date`, `email_state`, `user_ext_id`, `last_sync_date`, `company`, `comment`, `deleted_at`, `updated_at`) "
         . " SELECT `id`, `created_by`, `active_membership`, `enabled`, `salt`, `password`, `last_login`, `confirmation_token`,"
-        . " `password_requested_at`, `roles`, `first_name`, `last_name`, `telephone`, `address_line_1`, `address_line_2`,"
-        . " `address_line_3`, `address_line_4`, `country_iso_code`, `latitude`, `longitude`, `gender`, `created_at`"
+        . " `password_requested_at`, IF(role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'), `first_name`, `last_name`, `telephone`, `address_line_1`, `address_line_2`,"
+        . " `address_line_3`, `address_line_4`, `country_iso_code`, `latitude`, `longitude`, `gender`, `created_at`,"
         . "  `balance`, `stripe_customer_id`, `subscriber`, `email`, `email_canonical`, `username`, `username_canonical`,"
         . " `active_site`, `created_at_site`, `locale`, `is_active`, `membership_number`, `secure_access_token`,"
         . " `role`, `membership_start_date`, `membership_end_date`, `state`, `registration_number`, `payment_mode`,"
@@ -161,11 +162,11 @@ END";
      */
 	public function down()
 	{
-        $this->initCapsule();
-        $this->query('DROP TRIGGER IF EXISTS `contact_bi`');
-        $this->query('DROP TRIGGER IF EXISTS `contact_bu`');
+    $this->initCapsule();
+    $this->query('DROP TRIGGER IF EXISTS `contact_bi`');
+    $this->query('DROP TRIGGER IF EXISTS `contact_bu`');
 		Capsule::schema()->drop('klusbibdb.contact');
-        // rename existing tables
-        $this->query('ALTER TABLE klusbibdb.kb_contact RENAME klusbibdb.contact');
+    // rename existing tables
+    $this->query('ALTER TABLE klusbibdb.kb_contact RENAME klusbibdb.contact');
 	}
 }
