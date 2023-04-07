@@ -37,12 +37,12 @@ class VerifyEmailController
      */
     public function verifyEmail($request, $response, $args) {
         // TODO: check who is allowed to request email verification
-        // lookup email in users table
+        // lookup email in contact table
         $body = $request->getParsedBody();
         $this->logger->info("parsedbody=" . json_encode($body));
         $email = $body["email"];
         $this->logger->debug("email=" . $email);
-        $user = Capsule::table('users')->where('email', $email)->first();
+        $user = Capsule::table('contact')->where('email', $email)->first();
         if (null == $user) {
             return $response->withStatus(404);
         }
