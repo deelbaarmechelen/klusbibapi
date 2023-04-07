@@ -46,21 +46,21 @@ class MoveInventory extends AbstractCapsuleMigration
 CREATE TRIGGER `inventory_item_bi` BEFORE INSERT ON `inventory_item` FOR EACH ROW 
 BEGIN 
 IF NEW.created_at IS NULL THEN
-  NEW.created_at = CURRENT_TIMESTAMP
+  SET NEW.created_at = CURRENT_TIMESTAMP;
 END IF;
 IF NEW.updated_at IS NULL THEN
-  NEW.updated_at = CURRENT_TIMESTAMP
+  SET NEW.updated_at = CURRENT_TIMESTAMP;
 END IF;
-NEW.short_url = substring(NEW.short_url,0,64);
+SET NEW.short_url = substring(NEW.short_url,0,64);
 END";
         $db->exec($sql);
         $sql = "
 CREATE TRIGGER `inventory_item_bu` BEFORE UPDATE ON `inventory_item` FOR EACH ROW 
 BEGIN 
 IF NEW.updated_at IS NULL THEN
-  NEW.updated_at = CURRENT_TIMESTAMP
+  SET NEW.updated_at = CURRENT_TIMESTAMP;
 END IF;
-NEW.short_url = substring(NEW.short_url,0,64);
+SET NEW.short_url = substring(NEW.short_url,0,64);
 END";
         $db->exec($sql);
         // copy data

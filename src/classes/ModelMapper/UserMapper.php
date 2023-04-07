@@ -82,11 +82,11 @@ class UserMapper
 		if (isset($data["address"])) {
 			$user->address_line_1 = $data["address"];
 		}
-		if (isset($data["postal_code"])) {
-			$user->address_line_4 = $data["postal_code"];
-		}
 		if (isset($data["city"])) {
 			$user->address_line_2 = $data["city"];
+		}
+		if (isset($data["postal_code"])) {
+			$user->address_line_4 = $data["postal_code"];
 		}
 		if (isset($data["phone"])) {
 			$user->telephone = $data["phone"];

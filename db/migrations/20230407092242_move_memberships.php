@@ -38,7 +38,7 @@ class MoveMemberships extends AbstractCapsuleMigration
 		});
         Capsule::schema()->table('klusbibdb.membership', function(Illuminate\Database\Schema\Blueprint $table){
             $table->string('last_payment_mode', 20)->nullable()->default(null);
-            $table->string('comment',255)->unsigned()->nullable()->default(null);
+            $table->string('comment',255)->nullable()->default(null);
             $table->timestamp('updated_at')->nullable()->default(null);
             $table->timestamp('deleted_at')->nullable()->default(null);
             // last_sync_date no longer needed
@@ -52,7 +52,7 @@ class MoveMemberships extends AbstractCapsuleMigration
 CREATE TRIGGER `membership_bi` BEFORE INSERT ON `membership` FOR EACH ROW 
 BEGIN 
 IF NEW.created_at IS NULL THEN
-  NEW.created_at = CURRENT_TIMESTAMP
+  SET NEW.created_at = CURRENT_TIMESTAMP;
 END IF;
 END";
         $db->exec($sql);
@@ -60,7 +60,7 @@ END";
 CREATE TRIGGER `membership_bu` BEFORE UPDATE ON `membership` FOR EACH ROW 
 BEGIN 
 IF NEW.updated_at IS NULL THEN
-  NEW.updated_at = CURRENT_TIMESTAMP
+  SET NEW.updated_at = CURRENT_TIMESTAMP;
 END IF;
 END";
         $db->exec($sql);

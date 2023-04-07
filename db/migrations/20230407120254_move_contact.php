@@ -61,33 +61,33 @@ class MoveContact extends AbstractCapsuleMigration
 CREATE TRIGGER `contact_bi` BEFORE INSERT ON `contact` FOR EACH ROW 
 BEGIN 
 IF NEW.role = 'admin' THEN
-  NEW.roles = '" . self::ADMIN_ROLE . "'
+  SET NEW.roles = '" . self::ADMIN_ROLE . "';
 ELSE
-  NEW.roles = '" . self::MEMBER_ROLE . "'
+  SET NEW.roles = '" . self::MEMBER_ROLE . "';
 END IF;
 IF NEW.country_iso_code IS NULL THEN
-  NEW.country_iso_code = 'BE'
+  SET NEW.country_iso_code = 'BE';
 END IF;
 IF NEW.balance IS NULL THEN
-  NEW.balance = '0.00'
+  SET NEW.balance = '0.00';
 END IF;
 IF NEW.subscriber IS NULL THEN
-  NEW.subscriber = 0
+  SET NEW.subscriber = 0;
 END IF;
 IF NEW.locale IS NULL THEN
-  NEW.locale = 'nl'
+  SET NEW.locale = 'nl';
 END IF;
 IF NEW.is_active IS NULL THEN
-  NEW.is_active = 1
+  SET NEW.is_active = 1;
 END IF;
 IF NEW.email_canonical IS NULL THEN
-  NEW.email_canonical = NEW.email
+  SET NEW.email_canonical = NEW.email;
 END IF;
 IF NEW.username IS NULL THEN
-  NEW.username = NEW.email
+  SET NEW.username = NEW.email;
 END IF;
 IF NEW.username_canonical IS NULL THEN
-  NEW.username_canonical = NEW.email
+  SET NEW.username_canonical = NEW.email;
 END IF;
 END";
         $db->exec($sql);
@@ -95,33 +95,33 @@ END";
 CREATE TRIGGER `contact_bu` BEFORE UPDATE ON `contact` FOR EACH ROW 
 BEGIN 
 IF NEW.role = 'admin' THEN
-  NEW.roles = '" . self::ADMIN_ROLE . "'
+  SET NEW.roles = '" . self::ADMIN_ROLE . "';
 ELSE
-  NEW.roles = '" . self::MEMBER_ROLE . "'
+  SET NEW.roles = '" . self::MEMBER_ROLE . "';
 END IF;
 IF OLD.country_iso_code IS NULL AND NEW.country_iso_code IS NULL THEN
-  NEW.country_iso_code = 'BE'
+  SET NEW.country_iso_code = 'BE';
 END IF;
 IF OLD.balance IS NULL AND NEW.balance IS NULL THEN
-  NEW.balance = '0.00'
+  SET NEW.balance = '0.00';
 END IF;
 IF OLD.subscriber IS NULL AND NEW.subscriber IS NULL THEN
-  NEW.subscriber = 0
+  SET NEW.subscriber = 0;
 END IF;
 IF OLD.locale IS NULL AND NEW.locale IS NULL THEN
-  NEW.locale = 'nl'
+  SET NEW.locale = 'nl';
 END IF;
 IF OLD.is_active IS NULL AND NEW.is_active IS NULL THEN
-  NEW.is_active = 1
+  SET NEW.is_active = 1;
 END IF;
 IF NEW.email_canonical IS NULL THEN
-  NEW.email_canonical = NEW.email
+  SET NEW.email_canonical = NEW.email;
 END IF;
 IF NEW.username IS NULL THEN
-  NEW.username = NEW.email
+  SET NEW.username = NEW.email;
 END IF;
 IF NEW.username_canonical IS NULL THEN
-  NEW.username_canonical = NEW.email
+  SET NEW.username_canonical = NEW.email;
 END IF;
 END";
         $db->exec($sql);
