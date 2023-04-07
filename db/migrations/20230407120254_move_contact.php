@@ -64,6 +64,9 @@ IF NEW.role = 'admin' THEN
 ELSE
   SET NEW.roles = '" . self::MEMBER_ROLE . "';
 END IF;
+IF NEW.password IS NULL THEN
+  SET NEW.password = '" . self::DEFAULT_PASSWORD . "';
+END IF;
 IF NEW.country_iso_code IS NULL THEN
   SET NEW.country_iso_code = 'BE';
 END IF;
@@ -75,6 +78,9 @@ IF NEW.subscriber IS NULL THEN
 END IF;
 IF NEW.locale IS NULL THEN
   SET NEW.locale = 'nl';
+END IF;
+IF NEW.enabled IS NULL THEN
+  SET NEW.enabled = 1;
 END IF;
 IF NEW.is_active IS NULL THEN
   SET NEW.is_active = 1;
@@ -109,6 +115,9 @@ IF OLD.subscriber IS NULL AND NEW.subscriber IS NULL THEN
 END IF;
 IF OLD.locale IS NULL AND NEW.locale IS NULL THEN
   SET NEW.locale = 'nl';
+END IF;
+IF OLD.enabled IS NULL AND NEW.enabled IS NULL THEN
+  SET NEW.enabled = 1;
 END IF;
 IF OLD.is_active IS NULL AND NEW.is_active IS NULL THEN
   SET NEW.is_active = 1;
