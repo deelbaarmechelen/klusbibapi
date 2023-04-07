@@ -84,28 +84,37 @@ class CreateContact extends AbstractCapsuleMigration
             $table->softDeletes();
             $table->timestamps();
 		});
-        Capsule::update("select @ai := (select max(user_id)+1 from users);set @qry = concat('alter table contact auto_increment=',@ai);prepare stmt from @qry; execute stmt;");
-        //Capsule::update("ALTER TABLE `contact` AUTO_INCREMENT = (SELECT MAX(user_id)+1 FROM `users`)");
+        $builder = $this->getQueryBuilder();
+        $statement = $builder->select(['max' => $builder->func()->max('user_id')])->from('users')->execute();
+        $maxId=0;
+        // FIXME: should find out how to access first row directly
+        foreach ($statement as $row) {
+            $maxId = $row['max'];
+        }
+        $maxId++;
+        var_dump('ALTER TABLE contact auto_increment=' . $maxId);
+        Capsule::update('ALTER TABLE contact auto_increment=' . $maxId);
+
         Capsule::update("INSERT INTO `contact`"
-    . "  (`id`, `created_by`, `active_membership`, `enabled`, `salt`, `password`,"
-    . "   `last_login`, `confirmation_token`, `password_requested_at`, `roles`,"
-    . "   `first_name`, `last_name`, `telephone`,"
-    . "   `address_line_1`, `address_line_2`, `address_line_3`, `address_line_4`,"
-    . "  `country_iso_code`, `latitude`, `longitude`,`gender`, `created_at`, `balance`, `stripe_customer_id`,"
-    . "  `subscriber`, `email`, `email_canonical`, `username`,`username_canonical`,"
-    . "  `active_site`, `created_at_site`, `locale`, `is_active`, `membership_number`, `secure_access_token`,"
-    . "  role, membership_start_date, membership_end_date, state,"
-    . "  registration_number, payment_mode, accept_terms_date, email_state, user_ext_id, last_sync_date, company, comment)"
-    . "SELECT user_id, null, null, 1, null, ifnull(`hash`, '\$2y\$13\$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'),"
-    . "last_login, null , null, IF(role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'),"
-    . "firstname, lastname, IF (phone is null, mobile, phone),"
-    . "address, city, null, postal_code,"
-    . "'BE', null, null, null, created_at, '0.00', null,"
-    . "0, email, email, email, email,"
-    . "null, null, 'nl', 1, null, null,"
-    . "role, membership_start_date, membership_end_date, state,"
-    . "registration_number, payment_mode, accept_terms_date, email_state, user_ext_id, last_sync_date, company, comment "
-    . "FROM `users`");
+        . "  (`id`, `created_by`, `active_membership`, `enabled`, `salt`, `password`,"
+        . "   `last_login`, `confirmation_token`, `password_requested_at`, `roles`,"
+        . "   `first_name`, `last_name`, `telephone`,"
+        . "   `address_line_1`, `address_line_2`, `address_line_3`, `address_line_4`,"
+        . "  `country_iso_code`, `latitude`, `longitude`,`gender`, `created_at`, `balance`, `stripe_customer_id`,"
+        . "  `subscriber`, `email`, `email_canonical`, `username`,`username_canonical`,"
+        . "  `active_site`, `created_at_site`, `locale`, `is_active`, `membership_number`, `secure_access_token`,"
+        . "  role, membership_start_date, membership_end_date, state,"
+        . "  registration_number, payment_mode, accept_terms_date, email_state, user_ext_id, last_sync_date, company, comment)"
+        . "SELECT user_id, null, null, 1, null, ifnull(`hash`, '\$2y\$13\$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'),"
+        . "last_login, null , null, IF(role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'),"
+        . "firstname, lastname, IF (phone is null, mobile, phone),"
+        . "address, city, null, postal_code,"
+        . "'BE', null, null, null, created_at, '0.00', null,"
+        . "0, email, email, email, email,"
+        . "null, null, 'nl', 1, null, null,"
+        . "role, membership_start_date, membership_end_date, state,"
+        . "registration_number, payment_mode, accept_terms_date, email_state, user_ext_id, last_sync_date, company, comment "
+        . "FROM `users`");
 
 	}
     /**
