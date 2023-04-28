@@ -109,7 +109,7 @@ class LendingController implements LendingControllerInterface
                 }
             }
             if ($expandUser) {
-                $user = $this->userManager->getById($lending->user_id, false);
+                $user = $this->userManager->getByIdNoSync($lending->user_id);
 
                 if (isset($user)) {
                     $lendingData['user'] = UserMapper::mapUserToArray($user);
