@@ -80,6 +80,25 @@ class UserManager
     }
 
     /**
+     * retrieve the local user skipping any synchronisation with inventory
+     * @param $id
+     * @return mixed
+     */
+    function getByIdNoSync($id) : ?Contact {
+        $this->logger->debug("UserManager.getById: Get user by ID $id");
+
+        try {
+            $user = Contact::find($id);
+            if ($user == null) {
+                return null;
+            }
+        } catch (\Exception $ex) {
+            $this->logger->error("UserManager.getByIdNoSync: Problem while retrieving user with id $id: " . $ex->getMessage());
+        }
+        return $user;
+    }
+
+    /**
      * Creates a local user and sync to inventory
      * @param $user the user to be created
      */
