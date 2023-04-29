@@ -6,6 +6,19 @@ use \Api\Model\User;
 
 class UserMapper
 {
+	static public function mapUserToArrayMinimal($user) {
+		$userArray = array("user_id" => $user->user_id,
+            "user_ext_id" => $user->user_ext_id,
+            "state" => $user->state,
+            "firstname" => $user->firstname,
+            "lastname" => $user->lastname,
+            "email" => $user->email,
+            "email_state" => $user->email_state,
+            "role" => $user->role,
+        );
+		
+		return $userArray;
+	}
 	static public function mapUserToArray($user) {
         $membership = Membership::find($user->active_membership);
 		$userArray = array("user_id" => $user->user_id,
