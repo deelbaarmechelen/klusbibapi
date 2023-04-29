@@ -84,7 +84,7 @@ class UserManager
      * @param $id
      * @return mixed
      */
-    function getByIdNoSync($id) : ?Contact {
+    function getByIdNoSync($id) : ?User {
         $this->logger->debug("UserManager.getByIdNoSync: Get user by ID $id (no sync)");
 
         try {
