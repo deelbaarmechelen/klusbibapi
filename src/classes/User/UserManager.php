@@ -85,11 +85,12 @@ class UserManager
      * @return mixed
      */
     function getByIdNoSync($id) : ?Contact {
-        $this->logger->debug("UserManager.getById: Get user by ID $id");
+        $this->logger->debug("UserManager.getByIdNoSync: Get user by ID $id (no sync)");
 
         try {
             $user = Contact::find($id);
             if ($user == null) {
+                $this->logger->debug("UserManager.getByIdNoSync: user with ID $id not found");
                 return null;
             }
         } catch (\Exception $ex) {

@@ -67,7 +67,9 @@ class StatController
     }
 
     function yearly(RequestInterface $request, ResponseInterface $response, $args) {
-
+        $data = array();
+        // TODO gather some stats
+        return $response->withJson($data);
     }
 
     /**

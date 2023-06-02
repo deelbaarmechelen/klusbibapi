@@ -112,7 +112,7 @@ class LendingController implements LendingControllerInterface
                 $user = $this->userManager->getByIdNoSync($lending->user_id);
 
                 if (isset($user)) {
-                    $lendingData['user'] = UserMapper::mapUserToArray($user);
+                    $lendingData['user'] = UserMapper::mapUserToArrayMinimal($user);
                 }
             }
             array_push($data, $lendingData);

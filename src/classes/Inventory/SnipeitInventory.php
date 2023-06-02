@@ -58,6 +58,7 @@ class SnipeitInventory implements Inventory
     private $client;
     private $apiKey;
     private $logger;
+    private $sslCertificateVerification;
 
     /**
      * InventoryImpl constructor.
@@ -70,6 +71,7 @@ class SnipeitInventory implements Inventory
         $this->client = $client;
         $this->apiKey = $apikey;
         $this->logger = $logger;
+        $this->sslCertificateVerification = SSL_CERTIFICATE_VERIFICATION;
     }
 
     public function getTools($offset = 0, $limit=1000)
@@ -477,6 +479,7 @@ class SnipeitInventory implements Inventory
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer '.$this->apiKey,
             ],
+            RequestOptions::VERIFY => $this->sslCertificateVerification
         ];
         if (isset($data)) {
             $options[RequestOptions::JSON] = $data;
@@ -495,6 +498,9 @@ class SnipeitInventory implements Inventory
             if ($clientException->hasResponse()) {
                 $response = $clientException->getResponse();
                 $statusCode = $response->getStatusCode();
+                $this->logger->error('Inventory request to "' . $target . '" failed with status code ' . $statusCode);
+            } else {
+                $this->logger->error('Inventory request to "' . $target . '" failed with client exception (no response)');
             }
             if (isset($statusCode) && ($statusCode == 404 || $statusCode == 403)) {
                 // access forbidden is considered as not found (can be an asset or user from another company)
@@ -505,6 +511,7 @@ class SnipeitInventory implements Inventory
             }
             throw new \Api\Exception\InventoryException("Unexpected client exception!! (" . $clientException->getMessage().")", null, $clientException);
         } catch (ServerException $serverException) {
+            $this->logger->error("Inventory unavailable (" . $serverException->getMessage().")");
             throw new \Api\Exception\InventoryException("Inventory unavailable (" . $serverException->getMessage().")", null, $serverException);
         }
 

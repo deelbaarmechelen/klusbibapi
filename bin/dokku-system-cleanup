@@ -1,0 +1,29 @@
+#!/bin/bash
+LOGFILE=/var/log/dokku/system_cleanup.log
+echo "Dokku system cleanup starting..." >> $LOGFILE
+
+dt=$(date +"%Y-%m-%d")
+printf "\n\n" >> $LOGFILE
+echo "$dt - dokku space usage before cleanup" >> $LOGFILE
+echo "--------------------------------------" >> $LOGFILE
+printf "\n\n" >> $LOGFILE
+
+docker system df >> $LOGFILE
+docker system df -v >> $LOGFILE
+
+printf "\n\n" >> $LOGFILE
+echo "Executing dokku cleanup" >> $LOGFILE
+echo "--------------------------------------" >> $LOGFILE
+printf "\n\n" >> $LOGFILE
+
+dokku cleanup >> $LOGFILE
+
+printf "\n\n" >> $LOGFILE
+echo "$dt - dokku space usage after cleanup" >> $LOGFILE
+echo "--------------------------------------" >> $LOGFILE
+printf "\n\n" >> $LOGFILE
+
+docker system df >> $LOGFILE
+docker system df -v >> $LOGFILE
+printf "\n\n" >> $LOGFILE
+echo "Dokku system cleanup completed" >> $LOGFILE
