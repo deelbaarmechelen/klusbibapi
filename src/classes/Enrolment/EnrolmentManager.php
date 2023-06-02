@@ -20,6 +20,8 @@ use Api\User\UserManager;
 use Carbon\Carbon;
 use DateTime;
 use DateInterval;
+use Illuminate\Database\Capsule\Manager as DB;
+//use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Mollie\Api\MollieApiClient;
 use Psr\Http\Message\UriInterface;
@@ -136,7 +138,7 @@ class EnrolmentManager
             $userStateUpdated = true;
         }
         // Validations
-        $this->checkUserStateEnrolment();
+        $this->checkMembershipStateEnrolment();
 
         // check user info is complete
         $this->checkUserInfo();
@@ -233,7 +235,7 @@ class EnrolmentManager
      * @throws EnrolmentException
      */
     function enrolmentByMollie($orderId, $redirectUrl, $requestedPaymentMean, UriInterface $requestUri) {
-        $this->checkUserStateEnrolment();
+        $this->checkMembershipStateEnrolment();
         $membershipType = MembershipType::regular();
         $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
         if ($payment == null) {
@@ -241,21 +243,28 @@ class EnrolmentManager
             $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, $membershipType->price,
                 Settings::CURRENCY, PaymentState::OPEN);
 
-            if ($this->user->active_membership != null) {
-                $membership = $this->user->activeMembership()->first();
+            // Always create new membership, and only make it the active membership when payment completes
+            // Note: active membership could be a temporary membership
+            if ($this->user->active_membership != null && $this->user->activateMembership->status == MembershipState::STATUS_ACTIVE
+                && $this->isTempMembership($this->user->activeMembership)) {
+                //$activeMembership = $this->user->activeMembership()->first();
+                $start_date = $this->user->activeMembership->expires_at;
             } else {
                 $start_date = strftime('%Y-%m-%d', time());
-                $end_date = self::getMembershipEndDate($start_date, $membershipType);
-                $membership = self::createMembership($membershipType, $start_date, $end_date, $this->user, MembershipState::STATUS_PENDING);
             }
+            $end_date = self::getMembershipEndDate($start_date, $membershipType);
+            $membership = self::createMembership($membershipType, $start_date, $end_date, $this->user, MembershipState::STATUS_PENDING);
 
 //            $membershipId = $this->createUserMembership($membershipType);
 //            $membership = Membership::findOrFail($membershipId);
-            $membership->last_payment_mode = PaymentMode::MOLLIE;
-            $membership->payment()->save($payment);
-            $membership->save();
+            DB::transaction(function() use ($payment, $membership) {
+                $membership->last_payment_mode = PaymentMode::MOLLIE;
+                $membership->payment()->save($payment);
+                $membership->save();
 
-            $this->user->payments()->save($payment);
+                $this->user->payments()->save($payment);
+            });
+
         }
         $this->user->payment_mode = $membership->last_payment_mode;
         $this->user->membership_start_date = $membership->start_at;
@@ -265,7 +274,7 @@ class EnrolmentManager
         $this->user->refresh();
 
         return $this->initiateMolliePayment($orderId, $membership->subscription->price, $redirectUrl,
-            $requestedPaymentMean, $requestUri, Product::ENROLMENT);
+            $requestedPaymentMean, $requestUri, Product::ENROLMENT, $membership->expires_at);
     }
 
     /**
@@ -401,11 +410,12 @@ class EnrolmentManager
      * @throws \Exception
      */
     function renewalByMollie($orderId, $redirectUrl, $requestedPaymentMean, UriInterface $requestUri) {
-        $this->checkUserStateRenewal();
+        $this->checkUserStateRenewal(); // deprecated, to be removed? (replaced by check on membership status)
         $membership = Membership::find($this->user->active_membership);
         if (!$membership) {
             throw new EnrolmentException("No active membership found", EnrolmentException::NOT_ENROLLED);
         }
+        $this->checkMembershipStateRenewal();
         if (isset($membership->subscription->next_subscription_id)) {
             $nextMembershipType = MembershipType::find($membership->subscription->next_subscription_id);
         } else {
@@ -868,14 +878,29 @@ class EnrolmentManager
      * Check user state allows enrolment
      * @throws EnrolmentException
      */
-    protected function checkUserStateEnrolment()
+    protected function checkMembershipStateEnrolment()
     {
         $this->logger->info(\json_encode($this->user->activeMembership));
         // normal case, no other checks needed
+        if (!isset($this->user->activateMembership)) {
+            return;
+        }
+        // normal case, no other checks needed
+        // deprecated, kept for backward compatibility, but might no longer be needed
         // Note: DISABLED users should get a state update to CHECK_PAYMENT prior to this call
         if ($this->user->state == UserState::CHECK_PAYMENT) {
             return;
         }
+
+        // temporary membership already active or expired
+        if ($this->user->activateMembership->status == MembershipState::STATUS_ACTIVE || $this->user->state == MembershipState::STATUS_EXPIRED) {
+            if ($this->isTempMembership($this->user->activeMembership) ) {
+                return;
+            } else {
+                throw new EnrolmentException("User already enrolled, consider a renewal", EnrolmentException::ALREADY_ENROLLED);
+            }
+        }
+        // deprecated, kept for backward compatibility, but might no longer be needed
         if ($this->user->state == UserState::ACTIVE || $this->user->state == UserState::EXPIRED) {
             if ($this->isTempMembership($this->user->activeMembership) ) {
                 return;
@@ -883,7 +908,22 @@ class EnrolmentManager
                 throw new EnrolmentException("User already enrolled, consider a renewal", EnrolmentException::ALREADY_ENROLLED);
             }
         }
-        throw new EnrolmentException("User state unsupported for enrolment", EnrolmentException::UNSUPPORTED_STATE);
+        throw new EnrolmentException("Membership status unsupported for enrolment", EnrolmentException::UNSUPPORTED_STATE);
+    }
+
+    /**
+     * Check membership status allows RENEWAL
+     * @throws EnrolmentException
+     */
+    protected function checkMembershipStateRenewal()
+    {
+        if (!isset($this->user->activateMembership) ||
+            $this->user->activateMembership->status == MembershipState::STATUS_PENDING) {
+            throw new EnrolmentException("Enrolment not yet complete, consider an enrolment", EnrolmentException::NOT_ENROLLED);
+        }
+        if ($this->user->activateMembership->status != MembershipState::STATUS_ACTIVE && $this->user->activateMembership->status != MembershipState::STATUS_EXPIRED) {
+            throw new EnrolmentException("Membership status unsupported for renewal", EnrolmentException::UNSUPPORTED_STATE);
+        }
     }
 
     /**
@@ -1035,10 +1075,19 @@ class EnrolmentManager
             $this->logger->info("Saving payment for orderId $orderId with state $payment->state (Mollie payment id=$paymentId / Internal payment id = $payment->payment_id)");
 
             if ($currentPaymentState == $payment->state) {
+                $this->logger->info("Payment with id $payment->payment_id and state $payment->state already up to date");
                 // no change in state -> no need to reprocess Mollie payment (and avoid to resend notifications)
+                // FIXME: payment is saved before membership/user. In case of problems processing request (e.g. http error 502)
+                //        inconsistencies can be introduced -> should be executed in a dabatase transaction!
+                //if ($payment->membership->status == MembershipState::STATUS_ACTIVE && $payment->state == PaymentState::SUCCESS)
+                //{
+                //    $this->logger->info("Successful payment with id $payment->payment_id consistent with membership state "
+                //        . "-> skip activation and email notifications");
+                //    return;
+                //}
                 return;
             }
-            $payment->save();
+            //$payment->save();
 
             // Lookup user and update state
             $user = \Api\Model\User::find($userId);
@@ -1049,11 +1098,12 @@ class EnrolmentManager
                 $this->user = $user;
             }
 
-            if ($user->activeMembership != null) {
-                $membership = $user->activeMembership()->first(); // lookup active membership
-            } else {
-                $membership = $user->memberships()->pending()->where('last_payment_mode', PaymentMode::MOLLIE)->first();
-            }
+            $membership = $payment->membership;
+            //if ($user->activeMembership != null) {
+            //    $membership = $user->activeMembership()->first(); // lookup active membership
+            //} else {
+            //    $membership = $user->memberships()->pending()->where('last_payment_mode', PaymentMode::MOLLIE)->first();
+            //}
             if (null == $membership) {
                 $this->logger->error("POST /enrolment/$orderId failed: user $userId is not enrolled");
                 throw new EnrolmentException("User with id $userId is not enrolled", EnrolmentException::NOT_ENROLLED);
@@ -1061,23 +1111,26 @@ class EnrolmentManager
 
             if ($productId == \Api\Model\Product::ENROLMENT) {
                 if ($payment->state == PaymentState::SUCCESS) {
-                    // FIXME: should be based on membership status instead of user state!
-                    if ($user->state != UserState::ACTIVE || $membership->status != MembershipState::STATUS_ACTIVE) {
-                        $this->activateMembership(null, $membership);
-//                        $membership->status = Membership::STATUS_ACTIVE;
-//                        $membership->save();
+                    if ($membership->status != MembershipState::STATUS_ACTIVE) {
 
-                        // update user data
-                        $user->state = UserState::ACTIVE;
-                        $user->payment_mode = $membership->last_payment_mode;
-                        $user->membership_start_date = $membership->start_at;
-                        $user->membership_end_date = $membership->expires_at;
-                        $this->userMgr->update($user, false, false, false, true);
+                        DB::transaction(function() use ($payment, $user, $membership) {
 
-                        // send confirmation to new member
-                        $this->mailMgr->sendEnrolmentConfirmation($user, PaymentMode::MOLLIE, $membership);
-                        // send notification to Klusbib team
-                        $this->mailMgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user, false);
+                            $payment->save();
+
+                            $this->activateMembership(null, $membership);
+
+                            // update user data
+                            $user->state = UserState::ACTIVE;
+                            $user->payment_mode = $membership->last_payment_mode;
+                            $user->membership_start_date = $membership->start_at;
+                            $user->membership_end_date = $membership->expires_at;
+                            $this->userMgr->update($user, false, false, false, true);
+
+                            // send confirmation to new member
+                            $this->mailMgr->sendEnrolmentConfirmation($user, PaymentMode::MOLLIE, $membership);
+                            // send notification to Klusbib team
+                            $this->mailMgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user, false);
+                        });
                     }
                 } else if ($payment->state == PaymentState::FAILED
                     || $payment->state == PaymentState::EXPIRED
@@ -1089,30 +1142,35 @@ class EnrolmentManager
                 }
             } else if ($productId == \Api\Model\Product::RENEWAL) {
                 if ($payment->state == PaymentState::SUCCESS) {
+                    // FIXME: should be based on membership status instead of user state!
                     if ($user->state == UserState::ACTIVE
                         || $user->state == UserState::EXPIRED) {
 
-                        $renewalMembership = $payment->membership()->first();
+                        DB::transaction(function() use ($payment, $user, $membership) {
 
-                        if (isset($renewalMembership)) {
-                            $this->activateMembership($membership, $renewalMembership);
-                        } else {
-                            $errorMsg = "Successful mollie payment received, but no linked membership (payment=" . \json_encode($payment) . ")";
-                            $this->logger->warning($errorMsg);
-                            $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $user, $payment, true, $errorMsg);
-                            throw new EnrolmentException( $errorMsg, EnrolmentException::UNEXPECTED_CONFIRMATION);
-                        }
-                        $user->state = UserState::ACTIVE;
-                        $user->payment_mode = $renewalMembership->last_payment_mode;
-                        $user->membership_start_date = $renewalMembership->start_at;
-                        $user->membership_end_date = $renewalMembership->expires_at;
-                        $this->userMgr->update($user, false, false, false, true);
+                            $payment->save();
 
-                        // send confirmation to new member
-                        $this->mailMgr->sendRenewalConfirmation($user, PaymentMode::MOLLIE);
-                        // send notification to Klusbib team
-                        $this->mailMgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL, $user, true);
+                            $renewalMembership = $payment->membership()->first();
 
+                            if (isset($renewalMembership)) {
+                                $this->activateMembership($membership, $renewalMembership);
+                            } else {
+                                $errorMsg = "Successful mollie payment received, but no linked membership (payment=" . \json_encode($payment) . ")";
+                                $this->logger->warning($errorMsg);
+                                $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $user, $payment, true, $errorMsg);
+                                throw new EnrolmentException( $errorMsg, EnrolmentException::UNEXPECTED_CONFIRMATION);
+                            }
+                            $user->state = UserState::ACTIVE;
+                            $user->payment_mode = $renewalMembership->last_payment_mode;
+                            $user->membership_start_date = $renewalMembership->start_at;
+                            $user->membership_end_date = $renewalMembership->expires_at;
+                            $this->userMgr->update($user, false, false, false, true);
+
+                            // send confirmation to new member
+                            $this->mailMgr->sendRenewalConfirmation($user, PaymentMode::MOLLIE);
+                            // send notification to Klusbib team
+                            $this->mailMgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL, $user, true);
+                        });
                     } else {
                         $errorMsg = "Successful mollie payment received, but unexpected user state " . $user->state;
                         $this->logger->warning($errorMsg);
@@ -1125,13 +1183,19 @@ class EnrolmentManager
                     || $payment->state == PaymentState::REFUND
                     || $payment->state == PaymentState::CHARGEBACK) {
                     // update renewal membership status
-                    $renewalMembership = $payment->membership()->first();
-                    $renewalMembership->status = MembershipState::STATUS_CANCELLED;
-                    $renewalMembership->save();
+                    DB::transaction(function() use ($payment, $user, $membership) {
 
-                    // Permanent failure, or special case -> send notification for manual follow up
-                    $this->mailMgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment, true, "payment failed");
-                    // FIXME: to check: no exception thrown, failed confirmation should be accepted??
+                        $payment->save();
+
+                        // TODO: check if previous membership needs to be reactivated? (is automatically expired when renewal starts)
+                        $renewalMembership = $payment->membership()->first();
+                        $renewalMembership->status = MembershipState::STATUS_CANCELLED;
+                        $renewalMembership->save();
+
+                        // Permanent failure, or special case -> send notification for manual follow up
+                        $this->mailMgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment, true, "payment failed");
+                        // FIXME: to check: no exception thrown, failed confirmation should be accepted??
+                    });
                 }
             }
 
