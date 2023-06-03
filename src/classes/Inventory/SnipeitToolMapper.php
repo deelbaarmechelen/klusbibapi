@@ -74,6 +74,7 @@ abstract class SnipeitToolMapper
             $item->deliverable = $deliverable;
             $item->loan_fee = isset($asset->custom_fields->forfait) ? floatval($asset->custom_fields->forfait->value) : null;
             $item->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
+            $group = isset($asset->custom_fields->group) ? $asset->custom_fields->group->value : null;
         } else {
             // set default values
             $item->price_sell = null;
@@ -83,14 +84,52 @@ abstract class SnipeitToolMapper
             $item->deliverable = false;
             $item->loan_fee = null;
             $item->size = null;
+            $group = 'general';
         }
+
+        // product tags
+        // group
+        //construction, car, garden, general, technics, wood
+        // alternative syntax:
+        if (method_exists('Api\Model\ProductTag', $group)) {
+            $groupTag = ProductTag::{$group}();
+        } else {
+            $groupTag = ProductTag::general();
+        }
+        //if ($group == 'car') {
+        //    $groupTag = ProductTag::car();
+        //}
+        //if ($group == 'construction') {
+        //    $groupTag = ProductTag::construction();
+        //}
+        //if ($group == 'garden') {
+        //    $groupTag = ProductTag::garden();
+        //}
+        //if ($group == 'general') {
+        //    $groupTag = ProductTag::general();
+        //}
+        //if ($group == 'technics') {
+        //    $groupTag = ProductTag::technics();
+        //}
+        //if ($group == 'wood') {
+        //    $groupTag = ProductTag::wood();
+        //}
 
         // category
         $assetCategory = strtolower($asset->category->name);
         $item->save();
         $tag = ProductTag::where('name', $assetCategory)->first();
-        if (isset($tag)) {
-            $item->tags()->sync($tag->id);
+
+        if (isset($tag) || isset($groupTag)) {
+            $groupItems = [];
+            if (isset($tag)) {
+                //$item->tags()->sync($tag->id);
+                array_push($groupItems, $tag->id);
+            }
+            if (isset($groupTag)) {
+                array_push($groupItems, $groupTag->id);
+            }
+            $item->tags()->sync($groupItems); // set tags and remove all others
         }
 
         // TODO: state, description

@@ -98,16 +98,6 @@ class Membership extends Model
     {
         return $query->where('contact_id', '=', $userId);
     }
-    public function scopeOutOfSync($query)
-    {
-        return $query->whereNull('last_sync_date')
-            ->orWhereColumn('last_sync_date', '<', 'updated_at')
-            ->orWhere(function($query)
-            {
-                $query->whereNotNull('deleted_at')
-                    ->where('last_sync_date', '<', 'deleted_at');
-            });
-    }
 
     // Validation
     public static function isValidStatus($status) {

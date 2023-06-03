@@ -161,8 +161,7 @@ END";
             $maxId = $row['max'];
         }
         $maxId++;
-        var_dump('ALTER TABLE klusbibdb.contact auto_increment=' . $maxId);
-        Capsule::update('ALTER TABLE klusbibdb.contact auto_increment=' . $maxId);      
+        Capsule::update('ALTER TABLE klusbibdb.contact auto_increment=' . $maxId);
 	}
     /**
      * Down Method.

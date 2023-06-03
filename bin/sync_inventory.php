@@ -95,15 +95,3 @@ foreach($deliveries as $delivery) {
     $delivery->save();
 }
 
-echo "Syncing memberships\n";
-if ($force) {
-    $memberships = \Api\Model\Membership::all(); // sync all
-} else {
-    $memberships = \Api\Model\Membership::outOfSync()->get(); // filter objects to be synced
-}
-foreach($memberships as $membership) {
-    echo "Syncing membership with id " . $membership->id . "\n";
-    $membership->last_sync_date = $today;
-    $membership->timestamps = false; // do not change updated_at column value
-    $membership->save();
-}
