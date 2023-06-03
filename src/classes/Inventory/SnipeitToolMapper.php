@@ -96,24 +96,6 @@ abstract class SnipeitToolMapper
         } else {
             $groupTag = ProductTag::general();
         }
-        //if ($group == 'car') {
-        //    $groupTag = ProductTag::car();
-        //}
-        //if ($group == 'construction') {
-        //    $groupTag = ProductTag::construction();
-        //}
-        //if ($group == 'garden') {
-        //    $groupTag = ProductTag::garden();
-        //}
-        //if ($group == 'general') {
-        //    $groupTag = ProductTag::general();
-        //}
-        //if ($group == 'technics') {
-        //    $groupTag = ProductTag::technics();
-        //}
-        //if ($group == 'wood') {
-        //    $groupTag = ProductTag::wood();
-        //}
 
         // category
         $assetCategory = strtolower($asset->category->name);

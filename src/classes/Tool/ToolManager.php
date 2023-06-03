@@ -7,6 +7,7 @@ use Api\Inventory\SnipeitInventory;
 use Api\Model\InventoryItem;
 use Api\Model\Tool;
 use Api\Model\ToolType;
+use Api\Util\ImageResizer;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -17,6 +18,7 @@ class ToolManager
     }
     private $inventory;
     private $logger;
+    private $imageResizer;
 
     /**
      * ToolManager constructor.
@@ -25,6 +27,7 @@ class ToolManager
     {
         $this->inventory = $inventory;
         $this->logger = $logger;
+        $this->imageResizer = new ImageResizer();
     }
 
     public function getAll($showAll = false, $category = null, $sortfield = "code", $sortdir = "asc",
@@ -79,6 +82,9 @@ class ToolManager
             if ($existingItem === null) {
                 // save will create new item
                 echo "creating new tool item " . $item->id . "\n";
+                if (isset($item->image_name)) {
+                    $this->syncImage($item->image_name, $item);
+                }
                 $item->note = (isset($item->note) && strlen($item->note) > 128) ?
                     substr($item->note, 0, 125) . "..." : $item->note;
                 $item->last_sync_date = $syncTime;
@@ -274,6 +280,9 @@ class ToolManager
         }
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
+        if ($existingItem->image_name != $item->image_name) {
+            $this->syncImage($item->image_name, $existingItem);
+        }
         $existingItem->image_name = $item->image_name;
         $existingItem->short_url = $item->short_url;
         $existingItem->item_sector = $item->item_sector;
@@ -285,5 +294,28 @@ class ToolManager
         $existingItem->safety_risk = $item->safety_risk;
         $existingItem->deliverable = isset($item->deliverable) ? $item->deliverable : false;
         $existingItem->size = $item->size;
+    }
+
+    /**
+     * Resize image and assign it to inventory item
+     */
+    private function syncImage($fullFilePath, InventoryItem $item) {
+        echo "full file path=" . $fullFilePath;
+        $basename = basename($fullFilePath);
+        echo "basename=" . $basename;
+        $productImagePath = '/app/public/uploads/products';
+        $thumb_path = $productImagePath.'/thumbs/';
+        $large_path = $productImagePath.'/large/';
+        $this->logger->info("thumb_path " . $thumb_path);
+        $this->logger->info("large_path " . $large_path);
+        
+        // Create a thumbmail
+        $this->imageResizer->resizeImage($fullFilePath, $thumb_path, 100, 100);
+
+        // Resize the original to something sensible
+        $this->imageResizer->resizeImage($fullFilePath, $large_path, 600, 600);
+
+        $item->image_name = $baseName;
+        // TODO: update image table
     }
 }
