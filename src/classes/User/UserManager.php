@@ -146,7 +146,7 @@ class UserManager
     protected function inventoryUpToDate($user, $inventoryUser) {
         $this->logger->debug("Comparing users (model<->inventory):" . json_encode($user) . " - " . json_encode($inventoryUser));
         if ($user->first_name != $inventoryUser->first_name
-        || $user->last_name != $inventoryUser->las_tname
+        || $user->last_name != $inventoryUser->last_name
         || $user->email != $inventoryUser->email
         || $user->user_ext_id != $inventoryUser->user_ext_id) {
             return false;
