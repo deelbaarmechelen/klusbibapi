@@ -270,7 +270,9 @@ class UserManager
             echo "Validating user with id " . $user->id . "\n";
 
             $contact = Contact::find($user->id);
-            if (!isset($contact)) {
+            if (!isset($contact)
+               || $contact->state == UserState::DISABLED 
+               || $contact->state == UserState::DELETED) {
                 // no such user found -> delete entry on inventory
                 if ($this->inventory->deleteUser($user->id)) {
                     echo "User with it $user->id successfully removed from inventory (inventory id $user->user_ext_id)\n";
