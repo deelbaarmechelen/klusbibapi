@@ -4,6 +4,7 @@ namespace Api\Tool;
 
 use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
+use Api\Model\Image;
 use Api\Model\InventoryItem;
 use Api\Model\Tool;
 use Api\Model\ToolType;
@@ -280,10 +281,9 @@ class ToolManager
         }
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
-        if ($existingItem->image_name != $item->image_name) {
+        if (basename($existingItem->image_name) !== basename($item->image_name)) {
             $this->syncImage($item->image_name, $existingItem);
         }
-        $existingItem->image_name = $item->image_name;
         $existingItem->short_url = $item->short_url;
         $existingItem->item_sector = $item->item_sector;
         $existingItem->is_reservable = $item->is_reservable;
@@ -315,7 +315,8 @@ class ToolManager
         // Resize the original to something sensible
         $this->imageResizer->resizeImage($fullFilePath, $large_path, 600, 600);
 
-        $item->image_name = $baseName;
-        // TODO: update image table
+        $item->image_name = $basename;
+        // update image table
+        $item->images()->save(new Image(['image_name' => $basename]));
     }
 }

@@ -35,7 +35,11 @@ abstract class SnipeitToolMapper
             $item = new InventoryItem();
             $item->id = $asset->id;
         }
-        $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
+        $brand = isset($asset->manufacturer) && !empty($asset->manufacturer->name) ? html_entity_decode ($asset->manufacturer->name) : "";
+        $model = !empty($asset->manufacturer->name) ? html_entity_decode ($asset->model_number) : "";
+        $category = isset($asset->category) && !empty($asset->category->name) ? html_entity_decode ($asset->category->name) : "";
+        $default_name = $category . " " . $brand . " " . $model;
+        $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : $default_name;
         $item->item_type = ToolType::TOOL; // FIXME: should be 'loan' to match lendengine meaning (item_type is one of 'loan', 'stock' (consumable), 'kit', 'service')
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
         $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
@@ -43,7 +47,7 @@ abstract class SnipeitToolMapper
         $item->item_condition = null;//')->unsigned()->nullable()->default(null);
         $item->sku = $asset->asset_tag;
         $item->keywords =  self::mapAssetCategoryToToolCategory($asset);
-        $item->brand =  html_entity_decode ($asset->manufacturer->name);//', 1024)->nullable()->default(null);
+        $item->brand = $brand;//', 1024)->nullable()->default(null);
         $item->care_information =  null;//', 1024)->nullable()->default(null); - full description - shown online
         $item->component_information =  null;//', 1024)->nullable()->default(null);
 //        $item->loan_fee =  null;//', 10,2)->nullable()->default(null); -> see custom_fields
@@ -99,7 +103,7 @@ abstract class SnipeitToolMapper
 
         // category
         $assetCategory = strtolower($asset->category->name);
-        $item->save();
+        //$item->save();
         $tag = ProductTag::where('name', $assetCategory)->first();
 
         if (isset($tag) || isset($groupTag)) {

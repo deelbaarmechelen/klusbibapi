@@ -20,6 +20,8 @@ SHELL=/bin/bash
 
 # removes unresponsive users from the subscriber list to decrease bounce rates
 #0 0 * * * dokku dokku run api echo "cron test"
+#every minute
+* * * * * root /usr/bin/rsync -a /var/lib/dokku/data/storage/api/uploads/products/ /var/lib/dokku/data/storage/lendengine/uploads/products/klusbibdb/
 #daily
 0 16 * * * dokku dokku run api /app/.heroku/php/bin/php bin/renewal.php
 0 0  * * * dokku dokku run api /app/.heroku/php/bin/php bin/sync_inventory.php
