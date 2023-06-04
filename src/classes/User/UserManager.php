@@ -269,13 +269,13 @@ class UserManager
             }
             echo "Validating user with id " . $user->id . "\n";
 
-            $contact = Contact::find($item->id);
+            $contact = Contact::find($user->id);
             if (!isset($contact)) {
                 // no such user found -> delete entry on inventory
-                if ($this->inventory->deleteUser($item->id)) {
-                    echo "User with it $item->id successfully removed from inventory (inventory id $item->user_ext_id)\n";
+                if ($this->inventory->deleteUser($user->id)) {
+                    echo "User with it $user->id successfully removed from inventory (inventory id $user->user_ext_id)\n";
                 } else {
-                    echo "Unable to delete user with it $item->id (inventory id $item->user_ext_id)\n";
+                    echo "Unable to delete user with it $user->id (inventory id $user->user_ext_id)\n";
                 }
             }
         }
