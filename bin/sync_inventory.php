@@ -38,6 +38,9 @@ foreach($users as $user) {
     $user->timestamps = false; // do not change updated_at column value
     $user->save();
 }
+// FIXME: also cleanup all users on inventory with employee_nbr not matching an active user on api
+$userManager->validateInventoryUsers();
+
 echo "Syncing tools\n";
 $toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger);
 $tools = $toolManager->sync();

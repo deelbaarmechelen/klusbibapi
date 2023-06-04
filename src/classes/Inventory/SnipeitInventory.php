@@ -195,6 +195,22 @@ class SnipeitInventory implements Inventory
     }
 
     /**
+     * Lookup all users in inventory
+     * @return Collection Collection of users
+     */
+    public function getUsers()
+    {
+        $users = new Collection();
+        $inventoryUsers = $this->get('users');
+
+        foreach ($inventoryUsers->rows as $inventoryUser) {
+            $user = SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
+            $users->add($user);
+        }
+        return $users;
+    }
+    
+    /**
      * Lookup user in inventory based on external id
      * @param $id the user_ext_id aka snipeIt Person.id
      * @return Contact the user if found or null
@@ -203,7 +219,7 @@ class SnipeitInventory implements Inventory
     {
         try {
             $inventoryUser = $this->get('users/' . $id);
-            SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
+            return SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
         } catch (InventoryException $ex) {
             // no user or invalid user
             $this->logger->error($ex->getMessage());
@@ -213,7 +229,7 @@ class SnipeitInventory implements Inventory
             }
             throw $ex; // other errors: rethrow
         }
-        return SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
+        //return SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
     }
 
     /**

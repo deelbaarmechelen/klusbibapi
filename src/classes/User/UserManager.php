@@ -260,4 +260,24 @@ class UserManager
         return $this->lastSyncAttempt == null || !in_array($user->id, $this->lastSyncedUsers);
     }
 
+    public function validateInventoryUsers() {
+        echo "Validating inventory users\n";
+        $users = $this->inventory->getUsers();
+        foreach($users as $user) {
+            if (!isset($user->id) || empty($user->id)) {
+                continue;
+            }
+            echo "Validating user with id " . $user->id . "\n";
+
+            $contact = Contact::find($item->id);
+            if (!isset($contact)) {
+                // no such user found -> delete entry on inventory
+                if ($this->inventory->deleteUser($item->id)) {
+                    echo "User with it $item->id successfully removed from inventory (inventory id $item->user_ext_id)\n";
+                } else {
+                    echo "Unable to delete user with it $item->id (inventory id $item->user_ext_id)\n";
+                }
+            }
+        }
+    }
 }
