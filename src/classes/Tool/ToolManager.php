@@ -303,6 +303,7 @@ class ToolManager
         $basename = basename($fullFilePath);
         if (empty($basename)) {
             $item->image_name = "";
+            $item->images()->delete();
             return;
         }
         $productImagePath = '/app/public/uploads/products';

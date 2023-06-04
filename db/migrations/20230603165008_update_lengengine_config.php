@@ -34,6 +34,15 @@ class UpdateLengengineConfig extends AbstractCapsuleMigration
           . " select id * 10, name, 1, sort, null from product_section");
         Capsule::update("update product_tag set section_id = null");
         Capsule::update("delete from product_section");
+
+        // update created_by values
+        Capsule::update("update note set created_by = 1 where created_by = 1002");
+        Capsule::update("update page set created_by = 1 where created_by = 1002");
+        Capsule::update("update payment set created_by = 1 where created_by = 1002");
+
+        // update item_type
+        Capsule::update("UPDATE `inventory_item` SET item_type='loan' WHERE item_type = 'TOOL'");
+        Capsule::update("UPDATE `inventory_item` SET item_type='loan' WHERE item_type = 'ACCESSORY'");
 	}
     /**
      * Down Method.
@@ -43,6 +52,15 @@ class UpdateLengengineConfig extends AbstractCapsuleMigration
 	public function down()
 	{
         $this->initCapsule();
+        // update item_type
+        Capsule::update("UPDATE `inventory_item` SET item_type='TOOL' WHERE item_type = 'loan' AND id < 100000");
+        Capsule::update("UPDATE `inventory_item` SET item_type='ACCESSORY' WHERE item_type = 'loan' AND id >= 100000");
+
+        // Restore created_by
+        Capsule::update("update note set created_by = 1002 where created_by = 1");
+        Capsule::update("update page set created_by = 1002 where created_by = 1");
+        Capsule::update("update payment set created_by = 1002 where created_by = 1");
+
         // Restore account
         Capsule::update("INSERT INTO product_section (id, name, show_on_website, sort) "
            . " select id / 10, name, 1, 0 from product_tag where id >= 10 and id < 100");

@@ -40,7 +40,8 @@ abstract class SnipeitToolMapper
         $category = isset($asset->category) && !empty($asset->category->name) ? html_entity_decode ($asset->category->name) : "";
         $default_name = $category . " " . $brand . " " . $model;
         $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : $default_name;
-        $item->item_type = ToolType::TOOL; // FIXME: should be 'loan' to match lendengine meaning (item_type is one of 'loan', 'stock' (consumable), 'kit', 'service')
+        //$item->item_type = ToolType::TOOL; // FIXME: should be 'loan' to match lendengine meaning (item_type is one of 'loan', 'stock' (consumable), 'kit', 'service')
+        $item->item_type = ToolType::LOAN;
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
         $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
         $item->current_location_id = $currentLocationId;//')->unsigned()->nullable()->default(null);
@@ -130,7 +131,7 @@ abstract class SnipeitToolMapper
             $item->id = $accessory->id + self::ACCESSORY_OFFSET;
         }
         $item->name = !empty($accessory->name) ? html_entity_decode ($accessory->name) : html_entity_decode ($accessory->category->name);
-        $item->item_type = ToolType::ACCESSORY;
+        $item->item_type = ToolType::LOAN;
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
         $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
         $item->current_location_id =  null;//')->unsigned()->nullable()->default(null);
