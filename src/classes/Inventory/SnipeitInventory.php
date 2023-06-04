@@ -413,8 +413,11 @@ class SnipeitInventory implements Inventory
         return $this->put('klusbib/users/'. $user->user_ext_id . '/avatar', $data);
     }
 
-    public function deleteUser($id) : bool {
-        $response = $this->delete('users/' . $id);
+    /**
+     * @param $extUserId external (inventory) user id
+     */
+    public function deleteUser($extUserId) : bool {
+        $response = $this->delete('users/' . $extUserId);
         if ($response->status == "success") {
             return true;
         }

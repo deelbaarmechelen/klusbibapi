@@ -274,10 +274,10 @@ class UserManager
                || $contact->state == UserState::DISABLED 
                || $contact->state == UserState::DELETED) {
                 // no such user found -> delete entry on inventory
-                if ($this->inventory->deleteUser($user->id)) {
-                    echo "User with it $user->id successfully removed from inventory (inventory id $user->user_ext_id)\n";
+                if ($this->inventory->deleteUser($user->user_ext_id)) {
+                    echo "User with id $user->id successfully removed from inventory (inventory id $user->user_ext_id)\n";
                 } else {
-                    echo "Unable to delete user with it $user->id (inventory id $user->user_ext_id)\n";
+                    echo "Unable to delete user with id $user->id (inventory id $user->user_ext_id)\n";
                 }
             }
         }
