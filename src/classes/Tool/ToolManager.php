@@ -300,9 +300,11 @@ class ToolManager
      * Resize image and assign it to inventory item
      */
     private function syncImage($fullFilePath, InventoryItem $item) {
-        echo "full file path=" . $fullFilePath;
         $basename = basename($fullFilePath);
-        echo "basename=" . $basename;
+        if (empty($basename)) {
+            $item->image_name = "";
+            return;
+        }
         $productImagePath = '/app/public/uploads/products';
         $thumb_path = $productImagePath.'/thumbs/';
         $large_path = $productImagePath.'/large/';
