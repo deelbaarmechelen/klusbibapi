@@ -441,15 +441,17 @@ class SnipeitInventory implements Inventory
 
     // Activity
     // TODO: to be completed
+    // note only desc order sorted on created_at seems to work
     public function getActivity($offset = 0, $limit=1000) {
-        return $this->get('reports/activity?offset=' . $offset . '&limit=' . $limit);
+        return $this->get('reports/activity?item_type=asset&order=desc&sort=created_atoffset=' . $offset . '&limit=' . $limit);
     }
     public function getActivityCheckout($offset = 0, $limit=1000) {
-        return $this->get('reports/activity?action_type=checkout&offset=' . $offset . '&limit=' . $limit);
+        return $this->get('reports/activity?item_type=asset&action_type=checkout&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
     }
     public function getActivityCheckin($offset = 0, $limit=1000) {
-        return $this->get('reports/activity?action_type=checkin from&offset=' . $offset . '&limit=' . $limit);
+        return $this->get('reports/activity?item_type=asset&action_type=checkin from&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
     }
+
     public function getLendings($offset = 0, $limit=1000) {
         $checkouts = $this->getActivityCheckout($offset, $limit);
         $checkins = $this->getActivityCheckin($offset, $limit);
