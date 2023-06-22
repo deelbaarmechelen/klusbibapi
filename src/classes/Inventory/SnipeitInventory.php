@@ -449,7 +449,10 @@ class SnipeitInventory implements Inventory
         return $this->get('reports/activity?item_type=asset&action_type=checkout&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
     }
     public function getActivityCheckin($offset = 0, $limit=1000) {
-        return $this->get('reports/activity?item_type=asset&action_type=checkin from&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
+        return $this->get('reports/activity?item_type=asset&action_type=checkin%20from&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
+    }
+    public function getActivityUpdate($offset = 0, $limit=1000) {
+        return $this->get('reports/activity?item_type=asset&action_type=update&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
     }
 
     public function getLendings($offset = 0, $limit=1000) {

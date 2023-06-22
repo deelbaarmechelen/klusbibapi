@@ -74,8 +74,10 @@ interface Inventory {
     public function updateUserState(Contact $user);
     public function deleteUser($id) : bool;
 
-//    public function getActivity($offset = 0, $limit=1000);
-//    public function getActivityCheckout($offset = 0, $limit=1000);
+    public function getActivity($offset = 0, $limit=1000);
+    public function getActivityCheckout($offset = 0, $limit=1000);
+    public function getActivityCheckin($offset = 0, $limit=1000);
+    public function getActivityUpdate($offset = 0, $limit=1000);
 //    public function getLendings($offset = 0, $limit=1000);
 
     }

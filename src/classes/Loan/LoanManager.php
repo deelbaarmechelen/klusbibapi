@@ -39,7 +39,9 @@ class LoanManager
 
     public function sync() {
         $syncTime = new \DateTime();
-
+        // TODO: also update LE payments from API kb_payments
+        // First sync checkouts, then updates and finally checkins to avoid rolling back checkin modifications due to an earlier checkout 
+        // Ideally, all action logs are replayed chronologically, syncing all types of activity at once
         echo "Syncing checkout activity\n";
         $offset = 0;
         $limit = 100;
@@ -56,9 +58,15 @@ class LoanManager
                 // TODO: adjust query to inventory to exclued activity older than last sync timestamp
                 // TODO: keep last sync timestamp (in a table kb_sync? in a file?)
                 // find loan based on inventory item id and created_at datetime
-                $contactId = isset($item->target) ? $item->target->id : null;
+                $itemAction = $item->action_type; // checkout, update or 'checkin from'
+                if ($itemAction !== "checkout" && $itemAction !== "update" && $itemAction !== "checkin from") {
+                    continue;
+                }
+                $inventoryUserId = isset($item->target) ? $item->target->id : null;
+                $contact = Contact::where(['user_ext_id' => $inventoryUserId])->first();
                 $inventoryItemId = isset($item->item) ? $item->item->id : null; // not available on loan, only on loan row!
                 $createdAt = isset($item->created_at) ? $item->created_at->datetime : null;
+                $itemActionDatetime = isset($item->action_date) ? $item->action_date->datetime : null;
                 //$lending = Lending::where(['start_date' => $createdAt, 'tool_id' => $inventoryItemId, 'user_id' => $contactId])->first();
                 $lending = Lending::where(['tool_id' => $inventoryItemId, 'user_id' => $contactId])->first();
                 //$loanRow = LoanRow::where(['checked_out_at' => $createdAt, 'inventory_item_id' => $inventoryItemId])->first();
@@ -67,30 +75,36 @@ class LoanManager
                 $existingItem = $lending;
                 if ($existingItem === null) {
                     // save will create new item
-                    echo "creating new loan for checkout action id " . $item->id . " (doing nothing yet)\n";
+                    echo "creating new loan for checkout action id " . $item->id . "\n";
                     $lending = new Lending();
-                    $lending->user_id = $contactId;
+                    $lending->user_id = isset($contact) ? $contact->id : null;
                     $lending->tool_id = $inventoryItemId;
                     $lending->start_date = $createdAt;
-                    //$lending->due_date = $createdAt + 7 days??;
+                    //$lending->due_date = $createdAt + 7 days?? Does not seem included in api response, but stored in inventory.action_logs.expected_checkin
                     $lending->last_sync_date = $syncTime;
                     $lending->save();
                 } else {
                     // TODO: check last sync timestamp
+                    // FIXME: should use special function to compare dates?
+                    if (isset($itemActionDatetime) 
+                        && $existingItem->last_sync_date < $itemActionDatetime) {
+                        // only update existing item if not synced since action timestamp
+                        // update item values if needed
+                        // update last_sync_timestamp to skip it next time
+                        echo "updating loan item " . $item->id . "\n";
+                        //$this->updateExistingItem($item, $existingItem);
+        
+                        $existingItem->user_id = $contactId;
+                        $existingItem->tool_id = $inventoryItemId;
+                        $existingItem->start_date = $createdAt;
+                        $existingItem->last_sync_date = $syncTime;
+                        $existingItem->save();
+                    }
 
-                    // update item values if needed
-                    // update last_sync_timestamp to skip it next time
-                    echo "updating loan item " . $item->id . " (doing nothing yet)\n";
-                    //$this->updateExistingItem($item, $existingItem);
-    
-                    $existingItem->user_id = $contactId;
-                    $existingItem->tool_id = $inventoryItemId;
-                    $existingItem->start_date = $createdAt;
-                    $existingItem->last_sync_date = $syncTime;
-                    $existingItem->save();
                 }
             }
         }
+        echo "Syncing update activity (doing nothing yet)\n";
         echo "Syncing checkin activity (doing nothing yet)\n";
 
         // Delete all other items
