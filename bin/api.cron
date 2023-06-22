@@ -27,7 +27,7 @@ SHELL=/bin/bash
 0 0  * * * dokku dokku run api /app/.heroku/php/bin/php bin/sync_inventory.php
 #weekly
 0 0  * * 0 dokku dokku run api /app/.heroku/php/bin/php bin/expiry.php
-0 0  * * 1 dokku dokku run api /app/.heroku/php/bin/php bin/usersreport.php
+#0 0  * * 1 dokku dokku run api /app/.heroku/php/bin/php bin/usersreport.php
 #monthly
 0 0  1 * * dokku dokku run api /app/.heroku/php/bin/php bin/cleanup.php
 #yearly
