@@ -52,8 +52,13 @@ class LoanManager
         echo "checkout action count: " . $checkoutActionsCount . "\n";
         echo "checkout actions: " . \json_encode($checkoutActions) . "\n";
         if (is_array($checkoutActions)) {
+            // Action logs are retrieved in descending chronological order -> order needs to be reversed
+            $checkoutActions = array_reverse($checkoutActions);
             foreach($checkoutActions as $item) {
                 echo "Syncing checkout action with id " . $item->id . "\n";
+                $this->processActionLogItem($item);
+
+/* 
                 // TODO: check if loan or lending should be used. As a start, use lending and update loan through triggers
                 // TODO: add last_sync_timestamp to loan and loan_row, 
                 // TODO: adjust query to inventory to exclued activity older than last sync timestamp
@@ -119,7 +124,7 @@ class LoanManager
                     }
 
                 }
-            }
+ */            }
         }
         echo "Syncing update activity\n";
         $offset = 0;
@@ -128,8 +133,10 @@ class LoanManager
         $updateActionsCount = $updateBody->total;
         $updateActions = $updateBody->rows;
         echo "update action count: " . $updateActionsCount . "\n";
-        echo "update actions: " . \json_encode($updateActions) . "\n";
+//        echo "update actions: " . \json_encode($updateActions) . "\n";
         if (is_array($updateActions)) {
+            // Action logs are retrieved in descending chronological order -> order needs to be reversed
+            $updateActions = array_reverse($updateActions);
             foreach($updateActions as $item) {
                 echo "Syncing update action with id " . $item->id . "\n";
                 $this->processActionLogItem($item);
@@ -143,8 +150,10 @@ class LoanManager
         $checkinActionsCount = $checkinBody->total;
         $checkinActions = $checkinBody->rows;
         echo "checkin action count: " . $checkinActionsCount . "\n";
-        echo "checkin actions: " . \json_encode($checkinActions) . "\n";
+        //echo "checkin actions: " . \json_encode($checkinActions) . "\n";
         if (is_array($checkinActions)) {
+            // Action logs are retrieved in descending chronological order -> order needs to be reversed
+            $checkinActions = array_reverse($checkinActions);
             foreach($checkinActions as $item) {
                 echo "Syncing checkin action with id " . $item->id . "\n";
                 $this->processActionLogItem($item);
@@ -163,6 +172,7 @@ class LoanManager
             return;
         }
         echo "Syncing $itemAction action with id $item->id\n";
+        echo \json_encode($item) . "\n";
         // TODO: check if loan or lending should be used. As a start, use lending and update loan through triggers
         // TODO: add last_sync_timestamp to loan and loan_row, 
         // TODO: adjust query to inventory to exclued activity older than last sync timestamp
@@ -181,7 +191,7 @@ class LoanManager
         $createdAt = \DateTime::createFromFormat("Y-m-d H:i:s", $createdAtString);
         // FIXME: itemActionDateTime not yet supported in our version of snipe it?
         $itemActionDatetime = isset($item->action_date) ? $item->action_date->datetime : null;
-        $logMeta = isset($item->log_meta) ? \json_decode($item->log_meta) : null;
+        $logMeta = $item->log_meta;
         $itemActionDatetime = $createdAt;
         if (!isset($itemActionDatetime) || !isset($inventoryItemId)) {
             echo "invalid $itemAction action, missing item action date(or created_at) and/or inventory item id -> ignored\n";
@@ -200,7 +210,6 @@ class LoanManager
         //$loanRow = LoanRow::where(['checked_out_at' => $createdAt, 'inventory_item_id' => $inventoryItemId])->first();
         ////$loan = Loan::where(['created_at' => $createdAt, 'contact_id' => $contact->id])->first();
         //$existingItem = isset($loanRow) ? Loan::find($loanRow->loan_id) : null;
-        $existingItem = $lending;
         // For a checkout: if record exists, it is already synced
         if ($lending === null) {
             if ($itemAction === "checkout") {
@@ -213,16 +222,18 @@ class LoanManager
                 $dueDate = clone $itemActionDatetime;
                 $dueDate->add(new \DateInterval('P7D'));
                 $lending->due_date = $dueDate;
+                $lending->last_sync_date = $createdAt;
                 $lending->save();
             } else {
                 echo "lending not found or already closed\n";
             }
         } else {
-            // Note: no need for a last sync timestamp check here, as action_log is inserted, but never updated afterwards
+            // Note: no need for a classic last sync timestamp check here, as action_log is inserted, but never updated afterwards
+            //       but we do need to keep track of last action_log processed, and last_sync_timestamp is used here to keep last action_log created_at_ timestamp
             // For update and checkin: compare update timestamp with item action datetime. Only apply action log, if action datetime is more recent than last update
             // FIXME: should use special function to compare dates?
             if (isset($itemActionDatetime) 
-                && $lending->updated_at < $itemActionDatetime
+                && $lending->last_sync_date < $itemActionDatetime
                 && ($itemAction === "update" || $itemAction === "checkin from") ) {
                 // update item values if needed
 
@@ -232,6 +243,7 @@ class LoanManager
                         echo "updating due date of lending $lending->lending_id to " . $logMeta->expected_checkin->new . "\n";
                         $expectedCheckin = \DateTime::createFromFormat("Y-m-d H:i:s", $logMeta->expected_checkin->new);
                         $lending->due_date = $expectedCheckin;
+                        $lending->last_sync_date = $createdAt;
                         $lending->save();
                     } else {
                         echo "Not an update of expected checkin -> update action $item->id ignored\n";
@@ -241,6 +253,7 @@ class LoanManager
                     // FIXME: where to get actual returned date?
                     // actual returned date doesn't seem to be stored in snipe it repo (bug?) Only way to get it, is to process a notification at checkin event
                     $lending->returned_date = $createdAt;
+                    $lending->last_sync_date = $createdAt;
                     $lending->save();
                 }
             }
