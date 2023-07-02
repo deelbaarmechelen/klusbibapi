@@ -33,7 +33,7 @@ if ($force) {
 }
 foreach($users as $user) {
     echo "Syncing user with id " . $user->id . "\n";
-    $userManager->getById($user->id); // sync with inventory
+    $userManager->getById($user->id, $force); // sync with inventory
     $user->last_sync_date = $today; // sync with lend engine
     $user->timestamps = false; // do not change updated_at column value
     $user->save();

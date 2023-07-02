@@ -181,7 +181,7 @@ class LoanManager
 
         $inventoryUserId = isset($item->target) ? $item->target->id : null;
         $contact = Contact::where(['user_ext_id' => $inventoryUserId])->first();
-        if (!isset($contact)) {
+        if (isset($item->target) && !isset($contact)) {
             echo "$itemAction action for unkown user with user inventory id " . $inventoryUserId . " (user deleted?) -> ignored\n";
             echo \json_encode($item) . "\n";
             return;
@@ -194,7 +194,7 @@ class LoanManager
         $logMeta = $item->log_meta;
         $itemActionDatetime = $createdAt;
         if (!isset($itemActionDatetime) || !isset($inventoryItemId)) {
-            echo "invalid $itemAction action, missing item action date(or created_at) and/or inventory item id -> ignored\n";
+            echo "invalid $itemAction action, missing item action date (or created_at) and/or inventory item id -> ignored\n";
             echo \json_encode($item) . "\n";
             return;
         }
@@ -203,8 +203,10 @@ class LoanManager
         // for checkin & update -> only select from active lendings
         if ($itemAction === "checkout") {
             $lending = Lending::where(['start_date' => $createdAt, 'tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
-        } else {
+        } else if ($itemAction === "checkin from") {
             $lending = Lending::active()->where(['tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
+        } else { // target id (and thus contact id) not known on update
+            $lending = Lending::active()->where(['tool_id' => $inventoryItemId])->first();
         }
         //$lending = Lending::where(['tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
         //$loanRow = LoanRow::where(['checked_out_at' => $createdAt, 'inventory_item_id' => $inventoryItemId])->first();

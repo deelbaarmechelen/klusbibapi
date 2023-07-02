@@ -52,6 +52,7 @@ class UserManager
         try {
             $user = Contact::find($id);
             if ($user == null) {
+                $this->logger->debug("UserManager.getById: user with ID $id not found");
                 return null;
             }
             // TODO: use last_sync_date to check if sync is needed
@@ -272,8 +273,14 @@ class UserManager
             $contact = Contact::find($user->id);
             if (!isset($contact)
                || $contact->state == UserState::DISABLED 
-               || $contact->state == UserState::DELETED) {
+               || $contact->state == UserState::DELETED
+               || $contact->user_ext_id != $user->user_ext_id) {
                 // no such user found -> delete entry on inventory
+                if (isset($contact)) {
+                    echo "API user is found, but does not match inventory user:\n";
+                    echo "State=$contact->state\n";
+                    echo "API user_ext_id=$contact->user_ext_id versus Inventory user_ext_id=$user->user_ext_id\n";
+                }
                 if ($this->inventory->deleteUser($user->user_ext_id)) {
                     echo "User with id $user->id successfully removed from inventory (inventory id $user->user_ext_id)\n";
                 } else {

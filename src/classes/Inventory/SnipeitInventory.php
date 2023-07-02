@@ -343,7 +343,14 @@ class SnipeitInventory implements Inventory
             }
             return true; // user does not exist yet on inventory, nothing to remove
         } else {
+            $inventoryUsersExists = false;
             if (isset($user->user_ext_id)) {
+                $inventoryUser = $this->getUserByExtId($user->user_ext_id);
+                if (isset($inventoryUser)) {
+                    $inventoryUsersExists = true;
+                }
+            }
+            if ($inventoryUsersExists) {
                 // update existing inventory user
                 $response = $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
                 if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
