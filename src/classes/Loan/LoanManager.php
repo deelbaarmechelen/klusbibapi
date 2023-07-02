@@ -40,93 +40,27 @@ class LoanManager
 
     public function sync() {
         $syncTime = new \DateTime();
+        // TODO: create a table to store last synced action log (e.g. kb_context)
+
         // TODO: also update LE payments from API kb_payments
         // First sync checkouts, then updates and finally checkins to avoid rolling back checkin modifications due to an earlier checkout 
         // Ideally, all action logs are replayed chronologically, syncing all types of activity at once
-        echo "Syncing checkout activity\n";
+        echo "Syncing activity\n";
         $offset = 0;
         $limit = 100;
-        $checkoutBody = $this->inventory->getActivityCheckout($offset, $limit);
-        $checkoutActionsCount = $checkoutBody->total;
-        $checkoutActions = $checkoutBody->rows;
-        echo "checkout action count: " . $checkoutActionsCount . "\n";
-        echo "checkout actions: " . \json_encode($checkoutActions) . "\n";
-        if (is_array($checkoutActions)) {
-            // Action logs are retrieved in descending chronological order -> order needs to be reversed
-            $checkoutActions = array_reverse($checkoutActions);
-            foreach($checkoutActions as $item) {
-                echo "Syncing checkout action with id " . $item->id . "\n";
-                $this->processActionLogItem($item);
-
-/* 
-                // TODO: check if loan or lending should be used. As a start, use lending and update loan through triggers
-                // TODO: add last_sync_timestamp to loan and loan_row, 
-                // TODO: adjust query to inventory to exclued activity older than last sync timestamp
-                // TODO: keep last sync timestamp (in a table kb_sync? in a file?)
-                // find loan based on inventory item id and created_at datetime
-                $itemAction = $item->action_type; // checkout, update or 'checkin from'
-                if ($itemAction !== "checkout" && $itemAction !== "update" && $itemAction !== "checkin from") {
-                    continue;
-                }
-                $inventoryUserId = isset($item->target) ? $item->target->id : null;
-                $contact = Contact::where(['user_ext_id' => $inventoryUserId])->first();
-                if (!isset($contact)) {
-                    echo "checkout action for unkown user with user inventory id " . $inventoryUserId . " (user deleted?) -> ignored\n";
-                    echo \json_encode($item) . "\n";
-                    continue;
-                }
-                $inventoryItemId = isset($item->item) ? $item->item->id : null; // not available on loan, only on loan row!
-                $createdAtString = isset($item->created_at) ? $item->created_at->datetime : null;
-                $createdAt = \DateTime::createFromFormat("Y-m-d H:i:s", $createdAtString);
-                // FIXME: itemActionDateTime not yet supported in our version of snipe it?
-                $itemActionDatetime = isset($item->action_date) ? $item->action_date->datetime : null;
-                $itemActionDatetime = $createdAt;
-                if (!isset($itemActionDatetime) || !isset($inventoryItemId)) {
-                    echo "invalid checkout action, missing item action date and/or inventory item id -> ignored\n";
-                    echo \json_encode($item) . "\n";
-                    continue;
-                }
-                //$lending = Lending::where(['start_date' => $createdAt, 'tool_id' => $inventoryItemId, 'user_id' => $contactId])->first();
-                $lending = Lending::where(['tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
-                //$loanRow = LoanRow::where(['checked_out_at' => $createdAt, 'inventory_item_id' => $inventoryItemId])->first();
-                ////$loan = Loan::where(['created_at' => $createdAt, 'contact_id' => $contactId])->first();
-                //$existingItem = isset($loanRow) ? Loan::find($loanRow->loan_id) : null;
-                $existingItem = $lending;
-                // For a checkout: if record exists, it is already synced
-                if ($existingItem === null) {
-                    // save will create new item
-                    echo "creating new loan for checkout action id " . $item->id . "\n";
-                    $lending = new Lending();
-                    $lending->user_id = isset($contact) ? $contact->id : null;
-                    $lending->tool_id = $inventoryItemId;
-                    $lending->start_date = $itemActionDatetime;
-                    $dueDate = clone $itemActionDatetime; //new DateTime('now');
-                    $dueDate->add(new \DateInterval('P7D'));
-                    $lending->due_date = $dueDate;
-                    //$lending->due_date = $createdAt + 7 days?? Does not seem included in api response, but stored in inventory.action_logs.expected_checkin
-                    $lending->last_sync_date = $syncTime;
-                    $lending->save();
-                } else {
-                    // Note: no need for a last sync timestamp check here, as action_log is inserted, but never updated afterwards
-                    // For update and checkin: compare update timestamp with item action datetime. Only apply action log, if action datetime is more recent than last update
-                    // FIXME: should use special function to compare dates?
-                    if (isset($itemActionDatetime) 
-                        && $existingItem->created_at < $itemActionDatetime) {
-                        // only update existing item if not synced since action timestamp
-                        // update item values if needed
-                        // update last_sync_timestamp to skip it next time
-                        echo "updating loan item " . $existingItem->lending_id . "\n";
         
-                        $existingItem->user_id = $contact->id;
-                        $existingItem->tool_id = $inventoryItemId;
-                        $existingItem->start_date = $createdAt;
-                        $existingItem->save();
-                    }
-
-                }
- */            }
+        //$checkoutBody = $this->inventory->getActivityCheckout($offset, $limit);
+        $activityBody = $this->inventory->getActivity($offset, $limit);
+        $checkoutActionsCount = $activityBody->total;
+        $actions = $activityBody->rows;
+        if (is_array($actions)) {
+            // Action logs are retrieved in descending chronological order -> order needs to be reversed
+            $actions = array_reverse($actions);
+            foreach($actions as $item) {
+                $this->processActionLogItem($item);
+            }
         }
-        echo "Syncing update activity\n";
+/*         echo "Syncing update activity\n";
         $offset = 0;
         $limit = 100;
         $updateBody = $this->inventory->getActivityUpdate($offset, $limit);
@@ -158,7 +92,7 @@ class LoanManager
                 echo "Syncing checkin action with id " . $item->id . "\n";
                 $this->processActionLogItem($item);
             }
-        }
+        } */
 
         // Delete all other items
         echo "Deleting other items (doing nothing yet)\n";
@@ -202,6 +136,11 @@ class LoanManager
         // for checkout -> include start_date
         // for checkin & update -> only select from active lendings
         if ($itemAction === "checkout") {
+            // Check if no active lending exists
+            if (Lending::active()->where(['tool_id' => $inventoryItemId])->exists()) {
+                // FIXME: this check needs all action logs to be processed in chronological order (regardless of action type)!
+                echo "Cannot create lending for checkout: an active lending already exists\n";
+            }
             $lending = Lending::where(['start_date' => $createdAt, 'tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
         } else if ($itemAction === "checkin from") {
             $lending = Lending::active()->where(['tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
