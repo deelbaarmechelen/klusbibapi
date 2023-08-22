@@ -24,9 +24,9 @@ SHELL=/bin/bash
 * * * * * root /usr/bin/rsync -a /var/lib/dokku/data/storage/api/uploads/products/ /var/lib/dokku/data/storage/lendengine/uploads/products/klusbibdb/
 #daily
 0 16 * * * dokku dokku run api /app/.heroku/php/bin/php bin/renewal.php
-0 0  * * * dokku dokku run api /app/.heroku/php/bin/php bin/sync_inventory.php
+0 1  * * * dokku dokku run api /app/.heroku/php/bin/php bin/sync_inventory.php
 #weekly
-0 0  * * 0 dokku dokku run api /app/.heroku/php/bin/php bin/expiry.php
+30 0  * * 0 dokku dokku run api /app/.heroku/php/bin/php bin/expiry.php
 #0 0  * * 1 dokku dokku run api /app/.heroku/php/bin/php bin/usersreport.php
 #monthly
 0 0  1 * * dokku dokku run api /app/.heroku/php/bin/php bin/cleanup.php
