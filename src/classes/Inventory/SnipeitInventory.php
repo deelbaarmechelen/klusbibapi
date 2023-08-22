@@ -554,7 +554,7 @@ class SnipeitInventory implements Inventory
             throw new \RuntimeException('Inventory request to "' . $target . '" failed with status code ' . $res->getStatusCode());
         }
         $contentType = $res->getHeader('content-type')[0];
-        $this->logger->debug("Response body message=" . $res->getBody());
+        $this->logger->debug("Response body message (first 250 bytes)=" . mb_strimwidth($res->getBody(),0,250,"..."));
         if (strpos($contentType, 'application/json') !== false ) {
             return \GuzzleHttp\json_decode($res->getBody());
         }
