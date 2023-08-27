@@ -1,6 +1,5 @@
 <?php
 
-use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require_once __DIR__ . '/../../app/env.php';
@@ -25,10 +24,13 @@ class CreateSyncTable extends AbstractCapsuleMigration
      */
 	public function up()
 	{
-		Capsule::schema()->create('kb_sync', function(Illuminate\Database\Schema\Blueprint $table){
-			// Auto-increment id
-			$table->integer('last_inventory_action_id')->unsigned()->nullable()->default(null);
+        $this->initCapsule();
+
+        Capsule::schema()->create('kb_sync', function(Illuminate\Database\Schema\Blueprint $table){
+			$table->integer('last_inventory_action_id')->unsigned()->nullable()->default(0);
 		});
+        Capsule::update("INSERT INTO kb_sync (last_inventory_action_id) values (null)");
+
 	}
     /**
      * Down Method.
