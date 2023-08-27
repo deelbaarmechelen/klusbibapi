@@ -184,7 +184,9 @@ class ImageResizer {
      */
     private function getImageDetails($imageWithPath){
         $size = getimagesize($imageWithPath);
-
+        if ($size == false) {
+            throw new \Exception("Unable to retrieve image details for $imageWithPath");
+        }
         $imgParts = explode("/",$imageWithPath);
         $lastPart = $imgParts[count($imgParts)-1];
 

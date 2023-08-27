@@ -282,7 +282,11 @@ class ToolManager
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
         if (basename($existingItem->image_name) !== basename($item->image_name)) {
-            $this->syncImage($item->image_name, $existingItem);
+            try {
+                $this->syncImage($item->image_name, $existingItem);
+            } catch (\Exception $exception) {
+                echo "Unable to sync image for item $item->name ($item->sku). Update it manually or repeat sync operation";
+            };
         }
         $existingItem->short_url = $item->short_url;
         $existingItem->item_sector = $item->item_sector;
