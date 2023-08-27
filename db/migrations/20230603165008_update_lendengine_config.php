@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../app/settings.php';
  * 
  * Default template can be found at https://github.com/robmorgan/phinx/blob/master/src/Phinx/Migration/Migration.template.php.dist
  */
-class UpdateLengengineConfig extends AbstractCapsuleMigration
+class UpdateLendengineConfig extends AbstractCapsuleMigration
 {
     /**
      * Up Method.
