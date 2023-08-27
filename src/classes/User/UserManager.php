@@ -61,7 +61,9 @@ class UserManager
             //       if status is deleted && last_sync_date < updated_at -> sync delete (DELETE request)
             if ($sync || $this->syncRequired($user)) {
                 $this->logger->debug("UserManager.getById: Found user with ID $id and sync with inventory: " . json_encode($user));
-                if (isset($user->user_ext_id)) {
+                // TODO: replace code below by simple syncUser call (which already contains check on existance)
+                $this->syncUser($user);
+                /*if (isset($user->user_ext_id)) {
                     $inventoryUser = $this->getByIdFromInventory($user->user_ext_id);
                     if ($inventoryUser == null) {
                         $this->addToInventory($user);
@@ -72,7 +74,7 @@ class UserManager
                     }
                 } else {
                     $this->addToInventory($user);
-                }
+                }*/
             }
         } catch (\Exception $ex) {
             $this->logger->error("UserManager.getById: Problem while syncing user with id $id: " . $ex->getMessage());
@@ -283,6 +285,9 @@ class UserManager
                 }
                 if ($this->inventory->deleteUser($user->user_ext_id)) {
                     echo "User with id $user->id successfully removed from inventory (inventory id $user->user_ext_id)\n";
+                    echo "Resetting external id of API user to 0\n";
+                    $contact->user_ext_id = 0;
+                    $contact->save();
                 } else {
                     echo "Unable to delete user with id $user->id (inventory id $user->user_ext_id)\n";
                 }

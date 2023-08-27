@@ -40,99 +40,91 @@ class LoanManager
 
     public function sync() {
         $syncTime = new \DateTime();
-        // TODO: create a table to store last synced action log (e.g. kb_context)
+        // Get last synced action id from kb_sync
+        $syncData = DB::table('kb_sync')->first();
+        $lastActionId = isset($syncData->last_inventory_action_id) ? $syncData->last_inventory_action_id : 0;
 
         // TODO: also update LE payments from API kb_payments
-        // First sync checkouts, then updates and finally checkins to avoid rolling back checkin modifications due to an earlier checkout 
-        // Ideally, all action logs are replayed chronologically, syncing all types of activity at once
+        // All action logs are replayed chronologically, syncing all types of activity at once
         echo "Syncing loans from inventory activity\n";
-        $offset = 0;
         $limit = 100;
-        
-        //$checkoutBody = $this->inventory->getActivityCheckout($offset, $limit);
-        $activityBody = $this->inventory->getActivity($offset, $limit);
-        $checkoutActionsCount = $activityBody->total;
-        $actions = $activityBody->rows;
-        if (is_array($actions)) {
-            // Action logs are retrieved in descending chronological order -> order needs to be reversed
-            $actions = array_reverse($actions);
-            foreach($actions as $item) {
-                $this->processActionLogItem($item);
+        // dummy call to get actions count
+        $activityBody = $this->inventory->getActivity(0, 2);
+        $actionsCount = $activityBody->total;
+        $offset = $actionsCount > $limit ? $actionsCount - $limit : 0;
+        while ($offset >= 0) {
+            $activityBody = $this->inventory->getActivity($offset, $limit);
+            $newActionsCount = $activityBody->total;
+            if ($currActionsCount > $actionsCount) {
+                // new activity entries have been added since previous query
+                $extraActions = $newActionsCount - $actionsCount;
+                $actionsCount = $currActionsCount;
+            } else {
+                $extraActions = 0;
             }
+            // FIXME: make sure no actions are skipped when extra actions are added during sync
+            $actions = $activityBody->rows;
+            if (is_array($actions)) {
+                // Action logs are retrieved in descending chronological order -> order needs to be reversed
+                $actions = array_reverse($actions);
+                foreach($actions as $item) {
+                    if ($action->id <= $lastActionId) {
+                        // already processed
+                        echo "skipping action $action->id : already processed (last processed action id = $lastActionId)\n";
+                        continue;
+                    }
+                    if ($this->processActionLogItem($item)) {
+                        $lastActionId = $item->id;
+                        $affected = DB::table('kb_sync')
+                        ->update(['last_inventory_action_id' => $lastActionId]);
+                    }
+                }
+            }
+    
         }
-/*         echo "Syncing update activity\n";
-        $offset = 0;
-        $limit = 100;
-        $updateBody = $this->inventory->getActivityUpdate($offset, $limit);
-        $updateActionsCount = $updateBody->total;
-        $updateActions = $updateBody->rows;
-        echo "update action count: " . $updateActionsCount . "\n";
-//        echo "update actions: " . \json_encode($updateActions) . "\n";
-        if (is_array($updateActions)) {
-            // Action logs are retrieved in descending chronological order -> order needs to be reversed
-            $updateActions = array_reverse($updateActions);
-            foreach($updateActions as $item) {
-                echo "Syncing update action with id " . $item->id . "\n";
-                $this->processActionLogItem($item);
-            }
-        }
-
-        echo "Syncing checkin activity\n";
-        $offset = 0;
-        $limit = 100;
-        $checkinBody = $this->inventory->getActivityCheckin($offset, $limit);
-        $checkinActionsCount = $checkinBody->total;
-        $checkinActions = $checkinBody->rows;
-        echo "checkin action count: " . $checkinActionsCount . "\n";
-        //echo "checkin actions: " . \json_encode($checkinActions) . "\n";
-        if (is_array($checkinActions)) {
-            // Action logs are retrieved in descending chronological order -> order needs to be reversed
-            $checkinActions = array_reverse($checkinActions);
-            foreach($checkinActions as $item) {
-                echo "Syncing checkin action with id " . $item->id . "\n";
-                $this->processActionLogItem($item);
-            }
-        } */
 
         // Delete all other items
         echo "Deleting other items (doing nothing yet)\n";
         //Loan::outOfSync($syncTime)->delete();
     }
 
-    private function processActionLogItem($item) {
+    /**
+     * @return true when log item is successfully processed
+     */
+    private function processActionLogItem($item) : bool {
 
         $itemAction = $item->action_type; // checkout, update or 'checkin from'
         if ($itemAction !== "checkout" && $itemAction !== "update" && $itemAction !== "checkin from") {
-            return;
+            // nothing to do, consider action item as successfully processed
+            return true;
         }
         echo "Syncing $itemAction action with id $item->id and timestamp $item->created_at->datetime\n";
         echo \json_encode($item) . "\n";
         // TODO: check if loan or lending should be used. As a start, use lending and update loan through triggers
-        // TODO: add last_sync_timestamp to loan and loan_row, 
-        // TODO: adjust query to inventory to exclued activity older than last sync timestamp
-        // TODO: keep last sync timestamp (in a table kb_sync? in a file?)
-        // find loan based on inventory item id and created_at datetime
 
         $inventoryUserId = isset($item->target) ? $item->target->id : null;
         $contact = Contact::where(['user_ext_id' => $inventoryUserId])->first();
         if (isset($item->target) && !isset($contact)) {
             echo "$itemAction action for unkown user with user inventory id " . $inventoryUserId . " (user deleted?) -> ignored\n";
             echo \json_encode($item) . "\n";
-            return;
+            return false;
         }
         $inventoryItemId = isset($item->item) ? $item->item->id : null; // available in lending, but not on loan (only on loan row)!
         $createdAtString = isset($item->created_at) ? $item->created_at->datetime : null;
         $createdAt = \DateTime::createFromFormat("Y-m-d H:i:s", $createdAtString);
         // FIXME: itemActionDateTime not yet supported in our version of snipe it?
-        $itemActionDatetime = isset($item->action_date) ? $item->action_date->datetime : null;
-        $logMeta = $item->log_meta;
+        //$itemActionDatetime = isset($item->action_date) ? $item->action_date->datetime : null;
         $itemActionDatetime = $createdAt;
         if (!isset($itemActionDatetime) || !isset($inventoryItemId)) {
             echo "invalid $itemAction action, missing item action date (or created_at) and/or inventory item id -> ignored\n";
             echo \json_encode($item) . "\n";
-            return;
+            return false;
         }
-        // Same user can lend a tool multiple times
+
+        // At this point, we have a valid action with action datetime, target user (checkout and checkin only) and inventory item id
+
+        // find loan (=lending)
+        // Note: Same user can lend a tool multiple times
         // for checkout -> include start_date
         // for checkin & update -> only select from active lendings
         if ($itemAction === "checkout") {
@@ -165,6 +157,7 @@ class LoanManager
                 $lending->due_date = $dueDate;
                 $lending->last_sync_date = $createdAt;
                 $lending->save();
+                return true;
             } else {
                 echo "lending not found or already closed\n";
             }
@@ -180,12 +173,14 @@ class LoanManager
 
                 if ($itemAction === "update") {
                     // expected checkin date is received through log_meta as json e.g. {"expected_checkin":{"old":"2021-10-24","new":"2021-10-27 00:00:00"}}
+                    $logMeta = $item->log_meta;
                     if (isset($logMeta) && isset($logMeta->expected_checkin) && isset($logMeta->expected_checkin->new)) {
                         echo "updating due date of lending $lending->lending_id to " . $logMeta->expected_checkin->new . "\n";
                         $expectedCheckin = \DateTime::createFromFormat("Y-m-d H:i:s", $logMeta->expected_checkin->new);
                         $lending->due_date = $expectedCheckin;
                         $lending->last_sync_date = $createdAt;
                         $lending->save();
+                        return true;
                     } else {
                         echo "Not an update of expected checkin -> update action $item->id ignored\n";
                     }
@@ -196,10 +191,12 @@ class LoanManager
                     $lending->returned_date = $createdAt;
                     $lending->last_sync_date = $createdAt;
                     $lending->save();
+                    return true;
                 }
             }
 
         }
+        return false;
     }
 
 }
