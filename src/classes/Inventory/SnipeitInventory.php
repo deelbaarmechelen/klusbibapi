@@ -428,6 +428,7 @@ class SnipeitInventory implements Inventory
         if ($response->status == "success") {
             return true;
         }
+        $this->logger->error("Unable to delete user " . $extUserId . ": " . $response->messages);
         return false;
     }
 

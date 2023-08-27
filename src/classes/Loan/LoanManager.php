@@ -45,7 +45,7 @@ class LoanManager
         // TODO: also update LE payments from API kb_payments
         // First sync checkouts, then updates and finally checkins to avoid rolling back checkin modifications due to an earlier checkout 
         // Ideally, all action logs are replayed chronologically, syncing all types of activity at once
-        echo "Syncing activity\n";
+        echo "Syncing loans from inventory activity\n";
         $offset = 0;
         $limit = 100;
         
@@ -105,7 +105,7 @@ class LoanManager
         if ($itemAction !== "checkout" && $itemAction !== "update" && $itemAction !== "checkin from") {
             return;
         }
-        echo "Syncing $itemAction action with id $item->id\n";
+        echo "Syncing $itemAction action with id $item->id and timestamp $item->created_at->datetime\n";
         echo \json_encode($item) . "\n";
         // TODO: check if loan or lending should be used. As a start, use lending and update loan through triggers
         // TODO: add last_sync_timestamp to loan and loan_row, 

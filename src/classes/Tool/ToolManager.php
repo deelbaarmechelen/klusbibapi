@@ -285,7 +285,8 @@ class ToolManager
             try {
                 $this->syncImage($item->image_name, $existingItem);
             } catch (\Exception $exception) {
-                echo "Unable to sync image for item $item->name ($item->sku). Update it manually or repeat sync operation";
+                echo "Unable to sync image for item $item->name ($item->sku). Update it manually or repeat sync operation\n";
+                echo "Error: $exception->getMessage()";
             };
         }
         $existingItem->short_url = $item->short_url;
