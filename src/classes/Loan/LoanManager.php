@@ -9,6 +9,7 @@ use Api\Model\Lending;
 use Api\Model\Loan;
 use Api\Model\Contact;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 //use Api\ModelMapper\UserMapper;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -45,11 +46,15 @@ class LoanManager
         // Get last synced action id from kb_sync
         $syncData = Capsule::table('kb_sync')->first();
         $lastActionId = isset($syncData->last_inventory_action_id) ? $syncData->last_inventory_action_id : 0;
-        $lastActionTimestamp = isset($syncData->last_inventory_action_timestamp) ? $syncData->last_inventory_action_timestamp : null;
-
+        $lastActionTimestamp = isset($syncData->last_inventory_action_timestamp) 
+          ? Carbon::createFromFormat('Y-m-d H:i:s',  $syncData->last_inventory_action_timestamp) : null;
+        
         // TODO: also update LE payments from API kb_payments
         // All action logs are replayed chronologically, syncing all types of activity at once
-        echo "Syncing loans from inventory activity\n";
+        echo "Syncing loans from inventory activity starting from $syncData->last_inventory_action_timestamp\n";
+        echo "Deleting all lendings after sync date\n";
+        Lending::whereDate('last_sync_date', '>', $lastActionTimestamp->toDateTimeString())->delete();;
+
         $limit = 100;
         // dummy call to get actions count
         $activityBody = $this->inventory->getActivity(0, 2);
@@ -91,18 +96,15 @@ class LoanManager
             $offset = $offset - $limit;
         }
 
-        // Delete all other items
-        echo "Deleting other items (doing nothing yet)\n";
-        //Loan::outOfSync($syncTime)->delete();
     }
 
     /**
      * @return true when log item is successfully processed
      */
-    private function processActionLogItem($item, \DateTime $lastActionTimestamp , $lastActionId) : bool {
+    private function processActionLogItem($item, ?\DateTime $lastActionTimestamp , $lastActionId) : bool {
 
         $createdAtString = isset($item->created_at) ? $item->created_at->datetime : null;
-        $createdAt = \DateTime::createFromFormat("Y-m-d H:i:s", $createdAtString);
+        $createdAt = Carbon::createFromFormat("Y-m-d H:i:s", $createdAtString);
         // FIXME: should be based on lastActionTimestamp!
         // how to handle multiple log items with same creation timestamp? (e.g. in case of bulk update of expected checkin)
         // -> make sure processing a log item twice does not cause issues!
@@ -110,7 +112,7 @@ class LoanManager
             && $createdAt < $lastActionTimestamp) {
         //if (isset($item->id) && $item->id <= $lastActionId) {
             // already processed
-            echo "skipping action $item->id : already processed (last processed action id = $lastActionId)\n";
+            echo "skipping action $item->id : already processed (last action on $lastActionTimestamp->toDateTimeString(), id = $lastActionId)\n";
             return false;
         }
 
@@ -126,8 +128,7 @@ class LoanManager
         $inventoryUserId = isset($item->target) ? $item->target->id : null;
         $contact = Contact::where(['user_ext_id' => $inventoryUserId])->first();
         if (isset($item->target) && !isset($contact)) {
-            echo "$itemAction action for unkown user with user inventory id " . $inventoryUserId . " (user deleted?) -> ignored\n";
-            echo \json_encode($item) . "\n";
+            echo "$itemAction action ($item->id) for unkown user (user inventory id " . $inventoryUserId . " deleted?) -> ignored\n";
             return false;
         }
         $inventoryItemId = isset($item->item) ? $item->item->id : null; // available in lending, but not on loan (only on loan row)!
@@ -136,7 +137,6 @@ class LoanManager
         $itemActionDatetime = $createdAt;
         if (!isset($itemActionDatetime) || !isset($inventoryItemId)) {
             echo "invalid $itemAction action, missing item action date (or created_at) and/or inventory item id -> ignored\n";
-            echo \json_encode($item) . "\n";
             return false;
         }
 
@@ -147,25 +147,26 @@ class LoanManager
         // for checkout -> include start_date
         // for checkin & update -> only select from active lendings
         if ($itemAction === "checkout") {
-            // Check if no active lending exists
-            if (Lending::active()->where(['tool_id' => $inventoryItemId])->exists()) {
-                // FIXME: this check needs all action logs to be processed in chronological order (regardless of action type)!
-                echo "Cannot create lending for checkout: an active lending already exists\n";
-            }
             $lending = Lending::where(['start_date' => $createdAt, 'tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
         } else if ($itemAction === "checkin from") {
             $lending = Lending::active()->where(['tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
         } else { // target id (and thus contact id) not known on update
             $lending = Lending::active()->where(['tool_id' => $inventoryItemId])->first();
         }
-        //$lending = Lending::where(['tool_id' => $inventoryItemId, 'user_id' => $contact->id])->first();
         //$loanRow = LoanRow::where(['checked_out_at' => $createdAt, 'inventory_item_id' => $inventoryItemId])->first();
         ////$loan = Loan::where(['created_at' => $createdAt, 'contact_id' => $contact->id])->first();
         //$existingItem = isset($loanRow) ? Loan::find($loanRow->loan_id) : null;
+
         // For a checkout: if record exists, it is already synced
         if ($lending === null) {
             if ($itemAction === "checkout") {
-                echo "creating new loan for checkout action id $item->id\n";
+                // Check if no active lending exists
+                if (Lending::active()->where(['tool_id' => $inventoryItemId])->exists()) {
+                    // FIXME: this check needs all action logs to be processed in chronological order (regardless of action type)!
+                    echo "Cannot create lending for checkout: an active lending already exists\n";
+                    return false;
+                }
+                echo "creating new loan for checkout action id $item->id (checkout date: $createdAtString)\n";
                 $lending = new Lending();
                 $lending->user_id = isset($contact) ? $contact->id : null;
                 $lending->tool_id = $inventoryItemId;
@@ -179,6 +180,7 @@ class LoanManager
                 return true;
             } else {
                 echo "lending not found or already closed\n";
+                return false;
             }
         } else {
             // Note: no need for a classic last sync timestamp check here, as action_log is inserted, but never updated afterwards
@@ -194,7 +196,8 @@ class LoanManager
                     // expected checkin date is received through log_meta as json e.g. {"expected_checkin":{"old":"2021-10-24","new":"2021-10-27 00:00:00"}}
                     $logMeta = $item->log_meta;
                     if (isset($logMeta) && isset($logMeta->expected_checkin) && isset($logMeta->expected_checkin->new)) {
-                        echo "updating due date of lending $lending->lending_id to " . $logMeta->expected_checkin->new . "\n";
+                        echo "updating due date of lending $lending->lending_id from " . $logMeta->expected_checkin->old . 
+                        " to " . $logMeta->expected_checkin->new . "\n";
                         $expectedCheckin = \DateTime::createFromFormat("Y-m-d H:i:s", $logMeta->expected_checkin->new);
                         $lending->due_date = $expectedCheckin;
                         $lending->last_sync_date = $createdAt;
@@ -205,6 +208,7 @@ class LoanManager
                     }
                 }
                 if ($itemAction === "checkin from") {
+                    echo "processing checkin for lending $lending->lending_id from action id $item->id (checkin date: $createdAtString)\n";
                     // FIXME: where to get actual returned date?
                     // actual returned date doesn't seem to be stored in snipe it repo (bug?) Only way to get it, is to process a notification at checkin event
                     $lending->returned_date = $createdAt;
