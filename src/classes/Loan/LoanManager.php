@@ -8,7 +8,9 @@ use Api\Mail\MailManager;
 use Api\Model\Lending;
 use Api\Model\Loan;
 use Api\Model\Contact;
+use Illuminate\Support\Facades\DB;
 //use Api\ModelMapper\UserMapper;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 /**
  * Class LoanManager
@@ -41,8 +43,9 @@ class LoanManager
     public function sync() {
         $syncTime = new \DateTime();
         // Get last synced action id from kb_sync
-        $syncData = DB::table('kb_sync')->first();
+        $syncData = Capsule::table('kb_sync')->first();
         $lastActionId = isset($syncData->last_inventory_action_id) ? $syncData->last_inventory_action_id : 0;
+        $lastActionTimestamp = isset($syncData->last_inventory_action_timestamp) ? $syncData->last_inventory_action_timestamp : null;
 
         // TODO: also update LE payments from API kb_payments
         // All action logs are replayed chronologically, syncing all types of activity at once
@@ -55,32 +58,37 @@ class LoanManager
         while ($offset >= 0) {
             $activityBody = $this->inventory->getActivity($offset, $limit);
             $newActionsCount = $activityBody->total;
-            if ($currActionsCount > $actionsCount) {
+            // TO TEST: make sure no actions are skipped when extra actions are added during sync
+            if ($newActionsCount > $actionsCount) {
                 // new activity entries have been added since previous query
                 $extraActions = $newActionsCount - $actionsCount;
-                $actionsCount = $currActionsCount;
-            } else {
-                $extraActions = 0;
+                $offset += $extraActions;
+                $actionsCount = $newActionsCount;
+                if ($extraActions > 0) {
+                    // we need to repeat the query with a different offset to avoid missing entries
+                    continue;
+                }
             }
-            // FIXME: make sure no actions are skipped when extra actions are added during sync
+
             $actions = $activityBody->rows;
             if (is_array($actions)) {
                 // Action logs are retrieved in descending chronological order -> order needs to be reversed
                 $actions = array_reverse($actions);
                 foreach($actions as $item) {
-                    if ($action->id <= $lastActionId) {
-                        // already processed
-                        echo "skipping action $action->id : already processed (last processed action id = $lastActionId)\n";
-                        continue;
-                    }
-                    if ($this->processActionLogItem($item)) {
+                    
+                    if ($this->processActionLogItem($item, $lastActionTimestamp, $lastActionId)) {
                         $lastActionId = $item->id;
-                        $affected = DB::table('kb_sync')
-                        ->update(['last_inventory_action_id' => $lastActionId]);
+                        $createdAtString = isset($item->created_at) ? $item->created_at->datetime : null;
+                        $lastActionTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $createdAtString);
+                        $affected = Capsule::table('kb_sync')
+                        ->update([
+                            'last_inventory_action_id' => $lastActionId,
+                            'last_inventory_action_timestamp' => $lastActionTimestamp
+                        ]);
                     }
                 }
             }
-    
+            $offset = $offset - $limit;
         }
 
         // Delete all other items
@@ -91,14 +99,27 @@ class LoanManager
     /**
      * @return true when log item is successfully processed
      */
-    private function processActionLogItem($item) : bool {
+    private function processActionLogItem($item, \DateTime $lastActionTimestamp , $lastActionId) : bool {
+
+        $createdAtString = isset($item->created_at) ? $item->created_at->datetime : null;
+        $createdAt = \DateTime::createFromFormat("Y-m-d H:i:s", $createdAtString);
+        // FIXME: should be based on lastActionTimestamp!
+        // how to handle multiple log items with same creation timestamp? (e.g. in case of bulk update of expected checkin)
+        // -> make sure processing a log item twice does not cause issues!
+        if (isset($createdAt) && isset($lastActionTimestamp) 
+            && $createdAt < $lastActionTimestamp) {
+        //if (isset($item->id) && $item->id <= $lastActionId) {
+            // already processed
+            echo "skipping action $item->id : already processed (last processed action id = $lastActionId)\n";
+            return false;
+        }
 
         $itemAction = $item->action_type; // checkout, update or 'checkin from'
         if ($itemAction !== "checkout" && $itemAction !== "update" && $itemAction !== "checkin from") {
             // nothing to do, consider action item as successfully processed
             return true;
         }
-        echo "Syncing $itemAction action with id $item->id and timestamp $item->created_at->datetime\n";
+        echo "Syncing $itemAction action with id $item->id\n";
         echo \json_encode($item) . "\n";
         // TODO: check if loan or lending should be used. As a start, use lending and update loan through triggers
 
@@ -110,8 +131,6 @@ class LoanManager
             return false;
         }
         $inventoryItemId = isset($item->item) ? $item->item->id : null; // available in lending, but not on loan (only on loan row)!
-        $createdAtString = isset($item->created_at) ? $item->created_at->datetime : null;
-        $createdAt = \DateTime::createFromFormat("Y-m-d H:i:s", $createdAtString);
         // FIXME: itemActionDateTime not yet supported in our version of snipe it?
         //$itemActionDatetime = isset($item->action_date) ? $item->action_date->datetime : null;
         $itemActionDatetime = $createdAt;

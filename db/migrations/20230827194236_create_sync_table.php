@@ -28,8 +28,9 @@ class CreateSyncTable extends AbstractCapsuleMigration
 
         Capsule::schema()->create('kb_sync', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->integer('last_inventory_action_id')->unsigned()->nullable()->default(0);
+			$table->timestamp('last_inventory_action_timestamp')->nullable()->default(null);
 		});
-        Capsule::update("INSERT INTO kb_sync (last_inventory_action_id) values (null)");
+        Capsule::update("INSERT INTO kb_sync (last_inventory_action_id, last_inventory_action_timestamp) values (0, null)");
 
 	}
     /**
