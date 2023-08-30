@@ -59,18 +59,21 @@ foreach($reservations as $reservation) {
     $reservation->save();
 }
 
-echo "Syncing lendings\n";
-if ($force) {
-    $lendings = \Api\Model\Lending::all(); // sync all
-} else {
-    $lendings = \Api\Model\Lending::outOfSync()->get(); // filter objects to be synced
-}
-foreach($lendings as $lending) {
-    echo "Syncing lending with id " . $lending->lending_id . "\n";
-    $lending->last_sync_date = $today;
-    $lending->timestamps = false; // do not change updated_at column value
-    $lending->save();
-}
+//echo "Syncing lendings\n";
+//if ($force) {
+//    $lendings = \Api\Model\Lending::all(); // sync all
+//} else {
+//    $lendings = \Api\Model\Lending::outOfSync()->get(); // filter objects to be synced
+//}
+//foreach($lendings as $lending) {
+//    echo "Syncing lending with id " . $lending->lending_id . "\n";
+//    $lending->last_sync_date = $today;
+//    $lending->timestamps = false; // do not change updated_at column value
+//    $lending->save();
+//}
+echo "Syncing loans\n";
+$loanManager = new \Api\Loan\LoanManager(SnipeitInventory::instance($logger), $logger);
+$loanManager->sync();
 
 echo "Syncing payments\n";
 if ($force) {

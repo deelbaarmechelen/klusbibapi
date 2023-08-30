@@ -52,7 +52,7 @@ class LoanManager
         // TODO: also update LE payments from API kb_payments
         // All action logs are replayed chronologically, syncing all types of activity at once
         echo "Syncing loans from inventory activity starting from $syncData->last_inventory_action_timestamp\n";
-        echo "Deleting all lendings after sync date\n";
+        echo "Deleting all lendings after sync date " . $lastActionTimestamp->toDateTimeString() . "\n";
         Lending::whereDate('last_sync_date', '>', $lastActionTimestamp->toDateTimeString())->delete();;
 
         $limit = 100;
@@ -105,14 +105,15 @@ class LoanManager
 
         $createdAtString = isset($item->created_at) ? $item->created_at->datetime : null;
         $createdAt = Carbon::createFromFormat("Y-m-d H:i:s", $createdAtString);
-        // FIXME: should be based on lastActionTimestamp!
-        // how to handle multiple log items with same creation timestamp? (e.g. in case of bulk update of expected checkin)
-        // -> make sure processing a log item twice does not cause issues!
+        // Filter already synced actions
+        // Note multiple actions with same timestamp are possible (e.g. in case of bulk update of expected checkin), 
+        // thus processing same action twice should not lead to errors
+        // how to handle multiple log items with same creation timestamp? 
         if (isset($createdAt) && isset($lastActionTimestamp) 
-            && $createdAt < $lastActionTimestamp) {
-        //if (isset($item->id) && $item->id <= $lastActionId) {
+            && ($createdAt < $lastActionTimestamp || $item->id == $lastActionId)) {
             // already processed
-            echo "skipping action $item->id : already processed (last action on $lastActionTimestamp->toDateTimeString(), id = $lastActionId)\n";
+            echo "skipping action $item->id : already processed (last action on " . $lastActionTimestamp->toDateTimeString() 
+              . ", id = $lastActionId)\n";
             return false;
         }
 
@@ -122,7 +123,7 @@ class LoanManager
             return true;
         }
         echo "Syncing $itemAction action with id $item->id\n";
-        echo \json_encode($item) . "\n";
+        //echo \json_encode($item) . "\n";
         // TODO: check if loan or lending should be used. As a start, use lending and update loan through triggers
 
         $inventoryUserId = isset($item->target) ? $item->target->id : null;
@@ -163,7 +164,7 @@ class LoanManager
                 // Check if no active lending exists
                 if (Lending::active()->where(['tool_id' => $inventoryItemId])->exists()) {
                     // FIXME: this check needs all action logs to be processed in chronological order (regardless of action type)!
-                    echo "Cannot create lending for checkout: an active lending already exists\n";
+                    echo "Cannot create lending for checkout: an active lending already exists for tool $inventoryItemId\n";
                     return false;
                 }
                 echo "creating new loan for checkout action id $item->id (checkout date: $createdAtString)\n";
