@@ -93,6 +93,8 @@ class ToolManager
             } else {
                 // update item values
                 echo "updating tool item " . $item->id . "\n";
+                echo "new item: " . \json_encode($item) . "\n";
+                echo "existing item: " . \json_encode($existingItem) . "\n";
                 $this->updateExistingItem($item, $existingItem);
 
                 $existingItem->last_sync_date = $syncTime;
@@ -281,8 +283,10 @@ class ToolManager
         }
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
+        echo "existing image " . basename($existingItem->image_name) . ", new item image " . basename($item->image_name) . "\n";
         if (basename($existingItem->image_name) !== basename($item->image_name)) {
             try {
+                echo "sync image " . $item->image_name . " for item $item->sku\n";
                 $this->syncImage($item->image_name, $existingItem);
             } catch (\Exception $exception) {
                 echo "Unable to sync image for item $item->name ($item->sku). Update it manually or repeat sync operation\n";
