@@ -52,7 +52,8 @@ class LoanManager
         // TODO: also update LE payments from API kb_payments
         // All action logs are replayed chronologically, syncing all types of activity at once
         echo "Syncing loans from inventory activity starting from $syncData->last_inventory_action_timestamp\n";
-        echo "Deleting all lendings after sync date " . $lastActionTimestamp->toDateTimeString() . "\n";
+        echo "Deleting all lendings after sync date " 
+          . isset($lastActionTimestamp) ? $lastActionTimestamp->toDateTimeString() : "null" . "\n";
         Lending::whereDate('last_sync_date', '>', $lastActionTimestamp->toDateTimeString())->delete();;
 
         $limit = 100;
