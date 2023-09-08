@@ -57,12 +57,17 @@ class LoanManager
           Lending::whereDate('last_sync_date', '>', $lastActionTimestamp->toDateTimeString())->delete();
         } else {
             echo "Deleting all lendings\n";
-            Lending::delete();  
+            Lending::query()->delete();  
         }
 
         $limit = 100;
         // dummy call to get actions count
-        $activityBody = $this->inventory->getActivity(0, 2);
+        try {
+            $activityBody = $this->inventory->getActivity(0, 2);
+        } catch (\Api\Exception\NotFoundException $ex) {
+          echo "No activity (or insufficient rights to access it)\n";
+          return;
+        }
         $actionsCount = $activityBody->total;
         $offset = $actionsCount > $limit ? $actionsCount - $limit : 0;
         while ($offset >= 0) {
