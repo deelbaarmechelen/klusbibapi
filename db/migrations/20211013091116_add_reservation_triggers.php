@@ -43,7 +43,7 @@ IF EXISTS (SELECT 1 FROM lendengine.inventory_item WHERE id = NEW.`tool_id`)
   SELECT
   NEW.`reservation_id`, NEW.`user_id`, ifnull(NEW.`startsAt`, CURRENT_TIMESTAMP), ifnull(NEW.`endsAt`, ifnull(NEW.`startsAt`, CURRENT_TIMESTAMP)), 
   CASE
-    WHEN NEW.`state` = 'REQUESTED' THEN 'PENDING'
+    WHEN NEW.`state` = 'REQUESTED' THEN 'RESERVED'
     WHEN NEW.`state` = 'CONFIRMED' THEN 'RESERVED'
     WHEN NEW.`state` = 'CANCELLED' THEN 'CANCELLED'
     WHEN NEW.`state` = 'CLOSED' THEN 'CLOSED'
@@ -79,7 +79,7 @@ IF EXISTS (SELECT 1 FROM lendengine.inventory_item WHERE id = NEW.`tool_id`)
             UPDATE loan 
                 SET status = 
                 CASE
-                    WHEN NEW.`state` = 'REQUESTED' THEN 'PENDING'
+                    WHEN NEW.`state` = 'REQUESTED' THEN 'RESERVED'
                     WHEN NEW.`state` = 'CONFIRMED' THEN 'RESERVED'
                     WHEN NEW.`state` = 'CANCELLED' THEN 'CANCELLED'
                     WHEN NEW.`state` = 'CLOSED' THEN 'CLOSED'
@@ -98,7 +98,7 @@ IF EXISTS (SELECT 1 FROM lendengine.inventory_item WHERE id = NEW.`tool_id`)
             SELECT
               NEW.`reservation_id`, NEW.`user_id`, ifnull(NEW.`startsAt`, CURRENT_TIMESTAMP), ifnull(NEW.`endsAt`, ifnull(NEW.`startsAt`, CURRENT_TIMESTAMP)), 
                 CASE
-                    WHEN NEW.`state` = 'REQUESTED' THEN 'PENDING'
+                    WHEN NEW.`state` = 'REQUESTED' THEN 'RESERVED'
                     WHEN NEW.`state` = 'CONFIRMED' THEN 'RESERVED'
                     WHEN NEW.`state` = 'CANCELLED' THEN 'CANCELLED'
                     WHEN NEW.`state` = 'CLOSED' THEN 'CLOSED'
