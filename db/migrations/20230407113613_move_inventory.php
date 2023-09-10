@@ -50,7 +50,7 @@ END IF;
 IF NEW.updated_at IS NULL THEN
   SET NEW.updated_at = CURRENT_TIMESTAMP;
 END IF;
-SET NEW.short_url = substring(NEW.short_url,0,64);
+SET NEW.short_url = substring(NEW.short_url,1,64);
 END";
         $db->exec($sql);
         $sql = "
@@ -59,7 +59,7 @@ BEGIN
 IF NEW.updated_at IS NULL THEN
   SET NEW.updated_at = CURRENT_TIMESTAMP;
 END IF;
-SET NEW.short_url = substring(NEW.short_url,0,64);
+SET NEW.short_url = substring(NEW.short_url,1,64);
 END";
         $db->exec($sql);
         // copy data
@@ -72,7 +72,7 @@ END";
         . " SELECT `id`, `created_by`, `assigned_to`, `current_location_id`, `item_condition`, `created_at`, `updated_at`,"
         . " `name`, `sku`, `description`, `keywords`, `brand`, `care_information`, `component_information`, `loan_fee`,"
         . " `max_loan_days`, `is_active`, `show_on_website`, `serial`, `note`, `price_cost`, `price_sell`, `image_name`,"
-        . " `short_url`, `item_sector`, `is_reservable`, `deposit_amount`, `item_type`, `donated_by`, `owned_by`,"
+        . " substr(`short_url`,1,64), `item_sector`, `is_reservable`, `deposit_amount`, `item_type`, `donated_by`, `owned_by`,"
         . " `last_sync_date`, `experience_level`, `safety_risk`, `deliverable`, `size`"
         . " FROM klusbibdb.kb_inventory_item");
 
