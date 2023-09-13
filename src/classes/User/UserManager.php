@@ -279,15 +279,22 @@ class UserManager
                || $contact->user_ext_id != $user->user_ext_id) {
                 // no such user found -> delete entry on inventory
                 if (isset($contact)) {
-                    echo "API user is found, but does not match inventory user:\n";
-                    echo "State=$contact->state\n";
-                    echo "API user_ext_id=$contact->user_ext_id versus Inventory user_ext_id=$user->user_ext_id\n";
+                    echo "API user is found (id=" . $user->id . "), but does not match inventory user:\n";
+                    if ($contact->state == UserState::DISABLED 
+                    || $contact->state == UserState::DELETED) {
+                        echo "- State=$contact->state\n";
+                    }
+                    if ($contact->user_ext_id != $user->user_ext_id) {
+                        echo "- API user_ext_id=$contact->user_ext_id versus Inventory user_ext_id=$user->user_ext_id\n";
+                    }
                 }
                 if ($this->inventory->deleteUser($user->user_ext_id)) {
                     echo "User with id $user->id successfully removed from inventory (inventory id $user->user_ext_id)\n";
-                    echo "Resetting external id of API user to 0\n";
-                    $contact->user_ext_id = 0;
-                    $contact->save();
+                    if (isset($contact)) {
+                        echo "Resetting external id of API user to 0\n";
+                        $contact->user_ext_id = 0;
+                        $contact->save();
+                    }
                 } else {
                     echo "Unable to delete user with id $user->id (inventory id $user->user_ext_id)\n";
                 }
