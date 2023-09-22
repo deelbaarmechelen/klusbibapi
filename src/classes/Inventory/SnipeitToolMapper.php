@@ -73,7 +73,7 @@ abstract class SnipeitToolMapper
             $item->experience_level = isset($asset->custom_fields->experience_level) ? $asset->custom_fields->experience_level->value : null;
             $item->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
             // FIXME: not accessible without login!
-            $item->short_url = isset($asset->custom_fields->doc_url) ? $asset->custom_fields->doc_url->value : null;
+            $item->short_url = isset($asset->custom_fields->doc_url) ? substr($asset->custom_fields->doc_url->value,0,64) : null;
             $deliverable = isset($asset->custom_fields->leverbaar) ? $asset->custom_fields->leverbaar->value : "Nee";
             $deliverable = (strtoupper($deliverable) == "JA") ? true : false;
             $item->deliverable = $deliverable;
