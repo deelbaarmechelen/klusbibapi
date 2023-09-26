@@ -292,7 +292,6 @@ abstract class SnipeitToolMapper
             && isset($asset->custom_fields->group->value)) {
             if (in_array(strtolower($asset->custom_fields->group->value),
                 array(ToolCategory::CONSTRUCTION,
-                    ToolCategory::CAR,
                     ToolCategory::GARDEN,
                     ToolCategory::GENERAL,
                     ToolCategory::TECHNICS,
@@ -308,10 +307,6 @@ abstract class SnipeitToolMapper
             || $assetCategory == 'accu boormachine'
             || $assetCategory == 'boormachine') {
             return ToolCategory::CONSTRUCTION;
-        }
-        if ($assetCategory == 'sneeuwketting'
-            || $assetCategory == 'hydrolische krik') {
-            return ToolCategory::CAR;
         }
         if ($assetCategory == 'bladblazer'
             || $assetCategory == 'steekspade'

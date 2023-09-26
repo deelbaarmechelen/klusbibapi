@@ -10,16 +10,12 @@ class ProductTag extends Model
     protected $primaryKey = "id";
     public $incrementing = false;
 
-    const CAR = 'Auto';
     const CONSTRUCTION = 'Bouw';
     const GARDEN = 'Tuin';
     const GENERAL = 'Algemeen';
     const TECHNICS = 'Techniek';
     const WOOD = 'Schrijnwerk';
 
-    static public function car() {
-	    return ProductTag::where('name', '=', self::CAR)->firstOrFail();
-    }
     static public function construction() {
 	    return ProductTag::where('name', '=', self::CONSTRUCTION)->firstOrFail();
     }
