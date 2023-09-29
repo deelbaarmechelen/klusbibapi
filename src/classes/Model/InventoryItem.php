@@ -67,6 +67,6 @@ class InventoryItem extends Model
      */
     public function scopeArchive($query)
     {
-        return $query->update(['is_active' => 0, current_location_id => null]);
+        return $query->update(['is_active' => 0, 'current_location_id' => null]);
     }
 }

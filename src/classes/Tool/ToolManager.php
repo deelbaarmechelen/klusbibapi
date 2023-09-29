@@ -125,13 +125,11 @@ class ToolManager
         }
 
         // Delete all other items
-        echo "Deleting other items\n";
+        echo "Archive other items\n";
         // -> cannot delete an inventory item (tool or accessory) which is referred to in a loan_row, even though it does not appear on inventory
-        //e.g. tool 276 - KB-001-19-046 - archived tool (behangafstomer)
-        // ==> either also delete loan_rows or 'archive' the inventory item instead of deleting it: set current location to null and is_active to 0
-        //InventoryItem::outOfSync($syncTime)->delete();
+        // ==> 'archive' the inventory item instead of deleting it: set current location to null and is_active to 0
         $count = InventoryItem::outOfSync($syncTime)->archive();
-        echo "$count item(s) have been archived!";
+        echo "$count item(s) have been archived!\n";
         // TODO: check how to restart sync completely (deleting inventory items, lendings, ...)
     }
 
