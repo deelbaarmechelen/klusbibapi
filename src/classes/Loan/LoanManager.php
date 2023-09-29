@@ -105,6 +105,7 @@ class LoanManager
                 }
             }
             $offset = $offset - $limit;
+            usleep(500 * 1000);
         }
 
     }
@@ -123,7 +124,7 @@ class LoanManager
         if (isset($createdAt) && isset($lastActionTimestamp) 
             && ($createdAt < $lastActionTimestamp || $item->id == $lastActionId)) {
             // already processed
-            $carbonLastActionTime = Carbon::instance($carbonLastActionTime);
+            $carbonLastActionTime = Carbon::instance($lastActionTimestamp);
             echo "skipping action $item->id : already processed (last action on " . $carbonLastActionTime->toDateTimeString() 
               . ", id = $lastActionId)\n";
             return false;
