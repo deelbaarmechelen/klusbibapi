@@ -1,7 +1,7 @@
 <?php
 namespace Database\Factories;
 
-use Api\Model\User;
+use Api\Model\Contact;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class UserFactory extends Factory
@@ -11,7 +11,7 @@ class UserFactory extends Factory
      *
      * @var string
      */
-    protected $model = User::class;
+    protected $model = Contact::class;
 
     /**
      * Define the model's default state.
@@ -24,11 +24,11 @@ class UserFactory extends Factory
 //        $this->faker->addProvider($provider);
         $this->faker = \Faker\Factory::create();
         return [
-            'user_id' => $this->faker->numberBetween($min = 1000, $max = 9000),
-            'firstname' => $this->faker->name,
-            'lastname' => $this->faker->name,
+            'id' => $this->faker->numberBetween($min = 1000, $max = 9000),
+            'first_name' => $this->faker->name,
+            'last_name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
-            'hash' => $password ?: $password = password_hash('secret', PASSWORD_BCRYPT)
+            'password' => $password ?: $password = password_hash('secret', PASSWORD_BCRYPT)
         ];
     }
 

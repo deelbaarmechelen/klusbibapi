@@ -1,0 +1,28 @@
+_id: req_11b8cc6c87a24c2fa60f3052c5529494
+type: Request
+parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
+modified: 1668799037718
+created: 1668796936929
+url: "{{ base_url }}/users"
+name: /users
+description: ""
+method: GET
+body:
+  mimeType: application/json
+  text: ""
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+authentication:
+  type: bearer
+  token: "{% response 'body', 'req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6160bd4e8',
+    'b64::JC50b2tlbg==::46b', 'no-history', 60 %}"
+metaSortKey: -1665871682821.125
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

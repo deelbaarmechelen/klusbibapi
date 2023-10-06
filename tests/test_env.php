@@ -1,15 +1,15 @@
 <?php
-if (file_exists(__DIR__ . '/../.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-    $dotenv->load();
+if (file_exists(__DIR__ . '/../.env.dev')) {
+    $dotenv = \Dotenv\Dotenv::createMutable(__DIR__ . '/../', '.env.dev');
+    $envs = $dotenv->safeLoad();
 }
 if (file_exists(__DIR__ . '/../.env.test')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../', '.env.test');
     $dotenv->load();
 }
 
 // define a defaultUrl to avoid warnings on undefined $dsn and dsntst variables
-$defaultTstUrl = "mysql://root:@127.0.0.1:3306/klusbibapi_tst";
+$defaultTstUrl = "mysql://root:@127.0.0.1:3306/lendenginetst";
 $urltst = getenv('TEST_DATABASE_URL');
 if (!isset($urltst) || empty($urltst)) {
 	$urltst = $defaultTstUrl;

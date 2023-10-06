@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
+    protected $table = 'kb_projects';
 //    protected $primaryKey = "id";
     public $incrementing = true;
 
@@ -17,7 +18,7 @@ class Project extends Model
      */
     public function users()
     {
-        return $this->belongsToMany('Api\Model\User', 'project_user', 'project_id','user_id')
+        return $this->belongsToMany('Api\Model\Contact', 'kb_project_user', 'project_id','user_id')
             ->withTimestamps();
     }
 

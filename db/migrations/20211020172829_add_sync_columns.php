@@ -1,6 +1,5 @@
 <?php
 
-use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 require_once __DIR__ . '/../../app/env.php';

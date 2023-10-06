@@ -32,10 +32,8 @@ require __DIR__ . '/routes/enrolment.php';
 require __DIR__ . '/routes/tools.php';
 require __DIR__ . '/routes/deliveries.php';
 require __DIR__ . '/routes/users.php';
-require __DIR__ . '/routes/consumers.php';
 require __DIR__ . '/routes/reservations.php';
 require __DIR__ . '/routes/payments.php';
-require __DIR__ . '/routes/events.php';
 require __DIR__ . '/routes/lendings.php';
 require __DIR__ . '/routes/membership.php';
 

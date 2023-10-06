@@ -23,13 +23,13 @@ class PaymentsTest extends LocalDbWebTestCase
 //		$this->enddate->add(new DateInterval('P365D'));
 		
 		return new DbUnitArrayDataSet(array(
-            'users' => array(
-                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+            'contact' => array(
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
-			'payments' => array(
+			'kb_payments' => array(
 				array('payment_id' => 1, 'user_id' => 3, 'state' => \Api\Model\PaymentState::OPEN,
                     'mode'=> \Api\Model\PaymentMode::TRANSFER, 'payment_date'=> $this->paymentDate->format('Y-m-d H:i:s'),
                     'order_id'=> '123',

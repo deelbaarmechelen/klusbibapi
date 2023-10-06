@@ -2,7 +2,7 @@
 use PHPUnit\Framework\TestCase;
 use Api\Mail\MailManager;
 use Tests\Mock\PHPMailerMock;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Model\Tool;
 use Api\Model\Reservation;
 use Api\Model\Membership;
@@ -27,13 +27,13 @@ final class MailManagerTest extends LocalDbWebTestCase
         $this->dropOffDate->add(new DateInterval('P2D'));
 
         return new DbUnitArrayDataSet(array(
-            'users' => array(
-                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+            'contact' => array(
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
-            'deliveries' => array(
+            'kb_deliveries' => array(
                 array('id' => 1, 'user_id' => 3, 'state' => 1,
                     'pick_up_date' => $this->pickUpDate->format('Y-m-d H:i:s'),
                     'drop_off_date' => $this->dropOffDate->format('Y-m-d H:i:s'),
@@ -55,7 +55,7 @@ final class MailManagerTest extends LocalDbWebTestCase
                     'updated_at' => $this->updatedate->format('Y-m-d H:i:s')
                 ),
             ),
-            'delivery_item' => array(
+            'kb_delivery_item' => array(
                 array('delivery_id' => 1, 'inventory_item_id' => 1),
             ),
         ));
@@ -79,10 +79,10 @@ final class MailManagerTest extends LocalDbWebTestCase
 	{
 		$mailer = new PHPMailerMock ();
 		$mailmgr = new MailManager($mailer);
-		$newUser = new User();
-		$newUser->user_id = 11;
-		$newUser->firstName = "firstName";
-		$newUser->lastName = "lastName";
+		$newUser = new Contact();
+		$newUser->id = 11;
+		$newUser->first_Name = "firstName";
+		$newUser->last_Name = "lastName";
 		
 		$result = $mailmgr->sendEnrolmentNotification("info@klusbib.be", $newUser);
 		$this->assertEquals("Email verstuurd!", $mailmgr->getLastMessage());
@@ -109,11 +109,11 @@ final class MailManagerTest extends LocalDbWebTestCase
 	{
 		$mailer = new PHPMailerMock ();
 		$mailmgr = new MailManager($mailer);
-        $user = new UserTest();
-        $user->user_id = 123;
+        $user = new ContactTest();
+        $user->id = 123;
         $user->email = "info@klusbib.be";
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
 		$tool = new ToolTest();
 		$tool->name = "mytool";
 		$tool->description = "mydescription";
@@ -136,11 +136,11 @@ final class MailManagerTest extends LocalDbWebTestCase
     {
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
-        $user = new UserTest();
-        $user->user_id = 123;
+        $user = new ContactTest();
+        $user->id = 123;
         $user->email = "info@klusbib.be";
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
         $tool = new ToolTest();
         $tool->name = "mytool";
         $tool->description = "mydescription";
@@ -169,11 +169,11 @@ final class MailManagerTest extends LocalDbWebTestCase
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
 
-        $user = User::factory()->create([
-            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+        $user = Contact::factory()->create([
+            'email' => "info@klusbib.be", 'first_name' => "tester", 'last_name' => "de mock"
         ]);
 //        $user = factory(User::class)->create([
-//            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+//            'email' => "info@klusbib.be", 'first_name' => "tester", 'last_name' => "de mock"
 //        ]);
         $tool = Tool::factory()->create([
             'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
@@ -182,7 +182,7 @@ final class MailManagerTest extends LocalDbWebTestCase
         $reservationEnd = clone $reservationStart;
         $reservationEnd->add(new DateInterval('P7D'));
         $reservation = Reservation::factory()->create([
-            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
+            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->id
         ]);
         $delivery = Delivery::factory()->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);
         $items = DeliveryItem::factory()->count(2)->create([
@@ -199,10 +199,10 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
     public function testSendEnrolmentConfirmationTransfer()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
         $user->membership_end_date = date('Y-m-d');
         $membership = new MembershipTest();
         $membership->subscription_id = 1;
@@ -220,11 +220,11 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
     public function testSendEnrolmentConfirmationMollie()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
         $user->email_state = \Api\Model\EmailState::CONFIRM_EMAIL;
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
         $user->membership_end_date = date('Y-m-d');
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
@@ -238,10 +238,10 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
     public function testSendEnrolmentConfirmationStroom()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
         $user->membership_end_date = date('Y-m-d');
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
@@ -255,10 +255,10 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
     public function testSendEnrolmentPaymentConfirmationTransfer()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
         $user->membership_end_date = date('Y-m-d');
         $mailer = new PHPMailerMock ();
         $mailmgr = new MailManager($mailer);
@@ -272,10 +272,10 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
     public function testSendRenewal()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
         $user->membership_end_date = date('Y-m-d');
         $membership = new MembershipTest();
         $membership->subscription_id = 1;
@@ -294,10 +294,10 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
     public function testSendRenewalConfirmation()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "tester";
-        $user->lastname = "de mock";
+        $user->first_name = "tester";
+        $user->last_name = "de mock";
         $user->membership_end_date = date('Y-m-d');
         $membership = new MembershipTest();
         $membership->expires_at = new DateTime();
@@ -318,10 +318,10 @@ final class MailManagerTest extends LocalDbWebTestCase
     public function testSendNewGeneralConditionsNotification()
     {
         $this->markTestSkipped('requires webpage to be started.');
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "mijnNaam";
-        $user->lastname = "mijnFamilieNaam";
+        $user->first_name = "mijnNaam";
+        $user->last_name = "mijnFamilieNaam";
         $user->membership_end_date = date('Y-m-d');
         $user->membership_end_date = new DateTime();
         $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
@@ -339,14 +339,14 @@ final class MailManagerTest extends LocalDbWebTestCase
 
     public function testSendEnrolmentStroomNotification()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "mijnNaam";
-        $user->lastname = "mijnFamilieNaam";
+        $user->first_name = "mijnNaam";
+        $user->last_name = "mijnFamilieNaam";
         $user->state = \Api\Model\UserState::CHECK_PAYMENT;
         $user->address = "Mijnthuisstraat 123";
-        $user->postal_code = "2800";
-        $user->city = "Mechelen";
+        $user->address_line_4 = "2800";
+        $user->address_line_2 = "Mechelen";
         $user->membership_end_date = new DateTime();
         $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
 
@@ -362,14 +362,14 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
     public function testSendEnrolmentRenewalStroomNotification()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "mijnNaam";
-        $user->lastname = "mijnFamilieNaam";
+        $user->first_name = "mijnNaam";
+        $user->last_name = "mijnFamilieNaam";
         $user->state = \Api\Model\UserState::CHECK_PAYMENT;
         $user->address = "Mijnthuisstraat 123";
-        $user->postal_code = "2800";
-        $user->city = "Mechelen";
+        $user->address_line_4 = "2800";
+        $user->address_line_2 = "Mechelen";
         $user->membership_end_date = new DateTime();
         $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
 
@@ -386,10 +386,10 @@ final class MailManagerTest extends LocalDbWebTestCase
 
     public function testSendUsersReport()
     {
-        $user = new UserTest();
+        $user = new ContactTest();
         $user->email = "info@klusbib.be";
-        $user->firstname = "mijnNaam";
-        $user->lastname = "mijnFamilieNaam";
+        $user->first_name = "mijnNaam";
+        $user->last_name = "mijnFamilieNaam";
         $user->membership_end_date = date('Y-m-d');
         $user->membership_end_date = new DateTime();
         $user->membership_end_date = $user->membership_end_date->setDate(2018, 12, 7)->format('Y-m-d');
@@ -409,17 +409,17 @@ final class MailManagerTest extends LocalDbWebTestCase
     }
 }
 
-if (!class_exists('UserTest')) {
+if (!class_exists('ContactTest')) {
     // FIXME: to be replaced by User::find() call? (cfr EnrolmentManagerTest)
-    class UserTest extends User {
+    class ContactTest extends Contact {
         protected $table = 'users';
         public $incrementing = false;
-        //['user_id', 'state', 'firstname', 'lastname', 'role', 'email',
-        //'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
-        //'phone', 'mobile', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
-        public $user_id = 999;
-        public $firstname;
-        public $lastname;
+        //['user_id', 'state', 'first_name', 'last_name', 'role', 'email',
+        //'membership_start_date', 'membership_end_date', 'address_line_1', 'address_line_4', 'address_line_2',
+        //'telephone', 'registration_number', 'payment_mode', 'created_at', 'updated_at'
+        public $id = 999;
+        public $first_name;
+        public $last_name;
         public $role;
         public $email;
         public $membership_start_date;
@@ -523,7 +523,7 @@ if (!class_exists('ReservationTest')) {
 if (!class_exists('MembershipTest')) {
     class MembershipTest extends Membership
     {
-        //'id', 'status', 'start_at', 'expires_at', 'subscription_id', 'contact_id',
+        //'id', 'status', 'starts_at', 'expires_at', 'subscription_id', 'contact_id',
         // 'last_payment_mode', 'comment', 'created_at', 'updated_at', 'deleted_at
         public $id = 999;
         public $status;

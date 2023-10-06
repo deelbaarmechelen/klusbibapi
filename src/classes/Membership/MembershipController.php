@@ -7,7 +7,7 @@ use Api\Authorisation;
 use Api\Model\Membership;
 use Api\Model\MembershipState;
 use Api\Model\MembershipType;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\ModelMapper\MembershipMapper;
 use Api\ModelMapper\UserMapper;
 use Api\User\UserManager;
@@ -95,7 +95,7 @@ class MembershipController
             $status = MembershipState::STATUS_ACTIVE;
         }
         $subscriptionId = $request->getQueryParam('subscription_id');
-        $startAt = $request->getQueryParam('start_at');
+        $startAt = $request->getQueryParam('starts_at');
 
         if ($status === MembershipState::STATUS_ACTIVE) {
             $query = Membership::active();
@@ -150,7 +150,7 @@ class MembershipController
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->write("Token not allowed to update memberships.");
         }
 
-        $currentUser = User::find($this->token->getSub());
+        $currentUser = Contact::find($this->token->getSub());
 
         $membership = Membership::find($args['membershipId']);
         if (null == $membership) {
@@ -200,7 +200,7 @@ class MembershipController
         if ($updateMembershipUsers) {
             // lookup users for this membership
             $this->logger->info("Klusbib PUT updating membership users... ");
-            $users = User::notDeleted()->hasMembership($membership->id)->get();
+            $users = Contact::notDeleted()->hasMembership($membership->id)->get();
             $this->logger->info("Klusbib PUT updating users " . \json_encode($users));
             if ($users) {
                 foreach ($users as $user) {

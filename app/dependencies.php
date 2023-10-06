@@ -113,9 +113,9 @@ $container->set("HttpBasicAuthentication", function (ContainerInterface $contain
 			"relaxed" => ["admin"],
 			"authenticator" => new PdoAuthenticator([
 					"pdo" => $container->get('db'),
-					"table" => "users",
+					"table" => "contact",
 					"user" => "email",
-					"hash" => "hash"
+					"hash" => "password"
 			]),
 			"before" => function (ServerRequestInterface $request, $arguments) use ($container) {
 				$container->set("user", $arguments["user"]);

@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Api\Model\UserRole;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Model
+class Contact extends Model
 {
-//    use SoftDeletes;
+    //    use SoftDeletes;
     use HasFactory;
+
+    protected $table = 'contact';
 
     /**
      * Create a new factory instance for the model.
@@ -23,12 +25,12 @@ class User extends Model
         return UserFactory::new();
     }
 
-    protected $primaryKey = "user_id";
+    protected $primaryKey = "id";
 	public $incrementing = false;
 
-	static protected $fieldArray = ['user_id', 'state', 'firstname', 'lastname', 'role', 'email', 'email_state',
-			'membership_start_date', 'membership_end_date', 'birth_date', 'address', 'postal_code', 'city',
-			'phone', 'mobile', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
+	static protected $fieldArray = ['id', 'state', 'first_name', 'last_name', 'role', 'email', 'email_state',
+			'membership_start_date', 'membership_end_date', 'address_line_1', 'address_line_4', 'address_line_2',
+			'phone', 'telephone', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
             'last_sync_date', 'active_membership', 'company', 'comment', 'last_login', 'created_at', 'updated_at'
 	];
 
@@ -51,14 +53,14 @@ class User extends Model
     }
 
     public function getFullNameAttribute() {
-        return "{$this->firstname} {$this->lastname}";
+        return "{$this->first_name} {$this->last_name}";
     }
     // public methods
 	public static function canBeSortedOn($field) {
 		if (!isset($field)) {
 			return false;
 		}
-		return in_array($field, User::$fieldArray);
+		return in_array($field, Contact::$fieldArray);
 	}
 	
 	public function reservations()
@@ -75,7 +77,7 @@ class User extends Model
      */
     public function projects()
     {
-        return $this->belongsToMany('Api\Model\Project', 'project_user', 'user_id', 'project_id')
+        return $this->belongsToMany('Api\Model\Project', 'kb_project_user', 'user_id', 'project_id')
             ->as('membership')
             ->withTimestamps();
     }
@@ -84,12 +86,12 @@ class User extends Model
         return $this->belongsTo('Api\Model\Membership', 'active_membership');
     }
     public function memberships() {
-        return $this->hasMany('Api\Model\Membership', 'contact_id', 'user_id');
+        return $this->hasMany('Api\Model\Membership', 'contact_id', 'id');
     }
 
     public function payments()
     {
-        return $this->hasMany('Api\Model\Payment', 'user_id', 'user_id');
+        return $this->hasMany('Api\Model\Payment', 'user_id', 'id');
     }
 
     public function isAdmin() {
@@ -189,8 +191,8 @@ class User extends Model
     public function scopeSearchName($query, $search)
     {
         if ($search) {
-            $query->where('firstname', 'LIKE', '%'.$search.'%' )
-                  ->orWhere('lastname', 'LIKE', '%'.$search.'%' );
+            $query->where('first_name', 'LIKE', '%'.$search.'%' )
+                  ->orWhere('last_name', 'LIKE', '%'.$search.'%' );
         }
     }
     public function scopeStroom($query)

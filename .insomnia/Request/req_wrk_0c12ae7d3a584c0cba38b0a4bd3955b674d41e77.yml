@@ -1,7 +1,7 @@
 _id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b674d41e77
 type: Request
 parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
-modified: 1666216797569
+modified: 1668799830542
 created: 1666041975401
 url: "{{ base_url }}/users"
 name: /users
@@ -12,31 +12,34 @@ body:
   text: |-
     {
       "webenrolment": true,
-      "payment_mode": "string",
+      "payment_mode": "TRANSFER",
       "accept_terms": true,
-      "email": "string",
-      "firstname": "string",
-      "lastname": "string",
-      "role": "string",
-      "user_ext_id": "string",
-      "state": "string",
-      "email_state": "string",
-      "membership_start_date": "string",
-      "membership_end_date": "string",
-      "address": "string",
-      "postal_code": "string",
-      "city": "string",
-      "phone": "string",
-      "mobile": "string",
-      "registration_number": "string",
-      "accept_terms_date": "string"
+      "email": "user{% randomnumber 1, 999, 3, 0 %}@klusbib.be",
+      "firstname": "test",
+      "lastname": "user",
+      "role": "member",
+      "user_ext_id": "999",
+      "state": "DISABLED",
+      "email_state": "CONFIRM_EMAIL",
+      "membership_start_date": "{% now 'custom', 'YYYY-MM-DD' %}",
+      "membership_end_date": "{% now 'custom', 'YYYY-MM-DD' %}",
+      "address": "anywhere",
+      "postal_code": "2800",
+      "city": "Mechelen",
+      "phone": "015123456",
+      "mobile": "0475123456",
+      "registration_number": "14101800245",
+      "accept_terms_date": "{% now 'custom', 'YYYY-MM-DD' %}"
     }
 parameters: []
 headers:
   - name: Content-Type
     value: application/json
-authentication: {}
-metaSortKey: -1665871682813.5
+authentication:
+  type: bearer
+  token: "{% response 'body', 'req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6160bd4e8',
+    'b64::JC50b2tlbg==::46b', 'no-history', 60 %}"
+metaSortKey: -1665871682821.0625
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

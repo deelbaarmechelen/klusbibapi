@@ -79,7 +79,7 @@ trait TestCaseTrait
      */
     protected function getSetUpOperation()
     {
-        return Factory::CLEAN_INSERT();
+        return Factory::CLEAN_INSERT(false, true);
     }
 
     /**

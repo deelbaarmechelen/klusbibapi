@@ -35,15 +35,20 @@ abstract class SnipeitToolMapper
             $item = new InventoryItem();
             $item->id = $asset->id;
         }
-        $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : html_entity_decode ($asset->category->name);
-        $item->item_type = ToolType::TOOL; // FIXME: should be 'loan' to match lendengine meaning (item_type is one of 'loan', 'stock' (consumable), 'kit', 'service')
+        $brand = isset($asset->manufacturer) && !empty($asset->manufacturer->name) ? html_entity_decode ($asset->manufacturer->name) : "";
+        $model = !empty($asset->manufacturer->name) ? html_entity_decode ($asset->model_number) : "";
+        $category = isset($asset->category) && !empty($asset->category->name) ? html_entity_decode ($asset->category->name) : "";
+        $default_name = $category . " " . $brand . " " . $model;
+        $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : $default_name;
+        //$item->item_type = ToolType::TOOL; // FIXME: should be 'loan' to match lendengine meaning (item_type is one of 'loan', 'stock' (consumable), 'kit', 'service')
+        $item->item_type = ToolType::LOAN;
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
         $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
         $item->current_location_id = $currentLocationId;//')->unsigned()->nullable()->default(null);
         $item->item_condition = null;//')->unsigned()->nullable()->default(null);
         $item->sku = $asset->asset_tag;
         $item->keywords =  self::mapAssetCategoryToToolCategory($asset);
-        $item->brand =  html_entity_decode ($asset->manufacturer->name);//', 1024)->nullable()->default(null);
+        $item->brand = $brand;//', 1024)->nullable()->default(null);
         $item->care_information =  null;//', 1024)->nullable()->default(null); - full description - shown online
         $item->component_information =  null;//', 1024)->nullable()->default(null);
 //        $item->loan_fee =  null;//', 10,2)->nullable()->default(null); -> see custom_fields
@@ -68,12 +73,13 @@ abstract class SnipeitToolMapper
             $item->experience_level = isset($asset->custom_fields->experience_level) ? $asset->custom_fields->experience_level->value : null;
             $item->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
             // FIXME: not accessible without login!
-            $item->short_url = isset($asset->custom_fields->doc_url) ? $asset->custom_fields->doc_url->value : null;
+            $item->short_url = isset($asset->custom_fields->doc_url) ? substr($asset->custom_fields->doc_url->value,0,64) : null;
             $deliverable = isset($asset->custom_fields->leverbaar) ? $asset->custom_fields->leverbaar->value : "Nee";
             $deliverable = (strtoupper($deliverable) == "JA") ? true : false;
             $item->deliverable = $deliverable;
             $item->loan_fee = isset($asset->custom_fields->forfait) ? floatval($asset->custom_fields->forfait->value) : null;
             $item->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
+            $group = isset($asset->custom_fields->group) ? $asset->custom_fields->group->value : null;
         } else {
             // set default values
             $item->price_sell = null;
@@ -83,14 +89,34 @@ abstract class SnipeitToolMapper
             $item->deliverable = false;
             $item->loan_fee = null;
             $item->size = null;
+            $group = 'general';
+        }
+
+        // product tags
+        // group
+        //construction, car, garden, general, technics, wood
+        // alternative syntax:
+        if (method_exists('Api\Model\ProductTag', $group)) {
+            $groupTag = ProductTag::{$group}();
+        } else {
+            $groupTag = ProductTag::general();
         }
 
         // category
         $assetCategory = strtolower($asset->category->name);
-        $item->save();
+        //$item->save();
         $tag = ProductTag::where('name', $assetCategory)->first();
-        if (isset($tag)) {
-            $item->tags()->sync($tag->id);
+
+        if (isset($tag) || isset($groupTag)) {
+            $groupItems = [];
+            if (isset($tag)) {
+                //$item->tags()->sync($tag->id);
+                array_push($groupItems, $tag->id);
+            }
+            if (isset($groupTag)) {
+                array_push($groupItems, $groupTag->id);
+            }
+            $item->tags()->sync($groupItems); // set tags and remove all others
         }
 
         // TODO: state, description
@@ -105,7 +131,7 @@ abstract class SnipeitToolMapper
             $item->id = $accessory->id + self::ACCESSORY_OFFSET;
         }
         $item->name = !empty($accessory->name) ? html_entity_decode ($accessory->name) : html_entity_decode ($accessory->category->name);
-        $item->item_type = ToolType::ACCESSORY;
+        $item->item_type = ToolType::LOAN;
         $item->created_by =  null;//')->unsigned()->nullable()->default(null);
         $item->assigned_to =  null;//')->unsigned()->nullable()->default(null);
         $item->current_location_id =  null;//')->unsigned()->nullable()->default(null);
@@ -266,7 +292,6 @@ abstract class SnipeitToolMapper
             && isset($asset->custom_fields->group->value)) {
             if (in_array(strtolower($asset->custom_fields->group->value),
                 array(ToolCategory::CONSTRUCTION,
-                    ToolCategory::CAR,
                     ToolCategory::GARDEN,
                     ToolCategory::GENERAL,
                     ToolCategory::TECHNICS,
@@ -282,10 +307,6 @@ abstract class SnipeitToolMapper
             || $assetCategory == 'accu boormachine'
             || $assetCategory == 'boormachine') {
             return ToolCategory::CONSTRUCTION;
-        }
-        if ($assetCategory == 'sneeuwketting'
-            || $assetCategory == 'hydrolische krik') {
-            return ToolCategory::CAR;
         }
         if ($assetCategory == 'bladblazer'
             || $assetCategory == 'steekspade'

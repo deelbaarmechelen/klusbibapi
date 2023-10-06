@@ -14,7 +14,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RequestOptions;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Model\Tool;
 use Illuminate\Database\Eloquent\Collection;
 use Kevinrob\GuzzleCache\CacheMiddleware;
@@ -195,15 +195,31 @@ class SnipeitInventory implements Inventory
     }
 
     /**
+     * Lookup all users in inventory
+     * @return Collection Collection of users
+     */
+    public function getUsers()
+    {
+        $users = new Collection();
+        $inventoryUsers = $this->get('users');
+
+        foreach ($inventoryUsers->rows as $inventoryUser) {
+            $user = SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
+            $users->add($user);
+        }
+        return $users;
+    }
+    
+    /**
      * Lookup user in inventory based on external id
      * @param $id the user_ext_id aka snipeIt Person.id
-     * @return User the user if found or null
+     * @return Contact the user if found or null
      */
-    public function getUserByExtId($id) : ?User
+    public function getUserByExtId($id) : ?Contact
     {
         try {
             $inventoryUser = $this->get('users/' . $id);
-            SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
+            return SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
         } catch (InventoryException $ex) {
             // no user or invalid user
             $this->logger->error($ex->getMessage());
@@ -213,15 +229,15 @@ class SnipeitInventory implements Inventory
             }
             throw $ex; // other errors: rethrow
         }
-        return SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
+        //return SnipeitUserMapper::mapInventoryUserToApiUser($inventoryUser);
     }
 
     /**
      * Lookup user in inventory based on email
      * @param $email the user email aka snipeIt Person.username
-     * @return User the user if found or null
+     * @return Contact the user if found or null
      */
-    public function getUserByEmail($email) : ?User
+    public function getUserByEmail($email) : ?Contact
     {
         if (!isset($email)) {
             return null;
@@ -248,10 +264,10 @@ class SnipeitInventory implements Inventory
     /**
      * lookup user in inventory based on user_ext_id and email
      *
-     * @param User $user the user to lookup in inventory
+     * @param Contact $user the user to lookup in inventory
      * @return bool true if the user exists
      */
-    public function userExists(User $user) : bool
+    public function userExists(Contact $user) : bool
     {
         // lookup user by userExtId (snipeit id)
         if (isset($user->user_ext_id)) {
@@ -294,20 +310,20 @@ class SnipeitInventory implements Inventory
         return $tools;
     }
 
-    public function syncUser(User $user) : bool {
-        $this->logger->info("syncing user $user->user_id with inventory");
+    public function syncUser(Contact $user) : bool {
+        $this->logger->info("syncing user $user->id with inventory");
         $data = array();
-        if (isset($user->firstname)) {
-            $data['first_name'] = $user->firstname;
+        if (isset($user->first_name)) {
+            $data['first_name'] = $user->first_name;
         }
-        if (isset($user->lastname)) {
-            $data['last_name'] = $user->lastname;
+        if (isset($user->last_name)) {
+            $data['last_name'] = $user->last_name;
         }
         if (isset($user->email)) {
             $data['username'] = $user->email;
         }
-        if (isset($user->user_id)) {
-            $data['employee_num'] = $user->user_id;
+        if (isset($user->id)) {
+            $data['employee_num'] = $user->id;
         }
         if (isset($user->state)) {
             $data['state'] = $user->state;
@@ -319,7 +335,7 @@ class SnipeitInventory implements Inventory
                 if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
                     return true;
                 }
-                $message = "sync of user $user->user_id failed (delete)";
+                $message = "sync of user $user->id failed (delete)";
                 if (isset($response)) {
                     $message .= ": response " . \json_encode($response);
                 }
@@ -327,13 +343,20 @@ class SnipeitInventory implements Inventory
             }
             return true; // user does not exist yet on inventory, nothing to remove
         } else {
+            $inventoryUsersExists = false;
             if (isset($user->user_ext_id)) {
+                $inventoryUser = $this->getUserByExtId($user->user_ext_id);
+                if (isset($inventoryUser)) {
+                    $inventoryUsersExists = true;
+                }
+            }
+            if ($inventoryUsersExists) {
                 // update existing inventory user
                 $response = $this->put('klusbib/sync/users/' . $user->user_ext_id, $data);
                 if (isset($response) && isset($response->status) && strcasecmp($response->status, "success") == 0 ) {
                     return true;
                 }
-                $message = "sync of user $user->user_id failed (put)";
+                $message = "sync of user $user->id failed (put)";
                 if (isset($response)) {
                     $message .= ": response " . \json_encode($response);
                 }
@@ -346,7 +369,7 @@ class SnipeitInventory implements Inventory
                     $user->save();
                     return true;
                 }
-                $message = "sync of user $user->user_id failed (post)";
+                $message = "sync of user $user->id failed (post)";
                 if (isset($inventoryUser)) {
                     $message .= ": response " . \json_encode($inventoryUser);
                 }
@@ -356,63 +379,67 @@ class SnipeitInventory implements Inventory
     }
 
     /**
-     * @param User $user
+     * @param Contact $user
      * @return mixed
      * @deprecated Use syncUser instead
      */
-    public function updateUser(User $user) {
+    public function updateUser(Contact $user) {
         $data = array();
-        if (isset($user->firstname)) {
-            $data['first_name'] = $user->firstname;
+        if (isset($user->first_name)) {
+            $data['first_name'] = $user->first_name;
         }
-        if (isset($user->lastname)) {
-            $data['last_name'] = $user->lastname;
+        if (isset($user->last_name)) {
+            $data['last_name'] = $user->last_name;
         }
         if (isset($user->email)) {
             $data['username'] = $user->email;
         }
-        if (isset($user->user_id)) {
-            $data['employee_num'] = $user->user_id;
+        if (isset($user->id)) {
+            $data['employee_num'] = $user->id;
         }
         return $this->patch('users/' . $user->user_ext_id, $data);
     }
 
     /**
-     * @param User $user
+     * @param Contact $user
      * @return mixed|null
      * @deprecated Use syncUser instead
      */
-    public function updateUserState(User $user)
+    public function updateUserState(Contact $user)
     {
         return $this->updateUserAvatar($user);
     }
-    private function updateUserAvatar(User $user) {
-        $this->logger->info("Updating user avatar: $user->user_id / $user->user_ext_id / $user->state; " . json_encode($user));
+    private function updateUserAvatar(Contact $user) {
+        $this->logger->info("Updating user avatar: $user->id / $user->user_ext_id / $user->state; " . json_encode($user));
         $data = array();
         $data['status'] = $user->state;
         if (!isset($user->user_ext_id)) {
-            $this->logger->error("Unable to update avatar: no user ext id for user with id " . $user->user_id);
+            $this->logger->error("Unable to update avatar: no user ext id for user with id " . $user->id);
             return null;
         }
         return $this->put('klusbib/users/'. $user->user_ext_id . '/avatar', $data);
     }
 
-    public function deleteUser($id) : bool {
-        $response = $this->delete('users/' . $id);
+    /**
+     * @param $extUserId external (inventory) user id
+     */
+    public function deleteUser($extUserId) : bool {
+        $response = $this->delete('users/' . $extUserId);
         if ($response->status == "success") {
             return true;
         }
+        $this->logger->error("Unable to delete user " . $extUserId . ": " . $response->messages);
         return false;
     }
 
-    public function postUser(User $user) {
+    public function postUser(Contact $user) {
         $password = "dummy12345"; // FIXME: replace by random?
-        $data = ['first_name' => $user->firstname,
-            'last_name' => $user->lastname,
+        $data = ['first_name' => $user->first_name,
+            'last_name' => $user->last_name,
             'username' => $user->email,
             'password' => $password, // user not allowed to login
             'password_confirmation' => $password,
-            'employee_num' => $user->user_id,
+            'employee_num' => $user->id,
             'company_id' => SnipeitInventory::COMPANY_ID_KLUSBIB];
         $updatedUser = SnipeitUserMapper::mapInventoryUserToApiUser($this->post('users', $data));
         $this->updateUserAvatar($updatedUser);
@@ -422,15 +449,20 @@ class SnipeitInventory implements Inventory
 
     // Activity
     // TODO: to be completed
+    // note only desc order sorted on created_at seems to work
     public function getActivity($offset = 0, $limit=1000) {
-        return $this->get('reports/activity?offset=' . $offset . '&limit=' . $limit);
+        return $this->get('reports/activity?item_type=asset&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
     }
     public function getActivityCheckout($offset = 0, $limit=1000) {
-        return $this->get('reports/activity?action_type=checkout&offset=' . $offset . '&limit=' . $limit);
+        return $this->get('reports/activity?item_type=asset&action_type=checkout&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
     }
     public function getActivityCheckin($offset = 0, $limit=1000) {
-        return $this->get('reports/activity?action_type=checkin from&offset=' . $offset . '&limit=' . $limit);
+        return $this->get('reports/activity?item_type=asset&action_type=checkin%20from&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
     }
+    public function getActivityUpdate($offset = 0, $limit=1000) {
+        return $this->get('reports/activity?item_type=asset&action_type=update&order=desc&sort=created_at&offset=' . $offset . '&limit=' . $limit);
+    }
+
     public function getLendings($offset = 0, $limit=1000) {
         $checkouts = $this->getActivityCheckout($offset, $limit);
         $checkins = $this->getActivityCheckin($offset, $limit);

@@ -13,7 +13,7 @@ class Membership extends Model
 
     protected $table = "membership";
     protected $casts = [
-        'start_at'  => 'date:Y-m-d',
+        'starts_at'  => 'date:Y-m-d',
         'expires_at' => 'date:Y-m-d',
     ];
     /**
@@ -22,10 +22,10 @@ class Membership extends Model
      * @var array
      */
     protected $dates = [
-        'start_at','expires_at'
+        'starts_at','expires_at'
     ];
 
-	static protected $fieldArray = ['id', 'status', 'start_at', 'expires_at', 'subscription_id', 'contact_id',
+	static protected $fieldArray = ['id', 'status', 'starts_at', 'expires_at', 'subscription_id', 'contact_id',
         'last_payment_mode', 'comment', 'created_at', 'updated_at', 'deleted_at'
 	];
 	
@@ -38,7 +38,7 @@ class Membership extends Model
 	}
 	
 	public function members() {
-		return $this->hasMany('Api\Model\User', 'active_membership');
+		return $this->hasMany('Api\Model\Contact', 'active_membership');
 	}
 
     public function subscription() {
@@ -51,7 +51,7 @@ class Membership extends Model
     }
 
     public function contact() {
-        return $this->belongsTo('Api\Model\User', 'contact_id', 'user_id');
+        return $this->belongsTo('Api\Model\Contact', 'contact_id', 'id');
     }
 
     // Query helpers
@@ -92,21 +92,11 @@ class Membership extends Model
     }
     public function scopeWithStartAt($query, $startAt)
     {
-        return $query->where('start_at', '=', $startAt);
+        return $query->where('starts_at', '=', $startAt);
     }
     public function scopeWithUser($query, $userId)
     {
         return $query->where('contact_id', '=', $userId);
-    }
-    public function scopeOutOfSync($query)
-    {
-        return $query->whereNull('last_sync_date')
-            ->orWhereColumn('last_sync_date', '<', 'updated_at')
-            ->orWhere(function($query)
-            {
-                $query->whereNotNull('deleted_at')
-                    ->where('last_sync_date', '<', 'deleted_at');
-            });
     }
 
     // Validation

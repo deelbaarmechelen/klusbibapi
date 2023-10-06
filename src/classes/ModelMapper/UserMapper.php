@@ -2,11 +2,11 @@
 namespace Api\ModelMapper;
 
 use Api\Model\Membership;
-use \Api\Model\User;
+use Api\Model\Contact;
 
 class UserMapper
 {
-	static public function mapUserToArrayMinimal($user) {
+	static public function mapUserToArrayMinimal(Contact $user) {
 		$userArray = array("user_id" => $user->user_id,
             "user_ext_id" => $user->user_ext_id,
             "state" => $user->state,
@@ -19,14 +19,14 @@ class UserMapper
 		
 		return $userArray;
 	}
-	static public function mapUserToArray($user) {
+	static public function mapUserToArray(Contact $user) {
         $membership = Membership::find($user->active_membership);
-		$userArray = array("user_id" => $user->user_id,
+		$userArray = array("user_id" => $user->id,
             "user_ext_id" => $user->user_ext_id,
             "state" => $user->state,
             //"state" => !$membership ? $user->state : $membership->status,
-            "firstname" => $user->firstname,
-            "lastname" => $user->lastname,
+            "firstname" => $user->first_name,
+            "lastname" => $user->last_name,
             "email" => $user->email,
             "email_state" => $user->email_state,
             "role" => $user->role,
@@ -34,12 +34,11 @@ class UserMapper
             //"membership_start_date" => !$membership ? $user->membership_start_date : $membership->start_at,
             "membership_end_date" => $user->membership_end_date,
             //"membership_end_date" => !$membership ? $user->membership_end_date : $membership->expires_at,
-            "birth_date" => $user->birth_date,
-            "address" => $user->address,
-            "postal_code" => $user->postal_code,
-            "city" => $user->city,
-            "phone" => $user->phone,
-            "mobile" => $user->mobile,
+            "address" => $user->address_line_1,
+            "postal_code" => $user->address_line_4,
+            "city" => $user->address_line_2,
+            "phone" => $user->telephone,
+            "mobile" => $user->telephone,
             "registration_number" => $user->registration_number,
             "payment_mode" => $user->payment_mode,
             "accept_terms_date" => !$user->accept_terms_date ? null : $user->accept_terms_date->format('Y-m-d'),
@@ -53,19 +52,19 @@ class UserMapper
 		
 		return $userArray;
 	}
-	static public function mapArrayToUser($data, $user, $isAdmin = false, $logger = null) {
+	static public function mapArrayToUser($data, Contact $user, $isAdmin = false, $logger = null) {
 		if (isset($data["user_id"]) && !empty($data["user_id"]) && $isAdmin) {
-			$user->user_id= $data["user_id"];
+			$user->id= $data["user_id"];
 		}
 		// No longer allow update of state -> should be set based on membership
 //		if (isset($data["state"]) && $isAdmin) {
 //			$user->state = $data["state"];
 //		}
 		if (isset($data["firstname"])) {
-			$user->firstname = $data["firstname"];
+			$user->first_name = $data["firstname"];
 		}
 		if (isset($data["lastname"])) {
-			$user->lastname = $data["lastname"];
+			$user->last_name = $data["lastname"];
 		}
 		if (isset($data["email"])) {
 			$user->email = $data["email"];
@@ -78,9 +77,9 @@ class UserMapper
 		}
 		if (isset($data["password"])) {
 			if (isset($logger)) {
-				$logger->info("Updating password for user " . $user->user_id . " - " . $user->firstname . " " . $user->lastname);
+				$logger->info("Updating password for user " . $user->id . " - " . $user->first_name . " " . $user->last_name);
 			}
-			$user->hash = password_hash($data["password"], PASSWORD_DEFAULT);
+			$user->password = password_hash($data["password"], PASSWORD_DEFAULT);
 		}
 		// No longer allow update of membership start and end date -> should be set based on active membership
 //		if (!empty($data["membership_start_date"])
@@ -94,19 +93,19 @@ class UserMapper
 //			}
 //		}
 		if (isset($data["address"])) {
-			$user->address = $data["address"];
-		}
-		if (isset($data["postal_code"])) {
-			$user->postal_code = $data["postal_code"];
+			$user->address_line_1 = $data["address"];
 		}
 		if (isset($data["city"])) {
-			$user->city = $data["city"];
+			$user->address_line_2 = $data["city"];
+		}
+		if (isset($data["postal_code"])) {
+			$user->address_line_4 = $data["postal_code"];
 		}
 		if (isset($data["phone"])) {
-			$user->phone = $data["phone"];
+			$user->telephone = $data["phone"];
 		}
 		if (isset($data["mobile"])) {
-			$user->mobile = $data["mobile"];
+			$user->telephone = $data["mobile"];
 		}
 		if (isset($data["registration_number"])) {
 			$user->registration_number = $data["registration_number"];

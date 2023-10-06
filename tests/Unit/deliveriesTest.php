@@ -20,13 +20,13 @@ class DeliveryTest extends LocalDbWebTestCase
 		$this->dropOffDate->add(new DateInterval('P2D'));
 
 		return new DbUnitArrayDataSet(array(
-            'users' => array(
-                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+            'contact' => array(
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
-			'deliveries' => array(
+			'kb_deliveries' => array(
 				array('id' => 1, 'user_id' => 3, 'state' => 1,
 						'pick_up_date' => $this->pickUpDate->format('Y-m-d H:i:s'),
                         'drop_off_date' => $this->dropOffDate->format('Y-m-d H:i:s'),
@@ -48,7 +48,7 @@ class DeliveryTest extends LocalDbWebTestCase
 						'updated_at' => $this->updatedate->format('Y-m-d H:i:s')
 						),
 			),
-			'delivery_item' => array(
+			'kb_delivery_item' => array(
 				array('delivery_id' => 1, 'inventory_item_id' => 1),
 			),
 		));
@@ -132,6 +132,7 @@ class DeliveryTest extends LocalDbWebTestCase
             "drop_off_address" => "not there"
         );
         $body = $this->client->put('/deliveries/1', $data);
+        print_r($body);
         $delivery = json_decode($body);
         $this->assertEquals(200, $this->client->response->getStatusCode());
         $this->assertEquals("not here", $delivery->pick_up_address);

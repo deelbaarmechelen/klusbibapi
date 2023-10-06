@@ -1,7 +1,7 @@
 {% block subject 'Nieuwe levering/ophaling' %}
 
 {% block body %}
-Beste {{ user.firstname }},<br><br>
+Beste {{ user.first_name }},<br><br>
 <p>
 Wij hebben je leveringsaanvraag goed ontvangen. Je wenst volgende toestellen te laten
     {% if delivery.type == 'PICKUP' %}ophalen op {{ delivery.pick_up_date | date("Y-m-d") }}:{% endif %}

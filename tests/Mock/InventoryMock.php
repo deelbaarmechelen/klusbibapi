@@ -6,7 +6,7 @@ use Api\Inventory\Inventory;
 use Api\Model\Accessory;
 use Api\Model\Tool;
 use Api\Model\ToolState;
-use Api\Model\User;
+use Api\Model\Contact;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -33,10 +33,10 @@ class InventoryMock implements Inventory
         $this->logger = $logger;
     }
 
-    public static function addUser(User $user) {
+    public static function addUser(Contact $user) {
         array_push(InventoryMock::$users, $user);
     }
-    public static function removeUser(User $user) {
+    public static function removeUser(Contact $user) {
         $key = array_search($user, InventoryMock::$users);
         if ($key) {
             unset($key);
@@ -59,7 +59,7 @@ class InventoryMock implements Inventory
 //        }
 //        $tools = $builder->orderBy($sortfield, $sortdir)->get();
 //        return $tools;
-        return Capsule::table('tools')->get();
+        return Capsule::table('kb_tools')->get();
     }
 
     public function getToolById($id) : ?Tool
@@ -68,9 +68,9 @@ class InventoryMock implements Inventory
         return $tool;
     }
 
-    public function postUser(User $user)
+    public function postUser(Contact $user)
     {
-        $newuser = new User();
+        $newuser = new Contact();
         $newuser->user_ext_id = 1;
         array_push(InventoryMock::$users, $newuser);
         return $newuser;
@@ -79,9 +79,9 @@ class InventoryMock implements Inventory
     /**
      * lookup user by user_ext_id
      * @param $id
-     * @return User
+     * @return Contact
      */
-    public function getUserByExtId($id): ?User
+    public function getUserByExtId($id): ?Contact
     {
         foreach (InventoryMock::$users as $user) {
             if ($user->user_ext_id = $id) {
@@ -94,9 +94,9 @@ class InventoryMock implements Inventory
     /**
      * lookup user by email
      * @param $email
-     * @return User
+     * @return Contact
      */
-    public function getUserByEmail($email): ?User
+    public function getUserByEmail($email): ?Contact
     {
         foreach (InventoryMock::$users as $user) {
             if ($user->email = $email) {
@@ -108,10 +108,10 @@ class InventoryMock implements Inventory
 
     /**
      * check user exists in inventory (check based on user_ext_id and email)
-     * @param User $user
+     * @param Contact $user
      * @return bool
      */
-    public function userExists(User $user): bool
+    public function userExists(Contact $user): bool
     {
         $key = array_search($user, InventoryMock::$users);
         if ($key) {
@@ -122,10 +122,10 @@ class InventoryMock implements Inventory
 
     /**
      * update the user (only provided user fields are updated, null fields are ignored)
-     * @param User $user
+     * @param Contact $user
      * @return mixed
      */
-    public function updateUser(User $user)
+    public function updateUser(Contact $user)
     {
         // TODO: Implement updateUser() method.
     }
@@ -184,7 +184,7 @@ class InventoryMock implements Inventory
     {
         // TODO: Implement getLendings() method.
     }
-    public function updateUserState(User $user)
+    public function updateUserState(Contact $user)
     {
         // TODO: Implement updateUser() method.
     }
@@ -204,7 +204,7 @@ class InventoryMock implements Inventory
         // TODO: Implement accessoryExists() method.
     }
 
-    public function syncUser(User $user): bool
+    public function syncUser(Contact $user): bool
     {
         // TODO: Implement syncUser() method.
         return true;

@@ -14,6 +14,7 @@ use PHPUnit\DbUnit\Database\Connection;
 use PHPUnit\DbUnit\DataSet\IDataSet;
 use PHPUnit\DbUnit\DataSet\ITable;
 use PHPUnit\DbUnit\DataSet\ITableMetadata;
+use PDO;
 
 /**
  * Provides basic functionality for row based operations.
@@ -31,6 +32,13 @@ abstract class RowBased implements Operation
     protected $operationName;
 
     protected $iteratorDirection = self::ITERATOR_TYPE_FORWARD;
+
+    protected $disableConstraints = false;
+
+    public function setDisableConstraints($disableConstraints = false)
+    {
+        $this->disableConstraints = $disableConstraints;
+    }
 
     /**
      * @return string|bool String containing the query or FALSE if a valid query cannot be constructed
@@ -84,6 +92,10 @@ abstract class RowBased implements Operation
                 $connection->disablePrimaryKeys($databaseTableMetaData->getTableName());
             }
 
+            if ($this->setDisableConstraints) {
+                $this->disableForeignKeyChecksForMysql($connection);
+            }
+
             $statement = $connection->getConnection()->prepare($query);
 
             for ($i = 0; $i < $rowCount; $i++) {
@@ -92,10 +104,15 @@ abstract class RowBased implements Operation
                 try {
                     $statement->execute($args);
                 } catch (\Exception $e) {
+                    echo $e->getMessage();
                     throw new Exception(
                         $this->operationName, $query, $args, $table, $e->getMessage()
                     );
                 }
+            }
+
+            if ($this->setDisableConstraints) {
+                $this->enableForeignKeyChecksForMysql($connection);
             }
 
             if ($disablePrimaryKeys) {
@@ -114,4 +131,24 @@ abstract class RowBased implements Operation
 
         return $columnArray;
     }
+
+    private function disableForeignKeyChecksForMysql(Connection $connection)
+    {
+        if ($this->isMysql($connection)) {
+            $connection->getConnection()->query('SET @PHPUNIT_OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS');
+            $connection->getConnection()->query('SET FOREIGN_KEY_CHECKS = 0');
+        }
+    }
+
+    private function enableForeignKeyChecksForMysql(Connection $connection)
+    {
+        if ($this->isMysql($connection)) {
+            $connection->getConnection()->query('SET FOREIGN_KEY_CHECKS=@PHPUNIT_OLD_FOREIGN_KEY_CHECKS');
+        }
+    }
+    private function isMysql(Connection $connection)
+    {
+        return $connection->getConnection()->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql';
+    }
+
 }

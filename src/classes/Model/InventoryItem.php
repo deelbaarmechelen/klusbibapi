@@ -51,9 +51,22 @@ class InventoryItem extends Model
             'inventory_item_id', 'product_tag_id');
     }
 
+    public function images() {
+        return $this->hasMany('Api\Model\Image', 'inventory_item_id', 'id');
+    }
+
     public function scopeOutOfSync($query, $lastSyncDate)
     {
         return $query->whereNull('last_sync_date')
             ->orWhereDate('last_sync_date', '<', $lastSyncDate);
+    }
+
+    /**
+     * Archives the inventory items
+     * @return count of updated items
+     */
+    public function scopeArchive($query)
+    {
+        return $query->update(['is_active' => 0, 'current_location_id' => null]);
     }
 }

@@ -1,7 +1,7 @@
 _id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6160bd4e8
 type: Request
 parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
-modified: 1666039489326
+modified: 1668797136002
 created: 1665868323832
 url: "{{ base_url }}/token"
 name: /token
@@ -15,8 +15,8 @@ authentication:
   type: basic
   useISO88591: false
   disabled: false
-  username: admin@klusbib.be
-  password: test
+  username: "{{user}}"
+  password: "{{password}}"
 metaSortKey: -1665871682849
 isPrivate: false
 settingStoreCookies: true

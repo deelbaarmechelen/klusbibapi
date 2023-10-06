@@ -45,27 +45,27 @@ class ReservationsTest extends LocalDbWebTestCase
 		$this->enddate = clone $this->startdate;
 		$this->enddate->add(new DateInterval('P7D'));
 		return new DbUnitArrayDataSet(array(
-				'users' => array(
-						array('user_id' => 1, 'firstname' => 'firstname', 'lastname' => 'lastname',
+				'contact' => array(
+						array('id' => 1, 'first_name' => 'firstname', 'last_name' => 'lastname',
 								'role' => 'admin', 'email' => 'admin@klusbib.be',
-								'hash' => password_hash("test", PASSWORD_DEFAULT),
+								'password' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
-						array('user_id' => 2, 'firstname' => 'harry', 'lastname' => 'De Handige',
+						array('id' => 2, 'first_name' => 'harry', 'last_name' => 'De Handige',
 								'role' => 'volunteer', 'email' => 'harry@klusbib.be',
-								'hash' => password_hash("test", PASSWORD_DEFAULT),
+								'password' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
-						array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+						array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
 								'role' => 'member', 'email' => 'daniel@klusbib.be',
-								'hash' => password_hash("test", PASSWORD_DEFAULT),
+								'password' => password_hash("test", PASSWORD_DEFAULT),
 								'membership_start_date' => $this->startdate->format('Y-m-d H:i:s'),
 								'membership_end_date' => $this->enddate->format('Y-m-d H:i:s')
 						),
 				),
-				'tools' => array(
+				'kb_tools' => array(
 						array('tool_id' => 1, 'name' => 'tool 1', 'description' => 'description 1',
 								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345',
 								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',
@@ -85,7 +85,7 @@ class ReservationsTest extends LocalDbWebTestCase
 								'code' => 'KB-000-17-002', 'owner_id' => 0
 						)
 				),
-				'reservations' => array(
+				'kb_reservations' => array(
                     array('reservation_id' => 1, 'tool_id' => 1, 'user_id' => 1,
                             'title' => 'title 1',
                             'startsAt' => $this->startdate->format('Y-m-d H:i:s'),
@@ -319,8 +319,8 @@ class ReservationsTest extends LocalDbWebTestCase
         echo "test PUT reservation with delivery\n";
 
         // create reservation and delivery
-        $user = \Api\Model\User::factory()->create([
-            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+        $user = \Api\Model\Contact::factory()->create([
+            'email' => "info@klusbib.be", 'first_name' => "tester", 'last_name' => "de mock"
         ]);
         $tool = \Api\Model\Tool::factory()->create([
             'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
@@ -329,7 +329,7 @@ class ReservationsTest extends LocalDbWebTestCase
         $reservationEnd = clone $reservationStart;
         $reservationEnd->add(new DateInterval('P7D'));
         $reservation = \Api\Model\Reservation::factory()->create([
-            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
+            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->id
         ]);
         $inventoryItem = \Api\Model\InventoryItem::factory()->create([]);
         $deliveryDropOff = clone $reservationStart;
@@ -382,8 +382,8 @@ class ReservationsTest extends LocalDbWebTestCase
     {
         echo "test DELETE reservation linked to delivery\n";
 
-        $user = \Api\Model\User::factory()->create([
-            'email' => "info@klusbib.be", 'firstname' => "tester", 'lastname' => "de mock"
+        $user = \Api\Model\Contact::factory()->create([
+            'email' => "info@klusbib.be", 'first_name' => "tester", 'last_name' => "de mock"
         ]);
         $tool = \Api\Model\Tool::factory()->create([
             'name' => "mytool", 'description' => "mydescription", 'brand' => "myBrand", 'type' => "myType"
@@ -392,7 +392,7 @@ class ReservationsTest extends LocalDbWebTestCase
         $reservationEnd = clone $reservationStart;
         $reservationEnd->add(new DateInterval('P7D'));
         $reservation = \Api\Model\Reservation::factory()->create([
-            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->user_id
+            'startsAt' => $reservationStart, 'endsAt' => $reservationEnd, 'tool_id' => $tool->tool_id, 'user_id' => $user->id
         ]);
         $inventoryItem = \Api\Model\InventoryItem::factory()->create([]);
         $delivery = \Api\Model\Delivery::factory()->create(['comment' => 'opm', 'consumers' => 'hamer+beitel']);

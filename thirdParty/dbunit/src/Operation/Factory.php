@@ -33,11 +33,11 @@ class Factory
      *
      * @return Operation
      */
-    public static function CLEAN_INSERT($cascadeTruncates = false)
+    public static function CLEAN_INSERT($cascadeTruncates = false, $disableConstraints = false)
     {
         return new Composite([
             self::TRUNCATE($cascadeTruncates),
-            self::INSERT()
+            self::INSERT($disableConstraints)
         ]);
     }
 
@@ -46,9 +46,11 @@ class Factory
      *
      * @return Operation
      */
-    public static function INSERT()
+    public static function INSERT($disableConstraints = false)
     {
-        return new Insert();
+        $insert = new Insert();
+        $insert->setDisableConstraints = $disableConstraints;
+        return $insert;
     }
 
     /**

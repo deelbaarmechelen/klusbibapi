@@ -140,6 +140,7 @@ class LendingController implements LendingControllerInterface
         return $response->withJson(LendingMapper::mapLendingToArray($lending));
     }
 
+    // deprecated: lendings created at inventory and synced by sync_loans / sync_inventory batch 
     public function create(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib " . $request->getMethod() . " " . $request->getRequestTarget()
@@ -197,6 +198,7 @@ class LendingController implements LendingControllerInterface
         return $response->withJson(LendingMapper::mapLendingToArray($lending))
             ->withStatus(201);
     }
+    // deprecated: lendings updated at inventory and synced by sync_loans / sync_inventory batch 
     public function update(RequestInterface $request, ResponseInterface $response, $args)
     {
         $this->logger->info("Klusbib " . $request->getMethod() . " " . $request->getRequestTarget()

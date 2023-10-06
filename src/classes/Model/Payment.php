@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
+    protected $table = 'kb_payments';
     protected $primaryKey = "payment_id";
     static protected $fieldArray = ['payment_id', 'user_id', 'state', 'mode', 'payment_date', 'order_id',
         'amount', 'currency', 'comment', 'expiration_date', 'membership_id', 'loan_id', 'created_at', 'updated_at'
@@ -29,7 +30,7 @@ class Payment extends Model
         return in_array($field, Payment::$fieldArray);
     }
     public function user() {
-        return $this->belongsTo('Api\Model\User', 'user_id', 'user_id');
+        return $this->belongsTo('Api\Model\Contact', 'user_id', 'id');
     }
     public function membership() {
         return $this->belongsTo('Api\Model\Membership', 'membership_id', 'id');

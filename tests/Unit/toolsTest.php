@@ -10,7 +10,7 @@ class ToolsTest extends LocalDbWebTestCase
 	public function getDataSet()
 	{
 		return new DbUnitArrayDataSet(array(
-				'tools' => array(
+				'kb_tools' => array(
 						array('tool_id' => 1, 'name' => 'tool 1', 'description' => 'description 1', 'code' => 'KB-000-18-001',
 								'brand' => 'Makita', 'type' => 'ABC-123', 'serial' => '00012345', 'category' => 'wood',
 								'manufacturing_year' => '2017', 'manufacturer_url' => 'http://manufacturer.com',

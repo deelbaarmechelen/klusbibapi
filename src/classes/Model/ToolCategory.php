@@ -12,7 +12,6 @@ namespace Api\Model;
 abstract class ToolCategory
 {
     const CONSTRUCTION = "construction";
-    const CAR = "car";
     const GARDEN = "garden";
     const GENERAL = "general";
     const TECHNICS = "technics";

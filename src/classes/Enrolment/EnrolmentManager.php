@@ -9,7 +9,7 @@ use Api\Model\MembershipState;
 use Api\Model\MembershipType;
 use Api\Model\PaymentState;
 use Api\Model\Product;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Model\PaymentMode;
 use Api\Model\Payment;
 use Api\Model\UserRole;
@@ -34,7 +34,7 @@ class EnrolmentManager
     private $mollie;
     private $userMgr;
 
-    function __construct($logger, User $user = null, MailManager $mailMgr = null, MollieApiClient $mollie = null,
+    function __construct($logger, Contact $user = null, MailManager $mailMgr = null, MollieApiClient $mollie = null,
                          UserManager $userMgr = null) {
         $this->user = $user;
         $this->logger = $logger;
@@ -174,7 +174,7 @@ class EnrolmentManager
         //        OR never reuse active membership, but only make it active when payment is completed? + only allow 1 future pending membership?
 
         // FIXME: status should no longer be based on user state...
-//        $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->user_id);
+//        $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->id);
         $status = MembershipState::STATUS_PENDING;
         if (empty($startMembershipDate) ) {
             $start_date = strftime('%Y-%m-%d', time());
@@ -550,7 +550,7 @@ class EnrolmentManager
         } elseif ($membershipStatus == MembershipState::STATUS_CANCELLED) {
             $state = UserState::DISABLED;
         } else {
-            throw new \Exception("Invalid user state value $membershipStatus for user with id $this->user->user_id");
+            throw new \Exception("Invalid user state value $membershipStatus for user with id $this->user->id");
         }
         return $state;
 
@@ -625,7 +625,7 @@ class EnrolmentManager
      */
     function createUserMembership(MembershipType $type, $startMembershipDate = null) {
         if (is_null($this->user->active_membership)) {
-            $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->user_id);
+            $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->id);
             if (!empty($startMembershipDate) ) {
                 $start_date = $startMembershipDate->format('Y-m-d');
             } else {
@@ -705,18 +705,18 @@ class EnrolmentManager
      * @param MembershipType $type
      * @param $start_date
      * @param $end_date
-     * @param User $user
+     * @param Contact $user
      * @param $status
      * @return created membership
      * @throws \Exception
      */
-    public static function createMembership(MembershipType $type, $start_date, $end_date, ?User $user, $status) : Membership {
+    public static function createMembership(MembershipType $type, $start_date, $end_date, ?Contact $user, $status) : Membership {
         $membership = new Membership();
         $membership->subscription_id = $type->id;
-        $membership->start_at = $start_date;
+        $membership->starts_at = $start_date;
         $membership->expires_at = $end_date;
         if (isset($user)) {
-            $membership->contact_id = $user->user_id;
+            $membership->contact_id = $user->id;
         }
         Membership::isValidStatus($status);
         $membership->status = $status;
@@ -737,7 +737,7 @@ class EnrolmentManager
     protected function lookupPaymentByOrderId($orderId, $paymentMode, $userId = null)
     {
         if ($userId == null) {
-            $userId = $this->user->user_id;
+            $userId = $this->user->id;
         }
         // use first() rather than get()
         // there should be only 1 result, but first returns a Model
@@ -758,7 +758,7 @@ class EnrolmentManager
         $payment = new Payment();
         $payment->mode = $mode;
         $payment->order_id = $orderId;
-        $payment->user_id = $this->user->user_id;
+        $payment->user_id = $this->user->id;
         $payment->payment_date = new \DateTime();
         $payment->amount = $amount;
         $payment->currency = $currency;
@@ -821,11 +821,11 @@ class EnrolmentManager
      * @throws EnrolmentException
      */
     protected function checkUserInfo() {
-        if (empty($this->user->firstname) ) {
-            throw new EnrolmentException("User firstname is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        if (empty($this->user->first_name) ) {
+            throw new EnrolmentException("User first_name is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
-        if (empty($this->user->lastname) ) {
-            throw new EnrolmentException("User lastname is missing", EnrolmentException::INCOMPLETE_USER_DATA);
+        if (empty($this->user->last_name) ) {
+            throw new EnrolmentException("User last_name is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
         if (empty($this->user->role) ) {
             throw new EnrolmentException("User role is missing", EnrolmentException::INCOMPLETE_USER_DATA);
@@ -833,13 +833,13 @@ class EnrolmentManager
         if (empty($this->user->email) ) {
             throw new EnrolmentException("User email is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
-        if (empty($this->user->address) ) {
+        if (empty($this->user->address_line_1) || empty($this->user->address_line_2)) {
             throw new EnrolmentException("User address is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
-        if (empty($this->user->postal_code) ) {
+        if (empty($this->user->address_line_4) ) {
             throw new EnrolmentException("User postal code is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
-        if (empty($this->user->city) ) {
+        if (empty($this->user->address_line_2) ) {
             throw new EnrolmentException("User city is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
         if (empty($this->user->registration_number) ) {
@@ -858,7 +858,6 @@ class EnrolmentManager
         ) {
             $this->user->accept_terms_date = $acceptTermsDate;
         }
-
         if (empty($this->user->accept_terms_date) ) {
             throw new EnrolmentException("User did not accept terms yet", EnrolmentException::ACCEPT_TERMS_MISSING);
         }
@@ -953,7 +952,7 @@ class EnrolmentManager
     {
         $hostname = $requestUri->getHost();
         $protocol = $requestUri->getScheme();
-        $userName = "{$this->user->firstname} {$this->user->lastname}";
+        $userName = "{$this->user->first_name} {$this->user->last_name}";
         if (isset($this->user->activeMembership) && $this->user->activeMembership->subscription->isCompanySubscription()) {
             $userName = $this->user->company;
         }
@@ -977,7 +976,7 @@ class EnrolmentManager
                 "locale" => Settings::MOLLIE_LOCALE,
                 "metadata" => [
                     "order_id" => $orderId,
-                    "user_id" => $this->user->user_id,
+                    "user_id" => $this->user->id,
                     "product_id" => $productId,
                     "membership_end_date" => $membershipEndDate
                 ],
@@ -1090,7 +1089,7 @@ class EnrolmentManager
             //$payment->save();
 
             // Lookup user and update state
-            $user = \Api\Model\User::find($userId);
+            $user = \Api\Model\Contact::find($userId);
             if (null == $user) {
                 $this->logger->error("POST /enrolment/$orderId failed: user $userId is not found");
                 throw new EnrolmentException("No user found with id $userId", EnrolmentException::UNKNOWN_USER);
@@ -1246,13 +1245,13 @@ class EnrolmentManager
     private function lookupPaymentByPaymentMode($paymentMode, $renewal)
     {
         $payments = Payment::forMembership()->where([
-            ['user_id', '=', $this->user->user_id],
+            ['user_id', '=', $this->user->id],
             ['mode', '=', $paymentMode]
         ])->get();
 
         if (empty($payments) || count($payments) == 0) {
-            $message = "Unexpected confirmation, no payment found for user " . $this->user->firstname .
-                " (" . $this->user->user_id . ") for payment mode (" . $paymentMode . ")";
+            $message = "Unexpected confirmation, no payment found for user " . $this->user->first_name .
+                " (" . $this->user->id . ") for payment mode (" . $paymentMode . ")";
             $this->logger->warning($message);
             // note: no payment, so unable to send 'enrolment failed' notification
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);

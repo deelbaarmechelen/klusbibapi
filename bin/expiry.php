@@ -18,12 +18,12 @@ echo "Start expiry cron\n";
 // deactivate users when membership expired for more than 1 week
 $lastWeek = date('Y-m-d' . ' 00:00:00', strtotime("-1 week"));
 echo "selecting active users with expired membership (on $lastWeek)\n";
-$users = \Api\Model\User::active()->notAdmin()->whereDate('membership_end_date' , '<', $lastWeek)->get();
+$users = \Api\Model\Contact::active()->notAdmin()->whereDate('membership_end_date' , '<', $lastWeek)->get();
 echo "selected users: " . count($users) . "\n";
 
 foreach ($users as $user) {
-    echo "Expiration required for user $user->user_id\n";
-    echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+    echo "Expiration required for user $user->id\n";
+    echo "name: " . $user->first_name . " " . $user->last_name . "\n";
     echo "state: " . $user->state . "\n";
     echo "membership start: " . $user->membership_start_date . "\n";
     echo "membership end: " . $user->membership_end_date . "\n";
@@ -37,9 +37,9 @@ foreach ($users as $user) {
     }
 }
 
-$activeCount = \Api\Model\User::active()->members()->count();
-$expiredCount = \Api\Model\User::expired()->count();
-$deletedCount = \Api\Model\User::isDeleted()->count();
+$activeCount = \Api\Model\Contact::active()->members()->count();
+$expiredCount = \Api\Model\Contact::expired()->count();
+$deletedCount = \Api\Model\Contact::isDeleted()->count();
 echo "Active users: $activeCount\n";
 echo "Expired users: $expiredCount\n";
 echo "Deleted users: $deletedCount\n";

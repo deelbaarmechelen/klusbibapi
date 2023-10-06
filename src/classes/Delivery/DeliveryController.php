@@ -8,7 +8,7 @@ use Api\Model\DeliveryType;
 use Api\Model\InventoryItem;
 use Api\Model\Lending;
 use Api\Model\Reservation;
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Util\HttpResponseCode;
 use Api\Validator\DeliveryValidator;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -62,7 +62,7 @@ class DeliveryController
         }
         $query= $queryParams['_query'] ?? null; // TODO: use query value
 
-        $querybuilder = Capsule::table('deliveries')
+        $querybuilder = Capsule::table('kb_deliveries')
             ->select('*');
 
         $deliveries = $querybuilder->orderBy($sortfield, $sortdir)->get();
@@ -98,13 +98,16 @@ class DeliveryController
         } catch (ForbiddenException $e) {
             return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "no applicable allowed scope in token"));
         }
-
         parse_str($request->getUri()->getQuery(), $data);
+        if (empty($data)) { // check for content in body
+            $data = $request->getParsedBody();
+        }
+
         $errors = array();
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
-        $user = User::find($data["user_id"]);
+        $user = Contact::find($data["user_id"]);
         if (null == $user) {
             $errors = array("message" => "No user found with id " . $data["user_id"]);
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors);
@@ -226,6 +229,9 @@ class DeliveryController
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         parse_str($request->getUri()->getQuery(), $data);
+        if (empty($data)) { // check for content in body
+            $data = $request->getParsedBody();
+        }
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
         $errors = array();
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors, false)) {

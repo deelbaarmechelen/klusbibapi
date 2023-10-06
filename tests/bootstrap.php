@@ -86,13 +86,13 @@ class LocalDbWebTestCase extends WebDbTestCase {
 	 */
 	public static function initDatabase()
 	{
-		$queryUsers = "CREATE TABLE `users` (
-				`user_id` INTEGER PRIMARY KEY,
-				`firstname` varchar(50) DEFAULT NULL,
-				`lastname` varchar(50) DEFAULT NULL,
+		$queryUsers = "CREATE TABLE `contact` (
+				`id` INTEGER PRIMARY KEY,
+				`first_name` varchar(50) DEFAULT NULL,
+				`last_name` varchar(50) DEFAULT NULL,
 				`role` varchar(20) DEFAULT NULL,
 				`email` varchar(50) DEFAULT NULL,
-				`hash` varchar(255) DEFAULT NULL,
+				`password` varchar(255) DEFAULT NULL,
 				`membership_start_date` date DEFAULT NULL,
 				`membership_end_date` date DEFAULT NULL,
 				`created_at` timestamp NULL DEFAULT NULL,

@@ -52,22 +52,22 @@ class ReservationController implements ReservationControllerInterface
             $perPage = '50';
         }
         $query= $queryParams['_query'] ?? null;
-        $querybuilder = Capsule::table('reservations')
-            ->join('users', 'reservations.user_id', '=', 'users.user_id')
-            ->select('reservations.*', 'users.firstname', 'users.lastname');
+        $querybuilder = Capsule::table('kb_reservations')
+            ->join('contact', 'kb_reservations.user_id', '=', 'contact.id')
+            ->select('kb_reservations.*', 'contact.first_name', 'contact.last_name');
         $isOpen = $queryParams['isOpen'] ?? null;
         if (isset($isOpen) && $isOpen == 'true') {
-            $querybuilder->whereIn('reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
+            $querybuilder->whereIn('kb_reservations.state', array(ReservationState::REQUESTED, ReservationState::CONFIRMED));
         }
         if (isset($query)) {
-            $querybuilder->where('users.firstname', 'LIKE', '%'.$query.'%' )
-                ->orWhere('users.lastname', 'LIKE', '%'.$query.'%' );
+            $querybuilder->where('contact.first_name', 'LIKE', '%'.$query.'%' )
+                ->orWhere('contact.last_name', 'LIKE', '%'.$query.'%' );
         }
 
         if ($sortfield == "username") {
-            $sortfield = 'users.firstname';
+            $sortfield = 'contact.first_name';
         } else {
-            $sortfield = 'reservations.' . $sortfield;
+            $sortfield = 'kb_reservations.' . $sortfield;
         }
         $reservations = $querybuilder->orderBy($sortfield, $sortdir)->get();
         $reservations_page = array_slice($reservations->all(), ($page - 1) * $perPage, $perPage);
@@ -75,7 +75,7 @@ class ReservationController implements ReservationControllerInterface
         $data = array();
         foreach ($reservations_page as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
-            $reservationData["username"] = $reservation->firstname . " " . $reservation->lastname;
+            $reservationData["username"] = $reservation->first_name . " " . $reservation->last_name;
             $tool = $this->toolManager->getById($reservation->tool_id);
             $reservationData["deliverable"] = $tool != null ? $tool->deliverable : false;
             array_push($data, $reservationData);

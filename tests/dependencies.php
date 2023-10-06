@@ -133,7 +133,7 @@ $container->set('HttpBasicAuthentication', function (ContainerInterface $contain
 					"pdo" => $container->get('db'),
 					"table" => "users",
 					"user" => "email",
-					"hash" => "hash"
+					"password" => "hash"
 			]),
 			"before" => function (ServerRequestInterface $request, ResponseInterface $response, $arguments) use ($container) {
 				$container->get('logger')->info("User " . $arguments['user'] . " authenticated");
@@ -144,7 +144,7 @@ $container->set('HttpBasicAuthentication', function (ContainerInterface $contain
 });
 
 $container->set("JwtAuthentication", function (ContainerInterface $container) {
-	return new JwtAuthentication([
+    return new JwtAuthentication([
 			"path" => "/",
 			"ignore" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
                 "/auth/reset", "/auth/verifyemail"],

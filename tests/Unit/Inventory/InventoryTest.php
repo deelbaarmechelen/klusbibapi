@@ -10,7 +10,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\RequestException;
-use Api\Model\User;
+use Api\Model\Contact;
 
 class InventoryTest extends TestCase
 {
@@ -82,16 +82,16 @@ class InventoryTest extends TestCase
      * - then to update the user avatar with a PUT request
      */
     public function testPostUser() {
-        $user = new User();
+        $user = new Contact();
         $user->id = 1;
-        $user->firstname = "myfirstname";
-        $user->lastname = "mylastname";
+        $user->first_name = "myfirstname";
+        $user->last_name = "mylastname";
         $user->email = "myemail";
         $body = '{
             "status": "success",
             "messages": "Gebruiker succesvol aangemaakt.",
             "payload": '
-            . $this->createUserRow(10, $user->firstname . ' ' . $user->lastname, $user->firstname, $user->lastname,
+            . $this->createUserRow(10, $user->first_name . ' ' . $user->last_name, $user->first_name, $user->last_name,
             $user->email, $user->id)
             . '}';
         $bodyPutAvatar = '{

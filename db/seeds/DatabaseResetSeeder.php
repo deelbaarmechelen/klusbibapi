@@ -41,8 +41,8 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
         \Api\Model\InventoryItem::query()->delete();
 //        $this->truncateTable('lendings');
         \Api\Model\Lending::query()->delete();
-        $this->truncateTable('project_user');
-        \Api\Model\User::query()->delete();
+        $this->truncateTable('kb_project_user');
+        \Api\Model\Contact::query()->delete();
         \Api\Model\Payment::query()->delete();
         \Api\Model\Membership::query()->delete();
         \Api\Model\Reservation::query()->delete();

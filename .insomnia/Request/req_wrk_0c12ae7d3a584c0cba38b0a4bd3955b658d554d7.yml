@@ -1,7 +1,7 @@
 _id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b658d554d7
 type: Request
 parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
-modified: 1665871682820
+modified: 1668800091606
 created: 1665871682820
 url: "{{ base_url }}/enrolment_confirm"
 name: /enrolment_confirm
@@ -9,16 +9,19 @@ description: ""
 method: POST
 body:
   mimeType: application/json
-  text: |-
+  text: >-
     {
-      "userId": 0,
-      "paymentMode": "string"
+      "userId": "{% response 'body', 'req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b674d41e77', 'b64::JC51c2VyX2lk::46b', 'when-expired', 60 %}",
+      "paymentMode": "{% response 'body', 'req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b674d41e77', 'b64::JC5wYXltZW50X21vZGU=::46b', 'when-expired', 60 %}"
     }
 parameters: []
 headers:
   - name: Content-Type
     value: application/json
-authentication: {}
+authentication:
+  type: bearer
+  token: "{% response 'body', 'req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b6160bd4e8',
+    'b64::JC50b2tlbg==::46b', 'no-history', 60 %}"
 metaSortKey: -1665871682820
 isPrivate: false
 settingStoreCookies: true

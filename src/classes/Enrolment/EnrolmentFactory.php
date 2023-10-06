@@ -3,7 +3,7 @@
 namespace Api\Enrolment;
 
 
-use Api\Model\User;
+use Api\Model\Contact;
 use Api\Mail\MailManager;
 use Api\User\UserManager;
 use Mollie\Api\MollieApiClient;
@@ -26,7 +26,7 @@ class EnrolmentFactory
         $this->userMgr = $userMgr;
     }
 
-    public function createEnrolmentManager($logger, User $user = null) {
+    public function createEnrolmentManager($logger, Contact $user = null) {
         return new EnrolmentManager($logger, $user, $this->mailMgr, $this->mollie, $this->userMgr);
     }
 }

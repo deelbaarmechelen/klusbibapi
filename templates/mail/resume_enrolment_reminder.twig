@@ -1,13 +1,13 @@
 {% block subject 'Klusbib lidmaatschap' %}
 
 {% block body %}
-Beste {{ user.firstname }},<br><br>
+Beste {{ user.first_name }},<br><br>
 <p>Op {{ user.membership_start_date | date("j F Y") }} diende je een aanvraag in om lid te worden van Klusbib
     maar tot op vandaag mochtten wij nog geen betaling voor je inschrijving ontvangen.
 </p>
 Wens je nog steeds gebruik te maken van ons materiaal en/of ons initiatief te steunen, hernieuw dan je aanvraag vandaag nog:<br>
 Stort {{ enrolmentAmount }} &euro; op rekeningnummer <b>{{ account }}</b>
-met als mededeling <i>'{{ user.firstname }} {{ user.lastname }} - lidmaatschap {{ membership_year }}'</i>
+met als mededeling <i>'{{ user.first_name }} {{ user.last_name }} - lidmaatschap {{ membership_year }}'</i>
 </p>
 <p>
 Ondervond je problemen bij je inschrijving, neem dan contact met ons op via <a href="mailto:info@klusbib.be">info@klusbib.be</a> zodat we samen kunnen uitzoeken wat er mis liep.

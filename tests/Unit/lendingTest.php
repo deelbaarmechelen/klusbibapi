@@ -20,13 +20,13 @@ class LendingTest extends LocalDbWebTestCase
 		$this->duedate->add(new DateInterval('P7D'));
 
 		return new DbUnitArrayDataSet(array(
-            'users' => array(
-                array('user_id' => 3, 'firstname' => 'daniel', 'lastname' => 'De Deler',
+            'contact' => array(
+                array('id' => 3, 'first_name' => 'daniel', 'last_name' => 'De Deler',
                     'role' => 'member', 'email' => 'daniel@klusbib.be',
-                    'hash' => password_hash("test", PASSWORD_DEFAULT),
+                    'password' => password_hash("test", PASSWORD_DEFAULT),
                 ),
             ),
-			'lendings' => array(
+			'kb_lendings' => array(
 				array('lending_id' => 1, 'user_id' => 3, 'tool_id' => 1,
 						'start_date' => $this->startdate->format('Y-m-d H:i:s'),
                         'due_date' => $this->duedate->format('Y-m-d H:i:s'),

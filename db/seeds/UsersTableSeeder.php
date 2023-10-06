@@ -17,20 +17,20 @@ class UsersTableSeeder extends AbstractCapsuleSeeder
     {
         $this->initCapsule();
 
-        if (!Capsule::table('users')->where('user_id', '=', 1)->exists() ) {
+        if (!Capsule::table('contact')->where('id', '=', 1)->exists() ) {
             $startdate = new DateTime();
             $enddate = clone $startdate;
             $enddate->add(new DateInterval('P7D'));
 
-            Capsule::table('users')->insert([
-                'user_id' => 1,
-                'firstname' => 'admin',
-                'lastname' => 'admin',
+            Capsule::table('contact')->insert([
+                'id' => 1,
+                'first_name' => 'admin',
+                'last_name' => 'admin',
                 'role' => 'admin',
                 'email' => 'admin@klusbib.be',
                 'state' => 'ACTIVE',
                 'email_state' => 'CONFIRMED',
-                'hash' => password_hash("test", PASSWORD_DEFAULT),
+                'password' => password_hash("test", PASSWORD_DEFAULT),
                 'membership_start_date' => $startdate,
                 'membership_end_date' => $enddate,
                 'created_at' => $startdate,

@@ -1,7 +1,7 @@
 _id: req_wrk_0c12ae7d3a584c0cba38b0a4bd3955b68e77615c
 type: Request
 parentId: wrk_0c12ae7d3a584c0cba38b0a4bd3955b6
-modified: 1666041839115
+modified: 1668800083061
 created: 1665871682821
 url: "{{ base_url }}/enrolment"
 name: /enrolment
@@ -9,17 +9,18 @@ description: ""
 method: POST
 body:
   mimeType: application/json
-  text: |-
+  text: >-
     {
-    	"userId": {% randomnumber 1, 9, 0, 0 %},
-    	"orderId": "4_20200920120002",
+    	"userId": {% response 'body', 'req_a440824ca148421c83671faccfb1c88b', 'b64::JC51c2VyX2lk::46b', 'when-expired', 60 %},
+    	"orderId": "{% response 'body', 'req_a440824ca148421c83671faccfb1c88b', 'b64::JC51c2VyX2lk::46b', 'when-expired', 60 %}_20200920120002",
     	"paymentMode": "TRANSFER",
-    	"membershipType" : "RENEWAL"
+    	"membershipType" : "REGULAR"
     }
 parameters: []
 headers:
   - name: Content-Type
     value: application/json
+    id: pair_1a2f3a3608fd4b219f3c0bd3e8638833
 authentication: {}
 metaSortKey: -1665871682821
 isPrivate: false

@@ -2,7 +2,7 @@
 <?php
 use Api\Mail\MailManager;
 use Api\Token\Token;
-use Api\Model\User;
+use Api\Model\Contact;
 
 # Deny access from the web
 if (isset($_SERVER['REMOTE_ADDR'])) die('Permission denied.');
@@ -28,12 +28,12 @@ $settings = require __DIR__ . '/../app/settings.php';
 echo "Start renewal cron\n";
 $mailmgr = new MailManager();
 if ($singleuser) {
-    $user = User::where('email', $useremail)->first();
+    $user = Contact::where('email', $useremail)->first();
     if (!$user) {
         echo "no user found with email " . $useremail . "\n";
     } else if ($user->state == \Api\Model\UserState::EXPIRED) {
-        echo "renewal required for user $user->user_id\n";
-        echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+        echo "renewal required for user $user->id\n";
+        echo "name: " . $user->first_name . " " . $user->last_name . "\n";
         echo "state: " . $user->state . "\n";
         echo "membership start: " . $user->membership_start_date . "\n";
         echo "membership end: " . $user->membership_end_date . "\n";
@@ -46,7 +46,7 @@ if ($singleuser) {
         $token = generateProfileToken($user);
         $mailmgr->sendRenewal($user, $daysToExpiry, $token);
     } else {
-        echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+        echo "name: " . $user->first_name . " " . $user->last_name . "\n";
         echo "state: " . $user->state . "\n";
         echo "membership start: " . $user->membership_start_date . "\n";
         echo "membership end: " . $user->membership_end_date . "\n";
@@ -60,14 +60,14 @@ if ($singleuser) {
     $toDate   = date('Y-m-d' . ' 23:59:59', strtotime("+2 weeks"));
 
     echo "selecting active users between $fromDate and $toDate \n";
-    $users = User::active()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
+    $users = Contact::active()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
     sendRenewalReminder($users, $mailmgr, 14);
 
     echo "Renewal in 3 days\n";
     $fromDate = date('Y-m-d' . ' 00:00:00', strtotime("+3 days"));
     $toDate   = date('Y-m-d' . ' 23:59:59', strtotime("+3 days"));
     echo "selecting active users between $fromDate and $toDate \n";
-    $users = User::active()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
+    $users = Contact::active()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
 
     sendRenewalReminder($users, $mailmgr,3);
 
@@ -75,9 +75,9 @@ if ($singleuser) {
     $fromDate = date('Y-m-d' . ' 00:00:00', strtotime("-7 days"));
     $toDate   = date('Y-m-d' . ' 23:59:59', strtotime("-7 days"));
     echo "selecting active and expired users between $fromDate and $toDate \n";
-    $users = User::active()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
+    $users = Contact::active()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
     sendRenewalReminder($users, $mailmgr,-7);
-    $users = User::expired()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
+    $users = Contact::expired()->members()->whereBetween('membership_end_date', [$fromDate, $toDate])->get();
     sendRenewalReminder($users, $mailmgr,-7);
 }
 
@@ -93,8 +93,8 @@ function sendRenewalReminder($users, MailManager $mailmgr, $daysToExpiry)
     echo "selected users expiring in $daysToExpiry days: " . count($users) . "\n";
 // TODO: log renewal events
     foreach ($users as $user) {
-        echo "renewal required for user $user->user_id\n";
-        echo "name: " . $user->firstname . " " . $user->lastname . "\n";
+        echo "renewal required for user $user->id\n";
+        echo "name: " . $user->first_name . " " . $user->last_name . "\n";
         echo "state: " . $user->state . "\n";
         echo "membership start: " . $user->membership_start_date . "\n";
         echo "membership end: " . $user->membership_end_date . "\n";
@@ -105,7 +105,7 @@ function sendRenewalReminder($users, MailManager $mailmgr, $daysToExpiry)
 }
 function generateProfileToken($user) {
     // generate temporary token allowing minimal user operations (renewal, read/update own user)
-    $sub = $user->user_id;
+    $sub = $user->id;
     $requested_scopes = Token::allowedScopes($user->role);
     $scopes = array_filter($requested_scopes, function ($needle) {
         return in_array($needle, Token::emailLinkScopes());

@@ -8,12 +8,11 @@ Indien het toestel met code {{ toolCode }} reeds klaar stond voor ontlening kan 
 <p>
 Indien we zelf deze annulatie doorvoerden is het aangewezen de gebruiker te contacteren
 om hem/haar hiervan op de hoogte te brengen alsook de reden van annulatie toe te lichten. <br/>
-De reservatie stond op naam van {{ user.firstname }} {{ user.lastname }} (user id: {{ user.user_id }}) en
+De reservatie stond op naam van {{ user.first_name }} {{ user.last_name }} (user id: {{ user.id }}) en
 liep van {{ reservation.startsAt | date("Y-m-d") }} tot {{ reservation.endsAt | date("Y-m-d") }}<br/>
 Contactgegevens:<br/>
-Adress: {{ user.address }} {{ user.postal_code}} {{ user.city }}<br/>
-Telefoon: {{ user.phone }}<br/>
-GSM: {{ user.mobile }}<br/>
+Adress: {{ user.address_line_1 }} {{ user.address_line_4}} {{ user.address_line_2 }}<br/>
+Telefoon: {{ user.telephone }}<br/>
 Email: {{ user.email }} ({{ user.email_state }})<br/>
 </p>
 <p>

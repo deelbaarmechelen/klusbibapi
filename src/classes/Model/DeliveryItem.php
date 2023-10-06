@@ -20,7 +20,7 @@ class DeliveryItem extends Model
         return DeliveryItemFactory::new();
     }
 
-    protected $table = 'delivery_item';
+    protected $table = 'kb_delivery_item';
     public function delivery()
     {
         return $this->belongsTo('Api\Model\Delivery', 'delivery_id', 'id');
