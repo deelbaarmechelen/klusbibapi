@@ -194,7 +194,7 @@ class EnrolmentManager
 //        $membership = Membership::findOrFail($membershipId);
         $membership->last_payment_mode = $paymentMode;
         $membership->save();
-        $this->user->membership_start_date = $membership->start_at;
+        $this->user->membership_start_date = $membership->starts_at;
         $this->user->membership_end_date = $membership->expires_at;
         $this->user->payment_mode = $membership->last_payment_mode;
         // check member role, if no member yet (eg. supporter), convert it to member
@@ -267,7 +267,7 @@ class EnrolmentManager
 
         }
         $this->user->payment_mode = $membership->last_payment_mode;
-        $this->user->membership_start_date = $membership->start_at;
+        $this->user->membership_start_date = $membership->starts_at;
         $this->user->membership_end_date = $membership->expires_at;
         $this->userMgr->update($this->user, false, false, false, false);
         //$this->user->save();
@@ -387,7 +387,7 @@ class EnrolmentManager
         }
         $activeMembership = Membership::find($this->user->active_membership);
         $this->user->payment_mode = $activeMembership->last_payment_mode;
-        $this->user->membership_start_date = $activeMembership->start_at;
+        $this->user->membership_start_date = $activeMembership->starts_at;
         $this->user->membership_end_date = $activeMembership->expires_at;
         $this->userMgr->update($this->user, false, false, false, false);
         //$this->user->save();
@@ -527,7 +527,7 @@ class EnrolmentManager
 
         // update user
         $this->user->payment_mode = $membership->last_payment_mode;
-        $this->user->membership_start_date = $membership->start_at;
+        $this->user->membership_start_date = $membership->starts_at;
         $this->user->membership_end_date = $membership->expires_at;
         $this->user->state = $this->getUserState($membership->status);
         // update user through user manager to also sync inventory!
@@ -649,7 +649,7 @@ class EnrolmentManager
     function renewMembership(MembershipType $newType, Membership $membership) : Membership {
         $end_date = self::getMembershipEndDate($membership->expires_at->format('Y-m-d'), $newType);
 
-        $renewalMembership = self::createMembership($newType, $membership->start_at, $end_date, null, MembershipState::STATUS_PENDING);
+        $renewalMembership = self::createMembership($newType, $membership->starts_at, $end_date, null, MembershipState::STATUS_PENDING);
         return $renewalMembership;
     }
 
@@ -1121,7 +1121,7 @@ class EnrolmentManager
                             // update user data
                             $user->state = UserState::ACTIVE;
                             $user->payment_mode = $membership->last_payment_mode;
-                            $user->membership_start_date = $membership->start_at;
+                            $user->membership_start_date = $membership->starts_at;
                             $user->membership_end_date = $membership->expires_at;
                             $this->userMgr->update($user, false, false, false, true);
 
@@ -1161,7 +1161,7 @@ class EnrolmentManager
                             }
                             $user->state = UserState::ACTIVE;
                             $user->payment_mode = $renewalMembership->last_payment_mode;
-                            $user->membership_start_date = $renewalMembership->start_at;
+                            $user->membership_start_date = $renewalMembership->starts_at;
                             $user->membership_end_date = $renewalMembership->expires_at;
                             $this->userMgr->update($user, false, false, false, true);
 
