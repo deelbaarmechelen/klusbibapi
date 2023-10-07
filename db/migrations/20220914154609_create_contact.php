@@ -105,7 +105,7 @@ class CreateContact extends AbstractCapsuleMigration
         . "  `active_site`, `created_at_site`, `locale`, `is_active`, `membership_number`, `secure_access_token`,"
         . "  role, membership_start_date, membership_end_date, state,"
         . "  registration_number, payment_mode, accept_terms_date, email_state, user_ext_id, last_sync_date, company, comment)"
-        . "SELECT user_id, null, null, 1, null, ifnull(`hash`, '\$2y\$13\$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'),"
+        . "SELECT user_id, null, active_membership, 1, null, ifnull(`hash`, '\$2y\$13\$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe'),"
         . "last_login, null , null, IF(role = 'admin', 'a:2:{i:0;s:10:\"ROLE_ADMIN\";i:1;s:15:\"ROLE_SUPER_USER\";}', 'a:0:{}'),"
         . "firstname, lastname, IF (phone is null, mobile, phone),"
         . "address, city, null, postal_code,"
