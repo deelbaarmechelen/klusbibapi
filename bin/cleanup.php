@@ -115,6 +115,7 @@ if ($delete) {
         $user->enabled = false;
         $user->is_active = false;
         $user->registration_number = "";
+        $user->roles ='a:0:{}'; // remove all applicable roles
         $user->save();
     }
 }
