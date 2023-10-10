@@ -90,14 +90,32 @@ if ($delete) {
     }
     $usersToDelete = \Api\Model\Contact::isDeleted()->get();
     foreach ($usersToDelete as $user) {
-        echo "Real delete for user $user->id\n";
+        echo "Archiving user $user->id\n";
         echo "name: " . $user->first_name . " " . $user->last_name . "\n";
         echo "state: " . $user->state . "\n";
         echo "membership start: " . $user->membership_start_date . "\n";
         echo "membership end: " . $user->membership_end_date . "\n";
         echo "email: " . $user->email . "\n";
-        // FIXME: should also cancel membership? Should already be the case!
-        $user->delete();
+        // delete causes integrity constraints -> replaced by anonymisation and archiving cfr behavior lend engine
+        //  Integrity constraint violation: 1451 Cannot delete or update a parent row: a foreign key constraint fails (`klusbibdb`.`item_movement`, CONSTRAINT `FK_98D05D3C7AA06E72` FOREIGN KEY (`assigned_to_contact_id`) REFERENCES `contact` (`id`))
+        //$user->delete();
+        $user->first_name = "Anon";
+        $user->last_name = "Anon";
+        $user->address_line_1 = "-";
+        $user->address_line_2 = "-";
+        $user->address_line_3 = "-";
+        $user->address_line_4 = "-";
+        $user->telephone = "";
+        $user->latitude = "";
+        $user->longitude = "";
+        $user->email = "";
+        $user->email_canonical = "";
+        $user->username = "";
+        $user->username_canonical = "";
+        $user->enabled = false;
+        $user->is_active = false;
+        $user->registration_number = "";
+        $user->save();
     }
 }
 echo "End of cleanup cron\n";
@@ -122,6 +140,7 @@ function markAsDeleted($users)
             $user->state = UserState::ACTIVE;
             $user->role = UserRole::SUPPORTER;
         } else {
+            // FIXME: should also cancel open loans? Should already be the case!
             // cancel membership
             if ($user->activeMembership()->exists()) {
                 $membership = $user->activeMembership()->first();
