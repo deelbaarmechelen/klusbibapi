@@ -32,7 +32,7 @@ class PasswordResetController
         $this->logger->info("parsedbody=" . json_encode($body));
         $email = $body["email"];
         $this->logger->debug("email=" . $email);
-        $user = Capsule::table('users')->where('email', $email)->first();
+        $user = Capsule::table('contact')->where('email', $email)->first();
         if (null == $user) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
