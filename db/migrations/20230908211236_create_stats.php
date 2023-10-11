@@ -28,7 +28,7 @@ class CreateStats extends AbstractCapsuleMigration
           function(Illuminate\Database\Schema\Blueprint $table){
             $table->increments('id');
 			$table->string('name', 255);
-            $table->integer('version')->unsigned->default(1);
+            $table->integer('version')->unsigned()->default(1);
 			$table->json('stats')->nullable()->default(null);
             $table->date('start_date')->nullable()->default(null);
             $table->date('end_date')->nullable()->default(null);
