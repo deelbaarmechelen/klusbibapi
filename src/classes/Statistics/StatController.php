@@ -125,8 +125,6 @@ class StatController
         $data["activity-statistics"] = $activityStats;
 
         // store statistic
-        $endStat = $startThisMonth->add(new \DateInterval('P1M'));
-
         $stat = Stat::firstOrCreate([
             'name' => $year,
             'version' => 1
