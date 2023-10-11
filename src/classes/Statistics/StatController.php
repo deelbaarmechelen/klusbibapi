@@ -7,6 +7,7 @@ use Api\Inventory\SnipeitInventory;
 use Api\Model\Lending;
 use Api\Model\Tool;
 use Api\Model\ToolState;
+use Api\Model\Stat;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use DateTime;
 use Psr\Http\Message\RequestInterface;
@@ -41,11 +42,28 @@ class StatController
      * @param $args
      */
     function monthly(RequestInterface $request, ResponseInterface $response, $args) {
-        $data = array();
+        $data = $this->createVersion1Stats();
 
-        // if month param given, lookup stat for that month, else stat of current month
+        // TODO: if month param given, lookup stat for that month, else stat of current month
         // also support period? from and to params for start and end month?
 
+        // store statistic
+        $startStat = new \DateTime('first day of this month', $utc);
+        $endStat = new \DateTime('last day of this month', $utc);
+
+        $stat = Stat::firstOrCreate([
+            'name' => $startStat->format('Ym'),
+            'version' => 1
+        ]);
+        $stat->data = \json_encode($data);
+        $stat->start_date = $startStat->format('Y-m-D');
+        $stat->end_date = $endStat->format('Y-m-D');
+
+        return $response->withJson($data);
+    }
+
+    function createVersion1Stats() {
+        $data = array();
         // user stats
         $userStats = $this->getUserStats();
         $data["user-statistics"] = $userStats;
@@ -63,7 +81,14 @@ class StatController
         $activityStats = $this->getLendingStats();
         $data["activity-statistics"] = $activityStats;
 
-        return $response->withJson($data);
+        return $data;
+    }
+    function createVersion2Stats() {
+        $data = array();
+        // TODO: get #memberships by membership type started or renewed in stat period
+
+        // TODO: get #lendings
+        // TODO: get #reservations
     }
 
     function yearly(RequestInterface $request, ResponseInterface $response, $args) {
