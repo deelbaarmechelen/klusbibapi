@@ -49,9 +49,9 @@ class StatController
         parse_str($request->getUri()->getQuery(), $queryParams);
         $statMonth = $queryParams['stat-month'] ??  null;
  
-        $utc = new \DateTimeZone("UTC");
+        $utc = new DateTimeZone("UTC");
         if (isset($statMonth)) {
-            $startThisMonth = DateTimeImmutable::createFromFormat('Y-m-01', $statMonth . '-01', $utc);
+            $startThisMonth = DateTimeImmutable::createFromFormat('Y-m-d', $statMonth . '-01', $utc);
             if (!$startThisMonth) {
                 // createFromFormat failed
                 $error = "Invalid stat-month value $statMonth, expected 'YYYY-MM'";
@@ -61,15 +61,13 @@ class StatController
                                 ->withJson(array_push($errors, $error));;
             }
         } else {
-            $startThisMonth = new DateTime('first day of this month', $utc);
+            $startThisMonth = new DateTimeImmutable('first day of this month', $utc);
         }
         $startLastMonth = $startThisMonth->sub(new \DateInterval('P1M'));
         $data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
 
-        // TODO: if month param given, lookup stat for that month, else stat of current month
-        // also support period? from and to params for start and end month?
-
         // store statistic
+        $this->logger->info("Storing monthly statistics for " . $startThisMonth->format('Ym'));
         $endStat = $startThisMonth->add(new \DateInterval('P1M'));
 
         $stat = Stat::firstOrCreate([
@@ -77,8 +75,8 @@ class StatController
             'version' => 1
         ]);
         $stat->stats = \json_encode($data);
-        $stat->start_date = $startThisMonth->format('Y-m-d');
-        $stat->end_date = $endStat->format('Y-m-d');
+        $stat->start_date = $startThisMonth->format('Y-m-01');
+        $stat->end_date = $startThisMonth->format('Y-m-t');
         $stat->save();
         return $response->withJson($data);
     }
@@ -125,6 +123,7 @@ class StatController
         $data["activity-statistics"] = $activityStats;
 
         // store statistic
+        $this->logger->info("Storing yearly statistics for " . $year);
         $stat = Stat::firstOrCreate([
             'name' => $year,
             'version' => 1
@@ -143,6 +142,7 @@ class StatController
      */
     private function getYearlyUserStats($year): array
     {
+        $this->logger->info("Get yearly users stats with param " . $year);
         $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $utc);
         $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $utc);
         $activeCount = \Api\Model\Contact::active()->members()->count();
@@ -168,12 +168,13 @@ class StatController
      */
     private function getUserStats($startLastMonth, $startThisMonth): array
     {
+        $this->logger->info("Get users stats with params " . $startLastMonth->format('Y-m-d') . ", " . $startThisMonth->format('Y-m-d'));
         $activeCount = \Api\Model\Contact::active()->members()->count();
         $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCount = \Api\Model\Contact::members()->where('created_at', '>', $startThisMonth)->count();
+        $newUsersCurrMonthCount = \Api\Model\Contact::members()->where('created_at', '>=', $startThisMonth)->count();
         $newUsersPrevMonthCount = \Api\Model\Contact::members()
-            ->where('created_at', '>', $startLastMonth)
+            ->where('created_at', '>=', $startLastMonth)
             ->where('created_at', '<', $startThisMonth)->count();
         $userStats = array();
         $userStats["total-count"] = $activeCount + $expiredCount;
@@ -187,9 +188,9 @@ class StatController
         $activeCountStroom = \Api\Model\Contact::stroom()->count();
         $expiredCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->where('created_at', '>', $startThisMonth)->count();
+        $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->where('created_at', '>=', $startThisMonth)->count();
         $newUsersPrevMonthCountStroom = \Api\Model\Contact::stroom()
-            ->where('created_at', '>', $startLastMonth)
+            ->where('created_at', '>=', $startLastMonth)
             ->where('created_at', '<', $startThisMonth)->count();
         $stroomStats = array();
         $stroomStats["total-count"] = $activeCountStroom + $expiredCountStroom;
@@ -254,6 +255,7 @@ class StatController
      */
     private function getYearlyLendingStats($year): array
     {
+        $this->logger->info("Get yearly lending stats with param " . $year);
         $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $utc);
         $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $utc);
         $checkoutCount = Lending::inYear($startYear->format("Y"))->count();
@@ -275,6 +277,7 @@ class StatController
      */
     private function getLendingStats($startLastMonth, $startThisMonth): array
     {
+        $this->logger->info("Get lending stats with params " . $startLastMonth->format('Y-m-d') . ", " . $startThisMonth->format('Y-m-d'));
         $checkoutPrevMonthCount = Lending::inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
         $checkoutCurrMonthCount = Lending::inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
         $checkinPrevMonthCount = Lending::returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
