@@ -8,8 +8,12 @@ use Api\Model\Lending;
 use Api\Model\Tool;
 use Api\Model\ToolState;
 use Api\Model\Stat;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use DateTime;
+use DateTimeImmutable;
+use DateTimeZone;
+use DateInterval;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Request;
@@ -42,7 +46,26 @@ class StatController
      * @param $args
      */
     function monthly(RequestInterface $request, ResponseInterface $response, $args) {
-        $data = $this->createVersion1Stats();
+        parse_str($request->getUri()->getQuery(), $queryParams);
+        $statMonth = $queryParams['stat-month'] ??  null;
+ 
+        $utc = new \DateTimeZone("UTC");
+        if (isset($statMonth)) {
+            $startThisMonth = DateTimeImmutable::createFromFormat('Y-m-01', $statMonth . '-01', $utc);
+            if (!$startThisMonth) {
+                // createFromFormat failed
+                $error = "Invalid stat-month value $statMonth, expected 'YYYY-MM'";
+                $this->logger->warning($error);
+                $errors = array();
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                                ->withJson(array_push($errors, $error));;
+            }
+        } else {
+            $startThisMonth = new DateTime('first day of this month', $utc);
+        }
+        $startLastMonth = $startThisMonth->sub(new \DateInterval('P1M'));
+        //$startLastMonth = new DateTime('first day of last month', $utc);
+        $data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
 
         // TODO: if month param given, lookup stat for that month, else stat of current month
         // also support period? from and to params for start and end month?
@@ -62,10 +85,11 @@ class StatController
         return $response->withJson($data);
     }
 
-    function createVersion1Stats() {
+    function createVersion1Stats($startLastMonth, $startThisMonth) {
         $data = array();
         // user stats
-        $userStats = $this->getUserStats();
+
+        $userStats = $this->getUserStats($startLastMonth, $startThisMonth);
         $data["user-statistics"] = $userStats;
 
         // tool stats
@@ -73,12 +97,11 @@ class StatController
         $data["tool-statistics"] = $toolStats;
 
         // accessory stats
-        $accessoryStats = array();
-        $accessoryStats = $this->getAccessoryStats($accessoryStats);
+        $accessoryStats = $this->getAccessoryStats();
         $data["accessory-statistics"] = $accessoryStats;
 
         // activity stats
-        $activityStats = $this->getLendingStats();
+        $activityStats = $this->getLendingStats($startLastMonth, $startThisMonth);
         $data["activity-statistics"] = $activityStats;
 
         return $data;
@@ -102,16 +125,12 @@ class StatController
      * @param $startThisMonth
      * @return array
      */
-    private function getUserStats(): array
+    private function getUserStats($startLastMonth, $startThisMonth): array
     {
-        $utc = new \DateTimeZone("UTC");
-        $startLastMonth = new DateTime('first day of last month', $utc);
-        $startThisMonth = new DateTime('first day of this month', $utc);
-
         $activeCount = \Api\Model\Contact::active()->members()->count();
         $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCount = \Api\Model\Contact::members()->where('created_at', '>', new DateTime('first day of this month'))->count();
+        $newUsersCurrMonthCount = \Api\Model\Contact::members()->where('created_at', '>', $startThisMonth)->count();
         $newUsersPrevMonthCount = \Api\Model\Contact::members()
             ->where('created_at', '>', $startLastMonth)
             ->where('created_at', '<', $startThisMonth)->count();
@@ -127,7 +146,7 @@ class StatController
         $activeCountStroom = \Api\Model\Contact::stroom()->count();
         $expiredCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->where('created_at', '>', new DateTime('first day of this month'))->count();
+        $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->where('created_at', '>', $startThisMonth)->count();
         $newUsersPrevMonthCountStroom = \Api\Model\Contact::stroom()
             ->where('created_at', '>', $startLastMonth)
             ->where('created_at', '<', $startThisMonth)->count();
@@ -151,7 +170,7 @@ class StatController
     {
         $tools = $this->inventory->getTools();
 
-//        $toolCount = Tool::all()->count();
+        //$toolCount = Tool::all()->count();
         $toolStats = array();
         $toolStats["total-count"] = isset($tools) ? count($tools) : 0;
         $newTools = $tools->filter(function ($value, $key) {
@@ -178,10 +197,9 @@ class StatController
     }
 
     /**
-     * @param $accessoryStats
      * @return mixed
      */
-    private function getAccessoryStats($accessoryStats)
+    private function getAccessoryStats()
     {
         $accessories = $this->inventory->getAccessories();
 
@@ -194,12 +212,8 @@ class StatController
      * @param $startThisMonth
      * @return array
      */
-    private function getLendingStats(): array
+    private function getLendingStats($startLastMonth, $startThisMonth): array
     {
-        $utc = new \DateTimeZone("UTC");
-        $startLastMonth = new DateTime('first day of last month', $utc);
-        $startThisMonth = new DateTime('first day of this month', $utc);
-
         $checkoutPrevMonthCount = Lending::inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
         $checkoutCurrMonthCount = Lending::inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
         $checkinPrevMonthCount = Lending::returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
