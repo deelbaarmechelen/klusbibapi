@@ -85,8 +85,8 @@ class StatController
 
     function createVersion1Stats($startLastMonth, $startThisMonth) {
         $data = array();
-        // user stats
 
+        // user stats
         $userStats = $this->getUserStats($startLastMonth, $startThisMonth);
         $data["user-statistics"] = $userStats;
 
@@ -114,10 +114,40 @@ class StatController
 
     function yearly(RequestInterface $request, ResponseInterface $response, $args) {
         $data = array();
-        // TODO gather some stats
+        $now = new DateTimeImmutable('now');
+
+        $userStats = $this->getYearlyUserStats($now->format('Y'));
+        $data["user-statistics"] = $userStats;
+
+        // activity stats
+        $activityStats = $this->getYearlyLendingStats($now->format('Y'));
+        $data["activity-statistics"] = $activityStats;
+
         return $response->withJson($data);
     }
 
+    /**
+     * @param $year
+     * @return array
+     */
+    private function getYearlyUserStats($year): array
+    {
+        $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $utc);
+        $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $utc);
+        $activeCount = \Api\Model\Contact::active()->members()->count();
+        $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
+        $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
+        $newUsersCount = \Api\Model\Contact::members()
+            ->where('created_at', '>=', $startYear)
+            ->where('created_at', '<=', $endYear)->count();
+        $userStats = array();
+        $userStats["total-count"] = $activeCount + $expiredCount;
+        $userStats["active-count"] = $activeCount;
+        $userStats["expired-count"] = $expiredCount;
+        $userStats["deleted-count"] = $deletedCount;
+        $userStats["new-users-count"] = $newUsersCount;
+    }
+        
     /**
      * @param $startLastMonth
      * @param $startThisMonth
@@ -205,6 +235,25 @@ class StatController
         return $accessoryStats;
     }
 
+    /**
+     * @param $year
+     * @return array
+     */
+    private function getYearlyLendingStats($year): array
+    {
+        $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $utc);
+        $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $utc);
+        $checkoutCount = Lending::inYear($startYear->format("Y"))->count();
+        $checkinCount = Lending::returnedInYear($startYear->format("Y"))->count();
+
+        $activityStats = array();
+        $activityStats["total-count"] = Lending::count();
+        $activityStats["active-count"] = Lending::active()->count();
+        $activityStats["overdue-count"] = Lending::overdue()->count();
+        $activityStats["checkout-count"] = $checkoutCount;
+        $activityStats["checkin-count"] = $checkinCount;
+    }
+        
     /**
      * @param $startLastMonth
      * @param $startThisMonth
