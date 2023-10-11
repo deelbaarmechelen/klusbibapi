@@ -116,12 +116,25 @@ class StatController
         $data = array();
         $now = new DateTimeImmutable('now');
 
-        $userStats = $this->getYearlyUserStats($now->format('Y'));
+        $year = $now->format('Y');
+        $userStats = $this->getYearlyUserStats($year);
         $data["user-statistics"] = $userStats;
 
         // activity stats
-        $activityStats = $this->getYearlyLendingStats($now->format('Y'));
+        $activityStats = $this->getYearlyLendingStats($year);
         $data["activity-statistics"] = $activityStats;
+
+        // store statistic
+        $endStat = $startThisMonth->add(new \DateInterval('P1M'));
+
+        $stat = Stat::firstOrCreate([
+            'name' => $year,
+            'version' => 1
+        ]);
+        $stat->stats = \json_encode($data);
+        $stat->start_date = $now->format('Y-01-01');
+        $stat->end_date = $now->format('Y-12-31');
+        $stat->save();
 
         return $response->withJson($data);
     }
