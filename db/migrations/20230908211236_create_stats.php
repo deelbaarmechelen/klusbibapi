@@ -24,10 +24,13 @@ class CreateStats extends AbstractCapsuleMigration
      */
 	public function up()
 	{
-		Capsule::schema()->create('kb_stats', 
-          function(Illuminate\Database\Schema\Blueprint $table){
+        Capsule::schema()->create('kb_stats', function(Illuminate\Database\Schema\Blueprint $table){
+			$table->integer('last_inventory_action_id')->unsigned()->nullable()->default(0);
+			$table->timestamp('last_inventory_action_timestamp')->nullable()->default(null);
+		});
+        Capsule::schema()->create('kb_stats', function(Illuminate\Database\Schema\Blueprint $table){
             $table->increments('id');
-			$table->string('name', 255);
+			$table->string('name', 255)->unique();
             $table->integer('version')->unsigned()->default(1);
 			$table->json('stats')->nullable()->default(null);
             $table->date('start_date')->nullable()->default(null);
@@ -35,7 +38,7 @@ class CreateStats extends AbstractCapsuleMigration
 
 			// Required for Eloquent's created_at and updated_at columns
 			$table->timestamps();
-            $table->index('name', [ 'unique' => true]);
+            //$table->index('name', 'name_idx', [ 'unique' => true]);
 		});
 	}
     /**
