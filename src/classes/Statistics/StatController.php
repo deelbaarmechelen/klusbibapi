@@ -58,7 +58,7 @@ class StatController
         $stat->data = \json_encode($data);
         $stat->start_date = $startStat->format('Y-m-D');
         $stat->end_date = $endStat->format('Y-m-D');
-
+        $stat->save();
         return $response->withJson($data);
     }
 
