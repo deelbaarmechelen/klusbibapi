@@ -174,9 +174,9 @@ class MembershipController
                 $membership->last_payment_mode = $data["last_payment_mode"];
                 $updateMembershipUsers = true;
             }
-            if (isset($data["start_at"]) && $data["start_at"] !== $membership->start_at) {
-                $this->logger->info("Klusbib PUT updating start_at from " . $membership->start_at . " to " . $data["start_at"]);
-                $membership->start_at = $data["start_at"];
+            if (isset($data["start_at"]) && $data["start_at"] !== $membership->starts_at) {
+                $this->logger->info("Klusbib PUT updating starts_at from " . $membership->starts_at . " to " . $data["start_at"]);
+                $membership->starts_at = $data["start_at"];
                 $updateMembershipUsers = true;
             }
             if (isset($data["expires_at"]) && $data["expires_at"] !== $membership->expires_at) {

@@ -70,7 +70,7 @@ class MembershipMapper
             $membership->status = $status;
         }
         if (!empty($data["membership_start_date"]) && $isAdmin ) {
-            $membership->start_at = $data["membership_start_date"];
+            $membership->starts_at = $data["membership_start_date"];
         }
         if (!empty($data["membership_end_date"])  && $isAdmin) {
             $membership->expires_at = $data["membership_end_date"];
