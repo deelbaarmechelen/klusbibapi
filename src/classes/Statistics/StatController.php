@@ -146,6 +146,8 @@ class StatController
         $userStats["expired-count"] = $expiredCount;
         $userStats["deleted-count"] = $deletedCount;
         $userStats["new-users-count"] = $newUsersCount;
+
+        return $userStats;
     }
         
     /**
@@ -252,6 +254,7 @@ class StatController
         $activityStats["overdue-count"] = Lending::overdue()->count();
         $activityStats["checkout-count"] = $checkoutCount;
         $activityStats["checkin-count"] = $checkinCount;
+        return $activityStats;
     }
         
     /**
