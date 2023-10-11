@@ -64,22 +64,20 @@ class StatController
             $startThisMonth = new DateTime('first day of this month', $utc);
         }
         $startLastMonth = $startThisMonth->sub(new \DateInterval('P1M'));
-        //$startLastMonth = new DateTime('first day of last month', $utc);
         $data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
 
         // TODO: if month param given, lookup stat for that month, else stat of current month
         // also support period? from and to params for start and end month?
 
         // store statistic
-        $startStat = new \DateTime('first day of this month', $utc);
-        $endStat = new \DateTime('last day of this month', $utc);
+        $endStat = $startThisMonth->add(new \DateInterval('P1M'));
 
         $stat = Stat::firstOrCreate([
-            'name' => $startStat->format('Ym'),
+            'name' => $startThisMonth->format('Ym'),
             'version' => 1
         ]);
         $stat->stats = \json_encode($data);
-        $stat->start_date = $startStat->format('Y-m-d');
+        $stat->start_date = $startThisMonth->format('Y-m-d');
         $stat->end_date = $endStat->format('Y-m-d');
         $stat->save();
         return $response->withJson($data);
