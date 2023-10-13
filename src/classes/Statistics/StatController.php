@@ -51,6 +51,7 @@ class StatController
     function monthly(RequestInterface $request, ResponseInterface $response, $args) {
         parse_str($request->getUri()->getQuery(), $queryParams);
         $statMonth = $queryParams['stat-month'] ??  null;
+        $statVersion = $queryParams['version'] ??  1;
  
         $utc = new DateTimeZone("UTC");
         if (isset($statMonth)) {
@@ -67,8 +68,11 @@ class StatController
             $startThisMonth = new DateTimeImmutable('first day of this month', $utc);
         }
         $startLastMonth = $startThisMonth->sub(new \DateInterval('P1M'));
-        //$data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
-        $data = $this->createVersion2Stats($startLastMonth, $startThisMonth);
+        if ($statVersion == 1) {
+            $data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
+        } else {
+            $data = $this->createVersion2Stats($startLastMonth, $startThisMonth);
+        }
 
         // store statistic
         $this->logger->info("Storing monthly statistics for " . $startThisMonth->format('Ym'));
@@ -76,7 +80,7 @@ class StatController
 
         $stat = Stat::firstOrCreate([
             'name' => $startThisMonth->format('Ym'),
-            'version' => 1
+            'version' => $statVersion
         ]);
         $stat->stats = \json_encode($data);
         $stat->start_date = $startThisMonth->format('Y-m-01');
