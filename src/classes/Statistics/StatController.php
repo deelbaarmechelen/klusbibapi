@@ -126,9 +126,11 @@ class StatController
         $membershipStats["all"] = $this->getMembershipStats($startDate, $endDate);
 
         $paymentModes = PaymentMode::getPaymentModes();
+        $paymentModeStats = array();
         foreach ($paymentModes as $paymentMode) {
-            $membershipStats["all"]["paymentModes"] = $this->getMembershipPaymentStats($startDate, $endDate, $paymentMode);
+            $paymentModeStats[$paymentMode] = $this->getMembershipPaymentStats($startDate, $endDate, $paymentMode);
         }
+        $membershipStats["all"]["paymentModes"] = $paymentModeStats;
         $data["membership-statistics"] = $membershipStats;
         // TODO: get #lendings
         // TODO: get #reservations
@@ -260,7 +262,7 @@ class StatController
         }
 
         $membershipStats = array();
-        $membershipStats["total-count"] = $activeCount + $expiredCount;
+        $membershipStats["total-count"] = $activeCount + $pendingCount + $expiredCount + $cancelledCount;
         $membershipStats["active-count"] = $activeCount;
         $membershipStats["pending-count"] = $pendingCount;
         $membershipStats["expired-count"] = $expiredCount;
