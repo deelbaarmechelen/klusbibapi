@@ -110,8 +110,7 @@ class StatController
     function createVersion2Stats($startDate, $endDate) : array {
         $data = array();
         // get #memberships by membership type started or renewed in stat period
-        $data["membership-statistics"] = array();
-        $membershipStats = $data["membership-statistics"];
+        $membershipStats = array();
         $membershipTypes = [
             MembershipType::regular(),
             MembershipType::renewal(),
@@ -125,10 +124,12 @@ class StatController
             $membershipStats[$type->name] = $this->getMembershipStats($startDate, $endDate, $type->id);
         }
         $membershipStats["all"] = $this->getMembershipStats($startDate, $endDate);
+
         $paymentModes = PaymentMode::getPaymentModes();
         foreach ($paymentModes as $paymentMode) {
             $membershipStats["all"]["paymentModes"] = $this->getMembershipPaymentStats($startDate, $endDate, $paymentMode);
         }
+        $data["membership-statistics"] = $membershipStats;
         // TODO: get #lendings
         // TODO: get #reservations
         return $data;
