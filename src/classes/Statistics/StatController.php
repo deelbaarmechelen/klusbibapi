@@ -10,6 +10,7 @@ use Api\Model\ToolState;
 use Api\Model\Stat;
 use Api\Model\Membership;
 use Api\Model\MembershipType;
+use Api\Model\PaymentMode;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use DateTime;
@@ -124,7 +125,10 @@ class StatController
             $membershipStats[$type->name] = $this->getMembershipStats($startDate, $endDate, $type->id);
         }
         $membershipStats["all"] = $this->getMembershipStats($startDate, $endDate);
-        $membershipStats["all"]["paymentModes"] = $this->getMembershipPaymentStats($startDate, $endDate);
+        $paymentModes = PaymentMode::getPaymentModes();
+        foreach ($paymentModes as $paymentMode) {
+            $membershipStats["all"]["paymentModes"] = $this->getMembershipPaymentStats($startDate, $endDate, $paymentMode);
+        }
         // TODO: get #lendings
         // TODO: get #reservations
         return $data;
