@@ -87,7 +87,7 @@ class MoveLendengineTables extends AbstractCapsuleMigration
         // Make membership price nullable, as not yet provided on API
         $this->query('ALTER TABLE `membership` CHANGE `price` `price` DECIMAL(10,2) NULL DEFAULT NULL');
         // move kb_payments membership_id constraint from kb_membership to membership table
-        $this->query('ALTER TABLE `kb_payments` DROP  CONSTRAINT `payments_membership_id_foreign`');
+        $this->query('ALTER TABLE `kb_payments` DROP  FOREIGN KEY `payments_membership_id_foreign`');
         $this->query('ALTER TABLE `kb_payments` CHANGE `membership_id` `membership_id` INT(11) NULL DEFAULT NULL'); // column format should be identical
         $this->query('ALTER TABLE `kb_payments` ADD  CONSTRAINT `payments_membership_id_foreign` FOREIGN KEY (`membership_id`) REFERENCES `membership`(`id`)');
 
