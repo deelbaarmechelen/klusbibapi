@@ -32,4 +32,22 @@ abstract class PaymentMode
             || $paymentMode == PaymentMode::STROOM
             || $paymentMode == PaymentMode::TRANSFER;
     }
+    static function getPaymentModes($paymentMode) : array {
+        $paymentModes = [
+            PaymentMode::UNKNOWN,
+            PaymentMode::NONE,
+            PaymentMode::CASH,
+            PaymentMode::KDOBON,
+            PaymentMode::LETS,
+            PaymentMode::MBON,
+            PaymentMode::MOLLIE,
+            PaymentMode::OVAM,
+            PaymentMode::OTHER,
+            PaymentMode::PAYCONIQ,
+            PaymentMode::SPONSORING,
+            PaymentMode::STROOM,
+            PaymentMode::TRANSFER
+        ];
+        return $paymentModes;
+    }
 }

@@ -82,6 +82,10 @@ class Membership extends Model
     {
         return $query->where('status', '=', MembershipState::STATUS_EXPIRED);
     }
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', '=', MembershipState::STATUS_CANCELLED);
+    }
     public function scopeWithStatus($query, $status)
     {
         return $query->where('status', '=', $status);

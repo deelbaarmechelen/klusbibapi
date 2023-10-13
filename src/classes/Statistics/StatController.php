@@ -8,6 +8,8 @@ use Api\Model\Lending;
 use Api\Model\Tool;
 use Api\Model\ToolState;
 use Api\Model\Stat;
+use Api\Model\Membership;
+use Api\Model\MembershipType;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use DateTime;
@@ -64,7 +66,8 @@ class StatController
             $startThisMonth = new DateTimeImmutable('first day of this month', $utc);
         }
         $startLastMonth = $startThisMonth->sub(new \DateInterval('P1M'));
-        $data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
+        //$data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
+        $data = $this->createVersion2Stats($startLastMonth, $startThisMonth);
 
         // store statistic
         $this->logger->info("Storing monthly statistics for " . $startThisMonth->format('Ym'));
@@ -81,7 +84,7 @@ class StatController
         return $response->withJson($data);
     }
 
-    function createVersion1Stats($startLastMonth, $startThisMonth) {
+    function createVersion1Stats($startLastMonth, $startThisMonth) : array {
         $data = array();
 
         // user stats
@@ -102,12 +105,29 @@ class StatController
 
         return $data;
     }
-    function createVersion2Stats() {
-        $data = array();
-        // TODO: get #memberships by membership type started or renewed in stat period
 
+    function createVersion2Stats($startDate, $endDate) : array {
+        $data = array();
+        // get #memberships by membership type started or renewed in stat period
+        $data["membership-statistics"] = array();
+        $membershipStats = $data["membership-statistics"];
+        $membershipTypes = [
+            MembershipType::regular(),
+            MembershipType::renewal(),
+            MembershipType::regularReduced(),
+            MembershipType::renewalReduced(),
+            MembershipType::regularOrg(),
+            MembershipType::renewalOrg(),
+            MembershipType::temporary(),
+        ];
+        foreach ($membershipTypes as $type) {
+            $membershipStats[$type->name] = $this->getMembershipStats($startDate, $endDate, $type->id);
+        }
+        $membershipStats["all"] = $this->getMembershipStats($startDate, $endDate);
+        $membershipStats["all"]["paymentModes"] = $this->getMembershipPaymentStats($startDate, $endDate);
         // TODO: get #lendings
         // TODO: get #reservations
+        return $data;
     }
 
     function yearly(RequestInterface $request, ResponseInterface $response, $args) {
@@ -205,6 +225,67 @@ class StatController
         return $userStats;
     }
 
+    private function getMembershipStats($startDate, $endDate, $membershipType = null): array
+    {
+        // get count by membership states: PENDING, ACTIVE, CANCELLED, EXPIRED
+        // get stats for a particular membership type
+        // TODO: also get stats by payment type??
+        if (isset($membershipType)) {
+            $activeCount = \Api\Model\Membership::active()->withSubscriptionId($membershipType)->count();
+            $pendingCount = \Api\Model\Membership::pending()->withSubscriptionId($membershipType)->count();
+            $expiredCount = \Api\Model\Membership::expired()->withSubscriptionId($membershipType)->count();
+            $cancelledCount = \Api\Model\Membership::cancelled()->withSubscriptionId($membershipType)->count();
+            $newActiveCount = \Api\Model\Membership::active()->withSubscriptionId($membershipType)
+                ->where('created_at', '>=', $startDate)
+                ->where('created_at', '<', $endDate)->count();
+            $newPendingCount = \Api\Model\Membership::pending()->withSubscriptionId($membershipType)
+                ->where('created_at', '>=', $startDate)
+                ->where('created_at', '<', $endDate)->count();
+        } else {
+            $activeCount = \Api\Model\Membership::active()->count();
+            $pendingCount = \Api\Model\Membership::pending()->count();
+            $expiredCount = \Api\Model\Membership::expired()->count();
+            $cancelledCount = \Api\Model\Membership::cancelled()->count();
+            $newActiveCount = \Api\Model\Membership::active()
+                ->where([['created_at', '>=', $startDate],
+                         ['created_at', '<', $endDate]])->count();
+            $newPendingCount = \Api\Model\Membership::pending()
+                ->where([['created_at', '>=', $startDate],
+                         ['created_at', '<', $endDate]])->count();
+        }
+
+        $membershipStats = array();
+        $membershipStats["total-count"] = $activeCount + $expiredCount;
+        $membershipStats["active-count"] = $activeCount;
+        $membershipStats["pending-count"] = $pendingCount;
+        $membershipStats["expired-count"] = $expiredCount;
+        $membershipStats["cancelled-count"] = $cancelledCount;
+        $membershipStats["new-active-count"] = $newActiveCount;
+        $membershipStats["new-pending-count"] = $newPendingCount;
+        return $membershipStats;       
+    }
+
+    private function getMembershipPaymentStats($startDate, $endDate, $paymentMode, $membershipType = null): array
+    {
+        if (isset($membershipType)) {
+            $totalCount = \Api\Model\Membership::withSubscriptionId($membershipType)
+                ->where(["last_payment_mode" => $paymentMode])->count();
+            $newCount = \Api\Model\Membership::withSubscriptionId($membershipType)
+                ->where(["last_payment_mode" => $paymentMode])
+                ->where([['created_at', '>=', $startDate],
+                         ['created_at', '<', $endDate]])->count();
+        } else {
+            $totalCount = \Api\Model\Membership::where(["last_payment_mode" => $paymentMode])->count();
+            $newCount = \Api\Model\Membership::where(["last_payment_mode" => $paymentMode])
+                ->where([['created_at', '>=', $startDate],
+                         ['created_at', '<', $endDate]])->count();
+        }
+        $membershipPaymenStats = array();
+        $membershipPaymenStats["total-count"] = $totalCount;
+        $membershipPaymenStats["new-count"] = $newCount;
+        return $membershipPaymenStats;
+    }
+
     /**
      * @return array
      */
@@ -241,7 +322,7 @@ class StatController
     /**
      * @return mixed
      */
-    private function getAccessoryStats()
+    private function getAccessoryStats(): array
     {
         $accessories = $this->inventory->getAccessories();
 
