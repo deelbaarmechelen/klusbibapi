@@ -54,6 +54,7 @@ class StatController
         $statVersion = $queryParams['version'] ??  1;
  
         $utc = new DateTimeZone("UTC");
+        $startCurrentMonth = new DateTimeImmutable('first day of this month', $utc);
         if (isset($statMonth)) {
             $startThisMonth = DateTimeImmutable::createFromFormat('Y-m-d', $statMonth . '-01', $utc);
             if (!$startThisMonth) {
@@ -64,9 +65,26 @@ class StatController
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                                 ->withJson(array_push($errors, $error));;
             }
+            if ($startThisMonth > $startCurrentMonth) {
+                $error = "Invalid stat-month value $statMonth: future dates not allowed";
+                $this->logger->warning($error);
+                $errors = array();
+                return $response->withStatus(HttpResponseCode::BAD_REQUEST)
+                                ->withJson(array_push($errors, $error));;
+            }
         } else {
-            $startThisMonth = new DateTimeImmutable('first day of this month', $utc);
+            $startThisMonth = $startCurrentMonth;
         }
+        // Check if stat can be retrieved from database
+        // it should exist and last update timestamp > end of month
+        $statEntry = $startThisMonth->format('Ym');
+        $stat = Stat::where(['name' => $statEntry, 'version' => $statVersion])->first();
+        $endStat = $startThisMonth->add(new \DateInterval('P1M'));
+        if (isset($stat) && $stat->updated_at > $endStat && $stat->end_date == $startThisMonth->format('Y-m-t')) {
+            $this->logger->info("Statistics retrieved from database for $statEntry version $statVersion");
+            return $response->withBody($stat->stats); // stats already in JSON format -> use withBody
+        }
+
         $startLastMonth = $startThisMonth->sub(new \DateInterval('P1M'));
         if ($statVersion == 1) {
             $data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
@@ -76,15 +94,17 @@ class StatController
 
         // store statistic
         $this->logger->info("Storing monthly statistics for " . $startThisMonth->format('Ym'));
-        $endStat = $startThisMonth->add(new \DateInterval('P1M'));
 
-        $stat = Stat::firstOrCreate([
-            'name' => $startThisMonth->format('Ym'),
-            'version' => $statVersion
-        ]);
+        if (!isset($stat)) {
+            $stat = new Stat();
+            $stat->name = $statEntry;
+            $stat->version = $statVersion;
+            $stat->start_date = $startThisMonth->format('Y-m-01');
+        }
         $stat->stats = \json_encode($data);
-        $stat->start_date = $startThisMonth->format('Y-m-01');
-        $stat->end_date = $startThisMonth->format('Y-m-t');
+        // update end_date to current date if month end not reached yet
+        $now = new DateTimeImmutable("now", $utc);
+        $stat->end_date = $now > $endStat ? $startThisMonth->format('Y-m-t') : $now->format('Y-m-d');
         $stat->save();
         return $response->withJson($data);
     }
