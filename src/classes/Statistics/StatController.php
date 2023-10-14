@@ -21,6 +21,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
+use Psr\Log\LoggerInterface;
 
 class StatController
 {
@@ -30,7 +31,7 @@ class StatController
     /**
      * StatController constructor.
      */
-    public function __construct(Inventory $inventory, $logger)
+    public function __construct(Inventory $inventory, LoggerInterface $logger)
     {
         $this->inventory = $inventory;
         $this->logger = $logger;
@@ -60,14 +61,14 @@ class StatController
             if (!$startThisMonth) {
                 // createFromFormat failed
                 $error = "Invalid stat-month value $statMonth, expected 'YYYY-MM'";
-                $this->logger->warning($error);
+                $this->logger->error($error);
                 $errors = array();
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                                 ->withJson(array_push($errors, $error));;
             }
             if ($startThisMonth > $startCurrentMonth) {
                 $error = "Invalid stat-month value $statMonth: future dates not allowed";
-                $this->logger->warning($error);
+                $this->logger->error($error);
                 $errors = array();
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                                 ->withJson(array_push($errors, $error));;
@@ -82,7 +83,8 @@ class StatController
         $endStat = $startThisMonth->add(new \DateInterval('P1M'));
         if (isset($stat) && $stat->updated_at > $endStat && $stat->end_date == $startThisMonth->format('Y-m-t')) {
             $this->logger->info("Statistics retrieved from database for $statEntry version $statVersion");
-            return $response->withBody($stat->stats); // stats already in JSON format -> use withBody
+            $response->getBody()->write($stat->stats);
+            return $response; // stats already in JSON format -> don't use withJson which converts array to json
         }
 
         $startLastMonth = $startThisMonth->sub(new \DateInterval('P1M'));
