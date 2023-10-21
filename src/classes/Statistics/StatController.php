@@ -45,11 +45,13 @@ class StatController
      * - new user count
      * - expired / delete user count
      * - checkout count / checkin count
+     * - membership count by type
      * @param $request
      * @param $response
      * @param $args
      */
     function monthly(RequestInterface $request, ResponseInterface $response, $args) {
+        $this->logger->info("Klusbib GET '/stats/monthly' route (with params " . $request->getUri()->getQuery() . ")");
         parse_str($request->getUri()->getQuery(), $queryParams);
         $statMonth = $queryParams['stat-month'] ??  null;
         $statVersion = $queryParams['version'] ??  1;
@@ -134,6 +136,7 @@ class StatController
     }
 
     function createVersion2Stats($startDate, $endDate) : array {
+        // TODO: enrich v2 statistics with useful stats from v1
         $data = array();
         // get #memberships by membership type started or renewed in stat period
         $membershipStats = array();
@@ -158,12 +161,25 @@ class StatController
         }
         $membershipStats["all"]["paymentModes"] = $paymentModeStats;
         $data["membership-statistics"] = $membershipStats;
-        // TODO: get #lendings
+
+        // user stats
+        $userStats = $this->getUserStatsV2($startDate, $endDate);
+        $data["user-statistics"] = $userStats;
+
+        // tool stats
+        $toolStats = $this->getToolStats();
+        $data["tool-statistics"] = $toolStats;
+
+        // activity stats
+        $activityStats = $this->getLendingStatsV2($startDate, "month");
+        $data["activity-statistics"] = $activityStats;
+
         // TODO: get #reservations
         return $data;
     }
 
     function yearly(RequestInterface $request, ResponseInterface $response, $args) {
+        $this->logger->info("Klusbib GET '/stats/yearly' route (with params " . $request->getUri()->getQuery() . ")");
         $data = array();
         $now = new DateTimeImmutable('now');
 
@@ -258,6 +274,30 @@ class StatController
         return $userStats;
     }
 
+    /**
+     * @param $startLastMonth
+     * @param $startThisMonth
+     * @return array
+     */
+    private function getUserStatsV2($startPeriod, $endPeriod): array
+    {
+        $this->logger->info("Get users stats with params " . $startPeriod->format('Y-m-d') . ", " . $endPeriod->format('Y-m-d'));
+        $activeCount = \Api\Model\Contact::active()->members()->count();
+        $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
+        $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
+        $newUsersCount = \Api\Model\Contact::members()
+            ->where('created_at', '>=', $startPeriod)
+            ->where('created_at', '<', $endPeriod)->count();
+        $userStats = array();
+        $userStats["total-count"] = $activeCount + $expiredCount;
+        $userStats["active-count"] = $activeCount;
+        $userStats["expired-count"] = $expiredCount;
+        $userStats["deleted-count"] = $deletedCount;
+        $userStats["new-users-count"] = $newUsersCount;
+
+        return $userStats;
+    }
+
     private function getMembershipStats($startDate, $endDate, $membershipType = null): array
     {
         // get count by membership states: PENDING, ACTIVE, CANCELLED, EXPIRED
@@ -326,7 +366,6 @@ class StatController
     {
         $tools = $this->inventory->getTools();
 
-        //$toolCount = Tool::all()->count();
         $toolStats = array();
         $toolStats["total-count"] = isset($tools) ? count($tools) : 0;
         $newTools = $tools->filter(function ($value, $key) {
@@ -423,4 +462,29 @@ class StatController
         $activityStats["stroom"] = $stroomStats;
         return $activityStats;
     }
+    /**
+     * @param $startLastMonth
+     * @param $startThisMonth
+     * @return array
+     */
+    private function getLendingStatsV2($startPeriod, $periodType = "month"): array
+    {
+        $this->logger->info("Get lending stats with params " . $startPeriod->format('Y-m-d') . ", " . $periodType);
+        if ($periodType == "year") {
+            $checkoutCount = Lending::inYear($startPeriod->format("Y"))->count();
+            $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->count();
+        }
+        if ($periodType == "month") {
+            $checkoutCount = Lending::inYear($startPeriod->format("Y"))->inMonth($startPeriod->format("m"))->count();
+            $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->returnedInMonth($startPeriod->format("m"))->count();
+        }
+        $activityStats = array();
+        $activityStats["total-count"] = Lending::count();
+        $activityStats["active-count"] = Lending::active()->count();
+        $activityStats["overdue-count"] = Lending::overdue()->count();
+        $activityStats["checkout-count"] = $checkoutCount;
+        $activityStats["checkin-count"] = $checkinCount;
+
+        return $activityStats;
+    }    
 }
