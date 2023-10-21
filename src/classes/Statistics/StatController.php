@@ -93,7 +93,7 @@ class StatController
         if ($statVersion == 1) {
             $data = $this->createVersion1Stats($startLastMonth, $startThisMonth);
         } else {
-            $data = $this->createVersion2Stats($startLastMonth, $startThisMonth);
+            $data = $this->createVersion2Stats($startThisMonth, $endStat);
         }
 
         // store statistic
@@ -136,7 +136,6 @@ class StatController
     }
 
     function createVersion2Stats($startDate, $endDate) : array {
-        // TODO: enrich v2 statistics with useful stats from v1
         $data = array();
         // get #memberships by membership type started or renewed in stat period
         $membershipStats = array();
