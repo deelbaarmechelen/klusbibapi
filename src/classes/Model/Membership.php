@@ -102,6 +102,11 @@ class Membership extends Model
     {
         return $query->where('contact_id', '=', $userId);
     }
+    public function scopeCreatedBetweenDates($query, $startDate, $endDate)
+    {
+        return $query->whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate);
+    }
 
     // Validation
     public static function isValidStatus($status) {

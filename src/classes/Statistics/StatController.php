@@ -216,9 +216,7 @@ class StatController
         $activeCount = \Api\Model\Contact::active()->members()->count();
         $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCount = \Api\Model\Contact::members()
-            ->where('created_at', '>=', $startYear)
-            ->where('created_at', '<=', $endYear)->count();
+        $newUsersCount = \Api\Model\Contact::members()->createdBetweenDates($startYear, $endYear)->count();
         $userStats = array();
         $userStats["total-count"] = $activeCount + $expiredCount;
         $userStats["active-count"] = $activeCount;
@@ -240,10 +238,8 @@ class StatController
         $activeCount = \Api\Model\Contact::active()->members()->count();
         $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCount = \Api\Model\Contact::members()->where('created_at', '>=', $startThisMonth)->count();
-        $newUsersPrevMonthCount = \Api\Model\Contact::members()
-            ->where('created_at', '>=', $startLastMonth)
-            ->where('created_at', '<', $startThisMonth)->count();
+        $newUsersCurrMonthCount = \Api\Model\Contact::members()->whereDate('created_at', '>=', $startThisMonth)->count();
+        $newUsersPrevMonthCount = \Api\Model\Contact::members()->createdBetweenDates($startLastMonth, $startThisMonth)->count();
         $userStats = array();
         $userStats["total-count"] = $activeCount + $expiredCount;
         $userStats["active-count"] = $activeCount;
@@ -256,10 +252,8 @@ class StatController
         $activeCountStroom = \Api\Model\Contact::stroom()->count();
         $expiredCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::EXPIRED)->count();
         $deletedCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->where('created_at', '>=', $startThisMonth)->count();
-        $newUsersPrevMonthCountStroom = \Api\Model\Contact::stroom()
-            ->where('created_at', '>=', $startLastMonth)
-            ->where('created_at', '<', $startThisMonth)->count();
+        $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->whereDate('created_at', '>=', $startThisMonth)->count();
+        $newUsersPrevMonthCountStroom = \Api\Model\Contact::stroom()->createdBetweenDates($startLastMonth, $startThisMonth)->count();
         $stroomStats = array();
         $stroomStats["total-count"] = $activeCountStroom + $expiredCountStroom;
         $stroomStats["active-count"] = $activeCountStroom;
@@ -283,14 +277,16 @@ class StatController
         $this->logger->info("Get users stats with params " . $startPeriod->format('Y-m-d') . ", " . $endPeriod->format('Y-m-d'));
         $activeCount = \Api\Model\Contact::active()->members()->count();
         $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
+        $checkPaymentCount = \Api\Model\Contact::where('state', \Api\Model\UserState::CHECK_PAYMENT)->count();
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
-        $newUsersCount = \Api\Model\Contact::members()
-            ->where('created_at', '>=', $startPeriod)
-            ->where('created_at', '<', $endPeriod)->count();
+        $disbaledCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DISABLED)->count();
+        $newUsersCount = \Api\Model\Contact::members()->createdBetweenDates($startPeriod, $endPeriod)->count();
         $userStats = array();
-        $userStats["total-count"] = $activeCount + $expiredCount;
+        $userStats["total-count"] = $activeCount + $expiredCount + $checkPaymentCount + $disbaledCount;
         $userStats["active-count"] = $activeCount;
         $userStats["expired-count"] = $expiredCount;
+        $userStats["check-payment-count"] = $checkPaymentCount;
+        $userStats["diabled-count"] = $disbaledCount;
         $userStats["deleted-count"] = $deletedCount;
         $userStats["new-users-count"] = $newUsersCount;
 
@@ -308,22 +304,18 @@ class StatController
             $expiredCount = \Api\Model\Membership::expired()->withSubscriptionId($membershipType)->count();
             $cancelledCount = \Api\Model\Membership::cancelled()->withSubscriptionId($membershipType)->count();
             $newActiveCount = \Api\Model\Membership::active()->withSubscriptionId($membershipType)
-                ->where('created_at', '>=', $startDate)
-                ->where('created_at', '<', $endDate)->count();
+                ->createdBetweenDates($startDate, $endDate)->count();
             $newPendingCount = \Api\Model\Membership::pending()->withSubscriptionId($membershipType)
-                ->where('created_at', '>=', $startDate)
-                ->where('created_at', '<', $endDate)->count();
+                ->createdBetweenDates($startDate, $endDate)->count();
         } else {
             $activeCount = \Api\Model\Membership::active()->count();
             $pendingCount = \Api\Model\Membership::pending()->count();
             $expiredCount = \Api\Model\Membership::expired()->count();
             $cancelledCount = \Api\Model\Membership::cancelled()->count();
             $newActiveCount = \Api\Model\Membership::active()
-                ->where([['created_at', '>=', $startDate],
-                         ['created_at', '<', $endDate]])->count();
+                ->createdBetweenDates($startDate, $endDate)->count();
             $newPendingCount = \Api\Model\Membership::pending()
-                ->where([['created_at', '>=', $startDate],
-                         ['created_at', '<', $endDate]])->count();
+                ->createdBetweenDates($startDate, $endDate)->count();
         }
 
         $membershipStats = array();
@@ -344,13 +336,11 @@ class StatController
                 ->where(["last_payment_mode" => $paymentMode])->count();
             $newCount = \Api\Model\Membership::withSubscriptionId($membershipType)
                 ->where(["last_payment_mode" => $paymentMode])
-                ->where([['created_at', '>=', $startDate],
-                         ['created_at', '<', $endDate]])->count();
+                ->createdBetweenDates($startDate, $endDate)->count();
         } else {
             $totalCount = \Api\Model\Membership::where(["last_payment_mode" => $paymentMode])->count();
             $newCount = \Api\Model\Membership::where(["last_payment_mode" => $paymentMode])
-                ->where([['created_at', '>=', $startDate],
-                         ['created_at', '<', $endDate]])->count();
+                ->createdBetweenDates($startDate, $endDate)->count();
         }
         $membershipPaymenStats = array();
         $membershipPaymenStats["total-count"] = $totalCount;

@@ -201,6 +201,11 @@ class Contact extends Model
             $query->where('name', '=', 'STROOM');
         });
     }
+    public function scopeCreatedBetweenDates($query, $startDate, $endDate)
+    {
+        return $query->whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate);
+    }
     public function scopeOutOfSync($query)
     {
         return $query->whereNull('last_sync_date')
