@@ -85,7 +85,9 @@ class StatController
         $endStat = $startThisMonth->add(new \DateInterval('P1M'));
         if (isset($stat) && $stat->updated_at > $endStat && $stat->end_date == $startThisMonth->format('Y-m-t')) {
             $this->logger->info("Statistics retrieved from database for $statEntry version $statVersion");
+            $response = $response->withHeader('Content-type', 'application/json');
             $response->getBody()->write($stat->stats);
+            // $response = $response->withJson(\json_decode($stat->stats, true));
             return $response; // stats already in JSON format -> don't use withJson which converts array to json
         }
 
@@ -286,7 +288,7 @@ class StatController
         $userStats["active-count"] = $activeCount;
         $userStats["expired-count"] = $expiredCount;
         $userStats["check-payment-count"] = $checkPaymentCount;
-        $userStats["diabled-count"] = $disbaledCount;
+        $userStats["disabled-count"] = $disbaledCount;
         $userStats["deleted-count"] = $deletedCount;
         $userStats["new-users-count"] = $newUsersCount;
 
