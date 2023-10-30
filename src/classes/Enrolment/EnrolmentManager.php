@@ -265,6 +265,8 @@ class EnrolmentManager
                 $this->user->payments()->save($payment);
             });
 
+        } else {
+            $membership = $payment->membership;
         }
         $this->user->payment_mode = $membership->last_payment_mode;
         $this->user->membership_start_date = $membership->starts_at;
@@ -732,9 +734,9 @@ class EnrolmentManager
 
     /**
      * @param $orderId
-     * @return Payment
+     * @return Payment|null
      */
-    protected function lookupPaymentByOrderId($orderId, $paymentMode, $userId = null)
+    protected function lookupPaymentByOrderId($orderId, $paymentMode, $userId = null) : Payment|null
     {
         if ($userId == null) {
             $userId = $this->user->id;

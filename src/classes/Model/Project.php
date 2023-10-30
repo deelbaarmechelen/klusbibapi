@@ -4,6 +4,11 @@ namespace Api\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 
+ * @method static Builder where($arr)
+ * @method static Builder where($col, $value)
+ */
 class Project extends Model
 {
     protected $table = 'kb_projects';
