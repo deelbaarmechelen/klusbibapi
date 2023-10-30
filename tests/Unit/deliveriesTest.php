@@ -8,6 +8,9 @@ class DeliveryTest extends LocalDbWebTestCase
 {
 	private $createdate;
 	private $updatedate;
+    private $pickUpDate;
+    private $droppOffDate;
+    
 	/**
 	 * @return PHPUnit_Extensions_Database_DataSet_IDataSet
 	 */

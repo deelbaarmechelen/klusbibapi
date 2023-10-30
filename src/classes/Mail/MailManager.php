@@ -546,9 +546,6 @@ class MailManager {
         return $membership_year;
     }
 
-    /**
-     * @return PHPMailer
-     */
     private function resetMailer()
     {
         $this->message = '';

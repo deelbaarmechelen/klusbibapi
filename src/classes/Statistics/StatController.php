@@ -25,8 +25,10 @@ use Psr\Log\LoggerInterface;
 
 class StatController
 {
-    private $inventory;
-    private $logger;
+    private Inventory $inventory;
+    private LoggerInterface $logger;
+    private DateTimeZone $utc;
+
 
     /**
      * StatController constructor.
@@ -35,6 +37,7 @@ class StatController
     {
         $this->inventory = $inventory;
         $this->logger = $logger;
+        $this->utc = new DateTimeZone("UTC");
     }
 
 
@@ -50,16 +53,15 @@ class StatController
      * @param $response
      * @param $args
      */
-    function monthly(RequestInterface $request, ResponseInterface $response, $args) {
+    function monthly(RequestInterface $request, ResponseInterface $response, $args) : ResponseInterface {
         $this->logger->info("Klusbib GET '/stats/monthly' route (with params " . $request->getUri()->getQuery() . ")");
         parse_str($request->getUri()->getQuery(), $queryParams);
         $statMonth = $queryParams['stat-month'] ??  null;
         $statVersion = $queryParams['version'] ??  1;
  
-        $utc = new DateTimeZone("UTC");
-        $startCurrentMonth = new DateTimeImmutable('first day of this month', $utc);
+        $startCurrentMonth = new DateTimeImmutable('first day of this month', $this->utc);
         if (isset($statMonth)) {
-            $startThisMonth = DateTimeImmutable::createFromFormat('Y-m-d', $statMonth . '-01', $utc);
+            $startThisMonth = DateTimeImmutable::createFromFormat('Y-m-d', $statMonth . '-01', $this->utc);
             if (!$startThisMonth) {
                 // createFromFormat failed
                 $error = "Invalid stat-month value $statMonth, expected 'YYYY-MM'";
@@ -109,7 +111,7 @@ class StatController
         }
         $stat->stats = \json_encode($data);
         // update end_date to current date if month end not reached yet
-        $now = new DateTimeImmutable("now", $utc);
+        $now = new DateTimeImmutable('now');
         $stat->end_date = $now > $endStat ? $startThisMonth->format('Y-m-t') : $now->format('Y-m-d');
         $stat->save();
         return $response->withJson($data);
@@ -213,18 +215,25 @@ class StatController
     private function getYearlyUserStats($year): array
     {
         $this->logger->info("Get yearly users stats with param " . $year);
-        $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $utc);
-        $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $utc);
+        $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $this->utc);
+        $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $this->utc);
         $activeCount = \Api\Model\Contact::active()->members()->count();
         $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
+        $checkPaymentCount = \Api\Model\Contact::where('state', \Api\Model\UserState::CHECK_PAYMENT)->count();
+        $disabledCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DISABLED)->count();
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
         $newUsersCount = \Api\Model\Contact::members()->createdBetweenDates($startYear, $endYear)->count();
+
         $userStats = array();
-        $userStats["total-count"] = $activeCount + $expiredCount;
+        $userStats["total-count"] = $activeCount + $expiredCount + $checkPaymentCount + $disabledCount;
         $userStats["active-count"] = $activeCount;
         $userStats["expired-count"] = $expiredCount;
+        $userStats["check-payment-count"] = $checkPaymentCount;
+        $userStats["disabled-count"] = $disabledCount;
         $userStats["deleted-count"] = $deletedCount;
         $userStats["new-users-count"] = $newUsersCount;
+
+        // TODO: enrich with monthly stats for line graph showing evolution in users
 
         return $userStats;
     }
@@ -270,8 +279,8 @@ class StatController
     }
 
     /**
-     * @param $startLastMonth
-     * @param $startThisMonth
+     * @param $startPeriod
+     * @param $endPeriod
      * @return array
      */
     private function getUserStatsV2($startPeriod, $endPeriod): array
@@ -281,14 +290,14 @@ class StatController
         $expiredCount = \Api\Model\Contact::where('state', \Api\Model\UserState::EXPIRED)->count();
         $checkPaymentCount = \Api\Model\Contact::where('state', \Api\Model\UserState::CHECK_PAYMENT)->count();
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
-        $disbaledCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DISABLED)->count();
+        $disabledCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DISABLED)->count();
         $newUsersCount = \Api\Model\Contact::members()->createdBetweenDates($startPeriod, $endPeriod)->count();
         $userStats = array();
-        $userStats["total-count"] = $activeCount + $expiredCount + $checkPaymentCount + $disbaledCount;
+        $userStats["total-count"] = $activeCount + $expiredCount + $checkPaymentCount + $disabledCount;
         $userStats["active-count"] = $activeCount;
         $userStats["expired-count"] = $expiredCount;
         $userStats["check-payment-count"] = $checkPaymentCount;
-        $userStats["disabled-count"] = $disbaledCount;
+        $userStats["disabled-count"] = $disabledCount;
         $userStats["deleted-count"] = $deletedCount;
         $userStats["new-users-count"] = $newUsersCount;
 
@@ -400,8 +409,8 @@ class StatController
     private function getYearlyLendingStats($year): array
     {
         $this->logger->info("Get yearly lending stats with param " . $year);
-        $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $utc);
-        $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $utc);
+        $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $this->utc);
+        $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $this->utc);
         $checkoutCount = Lending::inYear($startYear->format("Y"))->count();
         $checkinCount = Lending::returnedInYear($startYear->format("Y"))->count();
 
@@ -411,6 +420,8 @@ class StatController
         $activityStats["overdue-count"] = Lending::overdue()->count();
         $activityStats["checkout-count"] = $checkoutCount;
         $activityStats["checkin-count"] = $checkinCount;
+
+        // TODO: enrich with monthly stats
         return $activityStats;
     }
         
@@ -464,10 +475,11 @@ class StatController
         if ($periodType == "year") {
             $checkoutCount = Lending::inYear($startPeriod->format("Y"))->count();
             $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->count();
-        }
-        if ($periodType == "month") {
+        } else if ($periodType == "month") {
             $checkoutCount = Lending::inYear($startPeriod->format("Y"))->inMonth($startPeriod->format("m"))->count();
             $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->returnedInMonth($startPeriod->format("m"))->count();
+        } else {
+            return array();
         }
         $activityStats = array();
         $activityStats["total-count"] = Lending::count();

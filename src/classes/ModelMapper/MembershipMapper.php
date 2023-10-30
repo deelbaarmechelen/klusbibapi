@@ -44,9 +44,6 @@ class MembershipMapper
     }
 
     static public function mapSubscriptionToArray(MembershipType $membershipType) {
-        if (!isset($membershipType)) {
-            return array();
-        }
         $nextSubscription = MembershipType::find($membershipType->next_subscription_id);
         $membershipTypeArray = array("id" => $membershipType->id,
             "name" => $membershipType->name,

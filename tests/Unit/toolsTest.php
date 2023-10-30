@@ -164,7 +164,7 @@ class ToolsTest extends LocalDbWebTestCase
 	{
 		echo "test DELETE tool\n";
 		$this->client->delete('/tools/1');
-		$body = $this->assertEquals(200, $this->client->response->getStatusCode());
+		$this->assertEquals(200, $this->client->response->getStatusCode());
 		
 		// check tool no longer exists
 		$bodyGet = $this->client->get('/tools/1');

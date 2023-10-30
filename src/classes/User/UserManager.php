@@ -10,6 +10,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Collection;
 use Api\Model\Contact;
 use Api\ModelMapper\UserMapper;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class UserManager
@@ -18,19 +19,19 @@ use Api\ModelMapper\UserMapper;
  */
 class UserManager
 {
-    public static function instance($logger) {
+    public static function instance(LoggerInterface $logger) {
         return new UserManager(SnipeitInventory::instance(), $logger, new MailManager(null, null, $logger));
     }
-    private $inventory;
-    private $logger;
-    private $mailManager;
+    private Inventory $inventory;
+    private LoggerInterface $logger;
+    private MailManager $mailManager;
     private $lastSyncAttempt;
     private $lastSyncedUsers;
 
     /**
      * UserManager constructor.
      */
-    public function __construct(Inventory $inventory, $logger, MailManager $mailManager = null)
+    public function __construct(Inventory $inventory, LoggerInterface $logger, MailManager $mailManager = null)
     {
         $this->inventory = $inventory;
         $this->logger = $logger;
@@ -78,6 +79,7 @@ class UserManager
             }
         } catch (\Exception $ex) {
             $this->logger->error("UserManager.getById: Problem while syncing user with id $id: " . $ex->getMessage());
+            return null;
         }
         return $user;
     }
@@ -98,6 +100,7 @@ class UserManager
             }
         } catch (\Exception $ex) {
             $this->logger->error("UserManager.getByIdNoSync: Problem while retrieving user with id $id: " . $ex->getMessage());
+            return null;
         }
         return $user;
     }
@@ -167,7 +170,7 @@ class UserManager
         try {
             if (!$this->inventory->userExists($user)) {
                 $result = $this->syncUser($user);
-                if (isset($result) && $result == true) {
+                if ($result == true) {
                     $user->last_sync_date = new \DateTime();
                     $user->save();
                 }
@@ -204,7 +207,7 @@ class UserManager
         $this->logger->debug("Inventory update requested for user " . json_encode($user));
         try {
             $result = $this->syncUser($user);
-            if (isset($result) && $result == true) {
+            if ($result == true) {
                 $user->last_sync_date = new \DateTime();
                 $user->save();
             }

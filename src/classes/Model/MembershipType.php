@@ -5,6 +5,21 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Api\Model\UserRole;
 
+/**
+ * @property mixed $id
+ * @property mixed $name
+ * @property mixed $price
+ * @property mixed $duration
+ * @property mixed $discount
+ * @property mixed $description
+ * @property mixed $self_serve
+ * @property mixed $credit_limit
+ * @property mixed $max_items
+ * @property mixed $is_active
+ * @property mixed $next_subscription_id
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ */
 class MembershipType extends Model
 {
     protected $table = "membership_type";
@@ -51,7 +66,7 @@ class MembershipType extends Model
 		if (!isset($field)) {
 			return false;
 		}
-		return in_array($field, Contact::$fieldArray);
+		return in_array($field, MembershipType::$fieldArray);
 	}
 	
 	public function memberships()

@@ -16,7 +16,7 @@ class Accessory extends Model
         if (!isset($field)) {
             return false;
         }
-        return in_array($field, Tool::$fieldArray);
+        return in_array($field, Accessory::$fieldArray);
     }
 
 }

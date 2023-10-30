@@ -15,6 +15,11 @@ require_once __DIR__ . '/../../test_env.php';
 final class MailManagerTest extends LocalDbWebTestCase
 //final class MailManagerTest extends TestCase
 {
+    private $createdate;
+    private $updatedate;
+    private $pickUpDate;
+    private $dropOffDate;
+    
     /**
      * @return PHPUnit_Extensions_Database_DataSet_IDataSet
      */

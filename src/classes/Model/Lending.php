@@ -5,6 +5,24 @@ namespace Api\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static Builder inYear ($year)
+ * @method static Builder inMonth ($month)
+ * @method static Builder returnedInYear ($year)
+ * @method static Builder returnedInMonth ($month)
+ * @method static Builder valid()
+ * @method static Builder active()
+ * @method static Builder startBefore($date)
+ * @method static Builder reurnBefore($date)
+ * @method static Builder startFrom($date)
+ * @method static Builder returnFrom($date)
+ * @method static Builder overdue()
+ * @method static Builder stroom()
+ * @method static Builder outOfSync()
+ * 
+ * Laravel/Eloquent methods
+ * @method static Builder whereDate($column, $compare, $date)
+ */
 class Lending extends Model
 {
     protected $table = 'kb_lendings';

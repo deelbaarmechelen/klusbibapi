@@ -8,6 +8,12 @@ require_once __DIR__ . '/../../test_env.php';
 
 final class EnrolmentManagerTest extends LocalDbWebTestCase
 {
+    private $startdate;
+    private $enddate;
+    private $expiredStartDate;
+    private $expiredEndDate;
+    private $acceptTermsDate;
+
     public function getDataSet()
     {
         $this->startdate = new DateTime();

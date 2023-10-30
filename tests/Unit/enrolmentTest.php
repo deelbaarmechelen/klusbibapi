@@ -15,6 +15,7 @@ class EnrolmentTest extends LocalDbWebTestCase
 	private $expiredStartDate;
 	private $expiredEndDate;
 	private $renewalEndDate;
+    private $acceptTermDate;
 
 	/**
 	 * @return PHPUnit_Extensions_Database_DataSet_IDataSet

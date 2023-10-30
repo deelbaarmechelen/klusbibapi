@@ -8,11 +8,15 @@ use Slim\Middleware\HttpBasicAuthentication\PdoAuthenticator;
 use Api\Model\UserState;
 use Api\Model\EmailState;
 use Api\Model\ToolState;
+use DateTime;
 
 require_once __DIR__ . '/../test_env.php';
 
 class StatsTest extends LocalDbWebTestCase
 {
+    private DateTime $startdate;
+    private DateTime $enddate;
+
     public function getDataSet()
     {
         $this->startdate = new DateTime();

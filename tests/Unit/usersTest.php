@@ -329,7 +329,7 @@ class UsersTest extends LocalDbWebTestCase
 		
 		// delete inexistant user
 		$this->client->delete('/users/1');
-		$body = $this->assertEquals(204, $this->client->response->getStatusCode());
+		$this->assertEquals(204, $this->client->response->getStatusCode());
 	}
 	
 }

@@ -12,6 +12,7 @@ $streamFactory = new \Slim\Psr7\Factory\StreamFactory();
  */
 $mode = \Slim\Middleware\OutputBufferingMiddleware::APPEND;
 $outputBufferingMiddleware = new \Slim\Middleware\OutputBufferingMiddleware($streamFactory, $mode);
+/** @var mixed $app */
 $app->add($outputBufferingMiddleware);
 
 $app->add("HttpBasicAuthentication");

@@ -77,7 +77,7 @@ class PaymentController implements PaymentControllerInterface
         $payment = \Api\Model\Payment::find($args['paymentId']);
         if (empty($payment)) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND) // Not found
-            ->withJson(array(message => "No payment found for provided paymentId"));
+            ->withJson(array("message" => "No payment found for provided paymentId"));
         }
 //    $data = array();
 //    if ($payment->state == 'SUCCESS') {
@@ -364,7 +364,7 @@ class PaymentController implements PaymentControllerInterface
         $payment = \Api\Model\Payment::find($args['paymentId']);
         if (empty($payment)) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND)
-            ->withJson(array(message => "No payment found for provided paymentId"));
+            ->withJson(array("message" => "No payment found for provided paymentId"));
         }
         $payment->delete();
         return $response->withStatus(HttpResponseCode::OK);

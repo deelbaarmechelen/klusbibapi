@@ -7,6 +7,19 @@ use Api\Model\UserRole;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\Config\Definition\Builder\MergeBuilder;
 
+/**
+ * @method static Builder anyStatus()
+ * @method static Builder active()
+ * @method static Builder pending()
+ * @method static Builder open()
+ * @method static Builder expired()
+ * @method static Builder cancelled()
+ * @method static Builder withStatus($status)
+ * @method static Builder withSubscriptionId($id)
+ * @method static Builder withStartAt($startAt)
+ * @method static Builder withUser($user)
+ * @method static Builder createdBetweenDates($startDate, $endDate)
+ */
 class Membership extends Model
 {
     use SoftDeletes;

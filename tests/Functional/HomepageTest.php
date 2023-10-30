@@ -8,6 +8,8 @@ use Tests\DbUnitArrayDataSet;
 
 class HomepageTest extends BaseDBTestCase
 {
+    private $startdate;
+    private $enddate;
 	public function getDataSet()
 	{
 		$this->startdate = new DateTime();

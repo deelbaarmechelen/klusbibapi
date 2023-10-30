@@ -6,6 +6,46 @@ use Database\Factories\InventoryItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property mixed $id
+ * @property mixed $name
+ * @property mixed $item_type
+ * @property mixed $created_by
+ * @property mixed $assigned_to
+ * @property mixed $current_location_id
+ * @property mixed $item_condition
+ * @property mixed $sku
+ * @property mixed $description
+ * @property mixed $keywords
+ * @property mixed $brand
+ * @property mixed $care_information
+ * @property mixed $component_information
+ * @property mixed $loan_fee
+ * @property mixed $max_loan_days
+ * @property mixed $is_active
+ * @property mixed $show_on_website
+ * @property mixed $serial
+ * @property mixed $note
+ * @property mixed $price_cost
+ * @property mixed $price_sell
+ * @property mixed $image_name
+ * @property mixed $short_url
+ * @property mixed $item_sector
+ * @property mixed $is_reservable
+ * @property mixed $deposit_amount
+ * @property mixed $donated_by
+ * @property mixed $owned_by
+ * @property mixed $last_sync_date
+ * @property mixed $experience_level
+ * @property mixed $safety_risk
+ * @property mixed $deliverable
+ * @property mixed $size
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * 
+ * @method static Builder outOfSync($lastSyncDate)
+ * @method static Builder archive()
+ */
 class InventoryItem extends Model
 {
     use HasFactory;
@@ -35,7 +75,7 @@ class InventoryItem extends Model
         if (!isset($field)) {
             return false;
         }
-        return in_array($field, Delivery::$fieldArray);
+        return in_array($field, InventoryItem::$fieldArray);
     }
 
     public function tool()

@@ -113,7 +113,7 @@ class MembershipController
         if (isset($subscriptionId)) {
             $query = $query->withSubscriptionId($subscriptionId);
         }
-        if (isset($startDate)) {
+        if (isset($startAt)) {
             $query = $query->withStartAt($startAt);
         }
         $memberships = $query->orderBy($sortfield, $sortdir)->get();

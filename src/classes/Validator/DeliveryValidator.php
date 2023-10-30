@@ -73,7 +73,7 @@ class DeliveryValidator
 			return false;
 		}
         if (isset($delivery["state"]) &&
-            (FALSE == DeliveryValidator::isValidState($delivery["state"], $logger))) {
+            (FALSE == DeliveryValidator::isValidState($delivery["state"]))) {
             $message = "State (". $delivery["state"] . " is invalid (expected "
                 . DeliveryState::REQUESTED . "," . DeliveryState::CANCELLED . ", "
                 . DeliveryState::CONFIRMED . "," . DeliveryState::DELIVERED . ")";
@@ -82,7 +82,7 @@ class DeliveryValidator
             return false;
         }
         if (isset($delivery["type"]) &&
-            (FALSE == DeliveryValidator::isValidType($delivery["type"], $logger))) {
+            (FALSE == DeliveryValidator::isValidType($delivery["type"]))) {
             $message = "Type (". $delivery["type"] . " is invalid (expected "
                 . DeliveryType::PICK_UP . "," . DeliveryType::DROP_OFF . ")";
             $logger->info($message);

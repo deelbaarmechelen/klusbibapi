@@ -53,7 +53,7 @@ class MembershipValidator
 			return false;
 		}
         if (isset($membership["status"]) &&
-            (FALSE == MembershipValidator::isValidState($membership["status"], $logger))) {
+            (FALSE == MembershipValidator::isValidState($membership["status"]))) {
             $message = "State (". $membership["status"] . " is invalid (expected "
                 . MembershipState::STATUS_PENDING . "," . MembershipState::STATUS_CANCELLED . ", "
                 . MembershipState::STATUS_ACTIVE . "," . MembershipState::STATUS_EXPIRED . ")";

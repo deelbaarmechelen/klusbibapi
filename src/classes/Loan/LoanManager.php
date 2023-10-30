@@ -8,10 +8,12 @@ use Api\Mail\MailManager;
 use Api\Model\Lending;
 use Api\Model\Loan;
 use Api\Model\Contact;
+use Api\User\UserManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 //use Api\ModelMapper\UserMapper;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class LoanManager
@@ -20,19 +22,19 @@ use Illuminate\Database\Capsule\Manager as Capsule;
  */
 class LoanManager
 {
-    public static function instance($logger) {
-        return new UserManager(SnipeitInventory::instance(), $logger, new MailManager(null, null, $logger));
+    public static function instance(LoggerInterface $logger) {
+        return new LoanManager(SnipeitInventory::instance($logger), $logger);
     }
-    private $inventory;
-    private $logger;
-    private $mailManager;
+    private Inventory $inventory;
+    private LoggerInterface $logger;
+    private MailManager $mailManager;
     private $lastSyncAttempt;
     private $lastSyncedLoans;
 
     /**
      * LoanManager constructor.
      */
-    public function __construct(Inventory $inventory, $logger, MailManager $mailManager = null)
+    public function __construct(Inventory $inventory, LoggerInterface $logger, MailManager $mailManager = null)
     {
         $this->inventory = $inventory;
         $this->logger = $logger;

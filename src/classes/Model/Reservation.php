@@ -5,6 +5,22 @@ use Database\Factories\ReservationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property mixed $reservation_id
+ * @property mixed $user_id
+ * @property mixed $tool_id
+ * @property mixed $state
+ * @property mixed $startsAt
+ * @property mixed $endsAt
+ * @property mixed $type
+ * @property mixed $comment
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * 
+ * Laravel/Eloquent methods
+ * @method static Builder whereDate($column, $compare, $date)
+ * @method static find($id)
+ */
 class Reservation extends Model
 {
     use HasFactory;

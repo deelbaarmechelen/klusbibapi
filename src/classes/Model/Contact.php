@@ -8,6 +8,45 @@ use Illuminate\Database\Eloquent\Model;
 use Api\Model\UserRole;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property mixed $id
+ * @property mixed $state
+ * @property mixed $first_name
+ * @property mixed $last_name
+ * @property mixed $role
+ * @property mixed $email
+ * @property mixed $email_state
+ * @property mixed $membership_start_date
+ * @property mixed $membership_end_date
+ * @property mixed $address_line_1
+ * @property mixed $address_line_4
+ * @property mixed $address_line_2
+ * @property mixed $phone
+ * @property mixed $telephone
+ * @property mixed $registration_number
+ * @property mixed $payment_mode
+ * @property mixed $accept_terms_date
+ * @property mixed $user_ext_id
+ * @property mixed $last_sync_date
+ * @property mixed $active_membership
+ * @property mixed $company
+ * @property mixed $comment
+ * @property mixed $last_login
+ * @property mixed $created_at
+ * @property mixed $updated_at
+ * 
+ * @method static Builder members ()
+ * @method static Builder supporters ()
+ * @method static Builder active ()
+ * @method static Builder expired ()
+ * @method static Builder isDeleted ()
+ * @method static Builder notDeleted ()
+ * @method static Builder pending ()
+ * @method static Builder admin ()
+ * @method static Builder notAdmin ()
+ * @method static Builder stroom ()
+ * @method static Builder overdue()
+ */
 class Contact extends Model
 {
     //    use SoftDeletes;

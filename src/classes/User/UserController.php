@@ -180,7 +180,9 @@ class UserController implements UserControllerInterface
             } else {
                 $user->state = $data["state"];
             }
-
+            $sendNotification = FALSE;
+            $sendEmailVerification = FALSE;
+    
         }
         if (isset($data["email"])) {
             $this->logger->debug('Checking user email ' . $data["email"] . ' already exists');

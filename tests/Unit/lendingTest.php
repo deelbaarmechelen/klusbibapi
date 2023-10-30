@@ -8,6 +8,8 @@ class LendingTest extends LocalDbWebTestCase
 {
 	private $createdate;
 	private $updatedate;
+	private $startdate;
+	private $duedate;
 	/**
 	 * @return PHPUnit_Extensions_Database_DataSet_IDataSet
 	 */
