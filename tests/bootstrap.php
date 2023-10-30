@@ -12,6 +12,7 @@ use Tuupola\Base62;
 use Api\User\UserManager;
 use Api\User\UserController;
 use Tests\SlimTestCaseTrait;
+use There4\Slim\Test\WebTestClient;
 
 define('PROJECT_ROOT', realpath(__DIR__ . '/..'));
 

@@ -1,12 +1,14 @@
 parameters:
     level: 1
     paths:
-        - public/index.php
-        - app
         - src
     excludePaths:
         analyse:
+            - public/index.php
+            - app
             - vendor
         analyseAndScan:
             - db
+    bootstrapFiles:
+        - tests/bootstrap.php
             
