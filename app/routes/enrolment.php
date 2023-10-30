@@ -1,4 +1,5 @@
 <?php
+/** @var mixed $app */
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Api\Model\PaymentMode;

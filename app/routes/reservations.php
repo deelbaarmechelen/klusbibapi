@@ -1,4 +1,5 @@
 <?php
+/** @var mixed $app */
 
 use Api\Reservation\ReservationController;
 

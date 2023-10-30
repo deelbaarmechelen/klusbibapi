@@ -1,4 +1,5 @@
 <?php
+/** @var mixed $app */
 
 use Api\Upload\UploadHandler;
 use Api\Statistics\StatController;

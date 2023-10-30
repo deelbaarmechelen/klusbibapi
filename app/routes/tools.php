@@ -1,4 +1,5 @@
 <?php
+/** @var mixed $app */
 
 use Api\Tool\ToolController;
 use Api\Tool\AccessoryController;

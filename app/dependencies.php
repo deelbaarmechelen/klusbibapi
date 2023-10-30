@@ -1,4 +1,5 @@
 <?php
+/** @var mixed $app */
 // DIC configuration
 use Tuupola\Middleware\JwtAuthentication;
 use Tuupola\Middleware\JwtAuthentication\RequestMethodRule;
@@ -106,11 +107,11 @@ $container->set("user", function (ContainerInterface $container) {
 });
 
 $container->set("HttpBasicAuthentication", function (ContainerInterface $container) {
-	return new HttpBasicAuthentication([
+    return new HttpBasicAuthentication([
 			"path" => "/token",
 			"ignore" => "/token/guest",
 			"secure" => false,
-			"relaxed" => ["admin"],
+			"relaxed" => ["api"],
 			"authenticator" => new PdoAuthenticator([
 					"pdo" => $container->get('db'),
 					"table" => "contact",
@@ -119,8 +120,8 @@ $container->set("HttpBasicAuthentication", function (ContainerInterface $contain
 			]),
 			"before" => function (ServerRequestInterface $request, $arguments) use ($container) {
 				$container->set("user", $arguments["user"]);
-// 				print_r($arguments);
-// 				print_r($container->get("user"));
+				// print_r($arguments);
+				// print_r($container->get("user"));
 			}
 	]);
 });
@@ -132,7 +133,7 @@ $container->set("JwtAuthentication", function (ContainerInterface $container) {
 			"logger" => $container->get("logger"),
 //			"secure" => (APP_ENV == "development" ? false : true), // force HTTPS for production
 			"secure" => false, // disable -> scheme not always correctly set on request!
-			"relaxed" => ["admin"], // list hosts allowed without HTTPS for DEV
+			"relaxed" => ["api"], // list hosts allowed without HTTPS for DEV
 			"error" => function (ResponseInterface $response, $arguments) {
 				$data = array("error" => array( "status" => 401, "message" => $arguments["message"]));
 				return $response

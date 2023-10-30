@@ -3,6 +3,7 @@
  * follow JSON API conventions?
  * http://jsonapi.org/format
  */
+/** @var mixed $app */
 
 use Api\User\UserController;
 

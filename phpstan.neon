@@ -1,8 +1,12 @@
 parameters:
-	level: 1
-	paths:
-		- src
-		- tests
-	excludePaths:
-		analyse:
-			- vendor
+    level: 1
+    paths:
+        - public/index.php
+        - app
+        - src
+    excludePaths:
+        analyse:
+            - vendor
+        analyseAndScan:
+            - db
+            

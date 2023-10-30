@@ -1,4 +1,10 @@
 <?php
+/** @var mixed $app */
+/** @var mixed $host */
+/** @var mixed $database */
+/** @var mixed $user */
+/** @var mixed $pass */
+/** @var mixed $port */
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Events\Dispatcher;

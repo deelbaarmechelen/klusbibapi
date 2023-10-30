@@ -58,7 +58,7 @@ class ReservationValidator
 			return false;
 		}
         if (isset($reservation["state"]) &&
-            (FALSE == ReservationValidator::isValidState($reservation["state"], $logger))) {
+            (FALSE == ReservationValidator::isValidState($reservation["state"]))) {
             $message = "State (". $reservation["state"] . " is invalid (expected "
                 . ReservationState::REQUESTED . "," . ReservationState::CANCELLED . ", "
                 . ReservationState::CONFIRMED . "," . ReservationState::CLOSED . ")";

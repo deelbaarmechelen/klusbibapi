@@ -10,6 +10,7 @@ require_once __DIR__ . '/../test_env.php';
 
 class PaymentsTest extends LocalDbWebTestCase
 {
+	private $paymentDate;
 	private $createdate;
 	private $updatedate;
 	/**

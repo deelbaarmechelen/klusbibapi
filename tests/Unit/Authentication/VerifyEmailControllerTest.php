@@ -10,6 +10,8 @@ require_once __DIR__ . '/../../test_env.php';
 
 class VerifyEmailControllerTest extends \LocalDbWebTestCase
 {
+    private $startdate;
+    private $enddate;
     /**
      * @return PHPUnit_Extensions_Database_DataSet_IDataSet
      */
