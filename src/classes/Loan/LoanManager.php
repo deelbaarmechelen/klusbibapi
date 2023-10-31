@@ -106,7 +106,12 @@ class LoanManager
                     }
                 }
             }
-            $offset = $offset - $limit;
+            if ($offset > 0 && $offset < $limit) {
+                // last activity lookup: use offset 0 to retrieve most recent activity
+                $offset = 0;
+            } else {
+                $offset = $offset - $limit;
+            }
             usleep(500 * 1000);
         }
 
