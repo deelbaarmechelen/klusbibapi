@@ -73,7 +73,7 @@ foreach($reservations as $reservation) {
 //    $lending->save();
 //}
 echo "Syncing loans\n";
-$loanManager = new \Api\Loan\LoanManager(SnipeitInventory::instance($logger), $logger);
+$loanManager = \Api\Loan\LoanManager::instance($logger, $mailManager);
 $loanManager->sync();
 
 echo "Syncing payments\n";

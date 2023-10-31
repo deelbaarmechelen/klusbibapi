@@ -285,7 +285,9 @@ class ToolManager
         }
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
-        if (basename($existingItem->image_name) !== basename($item->image_name)) {
+        if ($item->image_name != null 
+            && ($existingItem->image_name != null
+               || basename($existingItem->image_name) !== basename($item->image_name))) {
             try {
                 echo "sync image " . $item->image_name . " for item $item->sku\n";
                 $this->syncImage($item->image_name, $existingItem);
