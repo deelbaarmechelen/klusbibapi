@@ -36,7 +36,7 @@ abstract class SnipeitToolMapper
             $item->id = $asset->id;
         }
         $brand = isset($asset->manufacturer) && !empty($asset->manufacturer->name) ? html_entity_decode ($asset->manufacturer->name) : "";
-        $model = !empty($asset->manufacturer->name) ? html_entity_decode ($asset->model_number) : "";
+        $model = !empty($asset->model_number) ? html_entity_decode ($asset->model_number) : "";
         $category = isset($asset->category) && !empty($asset->category->name) ? html_entity_decode ($asset->category->name) : "";
         $default_name = $category . " " . $brand . " " . $model;
         $item->name = !empty($asset->name) ? html_entity_decode ($asset->name) : $default_name;
@@ -56,7 +56,9 @@ abstract class SnipeitToolMapper
         $item->is_active = true; // FIXME: check value based on state?
         $item->show_on_website =  self::isVisible($asset);
         $item->serial = $asset->serial;
-        $item->note = (strlen($asset->notes) > 128) ?  substr($asset->notes, 0, 128) : $asset->notes; // short description admin
+        if ($asset->notes != null) {
+            $item->note = (strlen($asset->notes) > 128) ?  substr($asset->notes, 0, 128) : $asset->notes; // short description admin
+        }
         $item->price_cost =  null;//', 10,2)->nullable()->default(null);
         $item->price_sell =  null;//', 10,2)->nullable()->default(null);
         $item->image_name =  $asset->image;//', 255)->nullable()->default(null);
@@ -73,13 +75,13 @@ abstract class SnipeitToolMapper
             $item->experience_level = isset($asset->custom_fields->experience_level) ? $asset->custom_fields->experience_level->value : null;
             $item->safety_risk = isset($asset->custom_fields->safety_risk) ? $asset->custom_fields->safety_risk->value : null;
             // FIXME: not accessible without login!
-            $item->short_url = isset($asset->custom_fields->doc_url) ? substr($asset->custom_fields->doc_url->value,0,64) : null;
+            $item->short_url = isset($asset->custom_fields->doc_url) && isset($asset->custom_fields->doc_url->value) ? substr($asset->custom_fields->doc_url->value,0,64) : null;
             $deliverable = isset($asset->custom_fields->leverbaar) ? $asset->custom_fields->leverbaar->value : "Nee";
-            $deliverable = (strtoupper($deliverable) == "JA") ? true : false;
+            $deliverable = ($deliverable != null && strtoupper($deliverable) == "JA") ? true : false;
             $item->deliverable = $deliverable;
             $item->loan_fee = isset($asset->custom_fields->forfait) ? floatval($asset->custom_fields->forfait->value) : null;
             $item->size = isset($asset->custom_fields->afmetingen) ? $asset->custom_fields->afmetingen->value : null;
-            $group = isset($asset->custom_fields->group) ? $asset->custom_fields->group->value : null;
+            $group = isset($asset->custom_fields->group) ? $asset->custom_fields->group->value : 'general';
         } else {
             // set default values
             $item->price_sell = null;
@@ -96,7 +98,7 @@ abstract class SnipeitToolMapper
         // group
         //construction, car, garden, general, technics, wood
         // alternative syntax:
-        if (method_exists('Api\Model\ProductTag', $group)) {
+        if ($group != null && method_exists('Api\Model\ProductTag', $group)) {
             $groupTag = ProductTag::{$group}();
         } else {
             $groupTag = ProductTag::general();
