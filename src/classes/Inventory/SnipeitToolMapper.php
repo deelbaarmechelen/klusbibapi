@@ -107,7 +107,7 @@ abstract class SnipeitToolMapper
         //$item->save();
         $tag = ProductTag::where('name', $assetCategory)->first();
 
-        if (isset($tag) || isset($groupTag)) {
+        if ($item->exists && (isset($tag) || isset($groupTag)) ) {
             $groupItems = [];
             if (isset($tag)) {
                 //$item->tags()->sync($tag->id);
