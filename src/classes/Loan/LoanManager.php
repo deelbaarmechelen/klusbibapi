@@ -22,8 +22,8 @@ use Psr\Log\LoggerInterface;
  */
 class LoanManager
 {
-    public static function instance(LoggerInterface $logger) {
-        return new LoanManager(SnipeitInventory::instance($logger), $logger);
+    public static function instance(LoggerInterface $logger, MailManager $mailManager) {
+        return new LoanManager(SnipeitInventory::instance($logger), $logger, $mailManager);
     }
     private Inventory $inventory;
     private LoggerInterface $logger;
