@@ -83,13 +83,13 @@ class ToolManager
             if ($existingItem === null) {
                 // save will create new item
                 echo "creating new tool item " . $item->id . "\n";
-                if (isset($item->image_name)) {
-                    $this->syncImage($item->image_name, $item);
-                }
                 $item->note = (isset($item->note) && strlen($item->note) > 128) ?
                     substr($item->note, 0, 125) . "..." : $item->note;
                 $item->last_sync_date = $syncTime;
                 $item->save();
+                if (isset($item->image_name)) {
+                    $this->syncImage($item->image_name, $item);
+                }
             } else {
                 // update item values
                 echo "updating tool item " . $item->id . "\n";
@@ -285,7 +285,9 @@ class ToolManager
         }
         $existingItem->price_cost = $item->price_cost;
         $existingItem->price_sell = $item->price_sell;
-        if (basename($existingItem->image_name) !== basename($item->image_name)) {
+        if ($item->image_name != null 
+            && ($existingItem->image_name != null
+               || basename($existingItem->image_name) !== basename($item->image_name))) {
             try {
                 echo "sync image " . $item->image_name . " for item $item->sku\n";
                 $this->syncImage($item->image_name, $existingItem);
@@ -330,6 +332,10 @@ class ToolManager
 
         $item->image_name = $basename;
         // update image table
-        $item->images()->save(new Image(['image_name' => $basename]));
+        if ($item->exists) {
+            $item->images()->save(new Image(['image_name' => $basename]));
+        } else {
+            $this->logger->warning("Cannot save image $basename for item $item->id: item not yet persisted");
+        }
     }
 }

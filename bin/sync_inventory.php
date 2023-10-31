@@ -25,7 +25,8 @@ $logger->pushHandler(new Monolog\Handler\RotatingFileHandler($logger_settings['p
 $today = new DateTime();
 
 echo "Syncing users\n";
-$userManager = new UserManager(SnipeitInventory::instance($logger), $logger, new \Api\Mail\MailManager(null, null, $logger));
+$mailManager = new \Api\Mail\MailManager(null, null, $logger);
+$userManager = new UserManager(SnipeitInventory::instance($logger), $logger, $mailManager);
 if ($force) {
     $users = \Api\Model\Contact::all(); // sync all users
 } else {
@@ -42,7 +43,7 @@ foreach($users as $user) {
 $userManager->validateInventoryUsers();
 
 echo "Syncing tools\n";
-$toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger);
+$toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger, $mailManager);
 $tools = $toolManager->sync();
 
 // For remaining models: just update last_sync_date to activate update trigger, which will take care of sync with Lend Engine
@@ -72,7 +73,7 @@ foreach($reservations as $reservation) {
 //    $lending->save();
 //}
 echo "Syncing loans\n";
-$loanManager = new \Api\Loan\LoanManager(SnipeitInventory::instance($logger), $logger);
+$loanManager = \Api\Loan\LoanManager::instance($logger, $mailManager);
 $loanManager->sync();
 
 echo "Syncing payments\n";

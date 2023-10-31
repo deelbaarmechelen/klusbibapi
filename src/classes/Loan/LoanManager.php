@@ -22,8 +22,8 @@ use Psr\Log\LoggerInterface;
  */
 class LoanManager
 {
-    public static function instance(LoggerInterface $logger) {
-        return new LoanManager(SnipeitInventory::instance($logger), $logger);
+    public static function instance(LoggerInterface $logger, MailManager $mailManager) {
+        return new LoanManager(SnipeitInventory::instance($logger), $logger, $mailManager);
     }
     private Inventory $inventory;
     private LoggerInterface $logger;
@@ -106,7 +106,12 @@ class LoanManager
                     }
                 }
             }
-            $offset = $offset - $limit;
+            if ($offset > 0 && $offset < $limit) {
+                // last activity lookup: use offset 0 to retrieve most recent activity
+                $offset = 0;
+            } else {
+                $offset = $offset - $limit;
+            }
             usleep(500 * 1000);
         }
 
