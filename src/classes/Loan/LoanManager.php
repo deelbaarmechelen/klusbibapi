@@ -6,6 +6,7 @@ use Api\Inventory\Inventory;
 use Api\Inventory\SnipeitInventory;
 use Api\Mail\MailManager;
 use Api\Model\Contact;
+use Api\Model\ItemMovement;
 use Api\Model\Lending;
 use Api\Model\Loan;
 use Api\Model\LoanRow;
@@ -54,9 +55,27 @@ class LoanManager
      * @param string $sortfield sort result on this field
      * @param string $sortdir sort direction ('asc' or 'desc')
      */
-    public function getAllLendings($query = null, $isOpen = false, $sortfield = 'id', $sortdir = 'asc') : \Illuminate\Support\Collection {
-        $lendings = $this->getLoans($query, $isOpen, $sortfield, $sortdir);
-        return $lendings->map($this->mapLoanItemToLending(...));
+    public function getAllLendings(
+        $userId, $toolId, $toolType, $startDate, $active, 
+        $sortfield = 'created_at', $sortdir = 'asc') : \Illuminate\Support\Collection {
+        // $query = null, $isOpen = false, $sortfield = 'id', $sortdir = 'asc') : \Illuminate\Support\Collection {
+
+        $query = Loan::validLending();
+        if (isset($userId)) {
+            $query = $query->withContact($userId);
+        }
+        if (isset($toolId)) {
+            $query = $query->withInventoryItem($toolId);
+        }
+        if (isset($startDate)) {
+            $query = $query->withCheckoutDate($startDate);
+        }
+        if (isset($active)) {
+            $query = $query->activeLending();
+        }
+        $lendings = $query->orderBy($sortfield, $sortdir)->get();
+
+         return $lendings->map($this->mapLoanItemToLending(...));
     }
 
     /**
@@ -105,56 +124,23 @@ class LoanManager
         return $queryBuilder->orderBy($sortfield, $sortdir)->get();
     }
     /**
-     * Method to map a loan item (loan + loan_row + note) to a lending
+     * Method to map a loan item (loan) to a lending
      */
-    private function mapLoanItemToLending($item) : Reservation {
+    private function mapLoanItemToLending($loan) : Lending {
+        $loanRow = $loan->rows()->first();
         $lending = new Lending();
-		$lending->lending_id = $item->id;
-		$lending->start_date = $item->datetime_out;
-		$lending->due_date = $item->datetime_in;
-		$lending->returned_date = $item->checked_in_at;
-		$lending->tool_id = $item->inventory_item_id;
+		$lending->lending_id = $loan->id;
+		$lending->start_date = $loan->datetime_out;
+		$lending->due_date = $loan->datetime_in;
+		$lending->returned_date = $loanRow->checked_in_at;
+		$lending->tool_id = $loanRow->inventory_item_id;
 		$lending->tool_type = "TOOL";
-		$lending->user_id = $item->contact_id;
+		$lending->user_id = $loan->contact_id;
 		// $lending->comments = $note->text;
-		// $lending->active = $item->;
-		// $lending->created_by = ;
-		// $lending->created_at = ;
+		$lending->active = $loan->status == Loan::STATUS_ACTIVE || $loan->status == Loan::STATUS_OVERDUE;
+		$lending->created_by = $loan->created_by;
+		$lending->created_at = $loan->created_at;
 		// $lending->updated_at = ;
-        /*
-BEGIN
- IF EXISTS (SELECT 1 FROM inventory_item WHERE id = NEW.`tool_id`) 
- AND EXISTS (SELECT 1 FROM contact WHERE id = NEW.`user_id`) THEN
- 
-  INSERT INTO loan (
-        id, contact_id, datetime_out, datetime_in, status, total_fee, reference, created_at)
-  SELECT
-  NEW.`lending_id`, NEW.`user_id`, ifnull(NEW.`start_date`, CURRENT_TIMESTAMP), ifnull(NEW.`due_date`, ifnull(NEW.`start_date`, CURRENT_TIMESTAMP)), 
-  CASE WHEN (NEW.`returned_date` IS NULL) THEN 'ACTIVE' ELSE 'CLOSED' END,
-  0, NULL, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP);
-
-  INSERT INTO loan_row (
-        id, loan_id, inventory_item_id, product_quantity, due_out_at, due_in_at, checked_out_at, checked_in_at, fee, site_from, site_to)
-  SELECT NEW.`lending_id`, NEW.`lending_id`, NEW.`tool_id`, 1, NEW.`start_date`, ifnull(NEW.`due_date`, ifnull(NEW.`start_date`, CURRENT_TIMESTAMP)), 
-         NEW.`start_date`, NEW.`returned_date`, 0, 1, 1;
-
-  IF NEW.`start_date` IS NOT NULL THEN
-      INSERT INTO item_movement (
-            inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
-      SELECT NEW.`tool_id`, 1, NEW.`lending_id`, NEW.`user_id`, CURRENT_TIMESTAMP, 1;
-  END IF;
-  IF NOT NEW.`returned_date` IS NULL THEN
-    INSERT INTO item_movement (
-        inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
-    SELECT NEW.`tool_id`, 2, null, null, CURRENT_TIMESTAMP, 1;
-  END IF;
-  IF NOT NEW.`comments` IS NULL THEN
-    INSERT INTO note (contact_id, loan_id, inventory_item_id, text, admin_only, created_at)
-    SELECT NEW.`user_id`, NEW.`lending_id`, NEW.`tool_id`, NEW.`comments`, 1, CURRENT_TIMESTAMP;
-  END IF;  
- END IF;
- END        
-        */
         return $lending;
     }
     /**
@@ -200,13 +186,42 @@ BEGIN
         return $reservation;
         //return Reservation::find($id);
     }
+    public function getLendingById($id) : Lending|null {
+        $loan = Loan::isLending()->find($id);
+        if (!$loan) {
+            return null; // no loan/lending found
+        }
+        $loanRows = $loan->rows();
+        if ($loanRows->count() == 0) {
+            return null; // empty loan, no actual lending
+        }
+        $loanRow = $loanRows->first();
+        $lending = new Lending();
+        $lending->lending_id = $loan->id;
+        $lending->user_id = $loan->contact_id;
+        $lending->tool_id = $loanRow->inventory_item_id;
+        $lending->start_date = $loanRow->checked_out_at;
+        $lending->due_date = $loanRow->due_in_at;
+        $lending->returned_date = $loanRow->checked_in_at;
+        if ($loan->notes()->count() > 0) {
+            // TODO: concatenate all comments?
+            $lending->comments = $loan->notes()->first()->text;
+        }
+        $lending->created_at = $loan->created_at;
+        return $lending;
+    }
+
+    public function hasActiveLending($inventoryId) {
+        return Loan::activeLending()->withInventoryItem($inventoryId)->count() > 0;
+    }
+
     /**
-     * @return bool true when reservation successfully created
+     * @return Reservation|bool the created reservation when reservation successfully created, false otherwise
      */
-    public function createReservation(Reservation $reservation) {
-        $this->logger->info("Creating loan");
+    public function createReservation(Reservation $reservation) : Reservation|bool {
+        $this->logger->info("Creating loan for reservation");
         try {
-            Capsule::transaction(function() use ($reservation) {
+            Capsule::transaction(function() use (&$reservation) {
                  // create loan
                 $loan = new Loan();
                 $loan->contact_id = $reservation->user_id;
@@ -242,11 +257,85 @@ BEGIN
                 }
                 $reservation->reservation_id = $loan->id;
             });
+            return $reservation;
         } catch (\Exception $ex) {
             $this->logger->error("Unable to create reservation: " . $ex->getMessage());
-            return false;
         }
-        return true;
+        return false;
+    }
+
+    /**
+     * @return Lending|bool the created lending when reservation successfully created, false otherwise
+     */
+    public function createLending(Lending $lending) : Lending|bool {
+        $this->logger->info("Creating loan for 'lending'");
+        try {
+            $newLending = null;
+            Capsule::transaction(function() use ($lending, &$newLending) { // newLending is passed by reference as it will be created in anonymous function
+                // TODO: check if a loan (e.g. from a reservation) already exists and can be updated
+                $now = new DateTimeImmutable();
+                $startsAt = isset($lending->start_date) ? $lending->start_date : $now;
+                $endsAt = isset($lending->due_date) ? $lending->due_date : $startsAt;
+
+                $loan = Loan::isReservation()->withContact($lending->user_id)->withInventoryItem($lending->tool_id)->first();
+                if ($loan == null) {
+                    // create loan
+                    $loan = new Loan();
+                    $loan->contact_id = $lending->user_id;
+                    $loan->total_fee = 0;
+                    // $loan->created_at_site = null;
+                    $loan->collect_from = 1;
+                    // $loan->reference = null;
+
+                    // create loan row
+                    $this->logger->info("Creating loan row");
+                    $loanRow = new LoanRow();
+                    $loanRow->inventory_item_id = $lending->tool_id;
+                    $loanRow->product_quantity = 1;
+                    $loanRow->fee = 0; // no default -> force to 0
+                    $loanRow->site_from = 1;
+                    $loanRow->site_to = 1;
+    
+                } else {
+                    $loanRow = $loan->rows()->first();
+                }
+                $loan->datetime_out = $startsAt;
+                $loan->datetime_in = $endsAt; // last return date for all items in loan (loan row can have different due_in_at dates)
+                if ($lending->returned_date == null) {
+                    $status = Loan::STATUS_ACTIVE;
+                    if ($now > $lending->due_date) {
+                        $status = Loan::STATUS_OVERDUE;
+                    }
+                } else {
+                    $status = Loan::STATUS_CLOSED;    
+                }
+                $loan->status = $status;
+                $loan->save();
+                
+                $loanRow->due_out_at = $startsAt;
+                $loanRow->due_in_at = $endsAt;
+                $loanRow->checked_out_at = $startsAt; // null is default
+                $loanRow->checked_in_at = $lending->returned_date; // null is default
+                $loan->rows()->save($loanRow);
+                $loanRow->save();
+
+                // create item movement
+                if ($lending->start_date != null) {
+                    $loanRow->addMovement();
+                }
+          
+                // create note
+                if (isset($lending->comment)) {
+                    $this->logger->info("Creating note");
+                    $loanRow->addNote($lending->comment);
+                }
+                $newLending = $this->mapLoanItemToLending($loan);
+            });
+            return $newLending;
+        } catch (\Exception $ex) {
+            $this->logger->error("Unable to create lending: " . $ex->getMessage());
+        }
+        return false;
     }
 
     public function updateReservation(Reservation $reservation, $newToolId, $newUserId, $newTitle, $newType, $newState, $newStartsAt, $newEndsAt, $newComment) {
@@ -297,6 +386,48 @@ BEGIN
         $loanRow->save();
         $loan->save();
         return $reservation;
+    }
+    public function updateLending(Lending $lending, $newStartDate, $newDueDate, $newReturnedDate, $newComment, $newCreatedBy) {
+        $loan = Loan::isLending()->find($lending->lending_id);
+        if ($loan == null) {
+            $this->logger->warning("Lending with id " . $lending->lending_id . " could not be found -> update skipped");
+            return;
+        }
+        $loanRow = $loan->rows()->first();
+        if ($newStartDate != null && $loanRow != null) {
+            $loanRow->checked_out_at = $newStartDate;
+            $lending->start_date = $loanRow->checked_out_at;
+        }
+        if ($newDueDate != null && $loanRow != null) {
+            $loan->datetime_in = $newDueDate;
+            $loanRow->due_in_at = $newDueDate;
+            $lending->due_date = $loanRow->due_in_at;
+        }
+        if ($newReturnedDate != null) {
+            $loanRow->checked_in_at = $newReturnedDate;
+            $lending->returned_date = $loanRow->checked_in_at;
+            // update item movement
+            $loanRow->addMovement();
+            // also update loan status to CLOSED (assuming this is the only loan row in loan)
+            $loan->status = Loan::STATUS_CLOSED;
+        }
+        if ($newCreatedBy != null) {
+            $loan->created_by = $newCreatedBy;
+            $lending->created_by = $newCreatedBy;
+        }
+        if ($newComment != null) {
+            $note = $loan->notes()->first();
+            if ($note != null) {
+                $note->text = $newComment;
+                $note->save();
+            } else {
+                $loanRow->addNote($newComment);
+            }
+            $lending->comments = $newComment;
+        }
+        $loanRow->save();
+        $loan->save();
+        return $lending;
     }
 
     public function deleteReservation(int $reservationId) {

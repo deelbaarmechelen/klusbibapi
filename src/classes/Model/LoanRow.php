@@ -3,6 +3,7 @@
 namespace Api\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Api\Model\ItemMovement;
 /**
  * @property mixed $id
  * @property mixed $loan_id
@@ -17,9 +18,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed $site_to
  * @property mixed $deposit_id
  * @property mixed $item_location
+ * @property Loan $loan
  */
 class LoanRow extends Model
 {
+    const LOCATION_UNKNOWN = 0;
+    const LOCATION_ON_LOAN = 1;
+	const LOCATION_IN_STOCK = 2;
+    const LOCATION_REPAIR = 3;
+
     protected $table = 'loan_row';
     protected $primaryKey = "id";
     public $incrementing = true;
@@ -30,7 +37,29 @@ class LoanRow extends Model
 	];
     public $timestamps = false;
 
-
+    public function addMovement() {
+        if ($this->checked_out_at == null) {
+            // not checked out, no movement to be created
+            return;
+        }
+        $location = null;
+        if ($this->checked_in_at == null) {
+            $location = LoanRow::LOCATION_ON_LOAN;
+        } else {
+            $location = LoanRow::LOCATION_IN_STOCK;
+        }
+        if ($this->itemMovement != null) {
+            $this->itemMovement->inventory_location_id = $location;
+            $this->itemMovement->save();
+        } else {
+            $movement = new ItemMovement();
+            $movement->inventory_item_id = $this->inventory_item_id;
+            $movement->assigned_to_contact_id = $this->loan->contact_id;
+            $movement->quantity = 1;
+            $movement->inventory_location_id = $location;
+            $this->itemMovement()->save($movement);
+        }
+    }
     public function addNote($text) {
         $note = new Note();
         $note->contact_id = $this->loan->contact_id;
@@ -47,4 +76,7 @@ class LoanRow extends Model
 	{
 		return $this->belongsTo('Api\Model\InventoryItem', 'inventory_item_id');
 	}
+    public function itemMovement() {
+        return $this->hasOne(ItemMovement::class, 'loan_row_id', 'id');
+    }
 }

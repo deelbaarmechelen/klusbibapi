@@ -18,9 +18,17 @@ use Illuminate\Database\Eloquent\Builder;
  * @property mixed $collect_from
  * @property mixed $created_at
  * 
+ * @method static Builder isActive()
+ * @method static Builder isOverdue()
  * @method static Builder isReserved()
  * @method static Builder isOpen()
  * @method static Builder isReservation()
+ * @method static Builder isLending()
+ * @method static Builder validLending()
+ * @method static Builder activeLending()
+ * @method static Builder withContact($contact)
+ * @method static Builder withInventoryItem($inventoryItemId)
+ * @method static Builder withCheckoutDate($checkoutDate)
  * @method static Builder withSearchQuery($search)
  * 
  * Laravel/Eloquent methods
@@ -30,6 +38,8 @@ use Illuminate\Database\Eloquent\Builder;
 class Loan extends Model
 {
 	const STATUS_PENDING = "PENDING";
+	const STATUS_ACTIVE = "ACTIVE";
+	const STATUS_OVERDUE = "OVERDUE";
 	const STATUS_RESERVED = "RESERVED";
 	const STATUS_CANCELLED = "CANCELLED";
 	const STATUS_CLOSED = "CLOSED";
@@ -66,7 +76,18 @@ class Loan extends Model
     public function notes() {
         return $this->hasMany(Note::class);
     }
+    public function contact() {
+        return $this->belongsTo('Api\Model\Contact', 'contact_id', 'id');
+    }
 
+    public function scopeIsActive($query)
+    {
+        return $query->where('status', '=', Loan::STATUS_ACTIVE);
+    }
+    public function scopeIsOverdue($query)
+    {
+        return $query->where('status', '=', Loan::STATUS_OVERDUE);
+    }
     public function scopeIsReserved($query)
     {
         return $query->where('status', '=', Loan::STATUS_RESERVED);
@@ -82,9 +103,47 @@ class Loan extends Model
             $query->whereNull('checked_out_at');
         });
     }
+    public function scopeIsLending($query)
+    {
+        return $query->whereHas('rows', function (Builder $query) {
+            $query->whereNotNull('checked_out_at');
+        });
+    }
+    public function scopeValidLending($query)
+    {
+        return $query->isLending()
+            ->has('contact')
+            ->whereHas('rows', function (Builder $query) {
+                $query->has('inventoryItem');
+            });
+    }
+    public function scopeActiveLending($query)
+    {
+        return $query->isLending()
+            ->whereHas('rows', function (Builder $query) {
+                $query->whereNull('checked_in_at');
+        });
+    }
+    public function scopeWithContact($query, $contactId)
+    {
+        return $query->where('contact_id', '=', $contactId);
+    }
+
+    public function scopeWithInventoryItem($query, $inventoryItemId)
+    {
+        return $query->whereHas('rows', function (Builder $query) use ($inventoryItemId) {
+            $query->where('inventory_item_id', '=', $inventoryItemId);
+        });
+    }
+    public function scopeWithCheckoutDate($query, $checkoutDate)
+    {
+        return $query->whereHas('rows', function (Builder $query) use ($checkoutDate) {
+            $query->where('checked_out_at', '=', $checkoutDate);
+        });
+    }
     public function scopeWithSearchQuery($query, $search)
     {
-        return $query->filter(function (Loan $loan, int $key) {
+        return $query->filter(function (Loan $loan, int $key) use ($search){
             $firstName = $loan->contact->first_name;
             $lastName = $loan->contact->last_name;
             return str_contains($firstName,$search) || str_contains($lastName, $search);
