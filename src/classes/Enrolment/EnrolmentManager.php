@@ -245,7 +245,7 @@ class EnrolmentManager
 
             // Always create new membership, and only make it the active membership when payment completes
             // Note: active membership could be a temporary membership
-            if ($this->user->active_membership != null && $this->user->activateMembership->status == MembershipState::STATUS_ACTIVE
+            if ($this->user->active_membership != null && $this->user->activeMembership->status == MembershipState::STATUS_ACTIVE
                 && $this->isTempMembership($this->user->activeMembership)) {
                 //$activeMembership = $this->user->activeMembership()->first();
                 $start_date = $this->user->activeMembership->expires_at;
@@ -883,7 +883,7 @@ class EnrolmentManager
     {
         $this->logger->info(\json_encode($this->user->activeMembership));
         // normal case, no other checks needed
-        if (!isset($this->user->activateMembership)) {
+        if (!isset($this->user->activeMembership)) {
             return;
         }
         // normal case, no other checks needed
@@ -894,7 +894,7 @@ class EnrolmentManager
         }
 
         // temporary membership already active or expired
-        if ($this->user->activateMembership->status == MembershipState::STATUS_ACTIVE || $this->user->state == MembershipState::STATUS_EXPIRED) {
+        if ($this->user->activeMembership->status == MembershipState::STATUS_ACTIVE || $this->user->state == MembershipState::STATUS_EXPIRED) {
             if ($this->isTempMembership($this->user->activeMembership) ) {
                 return;
             } else {
@@ -918,11 +918,11 @@ class EnrolmentManager
      */
     protected function checkMembershipStateRenewal()
     {
-        if (!isset($this->user->activateMembership) ||
-            $this->user->activateMembership->status == MembershipState::STATUS_PENDING) {
+        if (!isset($this->user->activeMembership) ||
+            $this->user->activeMembership->status == MembershipState::STATUS_PENDING) {
             throw new EnrolmentException("Enrolment not yet complete, consider an enrolment", EnrolmentException::NOT_ENROLLED);
         }
-        if ($this->user->activateMembership->status != MembershipState::STATUS_ACTIVE && $this->user->activateMembership->status != MembershipState::STATUS_EXPIRED) {
+        if ($this->user->activeMembership->status != MembershipState::STATUS_ACTIVE && $this->user->activeMembership->status != MembershipState::STATUS_EXPIRED) {
             throw new EnrolmentException("Membership status unsupported for renewal", EnrolmentException::UNSUPPORTED_STATE);
         }
     }
