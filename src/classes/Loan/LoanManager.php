@@ -473,6 +473,8 @@ class LoanManager
         }
     }
 
+    // FIXME: sync not compatible with direct update of loan and loan row instead of lending creation/update
+    //       -> revert to lending sync through API calls?
     public function sync() {
         $syncTime = new \DateTime();
         // Get last synced action id from kb_sync
