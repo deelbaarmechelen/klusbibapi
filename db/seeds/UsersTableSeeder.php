@@ -17,11 +17,10 @@ class UsersTableSeeder extends AbstractCapsuleSeeder
     {
         $this->initCapsule();
 
+        $startdate = new DateTime();
+        $enddate = clone $startdate;
+        $enddate->add(new DateInterval('P7D'));
         if (!Capsule::table('contact')->where('id', '=', 1)->exists() ) {
-            $startdate = new DateTime();
-            $enddate = clone $startdate;
-            $enddate->add(new DateInterval('P7D'));
-
             Capsule::table('contact')->insert([
                 'id' => 1,
                 'first_name' => 'admin',
@@ -36,7 +35,22 @@ class UsersTableSeeder extends AbstractCapsuleSeeder
                 'created_at' => $startdate,
                 'updated_at' => $startdate
             ]);
-
+        }
+        if (!Capsule::table('contact')->where('id', '=', 2)->exists() ) {
+            Capsule::table('contact')->insert([
+                'id' => 2,
+                'first_name' => 'Jef',
+                'last_name' => 'De Bouwer',
+                'role' => 'member',
+                'email' => 'jef@test.klusbib.be',
+                'state' => 'ACTIVE',
+                'email_state' => 'CONFIRMED',
+                'password' => password_hash("test", PASSWORD_DEFAULT),
+                'membership_start_date' => $startdate,
+                'membership_end_date' => $enddate,
+                'created_at' => $startdate,
+                'updated_at' => $startdate
+            ]);
         }
     }
 
