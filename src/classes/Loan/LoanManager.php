@@ -73,11 +73,34 @@ class LoanManager
         if (isset($active)) {
             $query = $query->activeLending();
         }
-        $lendings = $query->orderBy($sortfield, $sortdir)->get();
+        $lendings = $query->orderBy($this->matchLendingToLoanField($sortfield), $sortdir)->get();
 
          return $lendings->map($this->mapLoanItemToLending(...));
     }
 
+    private function matchLendingToLoanField($sortfield){
+        if ($sortfield == null) {
+            return null;
+        }
+        if ($sortfield == "due_date") {
+            return "datetime_in";
+        }
+        if ($sortfield == "start_date") {
+            return "datetime_out";
+        }
+        if ($sortfield == "returned_date") {
+            // FIXME: columns from loan_row table not available for order
+            //return "checked_in_at";
+        }
+        if ($sortfield == "tool_id") {
+            // FIXME: columns from loan_row table not available for order
+            // return "inventory_item_id";
+        }
+        if ($sortfield == "user_id") {
+            return "contact_id";
+        }
+        return $sortfield;
+    }
     /**
      * @param string $query query string
      * @param bool $isOpen when true, only return open reservations
