@@ -16,12 +16,12 @@ class ProjectsTableSeeder extends AbstractCapsuleSeeder
     public function run()
     {
         $this->initCapsule();
-        $project_count = Capsule::table('projects')->where('name', '=', 'STROOM')->count();
+        $project_count = Capsule::table('kb_projects')->where('name', '=', 'STROOM')->count();
         if ($project_count == 0) {
-            Capsule::table('projects')->insert([
+            Capsule::table('kb_projects')->insert([
                 'name' => 'STROOM'
             ]);
-            Capsule::table('projects')->insert([
+            Capsule::table('kb_projects')->insert([
                 'name' => 'Delivery'
             ]);
 
