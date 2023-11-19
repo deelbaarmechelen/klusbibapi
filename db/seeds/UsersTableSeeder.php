@@ -39,9 +39,42 @@ class UsersTableSeeder extends AbstractCapsuleSeeder
         if (!Capsule::table('contact')->where('id', '=', 2)->exists() ) {
             Capsule::table('contact')->insert([
                 'id' => 2,
+                'first_name' => 'Test',
+                'last_name' => 'Tester',
+                'role' => 'member',
+                'email' => 'test@test.klusbib.be',
+                'state' => 'ACTIVE',
+                'email_state' => 'CONFIRMED',
+                'password' => password_hash("test", PASSWORD_DEFAULT),
+                'membership_start_date' => $startdate,
+                'membership_end_date' => $enddate,
+                'created_at' => $startdate,
+                'updated_at' => $startdate
+            ]);
+        }
+        if (!Capsule::table('contact')->where('id', '=', 3)->exists() ) {
+            Capsule::table('contact')->insert([
+                'id' => 3,
+                'first_name' => 'Uit',
+                'last_name' => 'Pas',
+                'role' => 'member',
+                'email' => 'uitpas@test.klusbib.be',
+                'state' => 'ACTIVE',
+                'email_state' => 'CONFIRMED',
+                'password' => password_hash("test", PASSWORD_DEFAULT),
+                'membership_start_date' => $startdate,
+                'membership_end_date' => $enddate,
+                'created_at' => $startdate,
+                'updated_at' => $startdate
+            ]);
+        }
+        if (!Capsule::table('contact')->where('id', '=', 4)->exists() ) {
+            Capsule::table('contact')->insert([
+                'id' => 4,
                 'first_name' => 'Jef',
                 'last_name' => 'De Bouwer',
                 'role' => 'member',
+                'company' => 'Bouwbedrijf',
                 'email' => 'jef@test.klusbib.be',
                 'state' => 'ACTIVE',
                 'email_state' => 'CONFIRMED',
