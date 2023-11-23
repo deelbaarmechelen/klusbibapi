@@ -219,7 +219,7 @@ class LoanManager
                     if (isset($logMeta) && isset($logMeta->expected_checkin) && isset($logMeta->expected_checkin->new)) {
                         echo "updating due date of lending $lending->lending_id from " . $logMeta->expected_checkin->old . 
                         " to " . $logMeta->expected_checkin->new . "\n";
-                        $expectedCheckin = \DateTime::createFromFormat("Y-m-d H:i:s", $logMeta->expected_checkin->new);
+                        $expectedCheckin = \DateTime::createFromFormat("Y-m-d", substr($logMeta->expected_checkin->new,0,10));
                         $lending->due_date = $expectedCheckin;
                         $lending->last_sync_date = $createdAt;
                         $lending->save();
