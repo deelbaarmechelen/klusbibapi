@@ -83,8 +83,9 @@ class CreateSyncAssets extends AbstractCapsuleMigration
 
         // Keep assets/kb_sync_assets and inventory_item in sync
 
-        // Add kb_sync_assets triggers to update inventory_item
-        $sql = "CREATE TRIGGER klusbibdb.`kb_sync_assets_bi` BEFORE INSERT ON klusbibdb.`kb_sync_assets` FOR EACH ROW
+        // Add kb_sync_assets triggers to update inventory_item        
+        $sql = "DELIMITER $$ 
+        CREATE TRIGGER klusbibdb.`kb_sync_assets_bi` BEFORE INSERT ON klusbibdb.`kb_sync_assets` FOR EACH ROW
         BEGIN
         IF NOT EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = NEW.id) THEN
 
@@ -99,10 +100,13 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             null, null, 1, 1, null, null, null, null, null, 
             null, 1, null, 'loan', null, null;
 
-        END IF
-        END";
+        END IF;
+        END$$ 
+        DELIMITER ;
+        ";
         $db->exec($sql);
-        $sql = "CREATE TRIGGER klusbibdb.`kb_sync_assets_bu` BEFORE UPDATE ON klusbibdb.`kb_sync_assets` FOR EACH ROW
+        $sql = "DELIMITER $$ 
+        CREATE TRIGGER klusbibdb.`kb_sync_assets_bu` BEFORE UPDATE ON klusbibdb.`kb_sync_assets` FOR EACH ROW
         BEGIN
         IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = OLD.id) THEN
             IF NOT OLD.name <=> NEW.name THEN
@@ -110,15 +114,15 @@ class CreateSyncAssets extends AbstractCapsuleMigration
                 SET name = NEW.name,
                 updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                 WHERE id = OLD.id;
-            END IF
+            END IF;
             IF NOT OLD.sku <=> NEW.sku THEN
                 UPDATE klusbibdb.`inventory_item`
                 SET sku = NEW.asset_tag,
                 updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                 WHERE id = OLD.id;
-            END IF
+            END IF;
             IF NOT OLD.assigned_to <=> NEW.assigned_to THEN
-            END IF
+            END IF;
         ELSE
           INSERT INTO klusbibdb.inventory_item (
             id, created_by, assigned_to, current_location_id, item_condition, created_at, updated_at,
@@ -130,49 +134,58 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             NEW.`name`, NEW.`asset_tag`, null, null, null, null,
             null, null, 1, 1, null, null, null, null, null, 
             null, 1, null, 'loan', null, null;
-        END IF
+        END IF;
 
         IF (NOT NEW.model_id <=> OLD.model_id) THEN
-        END IF
+        END IF;
 
         IF (NOT NEW.image <=> OLD.image) THEN
-        END IF
+        END IF;
 
         IF (NOT NEW.status <=> OLD.status) THEN
-        END IF
+        END IF;
 
         IF (NOT NEW.last_checkout <=> OLD.last_checkout)  THEN
-        END IF
+        END IF;
 
         IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
-        END IF
+        END IF;
 
         IF (NOT NEW.expected_checkin <=> OLD.expected_checkin) THEN
-        END IF
+        END IF;
 
         IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
-        END IF
+        END IF;
 
-        END";
+        END$$ 
+        DELIMITER ;
+        ";
         $db->exec($sql);
-        $sql = "CREATE TRIGGER klusbibdb.`kb_sync_assets_bd` BEFORE DELETE ON klusbibdb.`kb_sync_assets` FOR EACH ROW
+        $sql = "DELIMITER $$ 
+        CREATE TRIGGER klusbibdb.`kb_sync_assets_bd` BEFORE DELETE ON klusbibdb.`kb_sync_assets` FOR EACH ROW
         BEGIN
           DELETE FROM klusbibdb.inventory_item WHERE id = OLD.id;
-        END";
+        END$$ 
+        DELIMITER ;
+        ";
         $db->exec($sql);
 
         // Triggers on inventory_item to sync with assets
-        $sql = "CREATE TRIGGER klusbibdb.`inventory_item_bi` BEFORE INSERT ON klusbibdb.`inventory_item` FOR EACH ROW
+        $sql = "DELIMITER $$ 
+        CREATE TRIGGER klusbibdb.`inventory_item_bi` BEFORE INSERT ON klusbibdb.`inventory_item` FOR EACH ROW
         BEGIN
           IF NOT EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
             INSERT INTO inventory.assets  (
             id, name, asset_tag, model_id, created_at, updated_at)
             SELECT 
             NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
-          END IF
-        END";
+          END IF;
+        END$$ 
+        DELIMITER ;
+        ";
         $db->exec($sql);
-        $sql = "CREATE TRIGGER klusbibdb.`inventory_item_bu` BEFORE UPDATE ON klusbibdb.`inventory_item` FOR EACH ROW
+        $sql = "DELIMITER $$ 
+        CREATE TRIGGER klusbibdb.`inventory_item_bu` BEFORE UPDATE ON klusbibdb.`inventory_item` FOR EACH ROW
         BEGIN
           IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
             IF NOT OLD.name <=> NEW.name THEN
@@ -180,25 +193,30 @@ class CreateSyncAssets extends AbstractCapsuleMigration
                 SET name = NEW.name,
                 updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                 WHERE id = OLD.id;
-            END IF
+            END IF;
             IF NOT OLD.sku <=> NEW.sku THEN
                 UPDATE inventory.assets 
                 SET asset_tag = NEW.sku,
                 updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                 WHERE id = OLD.id;
-            END IF
+            END IF;
           ELSE
             INSERT INTO inventory.assets  (
                 id, name, asset_tag, model_id, created_at, updated_at)
                 SELECT 
                 NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
-          END IF
-        END";
+          END IF;
+        END$$ 
+        DELIMITER ;
+        ";
         $db->exec($sql);
-        $sql = "CREATE TRIGGER klusbibdb.`inventory_item_bd` BEFORE DELETE ON klusbibdb.`inventory_item` FOR EACH ROW
+        $sql = "DELIMITER $$ 
+        CREATE TRIGGER klusbibdb.`inventory_item_bd` BEFORE DELETE ON klusbibdb.`inventory_item` FOR EACH ROW
         BEGIN
           DELETE FROM inventory.assets WHERE id = OLD.id;
-        END";
+        END$$ 
+        DELIMITER ;
+        ";
         $db->exec($sql);
 
 	}
