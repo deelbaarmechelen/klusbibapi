@@ -99,24 +99,6 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             null, null, 1, 1, null, null, null, null, null, 
             null, 1, null, 'loan', null, null;
 
-            --IF NOT NEW.`experience_level` IS NULL  
-            --AND EXISTS (SELECT 1 FROM product_field_select_option WHERE product_field_id = 1 AND option_name = UPPER(NEW.`experience_level`)) THEN
-            --   INSERT into product_field_value (product_field_id, inventory_item_id, field_value)
-            --    VALUES (1, NEW.`id`, (SELECT id FROM product_field_select_option WHERE product_field_id = 1 AND option_name = UPPER(NEW.`experience_level`)));
-            --END IF;
-            --IF NOT NEW.`safety_risk` IS NULL 
-            --AND EXISTS (SELECT 1 FROM product_field_select_option WHERE product_field_id = 2 AND option_name = UPPER(NEW.`safety_risk`)) THEN
-            --   INSERT into product_field_value (product_field_id, inventory_item_id, field_value)
-            --    VALUES (2, NEW.`id`, (SELECT id FROM product_field_select_option WHERE product_field_id = 2 AND option_name = UPPER(NEW.`safety_risk`)));
-            --END IF;
-            --IF NOT NEW.`deliverable` IS NULL THEN
-            --   INSERT into  product_field_value (product_field_id, inventory_item_id, field_value)
-            --    VALUES (3, NEW.`id`, CASE WHEN (NEW.`deliverable` > 0) THEN 1 ELSE 0 END);
-            --END IF;
-            --IF NOT NEW.`size` IS NULL THEN
-            --   INSERT into  product_field_value (product_field_id, inventory_item_id, field_value)
-            --    VALUES (4, NEW.`id`, NEW.`size`);
-            --END IF;
         END IF
         END";
         $db->exec($sql);
@@ -136,10 +118,6 @@ class CreateSyncAssets extends AbstractCapsuleMigration
                 WHERE id = OLD.id;
             END IF
             IF NOT OLD.assigned_to <=> NEW.assigned_to THEN
-                --UPDATE klusbibdb.`inventory_item`
-                --SET sku = NEW.asset_tag,
-                --updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
-                --WHERE id = OLD.id;
             END IF
         ELSE
           INSERT INTO klusbibdb.inventory_item (
@@ -154,37 +132,25 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             null, 1, null, 'loan', null, null;
         END IF
 
-        -- if model_id changed
         IF (NOT NEW.model_id <=> OLD.model_id) THEN
-         -- update name??
         END IF
 
-        -- if image changed
         IF (NOT NEW.image <=> OLD.image) THEN
-          -- how to download/convert image?
         END IF
 
-        -- if status changed
         IF (NOT NEW.status <=> OLD.status) THEN
-          -- item movement? item location update?
         END IF
 
-        -- if last_checkout changed
         IF (NOT NEW.last_checkout <=> OLD.last_checkout)  THEN
         END IF
 
-        -- if last_checkin changed
         IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
         END IF
 
-        -- if expected checkin changed
         IF (NOT NEW.expected_checkin <=> OLD.expected_checkin) THEN
-          -- find loan and update end date
         END IF
 
-        -- if assinged_to changed
         IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
-          -- find loan and update user
         END IF
 
         END";
@@ -244,9 +210,15 @@ class CreateSyncAssets extends AbstractCapsuleMigration
 	public function down()
 	{
         $this->initCapsule();
-		Capsule::schema()->drop('kb_sync_assets');
-        $this->query('DROP TRIGGER IF EXISTS `assets_ai`');
-        $this->query('DROP TRIGGER IF EXISTS `assets_au`');
-        $this->query('DROP TRIGGER IF EXISTS `assets_ad`');
+		Capsule::schema()->drop('klusbibdb.kb_sync_assets');
+        $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
+        $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
+        $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ad`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_ai`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_au`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_ad`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_ai`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_au`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_ad`');
 	}
 }
