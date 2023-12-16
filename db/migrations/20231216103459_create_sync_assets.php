@@ -25,6 +25,7 @@ class CreateSyncAssets extends AbstractCapsuleMigration
     public function up()
     {
         $this->initCapsule();
+        Capsule::schema()->dropIfExists('klusbibdb.kb_sync_assets');
         // create a table containing all the data to be synced from inventory.assets to klubsibapi/lendengine
         Capsule::schema()->create('kb_sync_assets', function(Illuminate\Database\Schema\Blueprint $table){
             $table->integer('id')->unsigned()->default(1);
@@ -49,12 +50,12 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ad`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_ai`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_au`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_ad`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_ai`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_au`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_ad`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bi`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bu`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bd`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bi`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
 
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
@@ -180,6 +181,14 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`inventory_item_bi` BEFORE INSERT ON klusbibdb.`inventory_item` FOR EACH ROW
 BEGIN
+    IF NEW.created_at IS NULL THEN
+      SET NEW.created_at = CURRENT_TIMESTAMP;
+    END IF;
+    IF NEW.updated_at IS NULL THEN
+      SET NEW.updated_at = CURRENT_TIMESTAMP;
+    END IF;
+    SET NEW.short_url = substring(NEW.short_url,0,64);
+
     IF NOT EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
     INSERT INTO inventory.assets  (
     id, name, asset_tag, model_id, created_at, updated_at)
@@ -192,6 +201,11 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`inventory_item_bu` BEFORE UPDATE ON klusbibdb.`inventory_item` FOR EACH ROW
 BEGIN
+    IF NEW.updated_at IS NULL THEN
+      SET NEW.updated_at = CURRENT_TIMESTAMP;
+    END IF;
+    SET NEW.short_url = substring(NEW.short_url,0,64);
+
     IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
     IF NOT OLD.name <=> NEW.name THEN
         UPDATE inventory.assets 
@@ -235,11 +249,11 @@ END
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ad`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_ai`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_au`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_ad`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_ai`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_au`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_ad`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bi`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bu`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bd`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bi`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
     }
 }
