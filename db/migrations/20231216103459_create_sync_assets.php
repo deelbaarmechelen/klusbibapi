@@ -57,6 +57,10 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
 
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`');
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`');
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`');
+
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
         $sql = "
@@ -151,15 +155,15 @@ BEGIN
     END IF;
 
     IF (NOT NEW.last_checkout <=> OLD.last_checkout)  THEN
-        SELECT 1 INTO dummy_;
+        CALL kb_checkout (NEW.id, NEW.assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
     END IF;
 
     IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
-        SELECT 1 INTO dummy_;
+        CALL kb_checkin (NEW.id, NEW.assigned_to, NEW.last_checkin, 'Checkin from inventory' );
     END IF;
 
     IF (NOT NEW.expected_checkin <=> OLD.expected_checkin) THEN
-        SELECT 1 INTO dummy_;
+        CALL kb_extend (NEW.id, NEW.expected_checkin);
     END IF;
 
     IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
@@ -236,7 +240,82 @@ END
 ";
         $db->exec($sql);
 
+        $sql = "
+CREATE PROCEDURE klusbibdb.`kb_checkout` 
+        (IN inventory_item_id INT, IN loan_contact_id INT, IN datetime_out DATETIME, IN datetime_in DATETIME, IN `comment` VARCHAR(255) ) 
+BEGIN 
+DECLARE new_loan_id INT DEFAULT 0;
+ IF EXISTS (SELECT 1 FROM inventory_item WHERE id = inventory_item_id) 
+  AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
+         
+    INSERT INTO loan (
+        contact_id, datetime_out, datetime_in, status, total_fee, created_at)
+    SELECT
+    loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), ifnull(datetime_in, CURRENT_TIMESTAMP), 'ACTIVE', 0, CURRENT_TIMESTAMP;
+    SET new_loan_id = LAST_INSERT_ID();
+    
+    INSERT INTO loan_row (
+        loan_id, inventory_item_id, product_quantity, due_out_at, due_in_at, checked_out_at, checked_in_at, fee, site_from, site_to)
+        SELECT new_loan_id, inventory_item_id, 1, datetime_out, ifnull(datetime_in, ifnull(datetime_out, CURRENT_TIMESTAMP)), 
+        datetime_out, null, 0, 1, 1;
+
+    IF NOT comment IS NULL THEN
+    INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
+    SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, CURRENT_TIMESTAMP;
+    END IF;  
+ END IF;
+END
+";
+        $db->exec($sql);
+        
+        $sql = "
+CREATE PROCEDURE klusbibdb.`kb_checkin` 
+            (IN item_id INT, IN loan_contact_id INT, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
+BEGIN 
+DECLARE existing_loan_id INT DEFAULT 0;
+  IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
+    AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id)
+    AND EXISTS (SELECT 1 FROM loan WHERE contact_id = loan_contact_id AND status = 'ACTIVE') THEN
+    
+    SELECT loan_id INTO existing_loan_id FROM loan WHERE contact_id = loan_contact_id AND status = 'ACTIVE';
+
+    IF EXISTS (SELECT 1 FROM loan_row WHERE inventory_item_id = item_id AND loan_id = existing_loan_id) THEN
+    
+        UPDATE loan SET status = 'CLOSED', datetime_in = checkin_datetime 
+        WHERE id = existing_loan_id;
+        UPDATE loan_row SET checked_in_at = checkin_datetime
+        WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
+        
+    END IF;
+
+    IF NOT comment IS NULL THEN
+        INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
+        SELECT loan_contact_id, existing_loan_id, item_id, comment, 1, CURRENT_TIMESTAMP;
+    END IF;  
+  END IF;
+END
+";
+        $db->exec($sql);
+
+        $sql = "
+CREATE PROCEDURE klusbibdb.`kb_extend` 
+            (IN item_id INT, IN expected_checkin_datetime DATETIME) 
+BEGIN 
+DECLARE existing_loan_id INT DEFAULT 0;
+  IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
+    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
+    
+    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
+
+    UPDATE loan_row SET due_in_at = expected_checkin_datetime
+     WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
+        
+  END IF;
+END
+";
+        $db->exec($sql);
     }
+
     /**
      * Down Method.
      *
@@ -255,5 +334,9 @@ END
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bi`');
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
+
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`');
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`');
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`');
     }
 }
