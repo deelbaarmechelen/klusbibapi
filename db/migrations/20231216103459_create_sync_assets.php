@@ -57,12 +57,30 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
 
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_log_msg`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`');
 
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
+
+        Capsule::schema()->dropIfExists('kb_log');
+          $sql = "
+          CREATE TABLE  kb_log (
+            id int(11) NOT NULL auto_increment,
+            log_msg text,
+            PRIMARY KEY  (id)
+          ) ENGINE=MYISAM";
+          $db->exec($sql);
+          $sql = "
+CREATE PROCEDURE `kb_log_msg`(msg TEXT)
+BEGIN
+    insert into kb_log (log_msg) select msg;
+END
+";
+          $db->exec($sql);
+  
         $sql = "
         CREATE TRIGGER inventory.`assets_ai` AFTER INSERT ON inventory.`assets` FOR EACH ROW INSERT INTO klusbibdb.kb_sync_assets (
             id, name, asset_tag, model_id, image, status_id, assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)
@@ -111,6 +129,8 @@ BEGIN
         null, null, 1, 1, null, null, null, null, null, 
         null, 1, null, 'loan', null, null;
 
+    ELSE
+        call kb_log_msg(concat('Detected missing inventory_item with id: ', NEW.id, ' upon insert in kb_sync_assets'));
     END IF;
 END
 ";
@@ -143,23 +163,31 @@ BEGIN
     END IF;
 
     IF (NOT NEW.model_id <=> OLD.model_id) THEN
-        SELECT 1 INTO dummy_;
+        call kb_log_msg(concat('Warning: kb_sync_assets model_id update not reported to inventory_item: ', OLD.model_id, ' -> ', NEW.model_id));
     END IF;
 
     IF (NOT NEW.image <=> OLD.image) THEN
-        SELECT 1 INTO dummy_;
+        call kb_log_msg(concat('Warning: kb_sync_assets image update not reported to inventory_item: ', OLD.image, ' -> ', NEW.image));
     END IF;
 
     IF (NOT NEW.status_id <=> OLD.status_id) THEN
-        SELECT 1 INTO dummy_;
+        call kb_log_msg(concat('Warning: kb_sync_assets status_id update not reported to inventory_item: ', OLD.status_id, ' -> ', NEW.status_id));
     END IF;
 
-    IF (NOT NEW.last_checkout <=> OLD.last_checkout)  THEN
+    IF (NOT NEW.last_checkout <=> OLD.last_checkout
+        AND NOT NEW.last_checkout IS NULL
+        AND NOT NEW.assigned_to IS NULL
+        AND NEW.assigned_type = 'App\Models\User')  THEN
         CALL kb_checkout (NEW.id, NEW.assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
     END IF;
 
     IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
-        CALL kb_checkin (NEW.id, NEW.assigned_to, NEW.last_checkin, 'Checkin from inventory' );
+        IF NOT NEW.last_checkin IS NULL
+        AND NEW.assigned_to IS NULL) THEN
+        CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
+        ELSE
+            call kb_log_msg(concat('Warning: kb_sync_assets last_checkin (assinged to ', NEW.assigned_to, ') update not reported to inventory_item: ', OLD.last_checkin, ' -> ', NEW.last_checkin));
+        END IF;
     END IF;
 
     IF (NOT NEW.expected_checkin <=> OLD.expected_checkin) THEN
@@ -167,7 +195,7 @@ BEGIN
     END IF;
 
     IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
-        SELECT 1 INTO dummy_;
+        call kb_log_msg(concat('Warning: kb_sync_assets assigned_to update not reported to inventory_item: ', OLD.assigned_to, ' -> ', NEW.assigned_to));
     END IF;
 
 END
@@ -198,6 +226,8 @@ BEGIN
     id, name, asset_tag, model_id, created_at, updated_at)
     SELECT 
     NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
+    ELSE
+        call kb_log_msg(concat('Warning: inventory asset already exists - inventory_item insert not reported to inventory.assets for id: ', NEW.id));
     END IF;
 END
 ";
@@ -224,6 +254,7 @@ BEGIN
         WHERE id = OLD.id;
     END IF;
     ELSE
+    call kb_log_msg(concat('Warning: inventory asset missing - created on the fly upon inventory_item update for id: ', NEW.id));
     INSERT INTO inventory.assets  (
         id, name, asset_tag, model_id, created_at, updated_at)
         SELECT 
@@ -263,6 +294,8 @@ DECLARE new_loan_id INT DEFAULT 0;
     INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
     SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, CURRENT_TIMESTAMP;
     END IF;  
+ ELSE
+    call kb_log_msg(concat('Warning: inventory_item or contact missing in kb_checkout - loan creation skipped for inventory item with id: ', inventory_item_id));
  END IF;
 END
 ";
@@ -270,28 +303,34 @@ END
         
         $sql = "
 CREATE PROCEDURE klusbibdb.`kb_checkin` 
-            (IN item_id INT, IN loan_contact_id INT, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
+            (IN item_id INT, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
 BEGIN 
 DECLARE existing_loan_id INT DEFAULT 0;
+DECLARE loan_contact_id INT DEFAULT 0;
   IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
-    AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id)
-    AND EXISTS (SELECT 1 FROM loan WHERE contact_id = loan_contact_id AND status = 'ACTIVE') THEN
+    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
     
-    SELECT loan_id INTO existing_loan_id FROM loan WHERE contact_id = loan_contact_id AND status = 'ACTIVE';
+    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
+    SELECT contact_id INTO loan_contact_id FROM loan WHERE id = existing_loan_id;
 
     IF EXISTS (SELECT 1 FROM loan_row WHERE inventory_item_id = item_id AND loan_id = existing_loan_id) THEN
     
-        UPDATE loan SET status = 'CLOSED', datetime_in = checkin_datetime 
-        WHERE id = existing_loan_id;
         UPDATE loan_row SET checked_in_at = checkin_datetime
         WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
-        
+
+        IF NOT EXISTS (SELECT 1 FROM loan_row WHERE loan_id = exisiting_loan_id AND datetime_in IS NULL) THEN
+            UPDATE loan SET status = 'CLOSED', datetime_in = checkin_datetime 
+            WHERE id = existing_loan_id;
+        END IF;
+
     END IF;
 
     IF NOT comment IS NULL THEN
         INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
         SELECT loan_contact_id, existing_loan_id, item_id, comment, 1, CURRENT_TIMESTAMP;
     END IF;  
+  ELSE
+    call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_checkin - loan_row update skipped for inventory item with id: ', item_id));
   END IF;
 END
 ";
@@ -310,6 +349,54 @@ DECLARE existing_loan_id INT DEFAULT 0;
     UPDATE loan_row SET due_in_at = expected_checkin_datetime
      WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
         
+  ELSE
+    call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_extend - loan_row update skipped for inventory item with id: ', item_id));
+  END IF;
+END
+";
+        $db->exec($sql);
+
+        $sql = "
+CREATE TRIGGER klusbibdb.`loan_row_bi` BEFORE INSERT ON klusbibdb.`loan_row` FOR EACH ROW
+BEGIN
+  IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
+    AND EXISTS (SELECT 1 FROM klusbibdb.loan WHERE id = NEW.loan_id AND (status = 'ACTIVE' OR STATUS = 'OVERDUE') ) 
+    AND NOT NEW.checked_out_at IS NULL
+    AND NEW.checked_in_at IS NULL THEN
+    
+    UPDATE inventory.assets
+      SET last_checkout = NEW.checked_out_at,
+          expected_checkin = NEW.due_in_at
+      WHERE id = NEW.inventory_item_id;
+  ELSE
+    call kb_log_msg(concat('Warning: inventory asset or loan missing upon loan_row insert - inventory asset update skipped for inventory item with id: ', NEW.inventory_item_id));
+  END IF;
+END
+";
+        $db->exec($sql);
+        $sql = "
+CREATE TRIGGER klusbibdb.`loan_row_bu` BEFORE UPDATE ON klusbibdb.`loan_row` FOR EACH ROW
+BEGIN
+  IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
+    AND EXISTS (SELECT 1 FROM klusbibdb.loan WHERE id = NEW.loan_id AND (status = 'ACTIVE' OR STATUS = 'OVERDUE') ) 
+    AND NOT NEW.checked_out_at IS NULL
+    AND NEW.checked_in_at IS NULL THEN
+    
+    UPDATE inventory.assets
+      SET last_checkout = NEW.checked_out_at,
+          expected_checkin = NEW.due_in_at
+      WHERE id = NEW.inventory_item_id;
+    ELSE
+      call kb_log_msg(concat('Warning: inventory asset or loan missing upon loan_row update - inventory asset last_checkout update skipped for inventory item with id: ', NEW.inventory_item_id));
+    END IF;
+  IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
+    AND NOT NEW.checked_in_at IS NULL THEN
+    
+    UPDATE inventory.assets
+      SET last_checkin = NEW.checked_in_at
+      WHERE id = NEW.inventory_item_id;
+  ELSE
+      call kb_log_msg(concat('Warning: inventory asset or loan missing upon loan_row update - inventory asset last_checkin update skipped for inventory item with id: ', NEW.inventory_item_id));
   END IF;
 END
 ";
@@ -325,6 +412,7 @@ END
     {
         $this->initCapsule();
         Capsule::schema()->drop('kb_sync_assets');
+        Capsule::schema()->drop('kb_log');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ad`');
@@ -335,6 +423,7 @@ END
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
         $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
 
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_log_msg`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`');
