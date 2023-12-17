@@ -125,15 +125,15 @@ DECLARE loan_contact_id INT DEFAULT 0;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
     AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
     
-    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
-    SELECT contact_id INTO loan_contact_id FROM loan WHERE id = existing_loan_id;
+    SET existing_loan_id := (SELECT loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE');
+    SET loan_contact_id := (SELECT contact_id FROM loan WHERE id = existing_loan_id);
 
     IF EXISTS (SELECT 1 FROM loan_row WHERE inventory_item_id = item_id AND loan_id = existing_loan_id) THEN
     
         UPDATE loan_row SET checked_in_at = checkin_datetime
         WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
 
-        IF NOT EXISTS (SELECT 1 FROM loan_row WHERE loan_id = exisiting_loan_id AND datetime_in IS NULL) THEN
+        IF NOT EXISTS (SELECT 1 FROM loan_row WHERE loan_id = exisiting_loan_id AND checked_in_at IS NULL) THEN
             UPDATE loan SET status = 'CLOSED', datetime_in = checkin_datetime 
             WHERE id = existing_loan_id;
         END IF;
@@ -174,6 +174,8 @@ END
         $sql = "
         CREATE TRIGGER inventory.`assets_ai` AFTER INSERT ON inventory.`assets` FOR EACH ROW 
         BEGIN
+        IF @sync_api_to_inventory IS NULL THEN
+   
            SET @sync_inventory_to_api = 1;
            INSERT INTO klusbibdb.kb_sync_assets (
             id, name, asset_tag, model_id, image, status_id, assigned_to, kb_assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)
@@ -182,40 +184,45 @@ END
             (SELECT employee_num FROM inventory.users where id = NEW.assigned_type),
             NEW.assigned_type, NEW.last_checkout, NEW.last_checkin, NEW.expected_checkin, NEW.created_at, NEW.updated_at, NEW.deleted_at);
            SET @sync_inventory_to_api = null;
+        END IF;
         END";
         $db->exec($sql);
 
         $sql = "
         CREATE TRIGGER inventory.`assets_au` AFTER UPDATE ON inventory.`assets` FOR EACH ROW
         BEGIN 
-        SET @sync_inventory_to_api = 1;
-        UPDATE klusbibdb.kb_sync_assets 
-         SET name = NEW.name,
-          asset_tag = NEW.asset_tag,
-          model_id = NEW.model_id,
-          image = NEW.image,
-          status_id = NEW.status_id,
-          assigned_to = NEW.assigned_to,
-          kb_assigned_to = (SELECT employee_num FROM inventory.users where id = NEW.assigned_to),
-          assigned_type = NEW.assigned_type, 
-          last_checkout = NEW.last_checkout,
-          last_checkin = NEW.last_checkin, 
-          expected_checkin = NEW.expected_checkin, 
-          created_at = NEW.created_at, 
-          updated_at = NEW.updated_at, 
-          deleted_at = NEW.deleted_at 
-          WHERE id = NEW.id;
+        IF @sync_api_to_inventory IS NULL THEN
+            SET @sync_inventory_to_api = 1;
+            UPDATE klusbibdb.kb_sync_assets 
+            SET name = NEW.name,
+            asset_tag = NEW.asset_tag,
+            model_id = NEW.model_id,
+            image = NEW.image,
+            status_id = NEW.status_id,
+            assigned_to = NEW.assigned_to,
+            kb_assigned_to = (SELECT employee_num FROM inventory.users where id = NEW.assigned_to),
+            assigned_type = NEW.assigned_type, 
+            last_checkout = NEW.last_checkout,
+            last_checkin = NEW.last_checkin, 
+            expected_checkin = NEW.expected_checkin, 
+            created_at = NEW.created_at, 
+            updated_at = NEW.updated_at, 
+            deleted_at = NEW.deleted_at 
+            WHERE id = NEW.id;
 
-        SET @sync_inventory_to_api = NULL;
+            SET @sync_inventory_to_api = NULL;
+        END IF;
         END";
         $db->exec($sql);
 
         $sql = "
         CREATE TRIGGER inventory.`assets_ad` AFTER DELETE ON inventory.`assets` FOR EACH ROW 
         BEGIN
-        SET @sync_inventory_to_api = 1;
-        DELETE FROM klusbibdb.kb_sync_assets WHERE id = OLD.id;
-        SET @sync_inventory_to_api = NULL;
+        IF @sync_api_to_inventory IS NULL THEN
+            SET @sync_inventory_to_api = 1;
+            DELETE FROM klusbibdb.kb_sync_assets WHERE id = OLD.id;
+            SET @sync_inventory_to_api = NULL;
+        END IF;
         END";
         $db->exec($sql);
 
@@ -333,6 +340,7 @@ BEGIN
     SET NEW.short_url = substring(NEW.short_url,0,64);
 
     IF @sync_inventory_to_api IS NULL THEN
+        SET @sync_api_to_inventory = 1;
         IF NOT EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
         INSERT INTO inventory.assets  (
         id, name, asset_tag, model_id, created_at, updated_at)
@@ -341,6 +349,7 @@ BEGIN
         ELSE
             call kb_log_msg(concat('Warning: inventory asset already exists - inventory_item insert not reported to inventory.assets for id: ', NEW.id));
         END IF;
+        SET @sync_api_to_inventory = NULL;
     END IF;
 END
 ";
@@ -354,28 +363,30 @@ BEGIN
     SET NEW.short_url = substring(NEW.short_url,0,64);
 
     IF @sync_inventory_to_api IS NULL THEN
-    IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
-    IF NOT OLD.name <=> NEW.name THEN
-        UPDATE inventory.assets 
-        SET name = NEW.name,
-        updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
-        WHERE id = OLD.id
-        AND name <> NEW.name;
-    END IF;
-    IF NOT OLD.sku <=> NEW.sku THEN
-        UPDATE inventory.assets 
-        SET asset_tag = NEW.sku,
-        updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
-        WHERE id = OLD.id
-        AND asset_tag <> NEW.sku;
-    END IF;
-    ELSE
-    call kb_log_msg(concat('Warning: inventory asset missing - created on the fly upon inventory_item update for id: ', NEW.id));
-    INSERT INTO inventory.assets  (
-        id, name, asset_tag, model_id, created_at, updated_at)
-        SELECT 
-        NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
-    END IF;
+        SET @sync_api_to_inventory = 1;
+        IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
+            IF NOT OLD.name <=> NEW.name THEN
+                UPDATE inventory.assets 
+                SET name = NEW.name,
+                updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+                WHERE id = OLD.id
+                AND name <> NEW.name;
+            END IF;
+            IF NOT OLD.sku <=> NEW.sku THEN
+                UPDATE inventory.assets 
+                SET asset_tag = NEW.sku,
+                updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+                WHERE id = OLD.id
+                AND asset_tag <> NEW.sku;
+            END IF;
+        ELSE
+            call kb_log_msg(concat('Warning: inventory asset missing - created on the fly upon inventory_item update for id: ', NEW.id));
+            INSERT INTO inventory.assets  (
+                id, name, asset_tag, model_id, created_at, updated_at)
+                SELECT 
+                NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
+        END IF;
+        SET @sync_api_to_inventory = NULL;
     END IF;
 END
 ";
@@ -384,7 +395,9 @@ END
 CREATE TRIGGER klusbibdb.`inventory_item_bd` BEFORE DELETE ON klusbibdb.`inventory_item` FOR EACH ROW
 BEGIN
 IF @sync_inventory_to_api IS NULL THEN
+    SET @sync_api_to_inventory = 1;
     DELETE FROM inventory.assets WHERE id = OLD.id;
+    SET @sync_api_to_inventory = NULL;
 END IF;
 END
 ";
@@ -394,19 +407,22 @@ END
 CREATE TRIGGER klusbibdb.`loan_row_bi` BEFORE INSERT ON klusbibdb.`loan_row` FOR EACH ROW
 BEGIN
 IF @sync_inventory_to_api IS NULL THEN
-  IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
+    SET @sync_api_to_inventory = 1;
+    IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
     AND EXISTS (SELECT 1 FROM klusbibdb.loan WHERE id = NEW.loan_id AND (status = 'ACTIVE' OR STATUS = 'OVERDUE') ) 
     AND NOT NEW.checked_out_at IS NULL
     AND NEW.checked_in_at IS NULL THEN
 
-    UPDATE inventory.assets
-      SET last_checkout = NEW.checked_out_at,
-          expected_checkin = NEW.due_in_at
-      WHERE id = NEW.inventory_item_id
-        AND last_checkout < NEW.checked_out_at; -- skip update if already up to date (avoids cyclic trigger updates)
-  ELSE
-    call kb_log_msg(concat('Warning: inventory asset or loan missing upon loan_row insert - inventory asset update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null')));
-  END IF;
+        UPDATE inventory.assets
+        SET last_checkout = NEW.checked_out_at,
+            expected_checkin = NEW.due_in_at
+        WHERE id = NEW.inventory_item_id
+            AND last_checkout < NEW.checked_out_at; -- skip update if already up to date (avoids cyclic trigger updates)
+    ELSE
+        call kb_log_msg(concat('Warning: inventory asset or loan missing upon loan_row insert - inventory asset update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null')));
+    END IF;
+    SET @sync_api_to_inventory = NULL;
+
 END IF;
 END
 ";
@@ -415,7 +431,8 @@ END
 CREATE TRIGGER klusbibdb.`loan_row_bu` BEFORE UPDATE ON klusbibdb.`loan_row` FOR EACH ROW
 BEGIN
 IF @sync_inventory_to_api IS NULL THEN
-  IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
+    SET @sync_api_to_inventory = 1;
+    IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
     AND EXISTS (SELECT 1 FROM klusbibdb.loan WHERE id = NEW.loan_id AND (status = 'ACTIVE' OR STATUS = 'OVERDUE') ) 
     AND NOT NEW.checked_out_at IS NULL
     AND NEW.checked_in_at IS NULL THEN
@@ -428,16 +445,17 @@ IF @sync_inventory_to_api IS NULL THEN
     ELSE
       call kb_log_msg(concat('Warning: inventory asset or loan missing upon loan_row update - inventory asset last_checkout update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null')));
     END IF;
-  IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
+    IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) 
     AND NOT NEW.checked_in_at IS NULL THEN
     
     UPDATE inventory.assets
       SET last_checkin = NEW.checked_in_at
       WHERE id = NEW.inventory_item_id
       AND last_checkin < NEW.checked_in_at;
-  ELSE
+    ELSE
       call kb_log_msg(concat('Warning: inventory asset or loan missing upon loan_row update - inventory asset last_checkin update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null')));
-  END IF;
+    END IF;
+    SET @sync_api_to_inventory = NULL;
 END IF;
 END
 ";
