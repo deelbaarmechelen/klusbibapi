@@ -35,6 +35,7 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             $table->text('image')->nullable()->default(null);
             $table->integer('status_id')->nullable()->default(null);
             $table->integer('assigned_to')->nullable()->default(null);
+            $table->integer('kb_assigned_to')->nullable()->default(null);
             $table->string('assigned_type', 191)->nullable()->default(null);
             $table->dateTime('last_checkout')->nullable()->default(null);
             $table->dateTime('last_checkin')->nullable()->default(null);
@@ -44,8 +45,9 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             $table->timestamp('deleted_at')->nullable()->default(null);
         });
         // populate table with content of inventory.assets table
-        Capsule::update("INSERT INTO klusbibdb.kb_sync_assets (id, name, asset_tag, model_id, image, status_id, assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)"
-        . " SELECT id, name, asset_tag, model_id, image, status_id, assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at FROM inventory.assets");
+        Capsule::update("INSERT INTO klusbibdb.kb_sync_assets (id, name, asset_tag, model_id, image, status_id, assigned_to, kb_assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)"
+        . " SELECT id, name, asset_tag, model_id, image, status_id, assigned_to, employee_num, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at "
+        . " FROM inventory.assets LEFT JOIN inventory.users ON inventory.assets.assigned_to = inventory.users.id");
 
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
@@ -167,10 +169,16 @@ END
         $db->exec($sql);
 
         $sql = "
-        CREATE TRIGGER inventory.`assets_ai` AFTER INSERT ON inventory.`assets` FOR EACH ROW INSERT INTO klusbibdb.kb_sync_assets (
-            id, name, asset_tag, model_id, image, status_id, assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)
+        CREATE TRIGGER inventory.`assets_ai` AFTER INSERT ON inventory.`assets` FOR EACH ROW 
+        BEGIN
+           
+           INSERT INTO klusbibdb.kb_sync_assets (
+            id, name, asset_tag, model_id, image, status_id, assigned_to, kb_assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)
            VALUES (
-            NEW.id, NEW.name, NEW.asset_tag, NEW.model_id, NEW.image, NEW.status_id, NEW.assigned_to, NEW.assigned_type, NEW.last_checkout, NEW.last_checkin, NEW.expected_checkin, NEW.created_at, NEW.updated_at, NEW.deleted_at)";
+            NEW.id, NEW.name, NEW.asset_tag, NEW.model_id, NEW.image, NEW.status_id, NEW.assigned_to, 
+            (SELECT employee_num FROM inventory.users where id = NEW.assigned_type),
+            NEW.assigned_type, NEW.last_checkout, NEW.last_checkin, NEW.expected_checkin, NEW.created_at, NEW.updated_at, NEW.deleted_at)
+        END";
         $db->exec($sql);
 
         $sql = "
@@ -182,6 +190,7 @@ END
           image = NEW.image,
           status_id = NEW.status_id,
           assigned_to = NEW.assigned_to,
+          kb_assigned_to = (SELECT employee_num FROM inventory.users where id = NEW.assigned_type),
           assigned_type = NEW.assigned_type, 
           last_checkout = NEW.last_checkout,
           last_checkin = NEW.last_checkin, 
@@ -209,7 +218,7 @@ BEGIN
         loan_fee, max_loan_days, is_active, show_on_website, serial, note, price_cost, price_sell, short_url, 
         item_sector, is_reservable, deposit_amount, item_type, donated_by, owned_by)
         SELECT 
-        NEW.`id`, null, NEW.`assigned_to`, null, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
+        NEW.`id`, null, NEW.`kb_assigned_to`, null, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
         NEW.`name`, NEW.`asset_tag`, null, null, null, null,
         null, null, 1, 1, null, null, null, null, null, 
         null, 1, null, 'loan', null, null;
@@ -243,7 +252,7 @@ BEGIN
         id, assigned_to, created_at, updated_at,
         name, sku, item_type)
         SELECT 
-        NEW.`id`, NEW.`assigned_to`, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
+        NEW.`id`, NEW.`kb_assigned_to`, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
         NEW.`name`, NEW.`asset_tag`, 'loan';
     END IF;
 
@@ -261,26 +270,28 @@ BEGIN
 
     IF (NOT NEW.last_checkout <=> OLD.last_checkout
         AND NOT NEW.last_checkout IS NULL
-        AND NOT NEW.assigned_to IS NULL
+        AND NOT NEW.kb_assigned_to IS NULL
         AND NEW.assigned_type = 'App\Models\User')  THEN
-            CALL kb_checkout (NEW.id, NEW.assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
+            CALL kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
     END IF;
 
     IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
         IF (NOT NEW.last_checkin IS NULL
-        AND NEW.assigned_to IS NULL) THEN
+        AND NEW.kb_assigned_to IS NULL) THEN
             CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
         ELSE
-            call kb_log_msg(concat('Warning: kb_sync_assets last_checkin (assinged to ', NEW.assigned_to, ') update not reported to inventory_item: ', OLD.last_checkin, ' -> ', NEW.last_checkin));
+            call kb_log_msg(concat('Warning: kb_sync_assets last_checkin (assigned to ', NEW.kb_assigned_to, ') update not reported to inventory_item: ', OLD.last_checkin, ' -> ', NEW.last_checkin));
         END IF;
     END IF;
 
-    IF (NOT NEW.expected_checkin <=> OLD.expected_checkin) THEN
+    IF (NOT NEW.expected_checkin <=> OLD.expected_checkin
+      AND NOT OLD.expected_checkin IS NULL
+      AND NOT NEW.expected_checkin IS NULL) THEN
         CALL kb_extend (NEW.id, NEW.expected_checkin);
     END IF;
 
     IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
-        call kb_log_msg(concat('Warning: kb_sync_assets assigned_to update not reported to inventory_item: ', OLD.assigned_to, ' -> ', NEW.assigned_to));
+        call kb_log_msg(concat('Warning: kb_sync_assets assigned_to update not reported to inventory_item (inventory.asset values): ', OLD.assigned_to, ' -> ', NEW.assigned_to));
     END IF;
 
 END
