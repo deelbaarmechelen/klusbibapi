@@ -267,7 +267,7 @@ BEGIN
     END IF;
 
     IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
-        IF NOT NEW.last_checkin IS NULL
+        IF (NOT NEW.last_checkin IS NULL
         AND NEW.assigned_to IS NULL) THEN
             CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
         ELSE
