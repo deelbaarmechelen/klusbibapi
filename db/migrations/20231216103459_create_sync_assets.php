@@ -398,7 +398,7 @@ IF @sync_inventory_to_api IS NULL THEN
     AND EXISTS (SELECT 1 FROM klusbibdb.loan WHERE id = NEW.loan_id AND (status = 'ACTIVE' OR STATUS = 'OVERDUE') ) 
     AND NOT NEW.checked_out_at IS NULL
     AND NEW.checked_in_at IS NULL THEN
-    IF (
+
     UPDATE inventory.assets
       SET last_checkout = NEW.checked_out_at,
           expected_checkin = NEW.due_in_at
