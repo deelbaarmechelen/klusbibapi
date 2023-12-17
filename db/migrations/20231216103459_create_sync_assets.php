@@ -82,6 +82,91 @@ END
           $db->exec($sql);
   
         $sql = "
+CREATE PROCEDURE klusbibdb.`kb_checkout` 
+        (IN inventory_item_id INT, IN loan_contact_id INT, IN datetime_out DATETIME, IN datetime_in DATETIME, IN `comment` VARCHAR(255) ) 
+BEGIN 
+DECLARE new_loan_id INT DEFAULT 0;
+IF EXISTS (SELECT 1 FROM inventory_item WHERE id = inventory_item_id) 
+AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
+        
+    INSERT INTO loan (
+        contact_id, datetime_out, datetime_in, status, total_fee, created_at)
+    SELECT
+    loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), ifnull(datetime_in, CURRENT_TIMESTAMP), 'ACTIVE', 0, CURRENT_TIMESTAMP;
+    SET new_loan_id = LAST_INSERT_ID();
+    
+    INSERT INTO loan_row (
+        loan_id, inventory_item_id, product_quantity, due_out_at, due_in_at, checked_out_at, checked_in_at, fee, site_from, site_to)
+        SELECT new_loan_id, inventory_item_id, 1, datetime_out, ifnull(datetime_in, ifnull(datetime_out, CURRENT_TIMESTAMP)), 
+        datetime_out, null, 0, 1, 1;
+
+    IF NOT comment IS NULL THEN
+    INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
+    SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, CURRENT_TIMESTAMP;
+    END IF;  
+ELSE
+    call kb_log_msg(concat('Warning: inventory_item or contact missing in kb_checkout - loan creation skipped for inventory item with id: ', inventory_item_id));
+END IF;
+END
+";
+        $db->exec($sql);
+        
+        $sql = "
+CREATE PROCEDURE klusbibdb.`kb_checkin` 
+            (IN item_id INT, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
+BEGIN 
+DECLARE existing_loan_id INT DEFAULT 0;
+DECLARE loan_contact_id INT DEFAULT 0;
+IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
+    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
+    
+    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
+    SELECT contact_id INTO loan_contact_id FROM loan WHERE id = existing_loan_id;
+
+    IF EXISTS (SELECT 1 FROM loan_row WHERE inventory_item_id = item_id AND loan_id = existing_loan_id) THEN
+    
+        UPDATE loan_row SET checked_in_at = checkin_datetime
+        WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
+
+        IF NOT EXISTS (SELECT 1 FROM loan_row WHERE loan_id = exisiting_loan_id AND datetime_in IS NULL) THEN
+            UPDATE loan SET status = 'CLOSED', datetime_in = checkin_datetime 
+            WHERE id = existing_loan_id;
+        END IF;
+
+    END IF;
+
+    IF NOT comment IS NULL THEN
+        INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
+        SELECT loan_contact_id, existing_loan_id, item_id, comment, 1, CURRENT_TIMESTAMP;
+    END IF;  
+ELSE
+    call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_checkin - loan_row update skipped for inventory item with id: ', item_id));
+END IF;
+END
+";
+        $db->exec($sql);
+
+        $sql = "
+CREATE PROCEDURE klusbibdb.`kb_extend` 
+            (IN item_id INT, IN expected_checkin_datetime DATETIME) 
+BEGIN 
+DECLARE existing_loan_id INT DEFAULT 0;
+IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
+    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
+    
+    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
+
+    UPDATE loan_row SET due_in_at = expected_checkin_datetime
+    WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
+        
+ELSE
+    call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_extend - loan_row update skipped for inventory item with id: ', item_id));
+END IF;
+END
+";
+        $db->exec($sql);
+
+        $sql = "
         CREATE TRIGGER inventory.`assets_ai` AFTER INSERT ON inventory.`assets` FOR EACH ROW INSERT INTO klusbibdb.kb_sync_assets (
             id, name, asset_tag, model_id, image, status_id, assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)
            VALUES (
@@ -178,13 +263,13 @@ BEGIN
         AND NOT NEW.last_checkout IS NULL
         AND NOT NEW.assigned_to IS NULL
         AND NEW.assigned_type = 'App\Models\User')  THEN
-        CALL kb_checkout (NEW.id, NEW.assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
+            CALL kb_checkout (NEW.id, NEW.assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
     END IF;
 
     IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
         IF NOT NEW.last_checkin IS NULL
         AND NEW.assigned_to IS NULL) THEN
-        CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
+            CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
         ELSE
             call kb_log_msg(concat('Warning: kb_sync_assets last_checkin (assinged to ', NEW.assigned_to, ') update not reported to inventory_item: ', OLD.last_checkin, ' -> ', NEW.last_checkin));
         END IF;
@@ -267,91 +352,6 @@ END
 CREATE TRIGGER klusbibdb.`inventory_item_bd` BEFORE DELETE ON klusbibdb.`inventory_item` FOR EACH ROW
 BEGIN
     DELETE FROM inventory.assets WHERE id = OLD.id;
-END
-";
-        $db->exec($sql);
-
-        $sql = "
-CREATE PROCEDURE klusbibdb.`kb_checkout` 
-        (IN inventory_item_id INT, IN loan_contact_id INT, IN datetime_out DATETIME, IN datetime_in DATETIME, IN `comment` VARCHAR(255) ) 
-BEGIN 
-DECLARE new_loan_id INT DEFAULT 0;
- IF EXISTS (SELECT 1 FROM inventory_item WHERE id = inventory_item_id) 
-  AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
-         
-    INSERT INTO loan (
-        contact_id, datetime_out, datetime_in, status, total_fee, created_at)
-    SELECT
-    loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), ifnull(datetime_in, CURRENT_TIMESTAMP), 'ACTIVE', 0, CURRENT_TIMESTAMP;
-    SET new_loan_id = LAST_INSERT_ID();
-    
-    INSERT INTO loan_row (
-        loan_id, inventory_item_id, product_quantity, due_out_at, due_in_at, checked_out_at, checked_in_at, fee, site_from, site_to)
-        SELECT new_loan_id, inventory_item_id, 1, datetime_out, ifnull(datetime_in, ifnull(datetime_out, CURRENT_TIMESTAMP)), 
-        datetime_out, null, 0, 1, 1;
-
-    IF NOT comment IS NULL THEN
-    INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
-    SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, CURRENT_TIMESTAMP;
-    END IF;  
- ELSE
-    call kb_log_msg(concat('Warning: inventory_item or contact missing in kb_checkout - loan creation skipped for inventory item with id: ', inventory_item_id));
- END IF;
-END
-";
-        $db->exec($sql);
-        
-        $sql = "
-CREATE PROCEDURE klusbibdb.`kb_checkin` 
-            (IN item_id INT, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
-BEGIN 
-DECLARE existing_loan_id INT DEFAULT 0;
-DECLARE loan_contact_id INT DEFAULT 0;
-  IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
-    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
-    
-    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
-    SELECT contact_id INTO loan_contact_id FROM loan WHERE id = existing_loan_id;
-
-    IF EXISTS (SELECT 1 FROM loan_row WHERE inventory_item_id = item_id AND loan_id = existing_loan_id) THEN
-    
-        UPDATE loan_row SET checked_in_at = checkin_datetime
-        WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
-
-        IF NOT EXISTS (SELECT 1 FROM loan_row WHERE loan_id = exisiting_loan_id AND datetime_in IS NULL) THEN
-            UPDATE loan SET status = 'CLOSED', datetime_in = checkin_datetime 
-            WHERE id = existing_loan_id;
-        END IF;
-
-    END IF;
-
-    IF NOT comment IS NULL THEN
-        INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
-        SELECT loan_contact_id, existing_loan_id, item_id, comment, 1, CURRENT_TIMESTAMP;
-    END IF;  
-  ELSE
-    call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_checkin - loan_row update skipped for inventory item with id: ', item_id));
-  END IF;
-END
-";
-        $db->exec($sql);
-
-        $sql = "
-CREATE PROCEDURE klusbibdb.`kb_extend` 
-            (IN item_id INT, IN expected_checkin_datetime DATETIME) 
-BEGIN 
-DECLARE existing_loan_id INT DEFAULT 0;
-  IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
-    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
-    
-    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
-
-    UPDATE loan_row SET due_in_at = expected_checkin_datetime
-     WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
-        
-  ELSE
-    call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_extend - loan_row update skipped for inventory item with id: ', item_id));
-  END IF;
 END
 ";
         $db->exec($sql);
