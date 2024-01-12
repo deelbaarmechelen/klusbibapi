@@ -91,9 +91,17 @@ CREATE PROCEDURE klusbibdb.`kb_checkout`
         (IN inventory_item_id INT, IN loan_contact_id INT, IN datetime_out DATETIME, IN datetime_in DATETIME, IN `comment` VARCHAR(255) ) 
 BEGIN 
 DECLARE new_loan_id INT DEFAULT 0;
+DECLARE new_loan_row_id INT DEFAULT 0;
+-- Set location to 1 = 'On loan'
+DECLARE location_id INT DEFAULT 1;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = inventory_item_id) 
 AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
         
+    -- Set location to 1 = 'On loan'
+    UPDATE inventory_item 
+    SET current_location_id = location_id
+    WHERE id = inventory_item_id;
+
     INSERT INTO loan (
         contact_id, datetime_out, datetime_in, status, total_fee, created_at)
     SELECT
@@ -104,10 +112,15 @@ AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
         loan_id, inventory_item_id, product_quantity, due_out_at, due_in_at, checked_out_at, checked_in_at, fee, site_from, site_to)
         SELECT new_loan_id, inventory_item_id, 1, datetime_out, ifnull(datetime_in, ifnull(datetime_out, CURRENT_TIMESTAMP)), 
         datetime_out, null, 0, 1, 1;
+    SET new_loan_row_id = LAST_INSERT_ID();
+
+    INSERT INTO item_movement(
+        inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
+        SELECT inventory_item_id, location_id, new_loan_row_id, loan_contact_id, CURRENT_TIMESTAMP, 1;
 
     IF NOT comment IS NULL THEN
-    INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
-    SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, CURRENT_TIMESTAMP;
+        INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
+        SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, CURRENT_TIMESTAMP;
     END IF;  
 ELSE
     call kb_log_msg(concat('Warning: inventory_item or contact missing in kb_checkout - loan creation skipped for inventory item with id: ', inventory_item_id));
@@ -122,12 +135,22 @@ CREATE PROCEDURE klusbibdb.`kb_checkin`
 BEGIN 
 DECLARE existing_loan_id INT DEFAULT 0;
 DECLARE loan_contact_id INT DEFAULT 0;
+-- Set location to 2 = 'In stock'
+DECLARE location_id INT DEFAULT 2;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
     AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
     
     SET existing_loan_id := (SELECT loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE');
     SET loan_contact_id := (SELECT contact_id FROM loan WHERE id = existing_loan_id);
 
+    UPDATE inventory_item 
+    SET current_location_id = location_id
+    WHERE id = item_id;
+
+    INSERT INTO item_movement(
+        inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
+        SELECT item_id, location_id, NULL, NULL, CURRENT_TIMESTAMP, NULL;
+        
     IF EXISTS (SELECT 1 FROM loan_row WHERE inventory_item_id = item_id AND loan_id = existing_loan_id) THEN
     
         UPDATE loan_row SET checked_in_at = checkin_datetime
@@ -282,9 +305,10 @@ BEGIN
         call kb_log_msg(concat('Warning: kb_sync_assets model_id update not reported to inventory_item: ', ifnull(OLD.model_id, 'null'), ' -> ', ifnull(NEW.model_id, 'null')));
     END IF;
 
-    IF (NOT NEW.image <=> OLD.image) THEN
-        call kb_log_msg(concat('Warning: kb_sync_assets image update not reported to inventory_item: ', ifnull(OLD.image, 'null'), ' -> ', ifnull(NEW.image, 'null')));
-    END IF;
+    -- image sync handled by sync_inventory for tools (requires creation of large and thumb image)
+    -- IF (NOT NEW.image <=> OLD.image) THEN
+    --     call kb_log_msg(concat('Warning: kb_sync_assets image update not reported to inventory_item: ', ifnull(OLD.image, 'null'), ' -> ', ifnull(NEW.image, 'null')));
+    -- END IF;
 
     IF (NOT NEW.status_id <=> OLD.status_id) THEN
         call kb_log_msg(concat('Warning: kb_sync_assets status_id update not reported to inventory_item: ', ifnull(OLD.status_id, 'null'), ' -> ', ifnull(NEW.status_id, 'null')));
@@ -336,16 +360,27 @@ END
 CREATE PROCEDURE inventory.`kb_checkout` 
         (IN inventory_item_id INT, IN loan_contact_id INT, IN datetime_out DATETIME, IN datetime_in DATETIME, IN `comment` VARCHAR(255) ) 
 BEGIN 
+DECLARE user_id INT DEFAULT 0;
+DECLARE log_meta_json text;
 
     call klusbibdb.kb_log_msg(concat('Info: Checkout - Updating assets.last_checkout and expected_checkin for inventory item with id: ', ifnull(inventory_item_id, 'null')));
+    SET user_id := (SELECT id FROM inventory.users where employee_num = loan_contact_id AND deleted_at IS NULL);
     UPDATE inventory.assets
     SET last_checkout = datetime_out,
         expected_checkin = datetime_in,
         checkout_counter = checkout_counter + 1,
-        assigned_to = (SELECT id FROM inventory.users where employee_num = loan_contact_id AND deleted_at IS NULL),
+        assigned_to = user_id,
         assigned_type = 'App\\Models\\User',
         updated_at = CURRENT_TIMESTAMP
     WHERE id = inventory_item_id;
+
+    -- Insert action log with comment
+    -- TODO: update log_meta if old.expected_checkin is not null (requires old_checkin_datetime as input parameter)
+    -- TODO: update log_meta if old.location_id is not null (requires old_location_id as input parameter)
+    -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"null\",\"new\":\"',DATE_FORMAT(datetime_in, '%Y-%m-%d'),'\"},\"location_id\":{\"old\":2,\"new\":null}}}');
+    INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, expected_checkin, created_at, updated_at, company_id, action_date)
+    SELECT 1, 'checkout', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', inventory_item_id, datetime_in, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
+
 END
 ";
         $db->exec($sql);
@@ -354,7 +389,10 @@ END
 CREATE PROCEDURE inventory.`kb_checkin` 
             (IN item_id INT, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
 BEGIN 
+DECLARE user_id INT DEFAULT 0;
+DECLARE log_meta_json text;
     call klusbibdb.kb_log_msg(concat('Info: Checkin - Updating assets.last_checkin for inventory item with id: ', ifnull(item_id, 'null')));
+    SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
     UPDATE inventory.assets
     SET last_checkin = checkin_datetime,
         expected_checkin = NULL,
@@ -365,11 +403,37 @@ BEGIN
     WHERE id = item_id
     AND last_checkin < checkin_datetime;
 
-    -- TODO: update comment in activity?
+    -- Insert action log with comment
+    -- TODO: update log_meta if old.expected_checkin is not null (requires old_checkin_datetime as input parameter
+    -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"null\"}}');
+    INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, created_at, updated_at, company_id, action_date)
+    SELECT 1, 'checkin from', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
+
 END
 ";
         $db->exec($sql);
 
+        $sql = "
+CREATE PROCEDURE inventory.`kb_extend` 
+            (IN item_id INT, IN old_checkin_datetime DATETIME, IN new_checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
+BEGIN 
+DECLARE user_id INT DEFAULT 0;
+DECLARE log_meta_json text;
+    call klusbibdb.kb_log_msg(concat('Info: Extend - Updating assets.expected_checkin for inventory item with id: ', ifnull(item_id, 'null')));
+    SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
+    UPDATE inventory.assets
+    SET expected_checkin = new_checkin_datetime,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = item_id;
+
+    -- Insert action log
+    SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"', DATE_FORMAT(new_checkin_datetime, '%Y-%m-%d 00:00:00'), '\"}}');
+    INSERT INTO action_logs (user_id, action_type, note, item_type, item_id, created_at, updated_at, company_id, log_meta)
+    SELECT 1, 'update', comment, 'App\\Models\\Asset', inventory_item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, log_meta_json;
+
+END
+";
+        $db->exec($sql);
 
         // Triggers on inventory_item to sync with assets
         $sql = "
@@ -414,7 +478,7 @@ BEGIN
                 SET name = NEW.name,
                 updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                 WHERE id = OLD.id
-                AND name <> NEW.name;
+                AND NOT name <=> NEW.name;
             END IF;
             IF NOT OLD.sku <=> NEW.sku THEN
                 UPDATE inventory.assets 
@@ -431,6 +495,8 @@ BEGIN
                 NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
         END IF;
         SET @sync_api_to_inventory = NULL;
+    ELSE
+        call kb_log_msg(concat('Warning: inventory asset update skipped - ongoing inventory to api sync upon inventory_item update for id: ', NEW.id));
     END IF;
 END
 ";
@@ -461,10 +527,6 @@ IF @sync_inventory_to_api IS NULL THEN
             CALL inventory.`kb_checkout`(NEW.inventory_item_id, 
                 (SELECT contact_id FROM loan WHERE id = NEW.loan_id), 
                 NEW.checked_out_at, NEW.due_in_at, 'Checkout from lend engine');
-            -- UPDATE inventory.assets
-            -- SET last_checkout = NEW.checked_out_at,
-            --     expected_checkin = NEW.due_in_at
-            -- WHERE id = NEW.inventory_item_id;
         END IF;
     ELSE
         call kb_log_msg(concat('Warning: inventory asset missing upon loan_row insert - inventory asset update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null')));
@@ -482,28 +544,27 @@ IF @sync_inventory_to_api IS NULL THEN
     SET @sync_api_to_inventory = 1;
     IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.inventory_item_id) THEN
         IF (EXISTS (SELECT 1 FROM klusbibdb.loan WHERE id = NEW.loan_id AND (status = 'ACTIVE' OR STATUS = 'OVERDUE' OR STATUS = 'PENDING') ) 
-        AND NOT NEW.checked_out_at IS NULL
+        AND OLD.checked_out_at IS NULL AND NOT NEW.checked_out_at IS NULL
         AND NEW.checked_in_at IS NULL) THEN
         
             call kb_log_msg(concat('Info: Triggering inventory checkout upon loan_row update for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
             CALL inventory.`kb_checkout`(NEW.inventory_item_id, 
                 (SELECT contact_id FROM loan WHERE id = NEW.loan_id), 
                 NEW.checked_out_at, NEW.due_in_at, 'Checkout from lend engine');
-            -- UPDATE inventory.assets
-            -- SET last_checkout = NEW.checked_out_at,
-            --     expected_checkin = NEW.due_in_at
-            -- WHERE id = NEW.inventory_item_id;
         ELSE
             call kb_log_msg(concat('Warning: loan missing upon loan_row update - inventory asset last_checkout update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
         END IF;
         IF (OLD.checked_in_at IS NULL AND NOT NEW.checked_in_at IS NULL) THEN
             call kb_log_msg(concat('Info: Updating assets.last_checkin for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
             CALL inventory.`kb_checkin`(NEW.inventory_item_id, NEW.checked_in_at, 'Checkin from lend engine');
-            -- UPDATE inventory.assets
-            -- SET last_checkin = NEW.checked_in_at
-            -- WHERE id = NEW.inventory_item_id
-            -- AND last_checkin < NEW.checked_in_at;
         END IF;
+        IF (OLD.checked_in_at IS NULL AND NEW.checked_in_at IS NULL
+        AND NOT OLD.checked_out_at IS NULL AND NOT NEW.checked_out_at IS NULL
+        AND NOT NEW.due_in_at IS NULL AND NOT OLD.due_in_at <=> NEW.due_in_at) THEN
+            call kb_log_msg(concat('Info: Updating assets.expected_checkin for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
+            CALL inventory.`kb_extend`(NEW.inventory_item_id, OLD.due_in_at, NEW.due_in_at, 'Extend from lend engine');
+        END IF;
+
     ELSE
         call kb_log_msg(concat('Warning: inventory asset missing upon loan_row update - inventory asset last_checkin update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
     END IF;
