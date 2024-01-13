@@ -320,7 +320,7 @@ BEGIN
     IF (NOT NEW.last_checkout <=> OLD.last_checkout 
        AND NOT NEW.last_checkout IS NULL) THEN
         IF ((NOT NEW.kb_assigned_to IS NULL)
-        AND (NEW.assigned_type = 'App\\Models\\User'))  THEN
+        AND (NEW.assigned_type = 'App\\\\Models\\\\User'))  THEN
             CALL kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
         ELSE
             call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  last_checkout (assigned to ', ifnull(NEW.kb_assigned_to, 'null'), ', assigned type ', ifnull(NEW.assigned_type, 'null'),') update not reported to inventory_item: ', ifnull(OLD.last_checkout, 'null'), ' -> ', ifnull(NEW.last_checkout, 'null')));
@@ -373,7 +373,7 @@ DECLARE log_meta_json text;
         expected_checkin = datetime_in,
         checkout_counter = checkout_counter + 1,
         assigned_to = user_id,
-        assigned_type = 'App\\Models\\User',
+        assigned_type = 'App\\\\Models\\\\User',
         updated_at = CURRENT_TIMESTAMP
     WHERE id = inventory_item_id;
 
@@ -382,7 +382,7 @@ DECLARE log_meta_json text;
     -- TODO: update log_meta if old.location_id is not null (requires old_location_id as input parameter)
     -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"null\",\"new\":\"',DATE_FORMAT(datetime_in, '%Y-%m-%d'),'\"},\"location_id\":{\"old\":2,\"new\":null}}}');
     INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, expected_checkin, created_at, updated_at, company_id, action_date)
-    SELECT 1, 'checkout', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', inventory_item_id, datetime_in, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
+    SELECT 1, 'checkout', user_id, 'App\\\\Models\\\\User', comment, 'App\\\\Models\\\\Asset', inventory_item_id, datetime_in, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
 
 END
 ";
@@ -398,6 +398,7 @@ DECLARE log_meta_json text;
     SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
     UPDATE inventory.assets
     SET last_checkin = checkin_datetime,
+        last_checkout = NULL,
         expected_checkin = NULL,
         checkin_counter = checkin_counter + 1,
         assigned_to = NULL,
@@ -410,7 +411,7 @@ DECLARE log_meta_json text;
     -- TODO: update log_meta if old.expected_checkin is not null (requires old_checkin_datetime as input parameter
     -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"null\"}}');
     INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, created_at, updated_at, company_id, action_date)
-    SELECT 1, 'checkin from', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
+    SELECT 1, 'checkin from', user_id, 'App\\\\Models\\\\User', comment, 'App\\\\Models\\\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
 
 END
 ";
@@ -432,7 +433,7 @@ DECLARE log_meta_json text;
     -- Insert action log
     SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"', DATE_FORMAT(new_checkin_datetime, '%Y-%m-%d 00:00:00'), '\"}}');
     INSERT INTO action_logs (user_id, action_type, note, item_type, item_id, created_at, updated_at, company_id, log_meta)
-    SELECT 1, 'update', comment, 'App\\Models\\Asset', inventory_item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, log_meta_json;
+    SELECT 1, 'update', comment, 'App\\\\Models\\\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, log_meta_json;
 
 END
 ";
