@@ -65,6 +65,9 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_checkout`');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_checkin`');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_extend`');
 
         $db = Capsule::Connection()->getPdo();
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
@@ -601,5 +604,8 @@ END
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_checkout`');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_checkin`');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_extend`');
     }
 }
