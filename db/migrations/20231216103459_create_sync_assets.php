@@ -310,29 +310,29 @@ BEGIN
 
     -- image sync handled by sync_inventory for tools (requires creation of large and thumb image)
     -- IF (NOT NEW.image <=> OLD.image) THEN
-    --     call kb_log_msg(concat('Warning: kb_sync_assets image update not reported to inventory_item: ', ifnull(OLD.image, 'null'), ' -> ', ifnull(NEW.image, 'null')));
+    --     call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,') image update not reported to inventory_item: ', ifnull(OLD.image, 'null'), ' -> ', ifnull(NEW.image, 'null')));
     -- END IF;
 
     IF (NOT NEW.status_id <=> OLD.status_id) THEN
-        call kb_log_msg(concat('Warning: kb_sync_assets status_id update not reported to inventory_item: ', ifnull(OLD.status_id, 'null'), ' -> ', ifnull(NEW.status_id, 'null')));
+        call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  status_id update not reported to inventory_item: ', ifnull(OLD.status_id, 'null'), ' -> ', ifnull(NEW.status_id, 'null')));
     END IF;
 
-    IF (NOT NEW.last_checkout <=> OLD.last_checkout) THEN
-        IF ((NOT NEW.last_checkout IS NULL)
-        AND (NOT NEW.kb_assigned_to IS NULL)
+    IF (NOT NEW.last_checkout <=> OLD.last_checkout 
+       AND NOT NEW.last_checkout IS NULL) THEN
+        IF ((NOT NEW.kb_assigned_to IS NULL)
         AND (NEW.assigned_type = 'App\\Models\\User'))  THEN
             CALL kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
         ELSE
-            call kb_log_msg(concat('Warning: kb_sync_assets last_checkout (assigned to ', ifnull(NEW.kb_assigned_to, 'null'), ', assigned type ', ifnull(NEW.assigned_type, 'null'),') update not reported to inventory_item: ', ifnull(OLD.last_checkout, 'null'), ' -> ', ifnull(NEW.last_checkout, 'null')));
+            call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  last_checkout (assigned to ', ifnull(NEW.kb_assigned_to, 'null'), ', assigned type ', ifnull(NEW.assigned_type, 'null'),') update not reported to inventory_item: ', ifnull(OLD.last_checkout, 'null'), ' -> ', ifnull(NEW.last_checkout, 'null')));
         END IF;
     END IF;
 
-    IF (NOT NEW.last_checkin <=> OLD.last_checkin) THEN
-        IF (NOT NEW.last_checkin IS NULL
-        AND NEW.kb_assigned_to IS NULL) THEN
+    IF (NOT NEW.last_checkin <=> OLD.last_checkin
+        AND NOT NEW.last_checkin IS NULL) THEN
+        IF (NEW.kb_assigned_to IS NULL) THEN
             CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
         ELSE
-            call kb_log_msg(concat('Warning: kb_sync_assets last_checkin (assigned to ', ifnull(NEW.kb_assigned_to, 'null'), ') update not reported to inventory_item: ', ifnull(OLD.last_checkin, 'null'), ' -> ', ifnull(NEW.last_checkin, 'null')));
+            call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  last_checkin (assigned to ', ifnull(NEW.kb_assigned_to, 'null'), ') update not reported to inventory_item: ', ifnull(OLD.last_checkin, 'null'), ' -> ', ifnull(NEW.last_checkin, 'null')));
         END IF;
     END IF;
 
@@ -342,9 +342,9 @@ BEGIN
         CALL kb_extend (NEW.id, NEW.expected_checkin);
     END IF;
 
-    IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
-        call kb_log_msg(concat('Warning: kb_sync_assets assigned_to update not reported to inventory_item (inventory.asset values): ', ifnull(OLD.assigned_to, 'null'), ' -> ', ifnull(NEW.assigned_to, 'null')));
-    END IF;
+    -- IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
+    --     call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  assigned_to update not reported to inventory_item (inventory.asset values): ', ifnull(OLD.assigned_to, 'null'), ' -> ', ifnull(NEW.assigned_to, 'null')));
+    -- END IF;
 
 END
 ";
