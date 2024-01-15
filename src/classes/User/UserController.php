@@ -208,7 +208,7 @@ class UserController implements UserControllerInterface
                 $this->logger->debug('No user found with email ' . $data["email"]);
             }
         }
-        // TODO: else : check user exists based on name? or registration id?
+        // TODO: else : check user exists based on name?
 
         if (!isset($data["user_id"]) || empty($data["user_id"])) {
             $max_user_id = Capsule::table('contact')->max('id');

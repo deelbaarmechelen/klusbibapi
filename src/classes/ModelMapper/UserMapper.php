@@ -39,7 +39,7 @@ class UserMapper
             "city" => $contact->address_line_2,
             "phone" => $contact->telephone,
             "mobile" => $contact->telephone,
-            "registration_number" => $contact->registration_number,
+            //"registration_number" => $contact->registration_number,
             "payment_mode" => $contact->payment_mode,
             "accept_terms_date" => !$contact->accept_terms_date ? null : $contact->accept_terms_date->format('Y-m-d'),
             "last_sync_date" => $contact->last_sync_date,
@@ -107,9 +107,9 @@ class UserMapper
 		if (isset($data["mobile"])) {
 			$user->telephone = $data["mobile"];
 		}
-		if (isset($data["registration_number"])) {
-			$user->registration_number = $data["registration_number"];
-		}
+		// if (isset($data["registration_number"])) {
+		// 	$user->registration_number = $data["registration_number"];
+		// }
 		if (isset($data["payment_mode"])) {
 			$user->payment_mode = $data["payment_mode"];
 		}
