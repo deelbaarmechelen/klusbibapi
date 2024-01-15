@@ -20,7 +20,7 @@ class UserMapper
 		return $userArray;
 	}
 	static public function mapUserToArray(Contact $contact) {
-        $membership = Membership::find($user->active_membership);
+        $membership = Membership::find($contact->active_membership);
 		$userArray = array("user_id" => $contact->id,
             "user_ext_id" => $contact->user_ext_id,
             "state" => $contact->state,
