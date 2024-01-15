@@ -842,9 +842,6 @@ class EnrolmentManager
         if (empty($this->user->address_line_2) ) {
             throw new EnrolmentException("User city is missing", EnrolmentException::INCOMPLETE_USER_DATA);
         }
-        if (empty($this->user->registration_number) ) {
-            throw new EnrolmentException("User registration number is missing", EnrolmentException::INCOMPLETE_USER_DATA);
-        }
     }
 
     /**

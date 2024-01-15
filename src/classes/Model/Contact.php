@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property mixed $address_line_2
  * @property mixed $phone
  * @property mixed $telephone
- * @property mixed $registration_number
  * @property mixed $payment_mode
  * @property mixed $accept_terms_date
  * @property mixed $user_ext_id
@@ -69,7 +68,7 @@ class Contact extends Model
 
 	static protected $fieldArray = ['id', 'state', 'first_name', 'last_name', 'role', 'email', 'email_state',
 			'membership_start_date', 'membership_end_date', 'address_line_1', 'address_line_4', 'address_line_2',
-			'phone', 'telephone', 'registration_number', 'payment_mode', 'accept_terms_date', 'user_ext_id',
+			'phone', 'telephone', 'payment_mode', 'accept_terms_date', 'user_ext_id',
             'last_sync_date', 'active_membership', 'company', 'comment', 'last_login', 'created_at', 'updated_at'
 	];
 
