@@ -49,6 +49,12 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         . " SELECT inventory.assets.id, inventory.assets.name, asset_tag, model_id, inventory.assets.image, status_id, assigned_to, employee_num, assigned_type, last_checkout, last_checkin, expected_checkin, inventory.assets.created_at, inventory.assets.updated_at, inventory.assets.deleted_at "
         . " FROM inventory.assets LEFT JOIN inventory.users ON inventory.assets.assigned_to = inventory.users.id");
 
+        // remove obsolete triggers (were syncing with lendengine schema, but now merged into klusbibdb)
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`le_inventory_item_ai`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`le_inventory_item_au`');
+        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`le_inventory_item_ad`');
+
+        // make sure new triggers do not exist
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
         $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ad`');
