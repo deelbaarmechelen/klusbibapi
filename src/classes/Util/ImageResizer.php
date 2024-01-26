@@ -55,6 +55,9 @@ class ImageResizer {
             case 'gif':
                 $gd_image_src = imagecreatefromgif($image);
                 break;
+            case 'webp':
+                $gd_image_src = imagecreatefromwebp($image);
+                break;
             default:
                 break;
         }
@@ -96,6 +99,11 @@ class ImageResizer {
             case 'gif':
                 ob_start();
                 imagegif($gd_image_dest);
+                $imageString = ob_get_clean();
+                break;
+            case 'webp':
+                ob_start();
+                imagewebp($gd_image_dest);
                 $imageString = ob_get_clean();
                 break;
             default:
