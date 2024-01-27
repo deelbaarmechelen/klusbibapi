@@ -69,6 +69,10 @@ class LendingValidator
 			$logger->info("Return date (". $lendingData["returned_date"] . " cannot be smaller than start date (" . $lendingData["start_date"] . ")");
 			return false;
 		}
+		if (!empty($lendingData["created_by"]) && !UserValidator::userExists($lendingData["created_by"], $logger)) {
+			$logger->info("Inexistant user " . $lendingData["created_by"]);
+			return false;
+		}
 		return true;
 	}
 	static private function cnvStrToDateTime($str, $logger) {

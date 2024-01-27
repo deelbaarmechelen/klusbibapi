@@ -263,7 +263,8 @@ $container->set('Api\Lending\LendingController', function(ContainerInterface $c)
     $mailMgr = new MailManager(null, null, $logger);
     $toolManager = new ToolManager($inventory, $logger);
     $userManager = new UserManager($inventory, $logger, $mailMgr);
-    return new \Api\Lending\LendingController($logger, $token, $toolManager, $userManager);
+    $mailManager = new MailManager(null, null, $logger);
+    return new \Api\Lending\LendingController($logger, $token, $toolManager, $userManager, $mailManager);
 });
 $container->set('Api\Membership\MembershipController', function(ContainerInterface $c) {
     $logger = $c->get("logger");

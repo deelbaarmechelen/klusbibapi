@@ -19,15 +19,13 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
 //        $this->truncateTable('users');
 //        $this->truncateTable('payments');
         $this->truncateTable('activity_report');
-        $this->truncateTable('consumers');
-        $this->truncateTable('deliveries');
+        $this->truncateTable('kb_deliveries');
         \Api\Model\DeliveryItem::query()->delete();
-//        $this->truncateTable('delivery_item');
-        $this->truncateTable('events');
+//        $this->truncateTable('kb_delivery_item');
 
         $this->query("UPDATE `contact` c SET c.`balance` = 0");
         $this->query("UPDATE `contact` c SET c.`active_membership` = null");
-        $this->query("DELETE FROM le_membership");
+        $this->query("DELETE FROM membership");
         $this->query("DELETE FROM payment");
         $this->query("DELETE FROM inventory_item_product_tag");
         $this->query("DELETE FROM product_field_value");
@@ -39,7 +37,7 @@ class DatabaseResetSeeder extends AbstractCapsuleSeeder
         $this->query("DELETE FROM contact where id > 1002"); // keep first 2 rows: admin users of lendengine (id 1001 and 1002)
 //        $this->truncateTable('inventory_item');
         \Api\Model\InventoryItem::query()->delete();
-//        $this->truncateTable('lendings');
+//        $this->truncateTable('kb_lendings');
         \Api\Model\Lending::query()->delete();
         $this->truncateTable('kb_project_user');
         \Api\Model\Contact::query()->delete();

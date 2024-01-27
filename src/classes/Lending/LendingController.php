@@ -2,6 +2,8 @@
 
 namespace Api\Lending;
 
+use Api\Loan\LoanManager;
+use Api\Mail\MailManager;
 use Api\Model\Lending;
 use Api\Model\ToolType;
 use Api\ModelMapper\LendingMapper;
@@ -11,35 +13,41 @@ use Api\Settings;
 use Api\Tool\ToolManager;
 use Api\User\UserManager;
 use Api\Validator\LendingValidator;
+use Api\Token\Token;
+use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\Authorisation;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 
 class LendingController implements LendingControllerInterface
 {
-    protected $logger;
-    protected $token;
-    protected $toolManager;
-    protected $userManager;
+    protected LoggerInterface $logger;
+    protected Token $token;
+    protected ToolManager $toolManager;
+    protected UserManager $userManager;
+    protected LoanManager $loanManager;
+    protected MailManager $mailManager;
 
-    public function __construct($logger, $token, ToolManager $toolManager, UserManager $userManager)
+    public function __construct(LoggerInterface $logger, Token $token, ToolManager $toolManager, UserManager $userManager, MailManager $mailManager)
     {
         $this->logger = $logger;
         $this->token = $token;
         $this->toolManager = $toolManager;
         $this->userManager = $userManager;
+        $this->mailManager = $mailManager;
+        $this->loanManager = LoanManager::instance($this->logger, $this->mailManager);
     }
 
-    public function getAll(RequestInterface $request, ResponseInterface $response, $args){
+    public function getAll(RequestInterface $request, ResponseInterface $response, $args) : ResponseInterface {
         $this->logger->info("Klusbib GET '/lendings' route (params=" . \json_encode($request->getQueryParams()) . ")");
-
         $authorised = Authorisation::checkLendingAccess($this->token, "list");
         if (!$authorised) {
             $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
-            return $response->withStatus(403);
+            return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
         parse_str($request->getUri()->getQuery(), $queryParams);
         $sortdir = $queryParams['_sortDir'] ?? null;
@@ -70,29 +78,14 @@ class LendingController implements LendingControllerInterface
         } else {
             $expandUser = filter_var($expandUser, FILTER_VALIDATE_BOOLEAN);
         }
-        $query = Lending::valid();
         $userId = $queryParams['user_id'] ?? null;
         $toolId = $queryParams['tool_id'] ?? null;
         $toolType = $queryParams['tool_type'] ?? null;
         $startDate = $queryParams['start_date'] ?? null;
         $active = $queryParams['active'] ?? null;
-        if (isset($userId)) {
-            $query = $query->withUser($userId);
-        }
-        if (isset($toolId)) {
-            if (isset($toolType)) {
-                $query = $query->withTool($toolId, $toolType);
-            } else {
-                $query = $query->withTool($toolId); // defaults to type TOOL
-            }
-        }
-        if (isset($startDate)) {
-            $query = $query->withStartDate($startDate);
-        }
-        if (isset($active)) {
-            $query = $query->active();
-        }
-        $lendings = $query->orderBy($sortfield, $sortdir)->get();
+
+        $lendings = $this->loanManager->getAllLendings($userId, $toolId, $toolType, $startDate, $active, 
+            $sortfield, $sortdir);
         $lendings_page = array_slice($lendings->all(), ($page - 1) * $perPage, $perPage);
         $data = array();
         foreach ($lendings_page as $lending) {
@@ -129,11 +122,12 @@ class LendingController implements LendingControllerInterface
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_READ);
         if (!$authorised) {
             $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
-            return $response->withStatus(403);
+            return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
+
         $lending = \Api\Model\Lending::find($args['lendingId']);
         if (null == $lending) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         $this->logger->info('lending found for id ' . $lending->lending_id);
 
@@ -150,14 +144,15 @@ class LendingController implements LendingControllerInterface
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_CREATE);
         if (!$authorised) {
             $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
-            return $response->withStatus(403);
+            return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
         $data = $request->getParsedBody();
         if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
             $this->logger->warn("Rejecting invalid lending (data: " . json_encode($data));
-            return $response->withStatus(400); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST); // Bad request
         }
         $this->logger->info("Lending request is valid");
+
         $lending = new Lending();
         $lending->tool_id = $data["tool_id"];
         $lending->tool_type = $data["tool_type"];
@@ -185,18 +180,23 @@ class LendingController implements LendingControllerInterface
             $lending->returned_date = $data["returned_date"];
         } else {
             // creating an active lending -> make sure no other active lending exists for this tool
-            $activeLendings = Lending::active()->withTool($lending->tool_id, $lending->tool_type)->count();
-            if ($activeLendings> 0 && $lending->tool_type == ToolType::TOOL) {
+            if ($this->loanManager->hasActiveLending($lending->tool_id)) {
                 $this->logger->info('An active lending for tool with id ' . $lending->tool_id . ' already exists');
                 return $response->withJson(array('error' => array('status' => 400, 'message' => 'An active lending for that tool already exists')))
-                    ->withStatus(400);
+                    ->withStatus(HttpResponseCode::BAD_REQUEST);
             }
         }
-        $lending->save();
+        $lending = $this->loanManager->createLending($lending);
+        //$lending->save();
+        if (!$lending) {
+            $this->logger->info('Internal error when creating lending for user with id ' . $lending->user_id .
+            ' and tool with id/type ' . $lending->tool_id . '/' . $lending->tool_type);
+            return $response->withStatus(HttpResponseCode::INTERNAL_ERROR);            
+        }
         $this->logger->info('New lending for user with id ' . $lending->user_id .
             ' and tool with id/type ' . $lending->tool_id . '/' . $lending->tool_type . ' successfully saved');
         return $response->withJson(LendingMapper::mapLendingToArray($lending))
-            ->withStatus(201);
+            ->withStatus(HttpResponseCode::CREATED);
     }
     // deprecated: lendings updated at inventory and synced by sync_loans / sync_inventory batch 
     public function update(RequestInterface $request, ResponseInterface $response, $args)
@@ -208,34 +208,44 @@ class LendingController implements LendingControllerInterface
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_UPDATE);
         if (!$authorised) {
             $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
-            return $response->withStatus(403);
+            return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
-        $lending = \Api\Model\Lending::find($args['lendingId']);
+        $lending = $this->loanManager->getLendingById($args['lendingId']);
         if (null == $lending) {
-            return $response->withStatus(404);
+            return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         $data = $request->getParsedBody();
         if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager, false)) {
-            return $response->withStatus(400); // Bad request
+            return $response->withStatus(HttpResponseCode::BAD_REQUEST); // Bad request
         }
         $this->logger->info("Lending request is valid");
-        if (isset($data["start_date"])) {
+        $newStartDate = null;
+        if (isset($data["start_date"]) && $lending->start_date != $data["start_date"]) {
             $lending->start_date = $data["start_date"];
+            $newStartDate = $data["start_date"];
         }
-        if (isset($data["due_date"])) {
+        $newDueDate = null;
+        if (isset($data["due_date"]) && $lending->due_date != $data["due_date"]) {
             $lending->due_date = $data["due_date"];
+            $newDueDate = $data["due_date"];
         }
-        if (isset($data["comments"])) {
+        $newComments = null;
+        if (isset($data["comments"]) && $lending->comments != $data["comments"]) {
             $lending->comments = $data["comments"];
+            $newComments = $data["comments"];
         }
-        if (isset($data["created_by"])) {
+        $newCreatedBy = null;
+        if (isset($data["created_by"]) && $lending->created_by != $data["created_by"]) {
             $lending->created_by = $data["created_by"];
+            $newCreatedBy = $data["created_by"];
         }
-        if (isset($data["returned_date"])) {
+        $newReturnedDate = null;
+        if (isset($data["returned_date"]) && $lending->returned_date != $data["returned_date"]) {
             $lending->returned_date = $data["returned_date"];
+            $newReturnedDate = $data["returned_date"];
         }
-        $lending->save();
+        $this->loanManager->updateLending($lending, $newStartDate, $newDueDate, $newReturnedDate, $newComments, $newCreatedBy);
         return $response->withJson(LendingMapper::mapLendingToArray($lending))
-            ->withStatus(200);
+            ->withStatus(HttpResponseCode::OK);
     }
 }

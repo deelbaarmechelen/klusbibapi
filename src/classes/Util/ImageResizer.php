@@ -70,12 +70,12 @@ class ImageResizer {
         }
 
         // calc new image dimensions
-        $new_w =  $orig_w * $scale;
-        $new_h =  $orig_h * $scale;
+        $new_w =  intval($orig_w * $scale);
+        $new_h =  intval($orig_h * $scale);
 
         // determine offset coords so that new image is centered
-        $offest_x = ($width - $new_w) / 2;
-        $offest_y = ($height - $new_h) / 2;
+        $offest_x = intval(($width - $new_w) / 2);
+        $offest_y = intval(($height - $new_h) / 2);
 
         // copy and resize original image into center of new image
         imagecopyresampled($gd_image_dest, $gd_image_src, $offest_x, $offest_y, 0, 0, $new_w, $new_h, $orig_w, $orig_h);

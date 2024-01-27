@@ -24,7 +24,7 @@ $logger->pushProcessor(new Monolog\Processor\UidProcessor());
 $logger->pushHandler(new Monolog\Handler\RotatingFileHandler($logger_settings['path'], $logger_settings['maxFiles'], $logger_settings['level']));
 $today = new DateTime();
 
-echo "Syncing users\n";
+echo "Syncing users API/LE -> inventory\n";
 $mailManager = new \Api\Mail\MailManager(null, null, $logger);
 $userManager = new UserManager(SnipeitInventory::instance($logger), $logger, $mailManager);
 if ($force) {
@@ -42,23 +42,23 @@ foreach($users as $user) {
 // FIXME: also cleanup all users on inventory with employee_nbr not matching an active user on api
 $userManager->validateInventoryUsers();
 
-echo "Syncing tools\n";
+echo "Syncing tools inventory -> Lend Engine\n";
 $toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger, $mailManager);
 $tools = $toolManager->sync();
 
 // For remaining models: just update last_sync_date to activate update trigger, which will take care of sync with Lend Engine
-echo "Syncing reservations\n";
-if ($force) {
-    $reservations = \Api\Model\Reservation::all(); // sync all
-} else {
-    $reservations = \Api\Model\Reservation::outOfSync()->get(); // filter objects to be synced
-}
-foreach($reservations as $reservation) {
-    echo "Syncing reservation with id " . $reservation->reservation_id . "\n";
-    $reservation->last_sync_date = $today;
-    $reservation->timestamps = false; // do not change updated_at column value
-    $reservation->save();
-}
+// echo "Syncing reservations\n";
+// if ($force) {
+//     $reservations = \Api\Model\Reservation::all(); // sync all
+// } else {
+//     $reservations = \Api\Model\Reservation::outOfSync()->get(); // filter objects to be synced
+// }
+// foreach($reservations as $reservation) {
+//     echo "Syncing reservation with id " . $reservation->reservation_id . "\n";
+//     $reservation->last_sync_date = $today;
+//     $reservation->timestamps = false; // do not change updated_at column value
+//     $reservation->save();
+// }
 
 //echo "Syncing lendings\n";
 //if ($force) {
@@ -72,33 +72,33 @@ foreach($reservations as $reservation) {
 //    $lending->timestamps = false; // do not change updated_at column value
 //    $lending->save();
 //}
-echo "Syncing loans\n";
-$loanManager = \Api\Loan\LoanManager::instance($logger, $mailManager);
-$loanManager->sync();
+// echo "Syncing loans\n";
+// $loanManager = \Api\Loan\LoanManager::instance($logger, $mailManager);
+// $loanManager->sync();
 
-echo "Syncing payments\n";
-if ($force) {
-    $payments = \Api\Model\Payment::all(); // sync all
-} else {
-    $payments = \Api\Model\Payment::outOfSync()->get(); // filter objects to be synced
-}
-foreach($payments as $payment) {
-    echo "Syncing payment with id " . $payment->payment_id . "\n";
-    $payment->last_sync_date = $today;
-    $payment->timestamps = false; // do not change updated_at column value
-    $payment->save();
-}
+// echo "Syncing payments\n";
+// if ($force) {
+//     $payments = \Api\Model\Payment::all(); // sync all
+// } else {
+//     $payments = \Api\Model\Payment::outOfSync()->get(); // filter objects to be synced
+// }
+// foreach($payments as $payment) {
+//     echo "Syncing payment with id " . $payment->payment_id . "\n";
+//     $payment->last_sync_date = $today;
+//     $payment->timestamps = false; // do not change updated_at column value
+//     $payment->save();
+// }
 
-echo "Syncing deliveries\n";
-if ($force) {
-    $deliveries = \Api\Model\Delivery::all(); // sync all
-} else {
-    $deliveries = \Api\Model\Delivery::outOfSync()->get(); // filter objects to be synced
-}
-foreach($deliveries as $delivery) {
-    echo "Syncing delivery with id " . $delivery->id . "\n";
-    $delivery->last_sync_date = $today;
-    $delivery->timestamps = false; // do not change updated_at column value
-    $delivery->save();
-}
+// echo "Syncing deliveries\n";
+// if ($force) {
+//     $deliveries = \Api\Model\Delivery::all(); // sync all
+// } else {
+//     $deliveries = \Api\Model\Delivery::outOfSync()->get(); // filter objects to be synced
+// }
+// foreach($deliveries as $delivery) {
+//     echo "Syncing delivery with id " . $delivery->id . "\n";
+//     $delivery->last_sync_date = $today;
+//     $delivery->timestamps = false; // do not change updated_at column value
+//     $delivery->save();
+// }
 

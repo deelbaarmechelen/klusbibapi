@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * Laravel/Eloquent methods
  * @method static Builder whereDate($column, $compare, $date)
- * @method static find($id)
+ * @method static Reservation find($id)
  */
 class Reservation extends Model
 {

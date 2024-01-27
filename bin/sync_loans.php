@@ -24,10 +24,10 @@ $logger->pushProcessor(new Monolog\Processor\UidProcessor());
 $logger->pushHandler(new Monolog\Handler\RotatingFileHandler($logger_settings['path'], $logger_settings['maxFiles'], $logger_settings['level']));
 $today = new DateTime();
 
-echo "Syncing loans\n";
-$mailManager = new \Api\Mail\MailManager(null, null, $logger);
-$loanManager = \Api\Loan\LoanManager::instance($logger, $mailManager);
-$loanManager->sync();
+// echo "Syncing loans\n";
+// $mailManager = new \Api\Mail\MailManager(null, null, $logger);
+// $loanManager = \Api\Loan\LoanManager::instance($logger, $mailManager);
+// $loanManager->sync();
 
 // For remaining models: just update last_sync_date to activate update trigger, which will take care of sync with Lend Engine
 /*

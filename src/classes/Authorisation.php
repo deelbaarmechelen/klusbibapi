@@ -63,9 +63,6 @@ class Authorisation {
         if (isset($logger)) {
             $logger->info("Check reservation access for operation $operation");
         }
-		if (!isset($token)) {
-			return AccessType::NO_ACCESS;
-		}
 		switch ($operation) {
 			case self::OPERATION_LIST:
 				if ($token->hasScope(["reservations.all", "reservations.list"])) {
