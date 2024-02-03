@@ -189,9 +189,9 @@ CREATE PROCEDURE klusbibdb.`kb_extend`
 BEGIN 
 DECLARE existing_loan_id INT DEFAULT 0;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
-    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
+    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE')) THEN
     
-    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE';
+    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE');
 
     UPDATE loan_row SET due_in_at = expected_checkin_datetime
     WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
@@ -264,8 +264,9 @@ END
         $sql = " 
 CREATE TRIGGER klusbibdb.`kb_sync_assets_bi` BEFORE INSERT ON klusbibdb.`kb_sync_assets` FOR EACH ROW
 BEGIN
+    DECLARE default_item_name varchar(255) DEFAULT ' ';
     IF NOT EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = NEW.id) THEN
-
+        SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
         INSERT INTO klusbibdb.inventory_item (
         id, created_by, assigned_to, current_location_id, item_condition, created_at, updated_at,
         name, sku, description, keywords, brand, care_information, component_information, 
@@ -273,7 +274,7 @@ BEGIN
         item_sector, is_reservable, deposit_amount, item_type, donated_by, owned_by)
         SELECT 
         NEW.`id`, null, NEW.`kb_assigned_to`, null, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
-        NEW.`name`, NEW.`asset_tag`, null, null, null, null,
+        ifnull(NEW.`name`, default_item_name), NEW.`asset_tag`, null, null, null, null, null,
         null, null, 1, 1, null, null, null, null, null, 
         null, 1, null, 'loan', null, null;
 
@@ -288,10 +289,12 @@ END
 CREATE TRIGGER klusbibdb.`kb_sync_assets_bu` BEFORE UPDATE ON klusbibdb.`kb_sync_assets` FOR EACH ROW
 BEGIN
     DECLARE dummy_ INT(11);
+    DECLARE default_item_name varchar(255) DEFAULT ' ';
     IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = OLD.id) THEN
         IF NOT OLD.name <=> NEW.name THEN
+            SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
             UPDATE klusbibdb.`inventory_item`
-            SET name = NEW.name,
+            SET name = ifnull(NEW.`name`, default_item_name),
             updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
             WHERE id = OLD.id;
         END IF;
