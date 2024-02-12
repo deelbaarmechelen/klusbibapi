@@ -166,6 +166,7 @@ IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id)
         WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
 
         IF NOT EXISTS (SELECT 1 FROM loan_row WHERE loan_id = existing_loan_id AND checked_in_at IS NULL) THEN
+            -- all items have been checked in
             UPDATE loan SET status = 'CLOSED', datetime_in = checkin_datetime 
             WHERE id = existing_loan_id;
         END IF;
@@ -191,10 +192,13 @@ DECLARE existing_loan_id INT DEFAULT 0;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
     AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE')) THEN
     
-    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE');
+    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id 
+    WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE');
 
     UPDATE loan_row SET due_in_at = expected_checkin_datetime
     WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
+    UPDATE loan SET datetime_in = expected_checkin_datetime
+    WHERE id = existing_loan_id AND datetime_in < expected_checkin_datetime;
         
 ELSE
     call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_extend - loan_row update skipped for inventory item with id: ', item_id));
