@@ -710,36 +710,43 @@ END
     public function down()
     {
         $this->initCapsule();
-        Capsule::schema()->drop('kb_sync_assets');
-        Capsule::schema()->drop('kb_log');
-        $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
-        $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
-        $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ad`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bi`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bu`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bd`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bi`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`loan_row_bi`');
-        $this->query('DROP TRIGGER IF EXISTS klusbibdb.`loan_row_bu`');
-
+        Capsule::schema()->dropIfExists('klusbibdb.kb_log');
+        if (Capsule::schema()->hasTable('inventory.assets')) {
+            $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ai`');
+            $this->query('DROP TRIGGER IF EXISTS inventory.`assets_au`');
+            $this->query('DROP TRIGGER IF EXISTS inventory.`assets_ad`');
+        }
+        if (Capsule::schema()->hasTable('klusbibdb.kb_sync_assets')) {
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bi`');
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bu`');
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bd`');
+            Capsule::schema()->drop('kb_sync_assets');
+        }
+        if (Capsule::schema()->hasTable('klusbibdb.inventory_item')) {
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bi`');
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`');
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`');
+        }
+        if (Capsule::schema()->hasTable('klusbibdb.loan_row')) {
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`loan_row_bi`');
+            $this->query('DROP TRIGGER IF EXISTS klusbibdb.`loan_row_bu`');
+        }
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_log_msg`');
-        $this->query('DROP FUNCTION IF EXISTS klusbibdb.enable_sync_le2inventory`');
-        $this->query('DROP FUNCTION IF EXISTS klusbibdb.disable_sync_le2inventory`');
-        $this->query('DROP FUNCTION IF EXISTS klusbibdb.enable_sync_inventory2le`');
-        $this->query('DROP FUNCTION IF EXISTS klusbibdb.disable_sync_inventory2le`');
-        $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_sync_le2inventory_enabled`');
-        $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_sync_inventory2le_enabled`');
-        $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_on_loan`');
-        $this->query('DROP FUNCTION IF EXISTS inventaris.is_on_loan`');
-        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`');
-        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`');
-        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`');
-        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_checkout`');
-        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_checkin`');
-        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_extend`');
-        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_register_loan_no_sync`');
-        $this->query('DROP PROCEDURE IF EXISTS inventory.`kb_sync_assets_2le`');
+        $this->query('DROP FUNCTION IF EXISTS klusbibdb.enable_sync_le2inventory');
+        $this->query('DROP FUNCTION IF EXISTS klusbibdb.disable_sync_le2inventory');
+        $this->query('DROP FUNCTION IF EXISTS klusbibdb.enable_sync_inventory2le');
+        $this->query('DROP FUNCTION IF EXISTS klusbibdb.disable_sync_inventory2le');
+        $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_sync_le2inventory_enabled');
+        $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_sync_inventory2le_enabled');
+        $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_on_loan');
+        $this->query('DROP FUNCTION IF EXISTS inventaris.is_on_loan');
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.kb_checkout');
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.kb_checkin');
+        $this->query('DROP PROCEDURE IF EXISTS klusbibdb.kb_extend');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.kb_checkout');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.kb_checkin');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.kb_extend');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.kb_register_loan_no_sync');
+        $this->query('DROP PROCEDURE IF EXISTS inventory.kb_sync_assets_2le');
     }
 }
