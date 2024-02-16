@@ -1,6 +1,5 @@
 <?php
 
-use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -42,13 +41,13 @@ class CleanUp extends AbstractCapsuleMigration
         });
         Capsule::schema()->dropIfExists('kb_reservations');
         Capsule::schema()->dropIfExists('kb_lendings');
-        Capsule::schema()->dropIfExists('kb_membership');
-        Capsule::schema()->dropIfExists('kb_membership_type');
-        Capsule::schema()->dropIfExists('kb_tools');
         Capsule::schema()->table('kb_users', function (Blueprint $table) {
             $table->dropForeign('users_active_membership_foreign');
         });
         Capsule::schema()->dropIfExists('kb_users');
+        Capsule::schema()->dropIfExists('kb_membership');
+        Capsule::schema()->dropIfExists('kb_membership_type');
+        Capsule::schema()->dropIfExists('kb_tools');
         Capsule::schema()->dropIfExists('kb_inventory_item');
 
 	}
