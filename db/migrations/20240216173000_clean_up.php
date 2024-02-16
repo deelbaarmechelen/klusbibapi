@@ -26,31 +26,39 @@ class CleanUp extends AbstractCapsuleMigration
 	public function up()
 	{
         Capsule::schema()->dropIfExists('kb_contact');
-        Capsule::schema()->table('kb_delivery_item', function (Blueprint $table) {
-            $table->dropForeign('delivery_item_reservation_id_foreign');
-            $table->dropForeign('delivery_item_lending_id_foreign');
-        });
-        Capsule::schema()->dropIfExists('kb_delivery_item');
-        Capsule::schema()->table('kb_deliveries', function (Blueprint $table) {
-            $table->dropForeign('deliveries_payment_id_foreign');
-        });
-        Capsule::schema()->dropIfExists('kb_deliveries');
-        Capsule::schema()->table('kb_reservations', function (Blueprint $table) {
-            $table->dropIndex('reservations_tool_id_index');
-            $table->dropIndex('reservations_user_id_index');
-        });
-        Capsule::schema()->dropIfExists('kb_reservations');
+        if (Capsule::schema()->hasTable('kb_delivery_item')) {
+            Capsule::schema()->table('kb_delivery_item', function (Blueprint $table) {
+                $table->dropForeign('delivery_item_reservation_id_foreign');
+                $table->dropForeign('delivery_item_lending_id_foreign');
+            });
+            Capsule::schema()->dropIfExists('kb_delivery_item');
+        }
+        if (Capsule::schema()->hasTable('kb_deliveries')) {
+            Capsule::schema()->table('kb_deliveries', function (Blueprint $table) {
+                $table->dropForeign('deliveries_payment_id_foreign');
+            });
+            Capsule::schema()->dropIfExists('kb_deliveries');
+        }
+        if (Capsule::schema()->hasTable('kb_reservations')) {
+            Capsule::schema()->table('kb_reservations', function (Blueprint $table) {
+                $table->dropIndex('reservations_tool_id_index');
+                $table->dropIndex('reservations_user_id_index');
+            });
+            Capsule::schema()->dropIfExists('kb_reservations');
+        }
         Capsule::schema()->dropIfExists('kb_lendings');
-        Capsule::schema()->table('kb_users', function (Blueprint $table) {
-            $table->dropForeign('users_active_membership_foreign');
-        });
-        Capsule::schema()->dropIfExists('kb_users');
+        if (Capsule::schema()->hasTable('kb_users')) {
+            Capsule::schema()->table('kb_users', function (Blueprint $table) {
+                $table->dropForeign('users_active_membership_foreign');
+            });
+            Capsule::schema()->dropIfExists('kb_users');
+        }
         Capsule::schema()->dropIfExists('kb_membership');
         Capsule::schema()->dropIfExists('kb_membership_type');
         Capsule::schema()->dropIfExists('kb_tools');
         Capsule::schema()->dropIfExists('kb_inventory_item');
-
 	}
+    
     /**
      * Down Method.
      *
