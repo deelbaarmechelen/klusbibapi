@@ -749,4 +749,13 @@ END
         $this->query('DROP PROCEDURE IF EXISTS inventory.kb_register_loan_no_sync');
         $this->query('DROP PROCEDURE IF EXISTS inventory.kb_sync_assets_2le');
     }
+
+    private function multiQueryOnPDO($sql)
+    {
+      $db = Capsule::connection()->getPdo();
+  
+      // works regardless of statements emulation
+      $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
+      $db->exec($sql);    
+    }    
 }
