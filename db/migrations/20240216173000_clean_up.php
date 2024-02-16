@@ -2,6 +2,7 @@
 
 use \AbstractCapsuleMigration;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\Schema\Blueprint;
 
 require_once __DIR__ . '/../../app/env.php';
 require_once __DIR__ . '/../../app/settings.php';
