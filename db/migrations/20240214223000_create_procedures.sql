@@ -1,5 +1,4 @@
-DELIMITER $$
-
+-- uses DELIMITER $$
 CREATE TABLE  kb_log (
     id int(11) NOT NULL auto_increment,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -445,4 +444,3 @@ END$$
 -- 
 --   CLOSE cur;
 -- END$$
-DELIMITER ;

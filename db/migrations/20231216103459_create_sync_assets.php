@@ -47,7 +47,10 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         });
         // create functions and procedures
         $sql = file_get_contents(__DIR__ . "/20240214223000_create_procedures.sql");
-        $this->multiQueryOnPDO($sql);
+        $sqlStmts = explode("$$", $sql);
+        foreach($sqlStmts as $sqlStmt) {
+            $this->multiQueryOnPDO($sqlStmt);
+        }
 
         // populate table with content of inventory.assets table
         Capsule::update("INSERT INTO klusbibdb.kb_sync_assets (id, name, asset_tag, model_id, image, status_id, assigned_to, kb_assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)"
