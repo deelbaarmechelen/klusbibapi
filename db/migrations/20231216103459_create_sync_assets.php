@@ -32,6 +32,7 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             $table->string('name', 191)->nullable()->default(null);
             $table->string('asset_tag', 191)->nullable()->default(null);
             $table->integer('model_id')->nullable()->default(null);
+            $table->text('serial', 191)->nullable()->default(null);
             $table->text('image')->nullable()->default(null);
             $table->integer('status_id')->nullable()->default(null);
             $table->integer('assigned_to')->nullable()->default(null);
@@ -56,8 +57,8 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         }
 
         // populate table with content of inventory.assets table
-        Capsule::update("INSERT INTO klusbibdb.kb_sync_assets (id, name, asset_tag, model_id, image, status_id, assigned_to, kb_assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)"
-        . " SELECT inventory.assets.id, inventory.assets.name, asset_tag, model_id, inventory.assets.image, status_id, assigned_to, employee_num, assigned_type, last_checkout, last_checkin, expected_checkin, inventory.assets.created_at, inventory.assets.updated_at, inventory.assets.deleted_at "
+        Capsule::update("INSERT INTO klusbibdb.kb_sync_assets (id, name, asset_tag, model_id, serial, image, status_id, assigned_to, kb_assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)"
+        . " SELECT inventory.assets.id, inventory.assets.name, asset_tag, model_id, inventory.assets.serial, inventory.assets.image, status_id, assigned_to, employee_num, assigned_type, last_checkout, last_checkin, expected_checkin, inventory.assets.created_at, inventory.assets.updated_at, inventory.assets.deleted_at "
         . " FROM inventory.assets LEFT JOIN inventory.users ON inventory.assets.assigned_to = inventory.users.id");
 
         // remove obsolete triggers (were syncing with lendengine schema, but now merged into klusbibdb)
@@ -155,7 +156,7 @@ BEGIN
         SELECT 
         NEW.`id`, null, NEW.`kb_assigned_to`, location_id, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
         ifnull(NEW.`name`, default_item_name), NEW.`asset_tag`, null, null, null, null, null,
-        null, null, 1, 1, null, null, null, null, null, 
+        null, null, 1, 1, LEFT(NEW.serial, 64), null, null, null, null, 
         null, 1, null, 'loan', null, null;
 
     ELSE
@@ -171,6 +172,7 @@ BEGIN
     DECLARE dummy_ INT(11);
     DECLARE inventory_item_name varchar(255) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE inventory_item_sku varchar(255) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
+    DECLARE inventory_item_serial varchar(64) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE default_item_name varchar(255) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE item_checked_out_at datetime;
     IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = OLD.id) THEN
@@ -194,13 +196,21 @@ BEGIN
             WHERE id = OLD.id
             AND sku <> NEW.asset_tag;
         END IF;
+        SELECT serial INTO inventory_item_serial FROM klusbibdb.inventory_item WHERE id = OLD.id
+        IF ((NOT OLD.serial <=> NEW.serial) OR (LEFT(NEW.serial, 64) <> inventory_item_serial)) THEN
+            UPDATE klusbibdb.`inventory_item`
+            SET serial = NEW.serial,
+            updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+            WHERE id = OLD.id
+            AND serial <> LEFT(NEW.serial, 64);
+        END IF;
     ELSE
         INSERT INTO klusbibdb.inventory_item (
         id, assigned_to, created_at, updated_at,
-        name, sku, item_type)
+        name, sku, item_type, serial)
         SELECT 
         NEW.`id`, NEW.`kb_assigned_to`, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
-        NEW.`name`, NEW.`asset_tag`, 'loan';
+        NEW.`name`, NEW.`asset_tag`, 'loan', LEFT(NEW.serial, 64);
     END IF;
 
     IF (NOT NEW.model_id <=> OLD.model_id) THEN
@@ -309,9 +319,9 @@ END;
         IF klusbibdb.enable_sync_le2inventory() THEN
             IF NOT EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
             INSERT INTO inventory.assets  (
-            id, name, asset_tag, model_id, created_at, updated_at)
+            id, name, asset_tag, model_id, serial, created_at, updated_at)
             SELECT 
-            NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
+            NEW.`id`, NEW.name, NEW.sku, null, NEW.serial, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
             ELSE
                 call kb_log_msg(concat('Warning: inventory asset already exists - inventory_item insert not reported to inventory.assets for id: ', NEW.id));
             END IF;
@@ -358,12 +368,19 @@ END;
                     WHERE id = OLD.id
                     AND asset_tag <> NEW.sku;
                 END IF;
+                IF NOT OLD.serial <=> NEW.serial THEN
+                    UPDATE inventory.assets 
+                    SET serial = NEW.serial,
+                    updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+                    WHERE id = OLD.id
+                    AND serial <> NEW.serial;
+                END IF;
             ELSE
                 call kb_log_msg(concat('Warning: inventory asset missing - created on the fly upon inventory_item update for id: ', NEW.id));
                 INSERT INTO inventory.assets  (
-                    id, name, asset_tag, model_id, created_at, updated_at)
+                    id, name, asset_tag, model_id, serial, created_at, updated_at)
                     SELECT 
-                    NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
+                    NEW.`id`, NEW.name, NEW.sku, null, NEW.serial, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
             END IF;
             SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
         ELSE
@@ -472,9 +489,6 @@ IF klusbibdb.enable_sync_le2inventory() THEN
 
     END IF;
     SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
-ELSE
-    call kb_log_msg(concat('Error: loan row update failed - ongoing inventory to api sync upon inventory_item update for id: ', NEW.id));
-    signal sqlstate '45000' set message_text = 'Unable to update loan row: sync (inventory -> api) ongoing (check @sync_inventory2le value if this is an error).';
 END IF;
 END
 ";

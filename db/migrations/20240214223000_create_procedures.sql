@@ -408,9 +408,9 @@ END;
 IF klusbibdb.enable_sync_inventory2le() THEN
   -- insert missing assets in kb_sync_assets
   INSERT INTO klusbibdb.kb_sync_assets 
-  (id, name, asset_tag, model_id, image, status_id, assigned_to, kb_assigned_to,
+  (id, name, asset_tag, model_id, serial, image, status_id, assigned_to, kb_assigned_to,
    assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)
-  SELECT inventory.assets.id, inventory.assets.name, asset_tag, model_id, inventory.assets.image, status_id, assigned_to, employee_num,
+  SELECT inventory.assets.id, inventory.assets.name, asset_tag, model_id, inventory.assets.serial, inventory.assets.image, status_id, assigned_to, employee_num,
    assigned_type, last_checkout, last_checkin, expected_checkin, inventory.assets.created_at, inventory.assets.updated_at, inventory.assets.deleted_at 
   FROM inventory.assets LEFT JOIN inventory.users ON inventory.assets.assigned_to = inventory.users.id
   WHERE inventory.assets.id NOT IN (SELECT id FROM klusbibdb.kb_sync_assets);
