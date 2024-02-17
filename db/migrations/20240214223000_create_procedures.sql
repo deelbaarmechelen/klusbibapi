@@ -103,8 +103,8 @@ BEGIN
 END$$
 
 -- returns true if (inventory) asset is on loan
-DROP FUNCTION IF EXISTS inventaris.is_on_loan$$
-CREATE FUNCTION inventaris.is_on_loan (asset_id INT(11))
+DROP FUNCTION IF EXISTS inventory.is_on_loan$$
+CREATE FUNCTION inventory.is_on_loan (asset_id INT(11))
 RETURNS TINYINT(1)
 BEGIN
     IF EXISTS (SELECT 1 FROM inventory.assets  WHERE id = asset_id AND assigned_type = 'App\\Models\\User' AND NOT assigned_to IS NULL) THEN

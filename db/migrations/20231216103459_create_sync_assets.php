@@ -742,7 +742,7 @@ END
         $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_sync_le2inventory_enabled');
         $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_sync_inventory2le_enabled');
         $this->query('DROP FUNCTION IF EXISTS klusbibdb.is_on_loan');
-        $this->query('DROP FUNCTION IF EXISTS inventaris.is_on_loan');
+        $this->query('DROP FUNCTION IF EXISTS inventory.is_on_loan');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.kb_checkout');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.kb_checkin');
         $this->query('DROP PROCEDURE IF EXISTS klusbibdb.kb_extend');
