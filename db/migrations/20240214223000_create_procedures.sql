@@ -426,22 +426,3 @@ END IF;
 
 END$$
 
--- sample proc to call proc on each row of a select
--- CREATE PROCEDURE foo() BEGIN
---   DECLARE done BOOLEAN DEFAULT FALSE;
---   DECLARE _id BIGINT UNSIGNED;
---   DECLARE cur CURSOR FOR SELECT id FROM objects WHERE ...;
---   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done := TRUE;
--- 
---   OPEN cur;
--- 
---   testLoop: LOOP
---     FETCH cur INTO _id;
---     IF done THEN
---       LEAVE testLoop;
---     END IF;
---     CALL testProc(_id);
---   END LOOP testLoop;
--- 
---   CLOSE cur;
--- END$$

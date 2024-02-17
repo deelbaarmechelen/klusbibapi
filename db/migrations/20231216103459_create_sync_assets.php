@@ -49,6 +49,9 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $sql = file_get_contents(__DIR__ . "/20240214223000_create_procedures.sql");
         $sqlStmts = explode("$$", $sql);
         foreach($sqlStmts as $sqlStmt) {
+            if (strlen(trim($sqlStmt)) == 0) {
+                continue;
+            }
             $this->multiQueryOnPDO($sqlStmt);
         }
 
