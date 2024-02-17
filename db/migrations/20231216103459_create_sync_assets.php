@@ -613,7 +613,7 @@ IF (OLD.id < 100000) THEN
         DELETE FROM inventory.assets WHERE id = OLD.id;
         SET @sync_api_to_inventory = NULL;
     ELSE
-        call kb_log_msg(concat('Warning: inventory asset delete failed - ongoing inventory to api sync upon inventory_item delete for id: ', NEW.id));
+        call kb_log_msg(concat('Warning: inventory asset delete failed - ongoing inventory to api sync upon inventory_item delete for id: ', OLD.id));
         signal sqlstate '45000' set message_text = 'Unable to delete inventory asset: sync (inventory -> api) ongoing (check @sync_inventory_to_api value if this is an error).';
     END IF;
 END IF;
