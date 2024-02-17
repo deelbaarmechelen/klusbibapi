@@ -314,7 +314,7 @@ BEGIN
     DECLARE item_checked_out_at datetime;
     IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = OLD.id) THEN
         -- (also?) compare new.name with inventory_item name
-        SET inventory_item_name := (SELECT ifnull(name, 'unknown') FROM klusbibdb.inventory_item WHERE id = OLD.id)
+        SET inventory_item_name := (SELECT ifnull(name, 'unknown') FROM klusbibdb.inventory_item WHERE id = OLD.id);
         IF ((NOT OLD.name <=> NEW.name) OR (NEW.name <> inventory_item_name)) THEN
             SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
             UPDATE klusbibdb.`inventory_item`
@@ -323,9 +323,9 @@ BEGIN
             WHERE id = OLD.id
             AND name <> NEW.`name`;
         END IF;
-        -- (also?) compare new.asset_tag with inventory_item sku?
+        -- (also?) compare new.asset_tag with inventory_item sku
         -- => always update sku if different of new.asset_tag
-        SET inventory_item_sku := (SELECT sku FROM klusbibdb.inventory_item WHERE id = OLD.id)
+        SET inventory_item_sku := (SELECT sku FROM klusbibdb.inventory_item WHERE id = OLD.id);
         IF ((NOT OLD.asset_tag <=> NEW.asset_tag) OR (NEW.asset_tag <> inventory_item_sku)) THEN
             UPDATE klusbibdb.`inventory_item`
             SET sku = NEW.asset_tag,
