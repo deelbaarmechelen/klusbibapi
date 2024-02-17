@@ -305,7 +305,7 @@ END;
     SET NEW.short_url = substring(NEW.short_url,0,64);
 
     -- do not sync accessories
-    IF (NEW.id < 100000) THEN
+    IF (NEW.id < 100000 AND NOT klusbibdb.is_sync_inventory2le_enabled() ) THEN
         IF klusbibdb.enable_sync_le2inventory() THEN
             IF NOT EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
             INSERT INTO inventory.assets  (
@@ -341,7 +341,7 @@ END;
     END IF;
     SET NEW.short_url = substring(NEW.short_url,0,64);
 
-    IF (OLD.id < 100000) THEN
+    IF (OLD.id < 100000 AND NOT klusbibdb.is_sync_inventory2le_enabled() ) THEN
         IF klusbibdb.enable_sync_le2inventory() THEN
             IF EXISTS (SELECT 1 FROM inventory.assets WHERE id = NEW.id) THEN
                 IF NOT OLD.name <=> NEW.name THEN
@@ -386,7 +386,7 @@ BEGIN
     call kb_log_msg(concat('Error in inventory_item_bd: inventory asset sync skipped for inventory item with id: ', ifnull(OLD.id, 'null') ));
     RESIGNAL;
 END;
-IF (OLD.id < 100000) THEN
+IF (OLD.id < 100000 AND NOT klusbibdb.is_sync_inventory2le_enabled() ) THEN
 
     IF klusbibdb.enable_sync_le2inventory() THEN
         DELETE FROM inventory.assets WHERE id = OLD.id;
@@ -429,9 +429,6 @@ IF klusbibdb.enable_sync_le2inventory() THEN
     END IF;
     SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
 
-ELSE
-    call kb_log_msg(concat('Error: loan row insert failed - ongoing inventory to api sync upon inventory_item update for id: ', NEW.id));
-    signal sqlstate '45000' set message_text = 'Unable to insert loan row: sync (inventory -> api) ongoing (check @sync_inventory2le value if this is an error).';
 END IF;
 END
 ";
@@ -473,9 +470,6 @@ IF klusbibdb.enable_sync_le2inventory() THEN
             CALL inventory.`kb_extend`(NEW.inventory_item_id, OLD.due_in_at, NEW.due_in_at, 'Extend from lend engine');
         END IF;
 
-    ELSE
-        call kb_log_msg(concat('Error: inventory asset missing upon loan_row update - inventory asset last_checkin update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
-        signal sqlstate '45000' set message_text = 'Unable to update loan row: inventory asset missing.';
     END IF;
     SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
 ELSE
