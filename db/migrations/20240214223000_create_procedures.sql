@@ -300,6 +300,7 @@ DROP PROCEDURE IF EXISTS inventory.`kb_register_loan_no_sync`$$
 CREATE PROCEDURE inventory.`kb_register_loan_no_sync` 
         (IN inventory_item_id INT, IN loan_contact_id INT, IN datetime_out DATETIME, IN datetime_in DATETIME, IN `comment` VARCHAR(255) ) 
 BEGIN 
+DECLARE disable_sync_result TINYINT(1);
 DECLARE new_loan_id INT DEFAULT 0;
 DECLARE new_loan_row_id INT DEFAULT 0;
 DECLARE lr_checked_out_at DATETIME;
@@ -309,7 +310,7 @@ DECLARE location_stock INT DEFAULT 2;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     IF klusbibdb.is_sync_inventory2le_enabled() THEN
-        SELECT klusbibdb.disable_sync_inventory2le();
+        SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in kb_register_loan_no_sync'));
     RESIGNAL;
@@ -384,7 +385,7 @@ AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
 ELSE
     call kb_log_msg(concat('Warning: inventory_item or contact missing in kb_register_loan - loan creation skipped for inventory item with id: ', inventory_item_id));
 END IF;
-SELECT klusbibdb.disable_sync_inventory2le();
+SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
 
 ELSE
     call kb_log_msg(concat('Warning: sync ongoing in kb_register_loan - loan creation skipped for inventory item with id: ', inventory_item_id));
@@ -395,11 +396,12 @@ END$$
 DROP PROCEDURE IF EXISTS klusbibdb.`kb_sync_assets_2le`$$
 CREATE PROCEDURE klusbibdb.`kb_sync_assets_2le` () 
 BEGIN 
+DECLARE disable_sync_result TINYINT(1);
 DECLARE new_loan_id INT DEFAULT 0;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     IF klusbibdb.is_sync_inventory2le_enabled() THEN
-        SELECT klusbibdb.disable_sync_inventory2le();
+        SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in kb_sync_assets_2le'));
     RESIGNAL;
@@ -421,7 +423,7 @@ IF klusbibdb.enable_sync_inventory2le() THEN
     SET last_sync_timestamp = CURRENT_TIMESTAMP;
 
   -- TODO: also update loan status (from OVERDUE to ACTIVE when applicable)?
-  SELECT klusbibdb.disable_sync_inventory2le();
+  SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
 END IF;
 
 END$$

@@ -175,11 +175,11 @@ BEGIN
     DECLARE inventory_item_serial varchar(64) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE default_item_name varchar(255) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE item_checked_out_at datetime;
+    SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
     IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = OLD.id) THEN
         -- (also?) compare new.name with inventory_item name
         SET inventory_item_name := (SELECT ifnull(name, 'unknown') FROM klusbibdb.inventory_item WHERE id = OLD.id);
         IF ((NOT OLD.name <=> NEW.name) OR (NEW.name <> inventory_item_name)) THEN
-            SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
             UPDATE klusbibdb.`inventory_item`
             SET name = ifnull(NEW.`name`, default_item_name),
             updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
@@ -210,7 +210,7 @@ BEGIN
         name, sku, item_type, serial)
         SELECT 
         NEW.`id`, NEW.`kb_assigned_to`, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
-        NEW.`name`, NEW.`asset_tag`, 'loan', LEFT(NEW.serial, 64);
+        ifnull(NEW.`name`, default_item_name), NEW.`asset_tag`, 'loan', LEFT(NEW.serial, 64);
     END IF;
 
     IF (NOT NEW.model_id <=> OLD.model_id) THEN
@@ -268,7 +268,7 @@ BEGIN
             -- check if loan exists in inventory activity, if it does then it has already been checked in
             -- create a new loan on klusbibdb
             SET item_checked_out_at := (SELECT MAX(checked_out_at) FROM loan_row WHERE inventory_item_id = NEW.id AND NOT checked_out_at IS NULL AND checked_in_at IS NULL);
-            IF EXISTS (SELECT 1 FROM action_log WHERE action_type = 'checkout' 
+            IF EXISTS (SELECT 1 FROM inventory.action_logs WHERE action_type = 'checkout' 
                     AND target_id = NEW.id 
                     AND target_type = 'App\\\\Models\\\\User'
                     AND created_at >= item_checked_out_at) THEN
@@ -472,9 +472,6 @@ IF klusbibdb.enable_sync_le2inventory() THEN
             CALL inventory.`kb_checkout`(NEW.inventory_item_id, 
                 (SELECT contact_id FROM loan WHERE id = NEW.loan_id), 
                 NEW.checked_out_at, NEW.due_in_at, 'Checkout from lend engine');
-        ELSE
-            call kb_log_msg(concat('Error: loan missing upon loan_row update - inventory asset last_checkout update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
-            signal sqlstate '45000' set message_text = 'Unable to update loan row: loan missing and required for inventory checkout call.';
         END IF;
         IF (OLD.checked_in_at IS NULL AND NOT NEW.checked_in_at IS NULL) THEN
             call kb_log_msg(concat('Info: Updating assets.last_checkin for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
@@ -487,6 +484,9 @@ IF klusbibdb.enable_sync_le2inventory() THEN
             CALL inventory.`kb_extend`(NEW.inventory_item_id, OLD.due_in_at, NEW.due_in_at, 'Extend from lend engine');
         END IF;
 
+    ELSE
+        call kb_log_msg(concat('Error: inventory asset missing upon loan_row update for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
+        signal sqlstate '45000' set message_text = 'Unable to update loan row: inventory asset is missing and required for inventory checkout.';
     END IF;
     SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
 END IF;
