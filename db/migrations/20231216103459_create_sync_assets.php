@@ -315,7 +315,7 @@ BEGIN
     IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = OLD.id) THEN
         -- (also?) compare new.name with inventory_item name
         SET inventory_item_name := (SELECT ifnull(name, 'unknown') FROM klusbibdb.inventory_item WHERE id = OLD.id)
-        IF (NOT OLD.name <=> NEW.name OR NEW.name <> inventory_item_name) THEN
+        IF ((NOT OLD.name <=> NEW.name) OR (NEW.name <> inventory_item_name)) THEN
             SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
             UPDATE klusbibdb.`inventory_item`
             SET name = ifnull(NEW.`name`, default_item_name),
@@ -326,7 +326,7 @@ BEGIN
         -- (also?) compare new.asset_tag with inventory_item sku?
         -- => always update sku if different of new.asset_tag
         SET inventory_item_sku := (SELECT sku FROM klusbibdb.inventory_item WHERE id = OLD.id)
-        IF (NOT OLD.asset_tag <=> NEW.asset_tag OR NEW.asset_tag <> inventory_item_sku) THEN
+        IF ((NOT OLD.asset_tag <=> NEW.asset_tag) OR (NEW.asset_tag <> inventory_item_sku)) THEN
             UPDATE klusbibdb.`inventory_item`
             SET sku = NEW.asset_tag,
             updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
@@ -355,8 +355,8 @@ BEGIN
         call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  status_id update not reported to inventory_item: ', ifnull(OLD.status_id, 'null'), ' -> ', ifnull(NEW.status_id, 'null')));
     END IF;
 
-    IF (NOT NEW.last_checkout <=> OLD.last_checkout 
-       AND NOT NEW.last_checkout IS NULL) THEN
+    IF ((NOT NEW.last_checkout <=> OLD.last_checkout) 
+       AND (NOT NEW.last_checkout IS NULL)) THEN
         IF ((NOT NEW.kb_assigned_to IS NULL)
         AND (NEW.assigned_type = 'App\\\\Models\\\\User'))  THEN
             CALL kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
@@ -365,8 +365,8 @@ BEGIN
         END IF;
     END IF;
 
-    IF (NOT NEW.last_checkin <=> OLD.last_checkin
-        AND NOT NEW.last_checkin IS NULL) THEN
+    IF ((NOT NEW.last_checkin <=> OLD.last_checkin)
+        AND (NOT NEW.last_checkin IS NULL)) THEN
         IF (NEW.kb_assigned_to IS NULL) THEN
             CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
         ELSE
@@ -374,9 +374,9 @@ BEGIN
         END IF;
     END IF;
 
-    IF (NOT NEW.expected_checkin <=> OLD.expected_checkin
-      AND NOT OLD.expected_checkin IS NULL
-      AND NOT NEW.expected_checkin IS NULL) THEN
+    IF ((NOT NEW.expected_checkin <=> OLD.expected_checkin)
+      AND (NOT OLD.expected_checkin IS NULL)
+      AND (NOT NEW.expected_checkin IS NULL)) THEN
         CALL kb_extend (NEW.id, NEW.expected_checkin);
     END IF;
 
@@ -387,13 +387,13 @@ BEGIN
     -- Extra checks for recovery from inconsistent situations (only when triggering extra sync)
     IF NEW.last_sync_timestamp > ifnull(NEW.`updated_at`, NEW.created_at) THEN
         -- if asset is assigned to a user, a matching ACTIVE/OVERDUE loan should exist
-        IF inventory.is_on_loan(NEW.id) AND NOT klusbibdb.is_on_loan(NEW.id) THEN
+        IF ((inventory.is_on_loan(NEW.id)) AND (NOT klusbibdb.is_on_loan(NEW.id) )) THEN
             -- create a new loan on klusbibdb
             CALL kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
         END IF;
         
         -- if asset is not assigned to a user, no matching ACTIVE/OVERDUE loan may exist
-        IF NOT inventory.is_on_loan(NEW.id) AND klusbibdb.is_on_loan(NEW.id) THEN
+        IF ((NOT inventory.is_on_loan(NEW.id)) AND (klusbibdb.is_on_loan(NEW.id))) THEN
             -- check if loan exists in inventory activity, if it does then it has already been checked in
             -- create a new loan on klusbibdb
             SET item_checked_out_at := (SELECT MAX(checked_out_at) FROM loan_row WHERE inventory_item_id = NEW.id AND NOT checked_out_at IS NULL AND checked_in_at IS NULL);
