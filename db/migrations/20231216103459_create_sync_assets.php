@@ -196,8 +196,8 @@ BEGIN
             WHERE id = OLD.id
             AND sku <> NEW.asset_tag;
         END IF;
-        SELECT serial INTO inventory_item_serial FROM klusbibdb.inventory_item WHERE id = OLD.id
-        IF ((NOT OLD.serial <=> NEW.serial) OR (LEFT(NEW.serial, 64) <> inventory_item_serial)) THEN
+        SELECT serial INTO inventory_item_serial FROM klusbibdb.inventory_item WHERE id = OLD.id;
+        IF ( (NOT OLD.serial <=> NEW.serial) OR (LEFT(NEW.serial, 64) <> inventory_item_serial ) ) THEN
             UPDATE klusbibdb.`inventory_item`
             SET serial = NEW.serial,
             updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
