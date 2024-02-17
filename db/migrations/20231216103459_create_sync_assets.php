@@ -84,7 +84,7 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $sql = "
         CREATE TRIGGER inventory.`assets_ai` AFTER INSERT ON inventory.`assets` FOR EACH ROW 
         BEGIN
-        
+        DECLARE disable_sync_result TINYINT(1);
         IF klusbibdb.enable_sync_inventory2le() THEN
            INSERT INTO klusbibdb.kb_sync_assets (
             id, name, asset_tag, model_id, image, status_id, assigned_to, kb_assigned_to, assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at, last_sync_timestamp)
@@ -92,7 +92,7 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             NEW.id, NEW.name, NEW.asset_tag, NEW.model_id, NEW.image, NEW.status_id, NEW.assigned_to, 
             (SELECT employee_num FROM inventory.users where id = NEW.assigned_type),
             NEW.assigned_type, NEW.last_checkout, NEW.last_checkin, NEW.expected_checkin, NEW.created_at, NEW.updated_at, NEW.deleted_at, NEW.created_at);
-           SELECT klusbibdb.disable_sync_inventory2le();
+           SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
         END IF;
         END";
         $db->exec($sql);
@@ -100,6 +100,7 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $sql = "
         CREATE TRIGGER inventory.`assets_au` AFTER UPDATE ON inventory.`assets` FOR EACH ROW
         BEGIN 
+        DECLARE disable_sync_result TINYINT(1);
         IF klusbibdb.enable_sync_inventory2le() THEN
             UPDATE klusbibdb.kb_sync_assets 
             SET name = NEW.name,
@@ -119,7 +120,7 @@ class CreateSyncAssets extends AbstractCapsuleMigration
             last_sync_timestamp = NEW.updated_at
             WHERE id = NEW.id;
 
-            SELECT klusbibdb.disable_sync_inventory2le();
+            SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
         END IF;
         END";
         $db->exec($sql);
@@ -127,9 +128,10 @@ class CreateSyncAssets extends AbstractCapsuleMigration
         $sql = "
         CREATE TRIGGER inventory.`assets_ad` AFTER DELETE ON inventory.`assets` FOR EACH ROW 
         BEGIN
+        DECLARE disable_sync_result TINYINT(1);
         IF klusbibdb.enable_sync_inventory2le() THEN
             DELETE FROM klusbibdb.kb_sync_assets WHERE id = OLD.id;
-            SELECT klusbibdb.disable_sync_inventory2le();
+            SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
         END IF;
         END";
         $db->exec($sql);
@@ -285,10 +287,11 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`inventory_item_bi` BEFORE INSERT ON klusbibdb.`inventory_item` FOR EACH ROW
 BEGIN
+DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     IF klusbibdb.is_sync_le2inventory_enabled() THEN
-        SELECT klusbibdb.disable_sync_le2inventory();
+        SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in inventory_item_bi: inventory asset sync skipped for inventory item with id: ', ifnull(NEW.id, 'null'), ' sku: ', ifnull(NEW.sku, 'null') ));
     RESIGNAL;
@@ -312,7 +315,7 @@ END;
             ELSE
                 call kb_log_msg(concat('Warning: inventory asset already exists - inventory_item insert not reported to inventory.assets for id: ', NEW.id));
             END IF;
-            SELECT klusbibdb.disable_sync_le2inventory();
+            SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
         ELSE
             call kb_log_msg(concat('Warning: inventory asset insert failed - ongoing inventory to api sync upon inventory_item insert for id: ', NEW.id));
             signal sqlstate '45000' set message_text = 'Unable to create inventory asset: sync (inventory -> api) ongoing (check @sync_inventory2le value if this is an error).';
@@ -324,10 +327,11 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`inventory_item_bu` BEFORE UPDATE ON klusbibdb.`inventory_item` FOR EACH ROW
 BEGIN
+DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     IF klusbibdb.is_sync_le2inventory_enabled() THEN
-        SELECT klusbibdb.disable_sync_le2inventory();
+        SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in inventory_item_bu: inventory asset sync skipped for inventory item with id: ', ifnull(OLD.id, 'null') ));
     RESIGNAL;
@@ -361,7 +365,7 @@ END;
                     SELECT 
                     NEW.`id`, NEW.name, NEW.sku, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP);
             END IF;
-            SELECT klusbibdb.disable_sync_le2inventory();
+            SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
         ELSE
             call kb_log_msg(concat('Warning: inventory asset update failed - ongoing inventory to api sync upon inventory_item update for id: ', NEW.id));
             signal sqlstate '45000' set message_text = 'Unable to update inventory asset: sync (inventory -> api) ongoing (check @sync_inventory2le value if this is an error).';
@@ -373,10 +377,11 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`inventory_item_bd` BEFORE DELETE ON klusbibdb.`inventory_item` FOR EACH ROW
 BEGIN
+DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     IF klusbibdb.is_sync_le2inventory_enabled() THEN
-        SELECT klusbibdb.disable_sync_le2inventory();
+        SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in inventory_item_bd: inventory asset sync skipped for inventory item with id: ', ifnull(OLD.id, 'null') ));
     RESIGNAL;
@@ -385,7 +390,7 @@ IF (OLD.id < 100000) THEN
 
     IF klusbibdb.enable_sync_le2inventory() THEN
         DELETE FROM inventory.assets WHERE id = OLD.id;
-        SELECT klusbibdb.disable_sync_le2inventory();
+        SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
     ELSE
         call kb_log_msg(concat('Warning: inventory asset delete failed - ongoing inventory to api sync upon inventory_item delete for id: ', OLD.id));
         signal sqlstate '45000' set message_text = 'Unable to delete inventory asset: sync (inventory -> api) ongoing (check @sync_inventory2le value if this is an error).';
@@ -398,10 +403,11 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`loan_row_bi` BEFORE INSERT ON klusbibdb.`loan_row` FOR EACH ROW
 BEGIN
+DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     IF klusbibdb.is_sync_le2inventory_enabled() THEN
-        SELECT klusbibdb.disable_sync_le2inventory();
+        SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in loan_row_bi: inventory asset sync skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
     RESIGNAL;
@@ -421,7 +427,7 @@ IF klusbibdb.enable_sync_le2inventory() THEN
         call kb_log_msg(concat('Warning: inventory asset missing upon loan_row insert - inventory asset update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null')));
         signal sqlstate '45000' set message_text = 'Unable to insert loan row: inventory asset missing.';
     END IF;
-    SELECT klusbibdb.disable_sync_le2inventory();
+    SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
 
 ELSE
     call kb_log_msg(concat('Error: loan row insert failed - ongoing inventory to api sync upon inventory_item update for id: ', NEW.id));
@@ -433,10 +439,11 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`loan_row_bu` BEFORE UPDATE ON klusbibdb.`loan_row` FOR EACH ROW
 BEGIN
+DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     IF klusbibdb.is_sync_le2inventory_enabled() THEN
-        SELECT klusbibdb.disable_sync_le2inventory();
+        SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in loan_row_bu: inventory asset sync skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
     RESIGNAL;
@@ -470,7 +477,7 @@ IF klusbibdb.enable_sync_le2inventory() THEN
         call kb_log_msg(concat('Error: inventory asset missing upon loan_row update - inventory asset last_checkin update skipped for inventory item with id: ', ifnull(NEW.inventory_item_id, 'null'), ' and loan id ', ifnull(NEW.loan_id, 'null')));
         signal sqlstate '45000' set message_text = 'Unable to update loan row: inventory asset missing.';
     END IF;
-    SELECT klusbibdb.disable_sync_le2inventory();
+    SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
 ELSE
     call kb_log_msg(concat('Error: loan row update failed - ongoing inventory to api sync upon inventory_item update for id: ', NEW.id));
     signal sqlstate '45000' set message_text = 'Unable to update loan row: sync (inventory -> api) ongoing (check @sync_inventory2le value if this is an error).';

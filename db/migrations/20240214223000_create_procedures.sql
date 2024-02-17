@@ -393,8 +393,7 @@ END$$
 
 
 DROP PROCEDURE IF EXISTS klusbibdb.`kb_sync_assets_2le`$$
-CREATE PROCEDURE klusbibdb.`kb_sync_assets_2le` 
-        (IN inventory_item_id INT, IN loan_contact_id INT, IN datetime_out DATETIME, IN datetime_in DATETIME, IN `comment` VARCHAR(255) ) 
+CREATE PROCEDURE klusbibdb.`kb_sync_assets_2le` () 
 BEGIN 
 DECLARE new_loan_id INT DEFAULT 0;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -421,6 +420,7 @@ IF klusbibdb.enable_sync_inventory2le() THEN
   UPDATE klusbibdb.kb_sync_assets
     SET last_sync_timestamp = CURRENT_TIMESTAMP;
 
+  -- TODO: also update loan status (from OVERDUE to ACTIVE when applicable)?
   SELECT klusbibdb.disable_sync_inventory2le();
 END IF;
 
