@@ -1,5 +1,6 @@
 -- uses DELIMITER $$
-CREATE TABLE  kb_log (
+DROP TABLE IF EXISTS klusbibdb.kb_log$$
+CREATE TABLE  klusbibdb.kb_log (
     id int(11) NOT NULL auto_increment,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     log_msg text,
