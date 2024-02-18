@@ -58,7 +58,7 @@ class StatController
         parse_str($request->getUri()->getQuery(), $queryParams);
         $statMonth = $queryParams['stat-month'] ??  null;
         $statVersion = $queryParams['version'] ??  1;
- 
+
         $startCurrentMonth = new DateTimeImmutable('first day of this month', $this->utc);
         if (isset($statMonth)) {
             $startThisMonth = DateTimeImmutable::createFromFormat('Y-m-d', $statMonth . '-01', $this->utc);
@@ -133,8 +133,8 @@ class StatController
         $data["accessory-statistics"] = $accessoryStats;
 
         // activity stats
-        $activityStats = $this->getLendingStats($startLastMonth, $startThisMonth);
-        $data["activity-statistics"] = $activityStats;
+        // $activityStats = $this->getLendingStats($startLastMonth, $startThisMonth);
+        // $data["activity-statistics"] = $activityStats;
 
         return $data;
     }
@@ -174,8 +174,8 @@ class StatController
         $data["tool-statistics"] = $toolStats;
 
         // activity stats
-        $activityStats = $this->getLendingStatsV2($startDate, "month");
-        $data["activity-statistics"] = $activityStats;
+        // $activityStats = $this->getLendingStatsV2($startDate, "month");
+        // $data["activity-statistics"] = $activityStats;
 
         // TODO: get #reservations
         return $data;
@@ -191,8 +191,8 @@ class StatController
         $data["user-statistics"] = $userStats;
 
         // activity stats
-        $activityStats = $this->getYearlyLendingStats($year);
-        $data["activity-statistics"] = $activityStats;
+        // $activityStats = $this->getYearlyLendingStats($year);
+        // $data["activity-statistics"] = $activityStats;
 
         // store statistic
         $this->logger->info("Storing yearly statistics for " . $year);
@@ -237,7 +237,7 @@ class StatController
 
         return $userStats;
     }
-        
+
     /**
      * @param $startLastMonth
      * @param $startThisMonth
@@ -337,7 +337,7 @@ class StatController
         $membershipStats["cancelled-count"] = $cancelledCount;
         $membershipStats["new-active-count"] = $newActiveCount;
         $membershipStats["new-pending-count"] = $newPendingCount;
-        return $membershipStats;       
+        return $membershipStats;
     }
 
     private function getMembershipPaymentStats($startDate, $endDate, $paymentMode, $membershipType = null): array
@@ -402,92 +402,92 @@ class StatController
         return $accessoryStats;
     }
 
-    /**
-     * @param $year
-     * @return array
-     */
-    private function getYearlyLendingStats($year): array
-    {
-        $this->logger->info("Get yearly lending stats with param " . $year);
-        $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $this->utc);
-        $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $this->utc);
-        $checkoutCount = Lending::inYear($startYear->format("Y"))->count();
-        $checkinCount = Lending::returnedInYear($startYear->format("Y"))->count();
+    // /**
+    //  * @param $year
+    //  * @return array
+    //  */
+    // private function getYearlyLendingStats($year): array
+    // {
+    //     $this->logger->info("Get yearly lending stats with param " . $year);
+    //     $startYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-01-01', $this->utc);
+    //     $endYear = DateTimeImmutable::createFromFormat('Y-m-d', $year . '-12-31', $this->utc);
+    //     $checkoutCount = Lending::inYear($startYear->format("Y"))->count();
+    //     $checkinCount = Lending::returnedInYear($startYear->format("Y"))->count();
 
-        $activityStats = array();
-        $activityStats["total-count"] = Lending::count();
-        $activityStats["active-count"] = Lending::active()->count();
-        $activityStats["overdue-count"] = Lending::overdue()->count();
-        $activityStats["checkout-count"] = $checkoutCount;
-        $activityStats["checkin-count"] = $checkinCount;
+    //     $activityStats = array();
+    //     $activityStats["total-count"] = Lending::count();
+    //     $activityStats["active-count"] = Lending::active()->count();
+    //     $activityStats["overdue-count"] = Lending::overdue()->count();
+    //     $activityStats["checkout-count"] = $checkoutCount;
+    //     $activityStats["checkin-count"] = $checkinCount;
 
-        // TODO: enrich with monthly stats
-        return $activityStats;
-    }
-        
-    /**
-     * @param $startLastMonth
-     * @param $startThisMonth
-     * @return array
-     */
-    private function getLendingStats($startLastMonth, $startThisMonth): array
-    {
-        $this->logger->info("Get lending stats with params " . $startLastMonth->format('Y-m-d') . ", " . $startThisMonth->format('Y-m-d'));
-        $checkoutPrevMonthCount = Lending::inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
-        $checkoutCurrMonthCount = Lending::inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
-        $checkinPrevMonthCount = Lending::returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
-        $checkinCurrMonthCount = Lending::returnedInYear($startThisMonth->format("Y"))->returnedInMonth($startThisMonth->format("m"))->count();
-        $activityStats = array();
-        $activityStats["total-count"] = Lending::count();
-        $activityStats["active-count"] = Lending::active()->count();
-        $activityStats["overdue-count"] = Lending::overdue()->count();
-        $activityStats["checkout-prev-month-count"] = $checkoutPrevMonthCount;
-        $activityStats["checkout-curr-month-count"] = $checkoutCurrMonthCount;
-        $activityStats["checkin-prev-month-count"] = $checkinPrevMonthCount;
-        $activityStats["checkin-curr-month-count"] = $checkinCurrMonthCount;
+    //     // TODO: enrich with monthly stats
+    //     return $activityStats;
+    // }
 
-        // Stroom
-        $stroomStats = array();
-        $stroomStats["total-count"] = Lending::stroom()->count();
-        $stroomStats["active-count"] = Lending::stroom()->active()->count();
-        $stroomStats["overdue-count"] = Lending::stroom()->overdue()->count();
+    // /**
+    //  * @param $startLastMonth
+    //  * @param $startThisMonth
+    //  * @return array
+    //  */
+    // private function getLendingStats($startLastMonth, $startThisMonth): array
+    // {
+    //     $this->logger->info("Get lending stats with params " . $startLastMonth->format('Y-m-d') . ", " . $startThisMonth->format('Y-m-d'));
+    //     $checkoutPrevMonthCount = Lending::inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
+    //     $checkoutCurrMonthCount = Lending::inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
+    //     $checkinPrevMonthCount = Lending::returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
+    //     $checkinCurrMonthCount = Lending::returnedInYear($startThisMonth->format("Y"))->returnedInMonth($startThisMonth->format("m"))->count();
+    //     $activityStats = array();
+    //     $activityStats["total-count"] = Lending::count();
+    //     $activityStats["active-count"] = Lending::active()->count();
+    //     $activityStats["overdue-count"] = Lending::overdue()->count();
+    //     $activityStats["checkout-prev-month-count"] = $checkoutPrevMonthCount;
+    //     $activityStats["checkout-curr-month-count"] = $checkoutCurrMonthCount;
+    //     $activityStats["checkin-prev-month-count"] = $checkinPrevMonthCount;
+    //     $activityStats["checkin-curr-month-count"] = $checkinCurrMonthCount;
 
-        $checkoutPrevMonthCountStroom = Lending::stroom()->inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
-        $checkoutCurrMonthCountStroom = Lending::stroom()->inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
-        $checkinPrevMonthCountStroom = Lending::stroom()->returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
-        $checkinCurrMonthCountStroom = Lending::stroom()->returnedInYear($startThisMonth->format("Y"))->returnedInMonth($startThisMonth->format("m"))->count();
+    //     // Stroom
+    //     $stroomStats = array();
+    //     $stroomStats["total-count"] = Lending::stroom()->count();
+    //     $stroomStats["active-count"] = Lending::stroom()->active()->count();
+    //     $stroomStats["overdue-count"] = Lending::stroom()->overdue()->count();
 
-        $stroomStats["checkout-prev-month-count"] = $checkoutPrevMonthCountStroom;
-        $stroomStats["checkout-curr-month-count"] = $checkoutCurrMonthCountStroom;
-        $stroomStats["checkin-prev-month-count"] = $checkinPrevMonthCountStroom;
-        $stroomStats["checkin-curr-month-count"] = $checkinCurrMonthCountStroom;
-        $activityStats["stroom"] = $stroomStats;
-        return $activityStats;
-    }
-    /**
-     * @param $startLastMonth
-     * @param $startThisMonth
-     * @return array
-     */
-    private function getLendingStatsV2($startPeriod, $periodType = "month"): array
-    {
-        $this->logger->info("Get lending stats with params " . $startPeriod->format('Y-m-d') . ", " . $periodType);
-        if ($periodType == "year") {
-            $checkoutCount = Lending::inYear($startPeriod->format("Y"))->count();
-            $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->count();
-        } else if ($periodType == "month") {
-            $checkoutCount = Lending::inYear($startPeriod->format("Y"))->inMonth($startPeriod->format("m"))->count();
-            $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->returnedInMonth($startPeriod->format("m"))->count();
-        } else {
-            return array();
-        }
-        $activityStats = array();
-        $activityStats["total-count"] = Lending::count();
-        $activityStats["active-count"] = Lending::active()->count();
-        $activityStats["overdue-count"] = Lending::overdue()->count();
-        $activityStats["checkout-count"] = $checkoutCount;
-        $activityStats["checkin-count"] = $checkinCount;
+    //     $checkoutPrevMonthCountStroom = Lending::stroom()->inYear($startLastMonth->format("Y"))->inMonth($startLastMonth->format("m"))->count();
+    //     $checkoutCurrMonthCountStroom = Lending::stroom()->inYear($startThisMonth->format("Y"))->inMonth($startThisMonth->format("m"))->count();
+    //     $checkinPrevMonthCountStroom = Lending::stroom()->returnedInYear($startLastMonth->format("Y"))->returnedInMonth($startLastMonth->format("m"))->count();
+    //     $checkinCurrMonthCountStroom = Lending::stroom()->returnedInYear($startThisMonth->format("Y"))->returnedInMonth($startThisMonth->format("m"))->count();
 
-        return $activityStats;
-    }    
+    //     $stroomStats["checkout-prev-month-count"] = $checkoutPrevMonthCountStroom;
+    //     $stroomStats["checkout-curr-month-count"] = $checkoutCurrMonthCountStroom;
+    //     $stroomStats["checkin-prev-month-count"] = $checkinPrevMonthCountStroom;
+    //     $stroomStats["checkin-curr-month-count"] = $checkinCurrMonthCountStroom;
+    //     $activityStats["stroom"] = $stroomStats;
+    //     return $activityStats;
+    // }
+    // /**
+    //  * @param $startLastMonth
+    //  * @param $startThisMonth
+    //  * @return array
+    //  */
+    // private function getLendingStatsV2($startPeriod, $periodType = "month"): array
+    // {
+    //     $this->logger->info("Get lending stats with params " . $startPeriod->format('Y-m-d') . ", " . $periodType);
+    //     if ($periodType == "year") {
+    //         $checkoutCount = Lending::inYear($startPeriod->format("Y"))->count();
+    //         $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->count();
+    //     } else if ($periodType == "month") {
+    //         $checkoutCount = Lending::inYear($startPeriod->format("Y"))->inMonth($startPeriod->format("m"))->count();
+    //         $checkinCount = Lending::returnedInYear($startPeriod->format("Y"))->returnedInMonth($startPeriod->format("m"))->count();
+    //     } else {
+    //         return array();
+    //     }
+    //     $activityStats = array();
+    //     $activityStats["total-count"] = Lending::count();
+    //     $activityStats["active-count"] = Lending::active()->count();
+    //     $activityStats["overdue-count"] = Lending::overdue()->count();
+    //     $activityStats["checkout-count"] = $checkoutCount;
+    //     $activityStats["checkin-count"] = $checkinCount;
+
+    //     return $activityStats;
+    // }
 }
