@@ -129,7 +129,14 @@ class LoanManager
         return $reservations->map($this->mapLoanItemToReservation(...));
     }
 
-    private function getLoans($query = null, $isOpen = false, $sortfield = 'id', $sortdir = 'asc') {
+    public function getUserReservations($contactId) : \Illuminate\Support\Collection {
+        $reservations = $this->getLoans(null, true, 'id', 'asc', $contactId);
+        // callback notation: see https://www.php.net/manual/en/functions.first_class_callable_syntax.php
+        return $reservations->map($this->mapLoanItemToReservation(...));
+
+    }
+
+    private function getLoans($query = null, $isOpen = false, $sortfield = 'id', $sortdir = 'asc', $contactId = null) {
         $queryBuilder = Capsule::table('loan')
             ->join('contact', 'loan.contact_id', '=', 'contact.id')
             ->join('loan_row', 'loan.id', '=', 'loan_row.loan_id')
@@ -142,6 +149,9 @@ class LoanManager
         if (isset($query)) {
             $queryBuilder = $queryBuilder->where('contact.first_name', 'LIKE', '%'.$query.'%' )
                 ->orWhere('contact.last_name', 'LIKE', '%'.$query.'%' );
+        }
+        if (isset($contactId)) {
+            $queryBuilder = $queryBuilder->where('loan.contact_id', $contactId);
         }
         $this->logger->info("SQL: " . $queryBuilder->toSql());
         return $queryBuilder->orderBy($sortfield, $sortdir)->get();

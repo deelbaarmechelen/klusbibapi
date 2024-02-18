@@ -11,6 +11,7 @@ use Api\User\UserController;
 use Api\Tool\ToolController;
 use Api\User\UserManager;
 use Api\Tool\ToolManager;
+use Api\Loan\LoanManager;
 use Api\Inventory\SnipeitInventory;
 use Api\Statistics\StatController;
 use Mollie\Api\MollieApiClient;
@@ -165,7 +166,8 @@ $container->set("Api\Enrolment\EnrolmentFactory", function (ContainerInterface $
     $logger = $container->get("logger"); // retrieve the 'logger' from the container
     $inventory = $container->get("Api\Inventory");
     $mailMgr = new MailManager(null, null, $logger);
-    $userMgr = new UserManager($inventory, $logger, $mailMgr);
+    $loanManager = LoanManager::instance($logger, $mailMgr);
+    $userMgr = new UserManager($inventory, $logger, $mailMgr, $loanManager);
     return new \Api\Enrolment\EnrolmentFactory($mailMgr
         , new MollieApiClient(), $userMgr);
 });
@@ -179,7 +181,8 @@ $container->set('Api\User\UserController', function(ContainerInterface $c) {
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
     $mailMgr = new MailManager(null, null, $logger);
-    return new UserController($logger, new UserManager($inventory, $logger, $mailMgr), new ToolManager($inventory, $logger),$token);
+    $loanManager = LoanManager::instance($logger, $mailMgr);
+    return new UserController($logger, new UserManager($inventory, $logger, $mailMgr, $loanManager), new ToolManager($inventory, $logger),$token);
 });
 
 $container->set('Api\Tool\ToolController', function(ContainerInterface $c) {
@@ -262,7 +265,8 @@ $container->set('Api\Lending\LendingController', function(ContainerInterface $c)
     $inventory = $c->get("Api\Inventory");
     $mailMgr = new MailManager(null, null, $logger);
     $toolManager = new ToolManager($inventory, $logger);
-    $userManager = new UserManager($inventory, $logger, $mailMgr);
+    $loanManager = LoanManager::instance($logger, $mailMgr);
+    $userManager = new UserManager($inventory, $logger, $mailMgr, $loanManager);
     $mailManager = new MailManager(null, null, $logger);
     return new \Api\Lending\LendingController($logger, $token, $toolManager, $userManager, $mailManager);
 });
@@ -271,6 +275,7 @@ $container->set('Api\Membership\MembershipController', function(ContainerInterfa
     $token = $c->get("token");
     $inventory = $c->get("Api\Inventory");
     $mailMgr = new MailManager(null, null, $logger);
-    $userManager = new UserManager($inventory, $logger, $mailMgr);
+    $loanManager = LoanManager::instance($logger, $mailMgr);
+    $userManager = new UserManager($inventory, $logger, $mailMgr, $loanManager);
     return new \Api\Membership\MembershipController($logger, $userManager, $token);
 });

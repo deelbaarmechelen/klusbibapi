@@ -9,6 +9,7 @@ use Api\Model\PaymentMode;
 use Api\ModelMapper\DeliveryMapper;
 use Api\ModelMapper\MembershipMapper;
 use Api\Tool\ToolManager;
+use Api\Loan\LoanManager;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
@@ -32,13 +33,15 @@ class UserController implements UserControllerInterface
     protected $logger;
     protected $userManager;
     protected $toolManager;
+    protected $loanManager;
     protected $token;
 
-    public function __construct($logger, UserManager $userManager, ToolManager $toolManager, Token $token) {
+    public function __construct($logger, UserManager $userManager, ToolManager $toolManager, Token $token, LoanManager $loanManager) {
         $this->logger = $logger;
         $this->userManager = $userManager;
         $this->toolManager = $toolManager;
         $this->token = $token;
+        $this->loanManager = $loanManager;
     }
 
     public function getAll (RequestInterface $request, ResponseInterface $response, $args) {
@@ -108,7 +111,7 @@ class UserController implements UserControllerInterface
             return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
                 ->withJson(array('error' => $ex->getMessage()));
         }
-        //$userArray["reservations"] = $this->addUserReservations($user);
+        $userArray["reservations"] = $this->addUserReservations($user);
         //$userArray["deliveries"] = $this->addUserDeliveries($user);
         $userArray["projects"] = $this->addUserProjects($user);
 
@@ -430,30 +433,31 @@ class UserController implements UserControllerInterface
         return false;
     }
 
-    // /**
-    //  * @param $user
-    //   * @return mixed
-    //  */
-    // private function addUserReservations($user)
-    // {
-    //     $reservationsArray = array();
-    //     foreach ($user->reservations as $reservation) {
-    //         $reservationData = ReservationMapper::mapReservationToArray($reservation);
-    //         $tool = $this->toolManager->getById($reservationData['tool_id']);
-    //         if (isset($tool)) {
-    //             $reservationData['tool_code'] = $tool->code;
-    //             $reservationData['tool_name'] = $tool->name;
-    //             $reservationData['tool_brand'] = $tool->brand;
-    //             $reservationData['tool_type'] = $tool->type;
-    //             $reservationData["tool_size"] = $tool->size;
-    //             $reservationData["tool_fee"] = $tool->fee;
-    //             $reservationData["deliverable"] = $tool->deliverable;
-    //         }
+    /**
+     * @param $user
+      * @return mixed
+     */
+    private function addUserReservations($user)
+    {
+        $reservationsArray = array();
+        $userReservations = $this->loanManager->getUserReservations($user->id);
+        foreach ($user->reservations as $reservation) {
+            $reservationData = ReservationMapper::mapReservationToArray($reservation);
+            $tool = $this->toolManager->getById($reservationData['tool_id']);
+            if (isset($tool)) {
+                $reservationData['tool_code'] = $tool->code;
+                $reservationData['tool_name'] = $tool->name;
+                $reservationData['tool_brand'] = $tool->brand;
+                $reservationData['tool_type'] = $tool->type;
+                $reservationData["tool_size"] = $tool->size;
+                $reservationData["tool_fee"] = $tool->fee;
+                $reservationData["deliverable"] = $tool->deliverable;
+            }
 
-    //         array_push($reservationsArray, $reservationData);
-    //     }
-    //     return $reservationsArray;
-    // }
+            array_push($reservationsArray, $reservationData);
+        }
+        return $reservationsArray;
+    }
     // private function addUserDeliveries($user)
     // {
     //     $deliveriesArray = array();
