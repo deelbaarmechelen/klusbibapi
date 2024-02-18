@@ -284,30 +284,31 @@ BEGIN
     call kb_log_msg(concat('Error in inventory.kb_checkout: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
     RESIGNAL;
 END;
+    -- only update inventory if no more recent checkout exists
+    IF (inventory.get_checkout_date(inventory_item_id, datetime_out) IS NULL) THEN
+        call klusbibdb.kb_log_msg(concat('Info: Checkout - Updating assets.last_checkout and expected_checkin for inventory item with id: ', ifnull(inventory_item_id, 'null')));
+        SET user_id := (SELECT id FROM inventory.users where employee_num = loan_contact_id AND deleted_at IS NULL);
+        UPDATE inventory.assets
+        SET last_checkout = datetime_out,
+            expected_checkin = datetime_in,
+            checkout_counter = checkout_counter + 1,
+            assigned_to = user_id,
+            assigned_type = 'App\\Models\\User',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = inventory_item_id;
 
-    call klusbibdb.kb_log_msg(concat('Info: Checkout - Updating assets.last_checkout and expected_checkin for inventory item with id: ', ifnull(inventory_item_id, 'null')));
-    SET user_id := (SELECT id FROM inventory.users where employee_num = loan_contact_id AND deleted_at IS NULL);
-    UPDATE inventory.assets
-    SET last_checkout = datetime_out,
-        expected_checkin = datetime_in,
-        checkout_counter = checkout_counter + 1,
-        assigned_to = user_id,
-        assigned_type = 'App\\Models\\User',
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = inventory_item_id;
-
-    -- Insert action log with comment
-    -- TODO: update log_meta if old.expected_checkin is not null (requires old_checkin_datetime as input parameter)
-    -- TODO: update log_meta if old.location_id is not null (requires old_location_id as input parameter)
-    -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"null\",\"new\":\"',DATE_FORMAT(datetime_in, '%Y-%m-%d'),'\"},\"location_id\":{\"old\":2,\"new\":null}}}');
-    INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, expected_checkin, created_at, updated_at, company_id, action_date)
-    SELECT 1, 'checkout', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', inventory_item_id, datetime_in, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
-
+        -- Insert action log with comment
+        -- TODO: update log_meta if old.expected_checkin is not null (requires old_checkin_datetime as input parameter)
+        -- TODO: update log_meta if old.location_id is not null (requires old_location_id as input parameter)
+        -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"null\",\"new\":\"',DATE_FORMAT(datetime_in, '%Y-%m-%d'),'\"},\"location_id\":{\"old\":2,\"new\":null}}}');
+        INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, expected_checkin, created_at, updated_at, company_id, action_date)
+        SELECT 1, 'checkout', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', inventory_item_id, datetime_in, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
+    END IF;
 END$$
 
 DROP PROCEDURE IF EXISTS inventory.`kb_checkin`$$
 CREATE PROCEDURE inventory.`kb_checkin` 
-            (IN item_id INT, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
+            (IN item_id INT, IN checkout_datetime DATETIME, IN checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
 BEGIN 
 DECLARE user_id INT DEFAULT 0;
 DECLARE log_meta_json text;
@@ -318,32 +319,36 @@ BEGIN
     call kb_log_msg(concat('Error in inventory.kb_checkin: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
     RESIGNAL;
 END;
-    call klusbibdb.kb_log_msg(concat('Info: Checkin - Updating assets.last_checkin for inventory item with id: ', ifnull(item_id, 'null')));
-    SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
-    UPDATE inventory.assets
-    SET last_checkin = checkin_datetime,
-        last_checkout = NULL,
-        expected_checkin = NULL,
-        checkin_counter = checkin_counter + 1,
-        assigned_to = NULL,
-        assigned_type = NULL,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = item_id
-    AND last_checkin < checkin_datetime;
+    -- only update inventory if checkin does not exist yet
+    IF (inventory.get_checkin_date(item_id, checkout_datetime) IS NULL) THEN
+        call klusbibdb.kb_log_msg(concat('Info: Checkin - Updating assets.last_checkin for inventory item with id: ', ifnull(item_id, 'null')));
+        SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
+        UPDATE inventory.assets
+        SET last_checkin = checkin_datetime,
+            last_checkout = NULL,
+            expected_checkin = NULL,
+            checkin_counter = checkin_counter + 1,
+            assigned_to = NULL,
+            assigned_type = NULL,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = item_id
+        AND last_checkin < checkin_datetime;
 
-    -- Insert action log with comment
-    -- TODO: update log_meta if old.expected_checkin is not null (requires old_checkin_datetime as input parameter
-    -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"null\"}}');
-    INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, created_at, updated_at, company_id, action_date)
-    SELECT 1, 'checkin from', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
-
+        -- Insert action log with comment
+        -- TODO: update log_meta if old.expected_checkin is not null (requires old_checkin_datetime as input parameter
+        -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"null\"}}');
+        INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, created_at, updated_at, company_id, action_date)
+        SELECT 1, 'checkin from', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
+    END IF;
 END$$
 
 DROP PROCEDURE IF EXISTS inventory.`kb_extend`$$
 CREATE PROCEDURE inventory.`kb_extend` 
-            (IN item_id INT, IN old_checkin_datetime DATETIME, IN new_checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
+            (IN item_id INT, IN checkout_datetime DATETIME, IN old_checkin_datetime DATETIME, IN new_checkin_datetime DATETIME, IN `comment` VARCHAR(255) ) 
 BEGIN 
 DECLARE user_id INT DEFAULT 0;
+DECLARE orig_last_checkout DATE;
+DECLARE orig_expected_checkin DATE;
 DECLARE log_meta_json text;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
@@ -352,17 +357,21 @@ BEGIN
     call kb_log_msg(concat('Error in inventory.kb_extend: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
     RESIGNAL;
 END;
-    call klusbibdb.kb_log_msg(concat('Info: Extend - Updating assets.expected_checkin for inventory item with id: ', ifnull(item_id, 'null')));
-    SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
-    UPDATE inventory.assets
-    SET expected_checkin = new_checkin_datetime,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = item_id;
+    -- Only report extend if itme already checked out with same checkout time
+    SELECT assigned_to, last_checkout, expected_checkin INTO user_id, orig_last_checkout, orig_expected_checkin FROM inventory.assets where id = item_id;
+    SELECT 
+    IF ( (NOT user_id IS NULL) AND (checkout_datetime = orig_last_checkout) AND (orig_expected_checkin <> new_checkin_datetime)) THEN
+        call klusbibdb.kb_log_msg(concat('Info: Extend - Updating assets.expected_checkin for inventory item with id: ', ifnull(item_id, 'null')));
+        UPDATE inventory.assets
+        SET expected_checkin = new_checkin_datetime,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = item_id;
 
-    -- Insert action log
-    SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"', DATE_FORMAT(new_checkin_datetime, '%Y-%m-%d 00:00:00'), '\"}}');
-    INSERT INTO action_logs (user_id, action_type, note, item_type, item_id, created_at, updated_at, company_id, log_meta)
-    SELECT 1, 'update', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, log_meta_json;
+        -- Insert action log
+        SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"', DATE_FORMAT(new_checkin_datetime, '%Y-%m-%d 00:00:00'), '\"}}');
+        INSERT INTO action_logs (user_id, action_type, note, item_type, item_id, created_at, updated_at, company_id, log_meta)
+        SELECT 1, 'update', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, log_meta_json;
+    END IF;
 
 END$$
 
@@ -473,7 +482,9 @@ BEGIN
     IF klusbibdb.is_sync_inventory2le_enabled() THEN
         SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
     END IF;
-    call kb_log_msg(concat('Error in kb_sync_assets_2le'));
+    GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
+    call kb_log_msg(concat('Error in klusbibdb.kb_sync_assets_2le: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
     RESIGNAL;
 END;
 
