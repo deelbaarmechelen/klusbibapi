@@ -479,11 +479,6 @@ END;
 
 IF klusbibdb.enable_sync_inventory2le() THEN
   -- remove deleted assets
-  DELETE FROM klusbibdb.item_movement WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
-  DELETE FROM klusbibdb.loan_row WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
-  DELETE FROM klusbibdb.product_field_value WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
-  DELETE FROM klusbibdb.image WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
-  DELETE FROM klusbibdb.inventory_item_product_tag WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
   DELETE FROM klusbibdb.kb_sync_assets WHERE id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
 
   -- insert missing assets
