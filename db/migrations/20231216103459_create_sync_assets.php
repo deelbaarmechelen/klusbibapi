@@ -175,6 +175,8 @@ BEGIN
     DECLARE inventory_item_serial varchar(64) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE default_item_name varchar(255) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE item_checked_out_at datetime;
+    DECLARE asset_checked_out_at datetime;
+    DECLARE asset_checkin_date datetime;
     SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
     IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = OLD.id) THEN
         -- (also?) compare new.name with inventory_item name
@@ -230,7 +232,7 @@ BEGIN
        AND (NOT NEW.last_checkout IS NULL)) THEN
         IF ((NOT NEW.kb_assigned_to IS NULL)
         AND (NEW.assigned_type = 'App\\\\Models\\\\User'))  THEN
-            CALL kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
+            CALL klusbibdb.kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
         ELSE
             call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,') last_checkout (assigned to ', ifnull(NEW.kb_assigned_to, 'null'), ', assigned type ', ifnull(NEW.assigned_type, 'null'),') update not reported to inventory_item: ', ifnull(OLD.last_checkout, 'null'), ' -> ', ifnull(NEW.last_checkout, 'null')));
         END IF;
@@ -239,7 +241,7 @@ BEGIN
     IF ((NOT NEW.last_checkin <=> OLD.last_checkin)
         AND (NOT NEW.last_checkin IS NULL)) THEN
         IF (NEW.kb_assigned_to IS NULL) THEN
-            CALL kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
+            CALL klusbibdb.kb_checkin (NEW.id, NEW.last_checkin, 'Checkin from inventory' );
         ELSE
             call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  last_checkin (assigned to ', ifnull(NEW.kb_assigned_to, 'null'), ') update not reported to inventory_item: ', ifnull(OLD.last_checkin, 'null'), ' -> ', ifnull(NEW.last_checkin, 'null')));
         END IF;
@@ -248,7 +250,7 @@ BEGIN
     IF ((NOT NEW.expected_checkin <=> OLD.expected_checkin)
       AND (NOT OLD.expected_checkin IS NULL)
       AND (NOT NEW.expected_checkin IS NULL)) THEN
-        CALL kb_extend (NEW.id, NEW.expected_checkin);
+        CALL klusbibdb.kb_extend (NEW.id, NEW.expected_checkin);
     END IF;
 
     -- IF (NOT NEW.assigned_to <=> OLD.assigned_to) THEN
@@ -258,24 +260,37 @@ BEGIN
     -- Extra checks for recovery from inconsistent situations (only when triggering extra sync)
     IF NEW.last_sync_timestamp > ifnull(NEW.`updated_at`, NEW.created_at) THEN
         -- if asset is assigned to a user, a matching ACTIVE/OVERDUE loan should exist
-        IF ((inventory.is_on_loan(NEW.id)) AND (NOT klusbibdb.is_on_loan(NEW.id) )) THEN
-            -- create a new loan on klusbibdb
-            CALL kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
-        END IF;
-        
-        -- if asset is not assigned to a user, no matching ACTIVE/OVERDUE loan may exist
-        IF ((NOT inventory.is_on_loan(NEW.id)) AND (klusbibdb.is_on_loan(NEW.id))) THEN
-            -- check if loan exists in inventory activity, if it does then it has already been checked in
-            -- create a new loan on klusbibdb
-            SET item_checked_out_at := (SELECT MAX(checked_out_at) FROM loan_row WHERE inventory_item_id = NEW.id AND NOT checked_out_at IS NULL AND checked_in_at IS NULL);
-            IF EXISTS (SELECT 1 FROM inventory.action_logs WHERE action_type = 'checkout' 
-                    AND target_id = NEW.id 
-                    AND target_type = 'App\\\\Models\\\\User'
-                    AND created_at >= item_checked_out_at) THEN
+        IF (inventory.is_on_loan(NEW.id)) THEN
+            -- inventory asset on loan -> check LE item consistency
+            IF (klusbibdb.is_on_loan(NEW.id) ) THEN
+                -- does a more recent checkout exist on inventory? -> checkin LE loan based on inventory.action_logs
+                SET item_checked_out_at := (SELECT MAX(checked_out_at) FROM loan_row WHERE inventory_item_id = NEW.id AND NOT checked_out_at IS NULL AND checked_in_at IS NULL);
+                SET asset_checked_out_at := (SELECT inventory.get_checkout_date(NEW.id, item_checked_out_at));
+                IF (NOT asset_checked_out_at IS NULL) AND (DATE(item_checked_out_at) = DATE(item_checked_out_at)) THEN
+                    -- lookup checkin date based on action_logs query
+                    SET asset_checkin_date := (SELECT inventory.get_checkin_date(NEW.id, asset_checked_out_at));
+                    IF (NOT asset_checkin_date IS NULL) THEN
+                        CALL klusbibdb.kb_checkin (NEW.id, asset_checkin_date, 'Checkin from inventory' );
+                    END IF;
+                END IF;
 
-                CALL kb_checkin (NEW.id, ifnull(NEW.last_checkin, CURRENT_TIMESTAMP), 'Checkin from inventory' );
-            ELSE
-                call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,') outdated - a more recent loan exists on lend engine (checked out on ', ifnull(item_checked_out_at, 'null'), ')' ));
+                -- TODO: same start date and user? -> update checkin date if necessary
+            END IF;
+            IF (NOT klusbibdb.is_on_loan(NEW.id) ) THEN
+                -- create a new loan on klusbibdb
+                CALL klusbibdb.kb_checkout (NEW.id, NEW.kb_assigned_to, NEW.last_checkout, NEW.expected_checkin, 'Checkout from inventory' );
+            END IF;
+        ELSE
+            -- if asset is not assigned to a user, no matching ACTIVE/OVERDUE loan may exist
+            IF (klusbibdb.is_on_loan(NEW.id)) THEN
+                -- check if a matching checkin exists in inventory activity, if it does then it has already been checked in
+                SET item_checked_out_at := (SELECT MAX(checked_out_at) FROM loan_row WHERE inventory_item_id = NEW.id AND NOT checked_out_at IS NULL AND checked_in_at IS NULL);
+                SET asset_checkin_date := (SELECT inventory.get_checkin_date(NEW.id, item_checked_out_at));
+                IF NOT asset_checkin_date IS NULL THEN
+                    CALL klusbibdb.kb_checkin (NEW.id, asset_checkin_date, 'Checkin from inventory' );
+                ELSE
+                    call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,') outdated - a more recent loan exists on lend engine (checked out on ', ifnull(item_checked_out_at, 'null'), ')' ));
+                END IF;
             END IF;
         END IF;
     END IF;

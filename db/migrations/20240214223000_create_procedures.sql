@@ -115,6 +115,33 @@ BEGIN
     END IF;
 END$$
 
+-- returns first checkout date for given asset id and start search date, or null if not checked out yet
+DROP FUNCTION IF EXISTS inventory.get_checkout_date$$
+CREATE FUNCTION inventory.get_checkout_date(`asset_id` INT, `checked_out_at` DATETIME) 
+RETURNS datetime
+BEGIN
+RETURN (SELECT MIN(action_date) FROM inventory.action_logs 
+  WHERE action_type = 'checkout' 
+    AND item_id = asset_id
+    AND target_type = 'App\\Models\\User'
+    AND action_date >= checked_out_at );
+END$$
+
+-- returns checkin date for given asset id and checkout date, or null if not checked in yet, or loan not found
+DROP FUNCTION IF EXISTS inventory.get_checkin_date$$
+CREATE FUNCTION inventory.get_checkin_date(`asset_id` INT, `checked_out_at` DATETIME) 
+RETURNS datetime
+BEGIN
+IF NOT EXISTS (SELECT 1 FROM inventory.action_logs WHERE action_type = 'checkout' AND item_id = asset_id AND action_date = checked_out_at) THEN
+    RETURN NULL;
+END IF;
+
+RETURN (SELECT MIN(action_date) FROM inventory.action_logs 
+  WHERE action_type = 'checkin from' 
+    AND item_id = asset_id
+    AND target_type = 'App\\Models\\User'
+    AND action_date > checked_out_at );
+END$$
 
 DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`$$
 CREATE PROCEDURE klusbibdb.`kb_checkout` 
@@ -124,6 +151,13 @@ DECLARE new_loan_id INT DEFAULT 0;
 DECLARE new_loan_row_id INT DEFAULT 0;
 -- Set location to 1 = 'On loan'
 DECLARE location_id INT DEFAULT 1;
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+    GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
+    call kb_log_msg(concat('Error in klusbibdb.kb_checkout: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
+    RESIGNAL;
+END;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = inventory_item_id) 
 AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
         
@@ -165,11 +199,19 @@ DECLARE existing_loan_id INT DEFAULT 0;
 DECLARE loan_contact_id INT DEFAULT 0;
 -- Set location to 2 = 'In stock'
 DECLARE location_id INT DEFAULT 2;
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+    GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
+    call kb_log_msg(concat('Error in klusbibdb.kb_checkin: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
+    RESIGNAL;
+END;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
-    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE') THEN
+    AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status IN ('ACTIVE', 'OVERDUE')) THEN
     
-    SET existing_loan_id := (SELECT loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status = 'ACTIVE');
+    SET existing_loan_id := (SELECT loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status IN ('ACTIVE', 'OVERDUE'));
     SET loan_contact_id := (SELECT contact_id FROM loan WHERE id = existing_loan_id);
+
 
     UPDATE inventory_item 
     SET current_location_id = location_id
@@ -206,6 +248,13 @@ CREATE PROCEDURE klusbibdb.`kb_extend`
             (IN item_id INT, IN expected_checkin_datetime DATETIME) 
 BEGIN 
 DECLARE existing_loan_id INT DEFAULT 0;
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+    GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
+    call kb_log_msg(concat('Error in klusbibdb.kb_extend: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
+    RESIGNAL;
+END;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
     AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE')) THEN
     
@@ -228,6 +277,13 @@ CREATE PROCEDURE inventory.`kb_checkout`
 BEGIN 
 DECLARE user_id INT DEFAULT 0;
 DECLARE log_meta_json text;
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+    GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
+    call kb_log_msg(concat('Error in inventory.kb_checkout: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
+    RESIGNAL;
+END;
 
     call klusbibdb.kb_log_msg(concat('Info: Checkout - Updating assets.last_checkout and expected_checkin for inventory item with id: ', ifnull(inventory_item_id, 'null')));
     SET user_id := (SELECT id FROM inventory.users where employee_num = loan_contact_id AND deleted_at IS NULL);
@@ -255,6 +311,13 @@ CREATE PROCEDURE inventory.`kb_checkin`
 BEGIN 
 DECLARE user_id INT DEFAULT 0;
 DECLARE log_meta_json text;
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+    GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
+    call kb_log_msg(concat('Error in inventory.kb_checkin: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
+    RESIGNAL;
+END;
     call klusbibdb.kb_log_msg(concat('Info: Checkin - Updating assets.last_checkin for inventory item with id: ', ifnull(item_id, 'null')));
     SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
     UPDATE inventory.assets
@@ -282,6 +345,13 @@ CREATE PROCEDURE inventory.`kb_extend`
 BEGIN 
 DECLARE user_id INT DEFAULT 0;
 DECLARE log_meta_json text;
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+    GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
+    call kb_log_msg(concat('Error in inventory.kb_extend: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
+    RESIGNAL;
+END;
     call klusbibdb.kb_log_msg(concat('Info: Extend - Updating assets.expected_checkin for inventory item with id: ', ifnull(item_id, 'null')));
     SET user_id := (SELECT assigned_to FROM inventory.assets where id = item_id);
     UPDATE inventory.assets
@@ -417,8 +487,7 @@ IF klusbibdb.enable_sync_inventory2le() THEN
   FROM inventory.assets LEFT JOIN inventory.users ON inventory.assets.assigned_to = inventory.users.id
   WHERE inventory.assets.id NOT IN (SELECT id FROM klusbibdb.kb_sync_assets);
 
-  -- simply update all rows to sync (enables update trigger on each row)?
-  -- add a sync_date column?
+  -- simply update all rows to sync (enables update trigger on each row)
   UPDATE klusbibdb.kb_sync_assets
     SET last_sync_timestamp = CURRENT_TIMESTAMP;
 
