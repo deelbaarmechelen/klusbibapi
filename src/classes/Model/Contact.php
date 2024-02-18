@@ -103,14 +103,14 @@ class Contact extends Model
 		return in_array($field, Contact::$fieldArray);
 	}
 	
-	public function reservations()
-	{
-		return $this->hasMany('Api\Model\Reservation', 'user_id');
-	}
-    public function deliveries()
-    {
-        return $this->hasMany('Api\Model\Delivery', 'user_id');
-    }
+	// public function reservations()
+	// {
+	// 	return $this->hasMany('Api\Model\Reservation', 'user_id');
+	// }
+    // public function deliveries()
+    // {
+    //     return $this->hasMany('Api\Model\Delivery', 'user_id');
+    // }
 
     /**
      * The projects this user participates to.
