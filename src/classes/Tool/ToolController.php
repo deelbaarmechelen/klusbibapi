@@ -105,25 +105,25 @@ class ToolController implements ProductControllerInterface
         // $data["reservations"] = $reservationsArray;
         return $response->withJson($data);
     }
-    function create(RequestInterface $request, ResponseInterface $response, $args) {
-        $this->logger->info("Klusbib POST '/tools' route");
-        /* Check if token has needed scope. */
-        try {
-            Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.create"]);
-        } catch (ForbiddenException $e) {
-            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => $e->getMessage()));
-        }
-        return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "Obsolete -> create tools through inventory instead"));
-        // $data = $request->getParsedBody();
-        // if (empty($data) || empty($data["name"])) {
-        //     return $response->withStatus(HttpResponseCode::BAD_REQUEST); // Bad request
-        // }
-        // $tool = new Tool();
-        // // 	$tool->name = filter_var($data['name'], FILTER_SANITIZE_STRING);
-        // ToolMapper::mapArrayToTool($data, $tool);
-        // $tool->save();
-        // return $response->withJson(ToolMapper::mapToolToArray($tool));
-    }
+    // function create(RequestInterface $request, ResponseInterface $response, $args) {
+    //     $this->logger->info("Klusbib POST '/tools' route");
+    //     /* Check if token has needed scope. */
+    //     try {
+    //         Authorisation::checkAccessByToken($this->token, ["tools.all", "tools.create"]);
+    //     } catch (ForbiddenException $e) {
+    //         return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => $e->getMessage()));
+    //     }
+    //     return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "Obsolete -> create tools through inventory instead"));
+    //     // $data = $request->getParsedBody();
+    //     // if (empty($data) || empty($data["name"])) {
+    //     //     return $response->withStatus(HttpResponseCode::BAD_REQUEST); // Bad request
+    //     // }
+    //     // $tool = new Tool();
+    //     // // 	$tool->name = filter_var($data['name'], FILTER_SANITIZE_STRING);
+    //     // ToolMapper::mapArrayToTool($data, $tool);
+    //     // $tool->save();
+    //     // return $response->withJson(ToolMapper::mapToolToArray($tool));
+    // }
     // function uploadProductImage(RequestInterface $request, ResponseInterface $response, $args) {
     //     $this->logger->info("Klusbib POST '/tools/{toolid}/upload' route");
     //     /* Check if token has needed scope. */
