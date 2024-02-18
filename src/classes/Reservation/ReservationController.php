@@ -212,8 +212,8 @@ class ReservationController implements ReservationControllerInterface
         if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
-        $toolOwnerId = isset($reservation->tool) ? $reservation->tool->owner_id : null;
-        $access = Authorisation::checkReservationAccess($this->token, "update", $reservation, $toolOwnerId, $this->logger);
+        //$toolOwnerId = isset($reservation->tool) ? $reservation->tool->owner_id : null;
+        $access = Authorisation::checkReservationAccess($this->token, "update", $reservation, null, $this->logger);
         if ($access === AccessType::NO_ACCESS) {
             return $response->withStatus(HttpResponseCode::FORBIDDEN); // Unauthorized
         }
