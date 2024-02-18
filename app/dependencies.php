@@ -141,16 +141,16 @@ $container->set("JwtAuthentication", function (ContainerInterface $container) {
 					->getBody()->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			},
 			"rules" => [
-                new \Api\Middleware\Jwt\JwtCustomRule([
-//							"getignore" => ["/tools", "/consumers", "/auth/confirm"]
-                        "getignore" => ["/tools", "/consumers"]
-                ]),
+//                 new \Api\Middleware\Jwt\JwtCustomRule([
+// //							"getignore" => ["/tools", "/consumers", "/auth/confirm"]
+//                         "getignore" => ["/tools"]
+//                 ]),
                 new RequestMethodRule([
                     "ignore" => ["OPTIONS"]
                 ]),
                 new JwtAuthentication\RequestPathRule([
                     "path" => "/",
-                    "ignore" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
+                    "ignore" => ["/token", "/tools", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
                         "/auth/reset", "/auth/verifyemail"]
                 ])
 			],
