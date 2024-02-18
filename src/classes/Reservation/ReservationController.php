@@ -162,8 +162,8 @@ class ReservationController implements ReservationControllerInterface
             $reservation->comment = $newComment;
         }
         // 	$this->logger->debug('tool =' . json_encode($reservation->tool));
-        $toolOwnerId = isset($reservation->tool) ? $reservation->tool->owner_id : null;
-        $access = Authorisation::checkReservationAccess($this->token, "create", $reservation, $toolOwnerId);
+        //$toolOwnerId = isset($reservation->tool) ? $reservation->tool->owner_id : null;
+        $access = Authorisation::checkReservationAccess($this->token, "create", $reservation, null);
         $this->logger->info("Reservation access check: " . $access);
         if ($access === AccessType::NO_ACCESS) {
             return $response->withStatus(HttpResponseCode::FORBIDDEN); // Unauthorized
