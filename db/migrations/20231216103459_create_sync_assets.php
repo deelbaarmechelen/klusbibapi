@@ -300,7 +300,13 @@ END
         $sql = "
 CREATE TRIGGER klusbibdb.`kb_sync_assets_bd` BEFORE DELETE ON klusbibdb.`kb_sync_assets` FOR EACH ROW
 BEGIN
-    DELETE FROM klusbibdb.inventory_item WHERE id = OLD.id;
+  -- TODO: replace delete by archive?
+  DELETE FROM klusbibdb.item_movement WHERE inventory_item_id = OLD.id;
+  DELETE FROM klusbibdb.loan_row WHERE inventory_item_id = OLD.id;
+  DELETE FROM klusbibdb.product_field_value WHERE inventory_item_id = OLD.id;
+  DELETE FROM klusbibdb.image WHERE inventory_item_id = OLD.id;
+  DELETE FROM klusbibdb.inventory_item_product_tag WHERE inventory_item_id = OLD.id;
+  DELETE FROM klusbibdb.inventory_item WHERE id = OLD.id;
 END
 ";
         $db->exec($sql);

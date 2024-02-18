@@ -478,14 +478,22 @@ BEGIN
 END;
 
 IF klusbibdb.enable_sync_inventory2le() THEN
-  -- insert missing assets in kb_sync_assets
+  -- remove deleted assets
+  DELETE FROM klusbibdb.item_movement WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
+  DELETE FROM klusbibdb.loan_row WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
+  DELETE FROM klusbibdb.product_field_value WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
+  DELETE FROM klusbibdb.image WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
+  DELETE FROM klusbibdb.inventory_item_product_tag WHERE inventory_item_id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
+  DELETE FROM klusbibdb.kb_sync_assets WHERE id IN (SELECT id FROM inventory.assets WHERE (NOT inventory.assets.deleted_at is null) OR inventory.assets.status_id = 3);
+
+  -- insert missing assets
   INSERT INTO klusbibdb.kb_sync_assets 
   (id, name, asset_tag, model_id, serial, image, status_id, assigned_to, kb_assigned_to,
    assigned_type, last_checkout, last_checkin, expected_checkin, created_at, updated_at, deleted_at)
   SELECT inventory.assets.id, inventory.assets.name, asset_tag, model_id, inventory.assets.serial, inventory.assets.image, status_id, assigned_to, employee_num,
    assigned_type, last_checkout, last_checkin, expected_checkin, inventory.assets.created_at, inventory.assets.updated_at, inventory.assets.deleted_at 
   FROM inventory.assets LEFT JOIN inventory.users ON inventory.assets.assigned_to = inventory.users.id
-  WHERE inventory.assets.id NOT IN (SELECT id FROM klusbibdb.kb_sync_assets);
+  WHERE inventory.assets.deleted_at is null AND NOT (inventory.assets.status_id = 3) AND inventory.assets.id NOT IN (SELECT id FROM klusbibdb.kb_sync_assets);
 
   -- simply update all rows to sync (enables update trigger on each row)
   UPDATE klusbibdb.kb_sync_assets
