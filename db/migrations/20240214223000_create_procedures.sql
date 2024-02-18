@@ -359,7 +359,6 @@ BEGIN
 END;
     -- Only report extend if itme already checked out with same checkout time
     SELECT assigned_to, last_checkout, expected_checkin INTO user_id, orig_last_checkout, orig_expected_checkin FROM inventory.assets where id = item_id;
-    SELECT 
     IF ( (NOT user_id IS NULL) AND (checkout_datetime = orig_last_checkout) AND (orig_expected_checkin <> new_checkin_datetime)) THEN
         call klusbibdb.kb_log_msg(concat('Info: Extend - Updating assets.expected_checkin for inventory item with id: ', ifnull(item_id, 'null')));
         UPDATE inventory.assets
