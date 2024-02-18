@@ -441,7 +441,7 @@ class UserController implements UserControllerInterface
     {
         $reservationsArray = array();
         $userReservations = $this->loanManager->getUserReservations($user->id);
-        foreach ($user->reservations as $reservation) {
+        foreach ($userReservations as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
             $tool = $this->toolManager->getById($reservationData['tool_id']);
             if (isset($tool)) {
