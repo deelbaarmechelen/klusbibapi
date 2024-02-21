@@ -339,6 +339,8 @@ END;
         -- SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"null\"}}');
         INSERT INTO action_logs (user_id, action_type, target_id, target_type, note, item_type, item_id, created_at, updated_at, company_id, action_date)
         SELECT 1, 'checkin from', user_id, 'App\\Models\\User', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP;
+    ELSE
+        call klusbibdb.kb_log_msg(concat('Info: Checkin - Skipped as checkin already exists in action_logs for inventory item with id: ', ifnull(item_id, 'null')));
     END IF;
 END$$
 
