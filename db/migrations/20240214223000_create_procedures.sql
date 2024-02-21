@@ -209,7 +209,7 @@ END;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
     AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status IN ('ACTIVE', 'OVERDUE')) THEN
     
-    SET existing_loan_id := (SELECT loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status IN ('ACTIVE', 'OVERDUE'));
+    SET existing_loan_id := (SELECT MAX(loan_id) FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND loan.status IN ('ACTIVE', 'OVERDUE'));
     SET loan_contact_id := (SELECT contact_id FROM loan WHERE id = existing_loan_id);
 
 
@@ -258,7 +258,7 @@ END;
 IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id) 
     AND EXISTS (SELECT 1 FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE')) THEN
     
-    SELECT loan_id INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id 
+    SELECT MAX(loan_id) INTO existing_loan_id FROM loan_row LEFT JOIN loan ON loan.id = loan_row.loan_id 
     WHERE inventory_item_id = item_id AND (loan.status = 'ACTIVE' OR loan.status = 'OVERDUE');
 
     UPDATE loan_row SET due_in_at = expected_checkin_datetime
