@@ -169,7 +169,8 @@ AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
     INSERT INTO loan (
         contact_id, datetime_out, datetime_in, status, total_fee, created_at)
     SELECT
-    loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), ifnull(datetime_in, CURRENT_TIMESTAMP), 'ACTIVE', 0, CURRENT_TIMESTAMP;
+    loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), ifnull(datetime_in, CURRENT_TIMESTAMP), 'ACTIVE', 0, 
+    CASE WHEN DATE(datetime_out) < DATE(CURRENT_TIMESTAMP) THEN datetime_out ELSE CURRENT_TIMESTAMP END;
     SET new_loan_id = LAST_INSERT_ID();
     
     INSERT INTO loan_row (
@@ -392,7 +393,7 @@ BEGIN
     IF klusbibdb.is_sync_inventory2le_enabled() THEN
         SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
     END IF;
-    call kb_log_msg(concat('Error in kb_register_loan_no_sync'));
+    call klusbibdb.kb_log_msg(concat('Error in kb_register_loan_no_sync'));
     RESIGNAL;
 END;
 -- only run if no sync ongoing
@@ -400,75 +401,76 @@ END;
 IF NOT klusbibdb.is_sync_inventory2le_enabled() AND NOT klusbibdb.is_sync_le2inventory_enabled() 
  AND klusbibdb.enable_sync_inventory2le() THEN
 
-IF EXISTS (SELECT 1 FROM inventory_item WHERE id = inventory_item_id) 
-AND EXISTS (SELECT 1 FROM contact WHERE id = loan_contact_id) THEN
+IF EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = inventory_item_id) 
+AND EXISTS (SELECT 1 FROM klusbibdb.contact WHERE id = loan_contact_id) THEN
         
     -- check if loan already exists: based on contact_id, start_date
-    IF EXISTS (SELECT 1 FROM loan l WHERE l.contact_id = loan_contact_id AND l.datetime_out = datetime_out AND (l.status = 'ACTIVE' OR l.status = 'OVERDUE' OR l.status = 'CLOSED') ) THEN
-        SET new_loan_id := (SELECT l.id FROM loan l WHERE l.contact_id = loan_contact_id AND l.datetime_out = datetime_out AND (l.status = 'ACTIVE' OR l.status = 'OVERDUE' OR l.status = 'CLOSED'));
-        UPDATE loan l SET l.datetime_in = datetime_in
+    IF EXISTS (SELECT 1 FROM klusbibdb.loan l WHERE l.contact_id = loan_contact_id AND l.datetime_out = datetime_out AND (l.status = 'ACTIVE' OR l.status = 'OVERDUE' OR l.status = 'CLOSED') ) THEN
+        SET new_loan_id := (SELECT l.id FROM klusbibdb.loan l WHERE l.contact_id = loan_contact_id AND l.datetime_out = datetime_out AND (l.status = 'ACTIVE' OR l.status = 'OVERDUE' OR l.status = 'CLOSED'));
+        UPDATE klusbibdb.loan l SET l.datetime_in = datetime_in
             WHERE l.id = new_loan_id AND l.datetime_in < datetime_in;
     ELSE
-        INSERT INTO loan (
+        INSERT INTO klusbibdb.loan (
             contact_id, datetime_out, datetime_in, status, total_fee, created_at)
         SELECT
-        loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), ifnull(datetime_in, CURRENT_TIMESTAMP), 'CLOSED', 0, CURRENT_TIMESTAMP;
+        loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), ifnull(datetime_in, CURRENT_TIMESTAMP), 'CLOSED', 0, 
+        CASE WHEN DATE(datetime_out) < DATE(CURRENT_TIMESTAMP) THEN datetime_out ELSE CURRENT_TIMESTAMP END;
         SET new_loan_id := LAST_INSERT_ID();
 
     END IF;
     
     -- check if loan row already exists: based on loan_id, inventory_item
-    IF EXISTS (SELECT 1 FROM loan_row lr WHERE lr.loan_id = new_loan_id AND lr.inventory_item_id = inventory_item_id) THEN
-        SET new_loan_row_id := (SELECT lr.id FROM loan_row lr WHERE lr.loan_id = new_loan_id AND lr.inventory_item_id = inventory_item_id);
-        SET lr_checked_out_at := (SELECT lr.checked_out_at FROM loan_row lr WHERE lr.id = new_loan_row_id);
-        SET lr_checked_in_at := (SELECT lr.checked_in_at FROM loan_row lr WHERE lr.id = new_loan_row_id);
+    IF EXISTS (SELECT 1 FROM klusbibdb.loan_row lr WHERE lr.loan_id = new_loan_id AND lr.inventory_item_id = inventory_item_id) THEN
+        SET new_loan_row_id := (SELECT lr.id FROM klusbibdb.loan_row lr WHERE lr.loan_id = new_loan_id AND lr.inventory_item_id = inventory_item_id);
+        SET lr_checked_out_at := (SELECT lr.checked_out_at FROM klusbibdb.loan_row lr WHERE lr.id = new_loan_row_id);
+        SET lr_checked_in_at := (SELECT lr.checked_in_at FROM klusbibdb.loan_row lr WHERE lr.id = new_loan_row_id);
         IF (lr_checked_out_at IS NULL) THEN
-            UPDATE loan_row SET checked_out_at = datetime_out
+            UPDATE klusbibdb.loan_row SET checked_out_at = datetime_out
 	            WHERE id = new_loan_row_id;
-            INSERT INTO item_movement(
+            INSERT INTO klusbibdb.item_movement(
                 inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
-                SELECT inventory_item_id, location_on_loan, new_loan_row_id, loan_contact_id, CURRENT_TIMESTAMP, 1;
+                SELECT inventory_item_id, location_on_loan, new_loan_row_id, loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), 1;
         END IF;
         IF (lr_checked_in_at IS NULL) THEN
-            UPDATE loan_row SET checked_in_at = datetime_in
+            UPDATE klusbibdb.loan_row SET checked_in_at = datetime_in
 	            WHERE id = new_loan_row_id;
-            INSERT INTO item_movement(
+            INSERT INTO klusbibdb.item_movement(
                 inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
-                SELECT inventory_item_id, location_stock, NULL, NULL, CURRENT_TIMESTAMP, NULL;
+                SELECT inventory_item_id, location_stock, NULL, NULL, ifnull(datetime_in, CURRENT_TIMESTAMP), NULL;
         END IF;
     ELSE
-        INSERT INTO loan_row (
+        INSERT INTO klusbibdb.loan_row (
             loan_id, inventory_item_id, product_quantity, due_out_at, due_in_at, checked_out_at, checked_in_at, fee, site_from, site_to)
             SELECT new_loan_id, inventory_item_id, 1, datetime_out, ifnull(datetime_in, ifnull(datetime_out, CURRENT_TIMESTAMP)), 
-            datetime_out, null, 0, 1, 1;
+            datetime_out, ifnull(datetime_in, ifnull(datetime_out, CURRENT_TIMESTAMP)), 0, 1, 1;
         SET new_loan_row_id := LAST_INSERT_ID();
         -- create item movements: on loan and back in stock
-        INSERT INTO item_movement(
+        INSERT INTO klusbibdb.item_movement(
             inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
-            SELECT inventory_item_id, location_on_loan, new_loan_row_id, loan_contact_id, CURRENT_TIMESTAMP, 1;
-        INSERT INTO item_movement(
+            SELECT inventory_item_id, location_on_loan, new_loan_row_id, loan_contact_id, ifnull(datetime_out, CURRENT_TIMESTAMP), 1;
+        INSERT INTO klusbibdb.item_movement(
             inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
-            SELECT inventory_item_id, location_stock, NULL, NULL, CURRENT_TIMESTAMP, NULL;
+            SELECT inventory_item_id, location_stock, NULL, NULL, ifnull(datetime_in, CURRENT_TIMESTAMP), NULL;
 	END IF;
 
-    IF NOT EXISTS (SELECT 1 FROM loan_row WHERE loan_id = new_loan_id AND checked_in_at IS NULL) THEN
+    IF NOT EXISTS (SELECT 1 FROM klusbibdb.loan_row WHERE loan_id = new_loan_id AND checked_in_at IS NULL) THEN
        -- all items have been checked in
-        UPDATE loan l SET l.status = 'CLOSED', l.datetime_in = datetime_in 
+        UPDATE klusbibdb.loan l SET l.status = 'CLOSED', l.datetime_in = datetime_in 
         WHERE id = new_loan_id;
     END IF;
 
     IF NOT comment IS NULL THEN
-        INSERT INTO note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
-        SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, CURRENT_TIMESTAMP;
+        INSERT INTO klusbibdb.note (contact_id, loan_id, inventory_item_id, `text`, admin_only, created_at)
+        SELECT loan_contact_id, new_loan_id, inventory_item_id, comment, 1, ifnull(datetime_in, CURRENT_TIMESTAMP);
     END IF;  
 
 ELSE
-    call kb_log_msg(concat('Warning: inventory_item or contact missing in kb_register_loan - loan creation skipped for inventory item with id: ', inventory_item_id));
+    call klusbibdb.kb_log_msg(concat('Warning: inventory_item or contact missing in kb_register_loan - loan creation skipped for inventory item with id: ', inventory_item_id));
 END IF;
 SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
 
 ELSE
-    call kb_log_msg(concat('Warning: sync ongoing in kb_register_loan - loan creation skipped for inventory item with id: ', inventory_item_id));
+    call klusbibdb.kb_log_msg(concat('Warning: sync ongoing in kb_register_loan - loan creation skipped for inventory item with id: ', inventory_item_id));
 END IF;
 END$$
 

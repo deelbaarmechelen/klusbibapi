@@ -146,7 +146,11 @@ CREATE TRIGGER klusbibdb.`kb_sync_assets_bi` BEFORE INSERT ON klusbibdb.`kb_sync
 BEGIN
     DECLARE default_item_name varchar(255) DEFAULT ' ';
     -- Set location to 2 = 'In stock'
+    DECLARE location_id_unknown INT DEFAULT 0;
+    DECLARE location_id_in_stock INT DEFAULT 2;
+    DECLARE location_id_repair INT DEFAULT 3;
     DECLARE location_id INT DEFAULT 2;
+    DECLARE is_enabled TINYINT DEFAULT 1;
     DECLARE disable_sync_result TINYINT(1);
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -160,6 +164,18 @@ BEGIN
     END;
     IF klusbibdb.enable_sync_inventory2le() THEN
         IF NOT EXISTS (SELECT 1 FROM klusbibdb.inventory_item WHERE id = NEW.id) THEN
+            SET location_id := location_id_in_stock;
+            SET is_enabled := 1;
+            IF (NEW.status_id = 3) THEN
+                SET location_id := location_id_unknown;
+                SET is_enabled := 0;
+            END IF;
+            IF (NEW.status_id = 3) THEN
+                SET location_id := location_id_repair;
+            END IF;
+            IF (NEW.status_id = 3) THEN
+                SET location_id := location_id_unknown;
+            END IF;
             SET default_item_name := (SELECT concat(ifnull(name, 'unknown'), '-', ifnull(model_number, 'none')) FROM inventory.models WHERE id = NEW.model_id);
             INSERT INTO klusbibdb.inventory_item (
             id, created_by, assigned_to, current_location_id, item_condition, created_at, updated_at,
@@ -169,8 +185,8 @@ BEGIN
             SELECT 
             NEW.`id`, null, NEW.`kb_assigned_to`, location_id, null, ifnull(NEW.`created_at`, CURRENT_TIMESTAMP), ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP), 
             ifnull(NEW.`name`, default_item_name), NEW.`asset_tag`, null, null, null, null, null,
-            null, null, 1, 1, LEFT(NEW.serial, 64), null, null, null, null, 
-            null, 1, null, 'loan', null, null;
+            null, null, is_enabled, is_enabled, LEFT(NEW.serial, 64), null, null, null, null, 
+            null, is_enabled, null, 'loan', null, null;
 
         ELSE
             call kb_log_msg(concat('Detected missing inventory_item with id: ', NEW.id, ' upon insert in kb_sync_assets'));
@@ -251,7 +267,46 @@ BEGIN
         -- END IF;
 
         IF (NOT NEW.status_id <=> OLD.status_id) THEN
-            call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  status_id update not reported to inventory_item: ', ifnull(OLD.status_id, 'null'), ' -> ', ifnull(NEW.status_id, 'null')));
+            IF (NEW.status_id = 1 OR NEW.status_id = 2 OR NEW.status_id = 3) THEN
+                IF (NEW.status_id = 1) THEN
+                    -- NEW.status_id = 1 => maintenance, thus set current_location to 3 (repair) + add movement
+                    UPDATE klusbibdb.`inventory_item`
+                    SET current_location = 3,
+                    updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+                    WHERE id = OLD.id
+                    AND current_location <> 3;
+                    INSERT INTO item_movement(
+                        inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
+                        SELECT OLD.id, 3, NULL, NULL, CURRENT_TIMESTAMP, 1;                
+                END IF;
+                IF (NEW.status_id = 2) THEN
+                    -- NEW.status_id = 2 => available, thus set current_location to 2 (in stock) + add movement
+                    UPDATE klusbibdb.`inventory_item`
+                    SET current_location = 2,
+                    updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+                    WHERE id = OLD.id
+                    AND current_location <> 2;
+                    INSERT INTO item_movement(
+                        inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
+                        SELECT OLD.id, 2, NULL, NULL, CURRENT_TIMESTAMP, 1;                
+                END IF;
+                IF (NEW.status_id = 3) THEN
+                    -- NEW.status_id = 3 => archived, thus set current_location to 0 
+                    UPDATE klusbibdb.`inventory_item`
+                    SET current_location = 0,
+                        is_active = 0,
+                        show_on_website = 0,
+                        is_reservable = 0,
+                        updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+                    WHERE id = OLD.id
+                    AND current_location <> 0;
+                    INSERT INTO item_movement(
+                        inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
+                        SELECT OLD.id, 0, NULL, NULL, CURRENT_TIMESTAMP, 1;                
+                END IF;
+            ELSE
+                call kb_log_msg(concat('Warning: kb_sync_assets (id=', OLD.id ,')  status_id update not reported to inventory_item: ', ifnull(OLD.status_id, 'null'), ' -> ', ifnull(NEW.status_id, 'null')));
+            END IF;
         END IF;
 
         IF ((NOT NEW.last_checkout <=> OLD.last_checkout) 
