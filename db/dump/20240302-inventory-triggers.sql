@@ -1,8 +1,8 @@
 --
 -- Triggers `assets`
 --
-DROP TRIGGER IF EXISTS `assets_ad`$$
-CREATE TRIGGER `assets_ad` AFTER DELETE ON `assets` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS inventory.`assets_ad`$$
+CREATE TRIGGER inventory.`assets_ad` AFTER DELETE ON inventory.`assets` FOR EACH ROW BEGIN
         DECLARE disable_sync_result TINYINT(1);
         IF klusbibdb.enable_sync_inventory2le() THEN
             DELETE FROM klusbibdb.kb_sync_assets WHERE id = OLD.id;
@@ -10,8 +10,8 @@ CREATE TRIGGER `assets_ad` AFTER DELETE ON `assets` FOR EACH ROW BEGIN
         END IF;
         END
 $$
-DROP TRIGGER IF EXISTS `assets_ai`$$
-CREATE TRIGGER `assets_ai` AFTER INSERT ON `assets` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS inventory.`assets_ai`$$
+CREATE TRIGGER inventory.`assets_ai` AFTER INSERT ON inventory.`assets` FOR EACH ROW BEGIN
         DECLARE disable_sync_result TINYINT(1);
         IF klusbibdb.enable_sync_inventory2le() THEN
            INSERT INTO klusbibdb.kb_sync_assets (
@@ -24,8 +24,8 @@ CREATE TRIGGER `assets_ai` AFTER INSERT ON `assets` FOR EACH ROW BEGIN
         END IF;
         END
 $$
-DROP TRIGGER IF EXISTS `assets_au`$$
-CREATE TRIGGER `assets_au` AFTER UPDATE ON `assets` FOR EACH ROW BEGIN 
+DROP TRIGGER IF EXISTS inventory.`assets_au`$$
+CREATE TRIGGER inventory.`assets_au` AFTER UPDATE ON inventory.`assets` FOR EACH ROW BEGIN 
         DECLARE disable_sync_result TINYINT(1);
         IF klusbibdb.enable_sync_inventory2le() THEN
             UPDATE klusbibdb.kb_sync_assets 

@@ -5,8 +5,8 @@
 --
 -- Procedures
 --
-DROP PROCEDURE IF EXISTS `kb_checkin`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_checkin` (IN `item_id` INT, IN `checkin_datetime` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
+DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkin`$$
+CREATE PROCEDURE klusbibdb.`kb_checkin` (IN `item_id` INT, IN `checkin_datetime` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
 DECLARE existing_loan_id INT DEFAULT 0;
 DECLARE loan_contact_id INT DEFAULT 0;
 -- Set location to 2 = 'In stock'
@@ -55,8 +55,8 @@ ELSE
 END IF;
 END$$
 
-DROP PROCEDURE IF EXISTS `kb_checkout`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_checkout` (IN `inventory_item_id` INT, IN `loan_contact_id` INT, IN `datetime_out` DATETIME, IN `datetime_in` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
+DROP PROCEDURE IF EXISTS klusbibdb.`kb_checkout`$$
+CREATE PROCEDURE klusbibdb.`kb_checkout` (IN `inventory_item_id` INT, IN `loan_contact_id` INT, IN `datetime_out` DATETIME, IN `datetime_in` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
 DECLARE new_loan_id INT DEFAULT 0;
 DECLARE new_loan_row_id INT DEFAULT 0;
 -- Set location to 1 = 'On loan'
@@ -102,8 +102,8 @@ ELSE
 END IF;
 END$$
 
-DROP PROCEDURE IF EXISTS `kb_extend`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_extend` (IN `item_id` INT, IN `expected_checkin_datetime` DATETIME)   BEGIN 
+DROP PROCEDURE IF EXISTS klusbibdb.`kb_extend`$$
+CREATE PROCEDURE klusbibdb.`kb_extend` (IN `item_id` INT, IN `expected_checkin_datetime` DATETIME)   BEGIN 
 DECLARE existing_loan_id INT DEFAULT 0;
 DECLARE new_loan_datetime_in DATETIME;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -133,13 +133,13 @@ ELSE
 END IF;
 END$$
 
-DROP PROCEDURE IF EXISTS `kb_log_msg`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_log_msg` (`msg` TEXT)   BEGIN
+DROP PROCEDURE IF EXISTS klusbibdb.`kb_log_msg`$$
+CREATE PROCEDURE klusbibdb.`kb_log_msg` (`msg` TEXT)   BEGIN
     insert into kb_log (log_msg) select msg;
 END$$
 
-DROP PROCEDURE IF EXISTS `kb_sync_assets_2le`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_sync_assets_2le` ()   BEGIN 
+DROP PROCEDURE IF EXISTS klusbibdb.`kb_sync_assets_2le`$$
+CREATE PROCEDURE klusbibdb.`kb_sync_assets_2le` ()   BEGIN 
 DECLARE disable_sync_result TINYINT(1);
 DECLARE new_loan_id INT DEFAULT 0;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -179,8 +179,8 @@ END$$
 --
 -- Functies
 --
-DROP FUNCTION IF EXISTS `disable_sync_inventory2le`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `disable_sync_inventory2le` () RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS klusbibdb.`disable_sync_inventory2le`$$
+CREATE FUNCTION klusbibdb.`disable_sync_inventory2le` () RETURNS TINYINT(1)  BEGIN
     IF @sync_inventory2le = 1 THEN
         SET @sync_inventory2le = NULL;
         RETURN 1;
@@ -188,8 +188,8 @@ CREATE DEFINER=`mysql`@`%` FUNCTION `disable_sync_inventory2le` () RETURNS TINYI
     RETURN 0;
 END$$
 
-DROP FUNCTION IF EXISTS `disable_sync_le2inventory`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `disable_sync_le2inventory` () RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS klusbibdb.`disable_sync_le2inventory`$$
+CREATE FUNCTION klusbibdb.`disable_sync_le2inventory` () RETURNS TINYINT(1)  BEGIN
     IF @sync_le2inventory = 1 THEN
         SET @sync_le2inventory = NULL;
         RETURN 1;
@@ -197,8 +197,8 @@ CREATE DEFINER=`mysql`@`%` FUNCTION `disable_sync_le2inventory` () RETURNS TINYI
     RETURN 0;
 END$$
 
-DROP FUNCTION IF EXISTS `enable_sync_inventory2le`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `enable_sync_inventory2le` () RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS klusbibdb.`enable_sync_inventory2le`$$
+CREATE FUNCTION klusbibdb.`enable_sync_inventory2le` () RETURNS TINYINT(1)  BEGIN
     IF @sync_le2inventory IS NULL THEN
         SET @sync_inventory2le = 1;
         RETURN 1;
@@ -206,8 +206,8 @@ CREATE DEFINER=`mysql`@`%` FUNCTION `enable_sync_inventory2le` () RETURNS TINYIN
     RETURN 0;
 END$$
 
-DROP FUNCTION IF EXISTS `enable_sync_le2inventory`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `enable_sync_le2inventory` () RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS klusbibdb.`enable_sync_le2inventory`$$
+CREATE FUNCTION klusbibdb.`enable_sync_le2inventory` () RETURNS TINYINT(1)  BEGIN
     IF @sync_inventory2le IS NULL THEN
         SET @sync_le2inventory = 1;
         RETURN 1;
@@ -215,8 +215,8 @@ CREATE DEFINER=`mysql`@`%` FUNCTION `enable_sync_le2inventory` () RETURNS TINYIN
     RETURN 0;
 END$$
 
-DROP FUNCTION IF EXISTS `is_on_loan`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `is_on_loan` (`item_id` INT(11)) RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS klusbibdb.`is_on_loan`$$
+CREATE FUNCTION klusbibdb.`is_on_loan` (`item_id` INT(11)) RETURNS TINYINT(1)  BEGIN
     IF EXISTS (SELECT 1 FROM klusbibdb.loan_row LEFT JOIN loan ON loan_row.loan_id = loan.id WHERE inventory_item_id = item_id AND loan.status IN ('ACTIVE', 'OVERDUE')) THEN
         RETURN 1;
     ELSE
@@ -224,8 +224,8 @@ CREATE DEFINER=`mysql`@`%` FUNCTION `is_on_loan` (`item_id` INT(11)) RETURNS TIN
     END IF;
 END$$
 
-DROP FUNCTION IF EXISTS `is_sync_inventory2le_enabled`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `is_sync_inventory2le_enabled` () RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS klusbibdb.`is_sync_inventory2le_enabled`$$
+CREATE FUNCTION klusbibdb.`is_sync_inventory2le_enabled` () RETURNS TINYINT(1)  BEGIN
     IF @sync_inventory2le = 1 THEN
         RETURN 1;
     ELSE
@@ -233,8 +233,8 @@ CREATE DEFINER=`mysql`@`%` FUNCTION `is_sync_inventory2le_enabled` () RETURNS TI
     END IF;
 END$$
 
-DROP FUNCTION IF EXISTS `is_sync_le2inventory_enabled`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `is_sync_le2inventory_enabled` () RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS klusbibdb.`is_sync_le2inventory_enabled`$$
+CREATE FUNCTION klusbibdb.`is_sync_le2inventory_enabled` () RETURNS TINYINT(1)  BEGIN
     IF @sync_le2inventory = 1 THEN
         RETURN 1;
     ELSE

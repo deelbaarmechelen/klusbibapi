@@ -5,8 +5,8 @@
 --
 -- Procedures
 --
-DROP PROCEDURE IF EXISTS `kb_checkin`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_checkin` (IN `item_id` INT, IN `checkout_datetime` DATETIME, IN `checkin_datetime` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
+DROP PROCEDURE IF EXISTS inventory.`kb_checkin`$$
+CREATE PROCEDURE inventory.`kb_checkin` (IN `item_id` INT, IN `checkout_datetime` DATETIME, IN `checkin_datetime` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
 DECLARE user_id INT DEFAULT 0;
 DECLARE log_meta_json text;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -41,8 +41,8 @@ END;
     END IF;
 END$$
 
-DROP PROCEDURE IF EXISTS `kb_checkout`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_checkout` (IN `inventory_item_id` INT, IN `loan_contact_id` INT, IN `datetime_out` DATETIME, IN `datetime_in` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
+DROP PROCEDURE IF EXISTS inventory.`kb_checkout`$$
+CREATE PROCEDURE inventory.`kb_checkout` (IN `inventory_item_id` INT, IN `loan_contact_id` INT, IN `datetime_out` DATETIME, IN `datetime_in` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
 DECLARE user_id INT DEFAULT 0;
 DECLARE log_meta_json text;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -74,8 +74,8 @@ END;
     END IF;
 END$$
 
-DROP PROCEDURE IF EXISTS `kb_extend`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_extend` (IN `item_id` INT, IN `checkout_datetime` DATETIME, IN `old_checkin_datetime` DATETIME, IN `new_checkin_datetime` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
+DROP PROCEDURE IF EXISTS inventory.`kb_extend`$$
+CREATE PROCEDURE inventory.`kb_extend` (IN `item_id` INT, IN `checkout_datetime` DATETIME, IN `old_checkin_datetime` DATETIME, IN `new_checkin_datetime` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
 DECLARE user_id INT DEFAULT 0;
 DECLARE orig_last_checkout DATE;
 DECLARE orig_expected_checkin DATE;
@@ -104,8 +104,8 @@ END;
 
 END$$
 
-DROP PROCEDURE IF EXISTS `kb_register_loan_no_sync`$$
-CREATE DEFINER=`mysql`@`%` PROCEDURE `kb_register_loan_no_sync` (IN `inventory_item_id` INT, IN `loan_contact_id` INT, IN `datetime_out` DATETIME, IN `datetime_in` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
+DROP PROCEDURE IF EXISTS inventory.`kb_register_loan_no_sync`$$
+CREATE PROCEDURE inventory.`kb_register_loan_no_sync` (IN `inventory_item_id` INT, IN `loan_contact_id` INT, IN `datetime_out` DATETIME, IN `datetime_in` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
 DECLARE disable_sync_result TINYINT(1);
 DECLARE new_loan_id INT DEFAULT 0;
 DECLARE new_loan_row_id INT DEFAULT 0;
@@ -202,8 +202,8 @@ END$$
 --
 -- Functies
 --
-DROP FUNCTION IF EXISTS `get_checkin_date`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `get_checkin_date` (`asset_id` INT, `checked_out_at` DATETIME) RETURNS DATETIME  BEGIN
+DROP FUNCTION IF EXISTS inventory.`get_checkin_date`$$
+CREATE FUNCTION inventory.`get_checkin_date` (`asset_id` INT, `checked_out_at` DATETIME) RETURNS DATETIME  BEGIN
 IF NOT EXISTS (SELECT 1 FROM inventory.action_logs WHERE action_type = 'checkout' AND item_id = asset_id AND action_date = checked_out_at) THEN
     RETURN NULL;
 END IF;
@@ -215,8 +215,8 @@ RETURN (SELECT MIN(action_date) FROM inventory.action_logs
     AND action_date > checked_out_at );
 END$$
 
-DROP FUNCTION IF EXISTS `get_checkout_date`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `get_checkout_date` (`asset_id` INT, `checked_out_at` DATETIME) RETURNS DATETIME  BEGIN
+DROP FUNCTION IF EXISTS inventory.`get_checkout_date`$$
+CREATE FUNCTION inventory.`get_checkout_date` (`asset_id` INT, `checked_out_at` DATETIME) RETURNS DATETIME  BEGIN
 RETURN (SELECT MIN(action_date) FROM inventory.action_logs 
   WHERE action_type = 'checkout' 
     AND item_id = asset_id
@@ -224,8 +224,8 @@ RETURN (SELECT MIN(action_date) FROM inventory.action_logs
     AND action_date >= checked_out_at );
 END$$
 
-DROP FUNCTION IF EXISTS `is_on_loan`$$
-CREATE DEFINER=`mysql`@`%` FUNCTION `is_on_loan` (`asset_id` INT(11)) RETURNS TINYINT(1)  BEGIN
+DROP FUNCTION IF EXISTS inventory.`is_on_loan`$$
+CREATE FUNCTION inventory.`is_on_loan` (`asset_id` INT(11)) RETURNS TINYINT(1)  BEGIN
     IF EXISTS (SELECT 1 FROM inventory.assets  WHERE id = asset_id AND assigned_type = 'App\\Models\\User' AND NOT assigned_to IS NULL) THEN
         RETURN 1;
     ELSE

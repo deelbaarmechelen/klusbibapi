@@ -1,9 +1,9 @@
 --
 -- Triggers `contact`
 --
-DROP TRIGGER IF EXISTS `contact_bi`$$
+DROP TRIGGER IF EXISTS klusbibdb.`contact_bi`$$
 
-CREATE TRIGGER `contact_bi` BEFORE INSERT ON `contact` FOR EACH ROW BEGIN 
+CREATE TRIGGER klusbibdb.`contact_bi` BEFORE INSERT ON klusbibdb.`contact` FOR EACH ROW BEGIN 
 IF NEW.role = 'admin' THEN
   SET NEW.roles = 'a:2:{i:0;s:10:"ROLE_ADMIN";i:1;s:15:"ROLE_SUPER_USER";}';
 ELSE
@@ -41,8 +41,8 @@ IF NEW.username_canonical IS NULL THEN
 END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `contact_bu`$$
-CREATE TRIGGER `contact_bu` BEFORE UPDATE ON `contact` FOR EACH ROW BEGIN 
+DROP TRIGGER IF EXISTS klusbibdb.`contact_bu`$$
+CREATE TRIGGER klusbibdb.`contact_bu` BEFORE UPDATE ON klusbibdb.`contact` FOR EACH ROW BEGIN 
 IF NEW.role = 'admin' THEN
   SET NEW.roles = 'a:2:{i:0;s:10:"ROLE_ADMIN";i:1;s:15:"ROLE_SUPER_USER";}';
 ELSE
@@ -77,10 +77,10 @@ IF NEW.username_canonical IS NULL THEN
 END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `kb_contact_bd`$$
-CREATE TRIGGER `kb_contact_bd` BEFORE DELETE ON `contact` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`kb_contact_bd`$$
+CREATE TRIGGER klusbibdb.`kb_contact_bd` BEFORE DELETE ON klusbibdb.`contact` FOR EACH ROW BEGIN
     declare msg varchar(128);
-    IF (SELECT balance from contact WHERE id = OLD.id) > 0 THEN
+    IF (SELECT balance from klusbibdb.contact WHERE id = OLD.id) > 0 THEN
         set msg = concat('kb_contact_ad trigger: Trying to delete a contact with positive balance - ID: ', cast(OLD.id as char));
         signal sqlstate '45000' set message_text = msg;
     ELSE
@@ -114,8 +114,8 @@ $$
 --
 -- Triggers `inventory_item`
 --
-DROP TRIGGER IF EXISTS `inventory_item_bd`$$
-CREATE TRIGGER `inventory_item_bd` BEFORE DELETE ON `inventory_item` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bd`$$
+CREATE TRIGGER klusbibdb.`inventory_item_bd` BEFORE DELETE ON klusbibdb.`inventory_item` FOR EACH ROW BEGIN
 DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
@@ -137,8 +137,8 @@ IF (OLD.id < 100000 AND NOT klusbibdb.is_sync_inventory2le_enabled() ) THEN
 END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `inventory_item_bi`$$
-CREATE TRIGGER `inventory_item_bi` BEFORE INSERT ON `inventory_item` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bi`$$
+CREATE TRIGGER klusbibdb.`inventory_item_bi` BEFORE INSERT ON klusbibdb.`inventory_item` FOR EACH ROW BEGIN
 DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
@@ -175,8 +175,8 @@ END;
     END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `inventory_item_bu`$$
-CREATE TRIGGER `inventory_item_bu` BEFORE UPDATE ON `inventory_item` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`$$
+CREATE TRIGGER klusbibdb.`inventory_item_bu` BEFORE UPDATE ON klusbibdb.`inventory_item` FOR EACH ROW BEGIN
 DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
@@ -234,8 +234,8 @@ $$
 --
 -- Triggers `kb_sync_assets`
 --
-DROP TRIGGER IF EXISTS `kb_sync_assets_bd`$$
-CREATE TRIGGER `kb_sync_assets_bd` BEFORE DELETE ON `kb_sync_assets` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bd`$$
+CREATE TRIGGER klusbibdb.`kb_sync_assets_bd` BEFORE DELETE ON klusbibdb.`kb_sync_assets` FOR EACH ROW BEGIN
     DECLARE disable_sync_result TINYINT(1);
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -258,8 +258,8 @@ CREATE TRIGGER `kb_sync_assets_bd` BEFORE DELETE ON `kb_sync_assets` FOR EACH RO
     END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `kb_sync_assets_bi`$$
-CREATE TRIGGER `kb_sync_assets_bi` BEFORE INSERT ON `kb_sync_assets` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bi`$$
+CREATE TRIGGER klusbibdb.`kb_sync_assets_bi` BEFORE INSERT ON klusbibdb.`kb_sync_assets` FOR EACH ROW BEGIN
     DECLARE default_item_name varchar(255) DEFAULT ' ';
     -- Set location to 2 = 'In stock'
     DECLARE location_id_unknown INT DEFAULT 0;
@@ -310,8 +310,8 @@ CREATE TRIGGER `kb_sync_assets_bi` BEFORE INSERT ON `kb_sync_assets` FOR EACH RO
     END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `kb_sync_assets_bu`$$
-CREATE TRIGGER `kb_sync_assets_bu` BEFORE UPDATE ON `kb_sync_assets` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`kb_sync_assets_bu`$$
+CREATE TRIGGER klusbibdb.`kb_sync_assets_bu` BEFORE UPDATE ON klusbibdb.`kb_sync_assets` FOR EACH ROW BEGIN
     DECLARE dummy_ INT(11);
     DECLARE inventory_item_name varchar(255) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
     DECLARE inventory_item_sku varchar(255) CHARSET utf8 COLLATE utf8_unicode_ci DEFAULT ' ';
@@ -494,8 +494,8 @@ $$
 --
 -- Triggers `loan_row`
 --
-DROP TRIGGER IF EXISTS `loan_row_bi`$$
-CREATE TRIGGER `loan_row_bi` BEFORE INSERT ON `loan_row` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`loan_row_bi`$$
+CREATE TRIGGER klusbibdb.`loan_row_bi` BEFORE INSERT ON klusbibdb.`loan_row` FOR EACH ROW BEGIN
 DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
@@ -525,8 +525,8 @@ IF klusbibdb.enable_sync_le2inventory() THEN
 END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `loan_row_bu`$$
-CREATE TRIGGER `loan_row_bu` BEFORE UPDATE ON `loan_row` FOR EACH ROW BEGIN
+DROP TRIGGER IF EXISTS klusbibdb.`loan_row_bu`$$
+CREATE TRIGGER klusbibdb.`loan_row_bu` BEFORE UPDATE ON klusbibdb.`loan_row` FOR EACH ROW BEGIN
 DECLARE disable_sync_result TINYINT(1);
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
@@ -570,44 +570,44 @@ $$
 --
 -- Triggers `membership`
 --
-DROP TRIGGER IF EXISTS `kb_membership_ad`$$
-CREATE TRIGGER `kb_membership_ad` AFTER DELETE ON `membership` FOR EACH ROW BEGIN
-    UPDATE `contact` c
+DROP TRIGGER IF EXISTS klusbibdb.`kb_membership_ad`$$
+CREATE TRIGGER klusbibdb.`kb_membership_ad` AFTER DELETE ON klusbibdb.`membership` FOR EACH ROW BEGIN
+    UPDATE klusbibdb.`contact` c
     SET c.`active_membership` = NULL
     WHERE id = OLD.contact_id;
  END
 $$
-DROP TRIGGER IF EXISTS `kb_membership_ai`$$
-CREATE TRIGGER `kb_membership_ai` AFTER INSERT ON `membership` FOR EACH ROW BEGIN
-IF EXISTS (SELECT 1 FROM `contact` WHERE id = NEW.contact_id) THEN
+DROP TRIGGER IF EXISTS klusbibdb.`kb_membership_ai`$$
+CREATE TRIGGER klusbibdb.`kb_membership_ai` AFTER INSERT ON klusbibdb.`membership` FOR EACH ROW BEGIN
+IF EXISTS (SELECT 1 FROM klusbibdb.`contact` WHERE id = NEW.contact_id) THEN
      IF NEW.status = 'ACTIVE' THEN
-        UPDATE `contact` c
+        UPDATE klusbibdb.`contact` c
         SET c.`active_membership` = NEW.id
         WHERE id = NEW.contact_id;
     END IF;
  END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `kb_membership_au`$$
-CREATE TRIGGER `kb_membership_au` AFTER UPDATE ON `membership` FOR EACH ROW BEGIN
- IF EXISTS (SELECT 1 FROM `contact` WHERE id = NEW.contact_id) THEN
+DROP TRIGGER IF EXISTS klusbibdb.`kb_membership_au`$$
+CREATE TRIGGER klusbibdb.`kb_membership_au` AFTER UPDATE ON klusbibdb.`membership` FOR EACH ROW BEGIN
+ IF EXISTS (SELECT 1 FROM klusbibdb.`contact` WHERE id = NEW.contact_id) THEN
     IF NEW.status = 'ACTIVE' THEN
-        UPDATE `contact` c
+        UPDATE klusbibdb.`contact` c
         SET c.`active_membership` = NEW.id
         WHERE id = NEW.contact_id;
     END IF;
  END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `membership_bi`$$
-CREATE TRIGGER `membership_bi` BEFORE INSERT ON `membership` FOR EACH ROW BEGIN 
+DROP TRIGGER IF EXISTS klusbibdb.`membership_bi`$$
+CREATE TRIGGER klusbibdb.`membership_bi` BEFORE INSERT ON klusbibdb.`membership` FOR EACH ROW BEGIN 
 IF NEW.created_at IS NULL THEN
   SET NEW.created_at = CURRENT_TIMESTAMP;
 END IF;
 END
 $$
-DROP TRIGGER IF EXISTS `membership_bu`$$
-CREATE TRIGGER `membership_bu` BEFORE UPDATE ON `membership` FOR EACH ROW BEGIN 
+DROP TRIGGER IF EXISTS klusbibdb.`membership_bu`$$
+CREATE TRIGGER klusbibdb.`membership_bu` BEFORE UPDATE ON klusbibdb.`membership` FOR EACH ROW BEGIN 
 IF NEW.updated_at IS NULL THEN
   SET NEW.updated_at = CURRENT_TIMESTAMP;
 END IF;
