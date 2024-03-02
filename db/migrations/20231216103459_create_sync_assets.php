@@ -329,7 +329,6 @@ BEGIN
         END IF;
 
         IF ((NOT NEW.expected_checkin <=> OLD.expected_checkin)
-        AND (NOT OLD.expected_checkin IS NULL)
         AND (NOT NEW.expected_checkin IS NULL)) THEN
             CALL klusbibdb.kb_extend (NEW.id, NEW.expected_checkin);
         END IF;

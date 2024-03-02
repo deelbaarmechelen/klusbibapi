@@ -249,6 +249,7 @@ CREATE PROCEDURE klusbibdb.`kb_extend`
             (IN item_id INT, IN expected_checkin_datetime DATETIME) 
 BEGIN 
 DECLARE existing_loan_id INT DEFAULT 0;
+DECLARE new_loan_datetime_in DATETIME;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
     GET DIAGNOSTICS CONDITION 1
@@ -264,9 +265,13 @@ IF EXISTS (SELECT 1 FROM inventory_item WHERE id = item_id)
 
     UPDATE loan_row SET due_in_at = expected_checkin_datetime
     WHERE loan_id = existing_loan_id AND inventory_item_id = item_id;
-    UPDATE loan SET datetime_in = expected_checkin_datetime
-    WHERE id = existing_loan_id AND datetime_in < expected_checkin_datetime;
-        
+    SELECT MAX(due_in_at) INTO new_loan_datetime_in FROM loan_row 
+    WHERE loan_id = existing_loan_id;
+    UPDATE loan 
+    SET datetime_in = new_loan_datetime_in,
+        status = (CASE WHEN DATE(new_loan_datetime_in) >= CURRENT_DATE THEN 'ACTIVE' ELSE 'OVERDUE' END)
+    WHERE id = existing_loan_id;
+
 ELSE
     call kb_log_msg(concat('Warning: inventory_item or loan missing in kb_extend - loan_row update skipped for inventory item with id: ', item_id));
 END IF;
