@@ -178,12 +178,18 @@ $$
 DROP TRIGGER IF EXISTS klusbibdb.`inventory_item_bu`$$
 CREATE TRIGGER klusbibdb.`inventory_item_bu` BEFORE UPDATE ON klusbibdb.`inventory_item` FOR EACH ROW BEGIN
 DECLARE disable_sync_result TINYINT(1);
+DECLARE old_status_id INT(11);
+DECLARE new_status_id INT(11);
+DECLARE log_meta_json text;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
+    GET DIAGNOSTICS CONDITION 1
+    @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
     IF klusbibdb.is_sync_le2inventory_enabled() THEN
         SELECT klusbibdb.disable_sync_le2inventory() INTO disable_sync_result;
     END IF;
     call kb_log_msg(concat('Error in inventory_item_bu: inventory asset sync skipped for inventory item with id: ', ifnull(OLD.id, 'null') ));
+    call kb_log_msg(concat('sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
     RESIGNAL;
 END;
     IF NEW.updated_at IS NULL THEN
@@ -214,6 +220,29 @@ END;
                     updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                     WHERE id = OLD.id
                     AND serial <> NEW.serial;
+                END IF;
+                IF NOT OLD.current_location_id <=> NEW.current_location_id 
+                  AND NEW.current_location_id IN (0, 2, 3) THEN
+                    SELECT status_id, CASE 
+                        WHEN NEW.current_location_id = 0 THEN 3
+                        WHEN NEW.current_location_id = 2 THEN 2
+                        WHEN NEW.current_location_id = 3 THEN 1
+                      END
+                      INTO old_status_id, new_status_id
+                      FROM inventory.assets
+                      WHERE id = OLD.id;
+                    IF (old_status_id <> new_status_id) THEN
+                        UPDATE inventory.assets 
+                        SET status_id = new_status_id,
+                        updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
+                        WHERE id = OLD.id;
+
+                        -- Insert action log
+                        -- {"status_id":{"old":2,"new":"4"}}
+                        SET log_meta_json := concat('{\"status_id\":{\"old\":\"', old_status_id, '\",\"new\":\"', new_status_id, '\"}}');
+                        INSERT INTO inventory.action_logs (user_id, action_type, note, item_type, item_id, created_at, updated_at, company_id, log_meta)
+                        SELECT 1, 'update', null, 'App\\Models\\Asset', OLD.id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, log_meta_json;
+                    END IF;
                 END IF;
             ELSE
                 call kb_log_msg(concat('Warning: inventory asset missing - created on the fly upon inventory_item update for id: ', NEW.id));
@@ -323,11 +352,11 @@ CREATE TRIGGER klusbibdb.`kb_sync_assets_bu` BEFORE UPDATE ON klusbibdb.`kb_sync
     DECLARE disable_sync_result TINYINT(1);
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
+        GET DIAGNOSTICS CONDITION 1
+        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
         IF klusbibdb.is_sync_inventory2le_enabled() THEN
             SELECT klusbibdb.disable_sync_inventory2le() INTO disable_sync_result;
         END IF;
-        GET DIAGNOSTICS CONDITION 1
-        @SQLState = RETURNED_SQLSTATE, @SQLMessage = MESSAGE_TEXT;
         call kb_log_msg(concat('Error in klusbibdb.kb_sync_assets_bu: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
         RESIGNAL;
     END;
