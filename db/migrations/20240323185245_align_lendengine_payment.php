@@ -25,8 +25,6 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
 	public function up()
 	{
         $this->initCapsule();
-        Capsule::update('DELETE FROM payment WHERE NOT kb_state IS NULL');
-        Capsule::update('DELETE FROM payment_method WHERE id > 3');
         Capsule::schema()->table('payment', function(Illuminate\Database\Schema\Blueprint $table){
             $table->timestamp('kb_payment_timestamp')->nullable()->default(null);
             $table->string('kb_mode',20)->nullable()->default(null);
@@ -37,6 +35,7 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
             // to check: payment_ext_id in use? (never filled in), but might replace kb_order_id? Or to be replaced by psp_code?
             // note: currency, updated_at, last_sync_date to be dropped
         });
+        Capsule::update('DELETE FROM payment_method WHERE id > 3');
         Capsule::update('INSERT INTO payment_method (id, name, is_active) VALUES (4, "Payconiq", 1),(5, "LETS", 1),(6, "Mechelen Bon", 1),(7, "Kdo Bon", 1),(8, "Other", 1)');
         Capsule::update('DELETE FROM payment WHERE id IN (SELECT payment_id FROM kb_payments)');
         Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, psp_code, note, contact_id, membership_id, loan_id, kb_payment_timestamp, kb_mode, kb_state, kb_order_id, kb_expiration_date) '
