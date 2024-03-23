@@ -77,8 +77,8 @@ END$$
 DROP PROCEDURE IF EXISTS inventory.`kb_extend`$$
 CREATE PROCEDURE inventory.`kb_extend` (IN `item_id` INT, IN `checkout_datetime` DATETIME, IN `old_checkin_datetime` DATETIME, IN `new_checkin_datetime` DATETIME, IN `comment` VARCHAR(255))   BEGIN 
 DECLARE user_id INT DEFAULT 0;
-DECLARE orig_last_checkout DATE;
-DECLARE orig_expected_checkin DATE;
+DECLARE orig_last_checkout DATETIME;
+DECLARE orig_expected_checkin DATETIME;
 DECLARE log_meta_json text;
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
@@ -87,7 +87,7 @@ BEGIN
     call kb_log_msg(concat('Error in inventory.kb_extend: sqlstate - ', @SQLState, '; error msg - ', @SQLMessage));
     RESIGNAL;
 END;
-    -- Only report extend if itme already checked out with same checkout time
+    -- Only report extend if item already checked out with same checkout time
     SELECT assigned_to, last_checkout, expected_checkin INTO user_id, orig_last_checkout, orig_expected_checkin FROM inventory.assets where id = item_id;
     IF ( (NOT user_id IS NULL) AND (checkout_datetime = orig_last_checkout) AND (orig_expected_checkin <> new_checkin_datetime)) THEN
         call klusbibdb.kb_log_msg(concat('Info: Extend - Updating assets.expected_checkin for inventory item with id: ', ifnull(item_id, 'null')));
@@ -100,6 +100,8 @@ END;
         SET log_meta_json := concat('{\"expected_checkin\":{\"old\":\"', DATE_FORMAT(old_checkin_datetime, '%Y-%m-%d'), '\",\"new\":\"', DATE_FORMAT(new_checkin_datetime, '%Y-%m-%d 00:00:00'), '\"}}');
         INSERT INTO action_logs (user_id, action_type, note, item_type, item_id, created_at, updated_at, company_id, log_meta)
         SELECT 1, 'update', comment, 'App\\Models\\Asset', item_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, log_meta_json;
+    ELSE
+        call klusbibdb.kb_log_msg(concat('Info: Extend - No matching checkout datetime (', ifnull(checkout_datetime, 'null'), ' (item) <-> ', ifnull(orig_last_checkout, 'null'), ' (asset) ) -> skipped update of assets.expected_checkin for inventory item with id: ', ifnull(item_id, 'null')));    
     END IF;
 
 END$$

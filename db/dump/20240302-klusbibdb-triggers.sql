@@ -382,37 +382,37 @@ CREATE TRIGGER klusbibdb.`kb_sync_assets_bu` BEFORE UPDATE ON klusbibdb.`kb_sync
         IF (NOT NEW.status_id <=> OLD.status_id) THEN
             IF (NEW.status_id = 1 OR NEW.status_id = 2 OR NEW.status_id = 3) THEN
                 IF (NEW.status_id = 1) THEN
-                    -- NEW.status_id = 1 => maintenance, thus set current_location to 3 (repair) + add movement
+                    -- NEW.status_id = 1 => maintenance, thus set current_location_id to 3 (repair) + add movement
                     UPDATE klusbibdb.`inventory_item`
-                    SET current_location = 3,
+                    SET current_location_id = 3,
                     updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                     WHERE id = OLD.id
-                    AND current_location <> 3;
+                    AND current_location_id <> 3;
                     INSERT INTO item_movement(
                         inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
                         SELECT OLD.id, 3, NULL, NULL, CURRENT_TIMESTAMP, 1;                
                 END IF;
                 IF (NEW.status_id = 2) THEN
-                    -- NEW.status_id = 2 => available, thus set current_location to 2 (in stock) + add movement
+                    -- NEW.status_id = 2 => available, thus set current_location_id to 2 (in stock) + add movement
                     UPDATE klusbibdb.`inventory_item`
-                    SET current_location = 2,
+                    SET current_location_id = 2,
                     updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                     WHERE id = OLD.id
-                    AND current_location <> 2;
+                    AND current_location_id <> 2;
                     INSERT INTO item_movement(
                         inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
                         SELECT OLD.id, 2, NULL, NULL, CURRENT_TIMESTAMP, 1;                
                 END IF;
                 IF (NEW.status_id = 3) THEN
-                    -- NEW.status_id = 3 => archived, thus set current_location to 0 
+                    -- NEW.status_id = 3 => archived, thus set current_location_id to 0 
                     UPDATE klusbibdb.`inventory_item`
-                    SET current_location = 0,
+                    SET current_location_id = 0,
                         is_active = 0,
                         show_on_website = 0,
                         is_reservable = 0,
                         updated_at = ifnull(NEW.`updated_at`, CURRENT_TIMESTAMP)
                     WHERE id = OLD.id
-                    AND current_location <> 0;
+                    AND current_location_id <> 0;
                     INSERT INTO item_movement(
                         inventory_item_id, inventory_location_id, loan_row_id, assigned_to_contact_id, created_at, quantity)
                         SELECT OLD.id, 0, NULL, NULL, CURRENT_TIMESTAMP, 1;                
