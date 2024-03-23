@@ -9,6 +9,7 @@ use Api\Model\PaymentMode;
 use Api\ModelMapper\DeliveryMapper;
 use Api\ModelMapper\MembershipMapper;
 use Api\Tool\ToolManager;
+use Api\Loan\LoanManager;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
@@ -32,13 +33,15 @@ class UserController implements UserControllerInterface
     protected $logger;
     protected $userManager;
     protected $toolManager;
+    protected $loanManager;
     protected $token;
 
-    public function __construct($logger, UserManager $userManager, ToolManager $toolManager, Token $token) {
+    public function __construct($logger, UserManager $userManager, ToolManager $toolManager, Token $token, LoanManager $loanManager) {
         $this->logger = $logger;
         $this->userManager = $userManager;
         $this->toolManager = $toolManager;
         $this->token = $token;
+        $this->loanManager = $loanManager;
     }
 
     public function getAll (RequestInterface $request, ResponseInterface $response, $args) {
@@ -109,7 +112,7 @@ class UserController implements UserControllerInterface
                 ->withJson(array('error' => $ex->getMessage()));
         }
         $userArray["reservations"] = $this->addUserReservations($user);
-        $userArray["deliveries"] = $this->addUserDeliveries($user);
+        //$userArray["deliveries"] = $this->addUserDeliveries($user);
         $userArray["projects"] = $this->addUserProjects($user);
 
         return $response->withJson($userArray);
@@ -437,7 +440,8 @@ class UserController implements UserControllerInterface
     private function addUserReservations($user)
     {
         $reservationsArray = array();
-        foreach ($user->reservations as $reservation) {
+        $userReservations = $this->loanManager->getUserReservations($user->id);
+        foreach ($userReservations as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
             $tool = $this->toolManager->getById($reservationData['tool_id']);
             if (isset($tool)) {
@@ -454,15 +458,15 @@ class UserController implements UserControllerInterface
         }
         return $reservationsArray;
     }
-    private function addUserDeliveries($user)
-    {
-        $deliveriesArray = array();
-        foreach ($user->deliveries as $delivery) {
-            $deliveryData = DeliveryMapper::mapDeliveryToArray($delivery);
-            array_push($deliveriesArray, $deliveryData);
-        }
-        return $deliveriesArray;
-    }
+    // private function addUserDeliveries($user)
+    // {
+    //     $deliveriesArray = array();
+    //     foreach ($user->deliveries as $delivery) {
+    //         $deliveryData = DeliveryMapper::mapDeliveryToArray($delivery);
+    //         array_push($deliveriesArray, $deliveryData);
+    //     }
+    //     return $deliveriesArray;
+    // }
     private function addUserProjects($user)
     {
         $projectsArray = array();

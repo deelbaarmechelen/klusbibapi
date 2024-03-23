@@ -101,28 +101,28 @@ class ToolManager
 
         }
         // sync accessories
-        echo "Syncing accessories\n";
-        $accessories = $this->inventory->getInventoryItems(ToolType::ACCESSORY);
-//        $accessories = $this->getAllAccessories();
-        foreach($accessories as $accessory) {
-            echo "Syncing accessory with id " . $accessory->accessory_id . "\n";
-            $existingAccessory = InventoryItem::find($accessory->id);
-            if ($existingAccessory === null) {
-                // save will create new item
-                echo "creating new accessory item " . $accessory->id . "\n";
-                $accessory->note = (isset($accessory->note) && strlen($accessory->note) > 128) ?
-                    substr($accessory->note, 0, 125) . "..." : $accessory->note;
-                $accessory->last_sync_date = $syncTime;
-                $accessory->save();
-            } else {
-                // update item values
-                echo "updating accessory item " . $accessory->id . "\n";
-                $this->updateExistingItem($accessory, $existingAccessory);
+//         echo "Syncing accessories\n";
+//         $accessories = $this->inventory->getInventoryItems(ToolType::ACCESSORY);
+// //        $accessories = $this->getAllAccessories();
+//         foreach($accessories as $accessory) {
+//             echo "Syncing accessory with id " . $accessory->accessory_id . "\n";
+//             $existingAccessory = InventoryItem::find($accessory->id);
+//             if ($existingAccessory === null) {
+//                 // save will create new item
+//                 echo "creating new accessory item " . $accessory->id . "\n";
+//                 $accessory->note = (isset($accessory->note) && strlen($accessory->note) > 128) ?
+//                     substr($accessory->note, 0, 125) . "..." : $accessory->note;
+//                 $accessory->last_sync_date = $syncTime;
+//                 $accessory->save();
+//             } else {
+//                 // update item values
+//                 echo "updating accessory item " . $accessory->id . "\n";
+//                 $this->updateExistingItem($accessory, $existingAccessory);
 
-                $existingAccessory->last_sync_date = $syncTime;
-                $existingAccessory->save();
-            }
-        }
+//                 $existingAccessory->last_sync_date = $syncTime;
+//                 $existingAccessory->save();
+//             }
+//         }
 
         // Delete all other items
         echo "Archive other items\n";

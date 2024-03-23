@@ -11,6 +11,7 @@ use Api\User\UserController;
 use Api\Tool\ToolController;
 use Api\User\UserManager;
 use Api\Tool\ToolManager;
+use Api\Loan\LoanManager;
 use Api\Inventory\SnipeitInventory;
 use Api\Statistics\StatController;
 use Mollie\Api\MollieApiClient;
@@ -141,16 +142,16 @@ $container->set("JwtAuthentication", function (ContainerInterface $container) {
 					->getBody()->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			},
 			"rules" => [
-                new \Api\Middleware\Jwt\JwtCustomRule([
-//							"getignore" => ["/tools", "/consumers", "/auth/confirm"]
-                        "getignore" => ["/tools", "/consumers"]
-                ]),
+//                 new \Api\Middleware\Jwt\JwtCustomRule([
+// //							"getignore" => ["/tools", "/consumers", "/auth/confirm"]
+//                         "getignore" => ["/tools"]
+//                 ]),
                 new RequestMethodRule([
                     "ignore" => ["OPTIONS"]
                 ]),
                 new JwtAuthentication\RequestPathRule([
                     "path" => "/",
-                    "ignore" => ["/token", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
+                    "ignore" => ["/token", "/tools", "/welcome", "/upload", "/enrolment", "/payments", "/stats",
                         "/auth/reset", "/auth/verifyemail"]
                 ])
 			],
@@ -179,7 +180,8 @@ $container->set('Api\User\UserController', function(ContainerInterface $c) {
     $token = $c->get("token"); // retrieve the 'token' from the container
     $inventory = $c->get("Api\Inventory");
     $mailMgr = new MailManager(null, null, $logger);
-    return new UserController($logger, new UserManager($inventory, $logger, $mailMgr), new ToolManager($inventory, $logger),$token);
+    $loanManager = LoanManager::instance($logger, $mailMgr);
+    return new UserController($logger, new UserManager($inventory, $logger, $mailMgr), new ToolManager($inventory, $logger),$token, $loanManager);
 });
 
 $container->set('Api\Tool\ToolController', function(ContainerInterface $c) {

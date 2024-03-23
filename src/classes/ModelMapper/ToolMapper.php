@@ -1,7 +1,7 @@
 <?php
 namespace Api\ModelMapper;
 
-use \Api\Model\Tool;
+use Api\Model\Tool;
 use Api\Model\ToolCategory;
 use Api\Model\ToolState;
 

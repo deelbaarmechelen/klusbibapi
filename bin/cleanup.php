@@ -4,6 +4,8 @@
 use Api\Model\ReservationState;
 use Api\Model\UserState;
 use Api\Model\UserRole;
+use Api\Loan\LoanManager;
+use Api\Mail\MailManager;
 
 # Deny access from the web
 if (isset($_SERVER['REMOTE_ADDR'])) die('Permission denied.');
@@ -34,28 +36,36 @@ $lastYear = date('Y-m-d' . ' 00:00:00', strtotime("-1 year"));
 
 // Delete reservations older than 1 year
 echo "selecting reservations older than 1 year (on $lastYear)\n";
-$reservations = \Api\Model\Reservation::whereDate('startsAt' , '<', $lastYear)->get();
-echo "selected reservations: " . count($reservations) . "\n";
+// FIXME: Reservation model can no longer run queries (kb_reservations table removed)
+//$mailManager = new MailManager(null, null, $logger);
+//$userManager = new UserManager(SnipeitInventory::instance($logger), $logger, $mailManager);
+//$loanManager = LoanManager::instance($logger, $mailManager);
+//$reservations = $loanManager->getAllReservations(null, );
+// or rely on lend engine archiving?? -> loans are closed but not removed?? Although delete operation exists on loan in admin section
+// Idem for contacts -> cleanup script should be removed and replaced by lendengine archiving policy (see src/AppBundle/Services/Schedule/ExpireMemberships for an example)
 
-foreach ($reservations as $reservation) {
-    echo "Removal required for reservation $reservation->reservation_id\n";
-    echo "state: " . $reservation->state . "\n";
-    echo "reservation start: " . $reservation->startsAt . "\n";
-    echo "reservation end: " . $reservation->endsAt . "\n";
-    $reservation->state = ReservationState::DELETED;
-    $reservation->save();
-}
-
-$requestedCount = \Api\Model\Reservation::where('state', ReservationState::REQUESTED)->count();
-$confirmedCount = \Api\Model\Reservation::where('state', ReservationState::CONFIRMED)->count();
-$cancelledCount = \Api\Model\Reservation::where('state', ReservationState::CANCELLED)->count();
-$closedCount = \Api\Model\Reservation::where('state', ReservationState::CLOSED)->count();
-$deletedCount = \Api\Model\Reservation::where('state', ReservationState::DELETED)->count();
-echo "Requested reservations: $requestedCount\n";
-echo "Confirmed reservations: $confirmedCount\n";
-echo "Cancelled reservations: $cancelledCount\n";
-echo "Closed reservations: $closedCount\n";
-echo "Deleted reservations: $deletedCount\n";
+//$reservations = \Api\Model\Reservation::whereDate('startsAt' , '<', $lastYear)->get();
+//echo "selected reservations: " . count($reservations) . "\n";
+//
+//foreach ($reservations as $reservation) {
+//    echo "Removal required for reservation $reservation->reservation_id\n";
+//    echo "state: " . $reservation->state . "\n";
+//    echo "reservation start: " . $reservation->startsAt . "\n";
+//    echo "reservation end: " . $reservation->endsAt . "\n";
+//    $reservation->state = ReservationState::DELETED;
+//    $reservation->save();
+//}
+//
+//$requestedCount = \Api\Model\Reservation::where('state', ReservationState::REQUESTED)->count();
+//$confirmedCount = \Api\Model\Reservation::where('state', ReservationState::CONFIRMED)->count();
+//$cancelledCount = \Api\Model\Reservation::where('state', ReservationState::CANCELLED)->count();
+//$closedCount = \Api\Model\Reservation::where('state', ReservationState::CLOSED)->count();
+//$deletedCount = \Api\Model\Reservation::where('state', ReservationState::DELETED)->count();
+//echo "Requested reservations: $requestedCount\n";
+//echo "Confirmed reservations: $confirmedCount\n";
+//echo "Cancelled reservations: $cancelledCount\n";
+//echo "Closed reservations: $closedCount\n";
+//echo "Deleted reservations: $deletedCount\n";
 
 
 // Delete users when membership expired for more than 1 year
@@ -77,17 +87,17 @@ echo "Expired users: $expiredCount\n";
 echo "Deleted users: $deletedCount\n";
 
 if ($delete) {
-    $reservationsToDelete = \Api\Model\Reservation::isDeleted()->get();
-    foreach ($reservationsToDelete as $reservation) {
-        echo "Real delete for reservation $reservation->reservation_id\n";
-        echo "state: " . $reservation->state . "\n";
-        echo "user_id: " . $reservation->user_id . "\n";
-        echo "tool_id: " . $reservation->tool_id . "\n";
-        echo "reservation start: " . $reservation->startsAt . "\n";
-        echo "reservation end: " . $reservation->endsAt . "\n";
-        echo "comment: " . $reservation->comment . "\n";
-        $reservation->delete();
-    }
+    //$reservationsToDelete = \Api\Model\Reservation::isDeleted()->get();
+    //foreach ($reservationsToDelete as $reservation) {
+    //    echo "Real delete for reservation $reservation->reservation_id\n";
+    //    echo "state: " . $reservation->state . "\n";
+    //    echo "user_id: " . $reservation->user_id . "\n";
+    //    echo "tool_id: " . $reservation->tool_id . "\n";
+    //    echo "reservation start: " . $reservation->startsAt . "\n";
+    //    echo "reservation end: " . $reservation->endsAt . "\n";
+    //    echo "comment: " . $reservation->comment . "\n";
+    //    $reservation->delete();
+    //}
     $usersToDelete = \Api\Model\Contact::isDeleted()->get();
     foreach ($usersToDelete as $user) {
         echo "Archiving user $user->id\n";
