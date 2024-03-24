@@ -19,6 +19,7 @@ use Api\Model\ItemMovement;
  * @property mixed $deposit_id
  * @property mixed $item_location
  * @property Loan $loan
+ * @property ItemMovement $itemMovement
  */
 class LoanRow extends Model
 {

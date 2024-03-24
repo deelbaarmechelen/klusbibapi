@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * Laravel/Eloquent methods
  * @method static Builder whereDate($column, $compare, $date)
- * @method static Lending find($id)
+ * @method static Lending? find($id)
  * @method static Builder where($arr)
  */
 class Lending extends Model

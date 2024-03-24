@@ -19,6 +19,9 @@ use Api\Model\UserRole;
  * @property mixed $next_subscription_id
  * @property mixed $created_at
  * @property mixed $updated_at
+ * 
+ * @method static Builder where(...$params)
+ * @method static MembershipType? find($id)
  */
 class MembershipType extends Model
 {

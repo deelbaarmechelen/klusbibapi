@@ -27,6 +27,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder forOrder($orderId)
  * @method static Builder forMembership()
  * @method static Builder forLoan()
+ * 
+ * @method static Payment? find($id)
+ * @method static Builder where(...$params)
  */
 
 class Payment extends Model

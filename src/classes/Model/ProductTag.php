@@ -4,6 +4,9 @@ namespace Api\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static Builder where(...$params)
+ */
 class ProductTag extends Model
 {
     protected $table = 'product_tag';

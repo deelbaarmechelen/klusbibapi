@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static Builder where(...$params)
+ */
 class DeliveryItem extends Model
 {
     use HasFactory;

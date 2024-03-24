@@ -19,6 +19,8 @@ use Symfony\Component\Config\Definition\Builder\MergeBuilder;
  * @method static Builder withStartAt($startAt)
  * @method static Builder withUser($user)
  * @method static Builder createdBetweenDates($startDate, $endDate)
+ * 
+ * @method static Membership? find($id)
  */
 class Membership extends Model
 {

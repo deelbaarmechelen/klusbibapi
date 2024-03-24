@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Builder;
  * 
  * Laravel/Eloquent methods
  * @method static Builder whereDate($column, $compare, $date)
- * @method static Loan find($id)
+ * @method static Loan? find($id)
  */
 class Loan extends Model
 {
