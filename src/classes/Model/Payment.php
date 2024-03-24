@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    protected $table = 'payments';
+    protected $table = 'payment';
     protected $primaryKey = "id";
     static protected $fieldArray = ['id', 'contact_id', 'kb_state', 'kb_mode', 'kb_payment_timestamp', 'kb_order_id', 'psp_code',
         'amount', 'note', 'kb_expiration_date', 'membership_id', 'loan_id', 'created_at'
