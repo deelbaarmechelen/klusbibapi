@@ -118,21 +118,21 @@ class Contact extends Model
      */
     public function projects()
     {
-        return $this->belongsToMany('Api\Model\Project', 'kb_project_user', 'user_id', 'project_id')
+        return $this->belongsToMany(\Api\Model\Project::class, 'kb_project_user', 'user_id', 'project_id')
             ->as('membership')
             ->withTimestamps();
     }
 
     public function activeMembership() {
-        return $this->belongsTo('Api\Model\Membership', 'active_membership');
+        return $this->belongsTo(\Api\Model\Membership::class, 'active_membership');
     }
     public function memberships() {
-        return $this->hasMany('Api\Model\Membership', 'contact_id', 'id');
+        return $this->hasMany(\Api\Model\Membership::class, 'contact_id', 'id');
     }
 
     public function payments()
     {
-        return $this->hasMany('Api\Model\Payment', 'user_id', 'id');
+        return $this->hasMany(\Api\Model\Payment::class, 'user_id', 'id');
     }
 
     public function isAdmin() {

@@ -36,7 +36,7 @@ class ToolMapper
             "fee" => isset($tool->inventoryItem) ? $tool->inventoryItem->loan_fee : null,
             "size" => isset($tool->inventoryItem) ? $tool->inventoryItem->size : null,
             "deliverable" => isset($tool->inventoryItem) ? $tool->inventoryItem->deliverable : null,
-			"reservations" => array()
+			"reservations" => []
 		];
 		return $toolArray;
 	}

@@ -71,12 +71,12 @@ class MembershipType extends Model
 	
 	public function memberships()
 	{
-		return $this->hasMany('Api\Model\Membership', 'subscription_id');
+		return $this->hasMany(\Api\Model\Membership::class, 'subscription_id');
 	}
 
     public function nextMembershipType()
     {
-        return $this->belongsTo('Api\Model\MembershipType', 'next_subscription_id');
+        return $this->belongsTo(\Api\Model\MembershipType::class, 'next_subscription_id');
     }
 
 	// Query helpers

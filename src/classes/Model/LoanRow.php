@@ -70,11 +70,11 @@ class LoanRow extends Model
     }
 	public function loan()
 	{
-		return $this->belongsTo('Api\Model\Loan', 'loan_id');
+		return $this->belongsTo(\Api\Model\Loan::class, 'loan_id');
 	}
 	public function inventoryItem()
 	{
-		return $this->belongsTo('Api\Model\InventoryItem', 'inventory_item_id');
+		return $this->belongsTo(\Api\Model\InventoryItem::class, 'inventory_item_id');
 	}
     public function itemMovement() {
         return $this->hasOne(ItemMovement::class, 'loan_row_id', 'id');

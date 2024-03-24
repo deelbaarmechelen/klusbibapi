@@ -36,7 +36,7 @@ class ItemMovement extends Model
      */
     public function createdBy()
     {
-        return $this->belongsTo('Api\Model\Contact', 'created_by');
+        return $this->belongsTo(\Api\Model\Contact::class, 'created_by');
     }
 
     /**
@@ -44,7 +44,7 @@ class ItemMovement extends Model
      */
     public function inventoryItem()
     {
-        return $this->belongsTo('Api\Model\InventoryItem', 'inventory_item_id');
+        return $this->belongsTo(\Api\Model\InventoryItem::class, 'inventory_item_id');
     }
 
     /**
@@ -52,6 +52,6 @@ class ItemMovement extends Model
      */
     public function loanRow()
     {
-        return $this->belongsTo('Api\Model\LoanRow', 'loan_row_id');
+        return $this->belongsTo(\Api\Model\LoanRow::class, 'loan_row_id');
     }
 }

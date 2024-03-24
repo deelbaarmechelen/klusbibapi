@@ -35,7 +35,7 @@ class Delivery extends Model
 	}
 
     public function deliveryItems() {
-        return $this->hasMany('Api\Model\DeliveryItem', 'delivery_id',
+        return $this->hasMany(\Api\Model\DeliveryItem::class, 'delivery_id',
             'id');
     }
 
@@ -44,7 +44,7 @@ class Delivery extends Model
      */
     public function user()
     {
-        return $this->belongsTo('Api\Model\Contact', 'user_id');
+        return $this->belongsTo(\Api\Model\Contact::class, 'user_id');
     }
 
     public function scopeOutOfSync($query)

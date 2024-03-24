@@ -32,7 +32,7 @@ class MembershipMapper
             "start_at" => $membership->starts_at->format('Y-m-d'),
             "expires_at" => $membership->expires_at->format('Y-m-d'),
             "subscription_id" => $membership->subscription_id,
-            "subscription" => !$subscription ? array() : MembershipMapper::mapSubscriptionToArray($subscription),
+            "subscription" => !$subscription ? [] : MembershipMapper::mapSubscriptionToArray($subscription),
             "contact_id" => $membership->contact_id,
             "last_payment_mode" => $membership->last_payment_mode,
             "comment" => $membership->comment,

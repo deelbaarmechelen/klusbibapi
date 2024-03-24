@@ -72,10 +72,10 @@ class Payment extends Model
     }
 
     public function user() {
-        return $this->belongsTo('Api\Model\Contact', 'contact_id', 'id');
+        return $this->belongsTo(\Api\Model\Contact::class, 'contact_id', 'id');
     }
     public function membership() {
-        return $this->belongsTo('Api\Model\Membership', 'membership_id', 'id');
+        return $this->belongsTo(\Api\Model\Membership::class, 'membership_id', 'id');
     }
     public function scopeAny($query)
     {

@@ -29,11 +29,11 @@ class Note extends Model
 
 	public function loan()
 	{
-		return $this->belongsTo('Api\Model\Loan', 'loan_id');
+		return $this->belongsTo(\Api\Model\Loan::class, 'loan_id');
 	}
 	public function contact()
 	{
-		return $this->belongsTo('Api\Model\Contact', 'contact_id');
+		return $this->belongsTo(\Api\Model\Contact::class, 'contact_id');
 	}
 
 }

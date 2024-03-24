@@ -51,20 +51,20 @@ class Membership extends Model
 	}
 	
 	public function members() {
-		return $this->hasMany('Api\Model\Contact', 'active_membership');
+		return $this->hasMany(\Api\Model\Contact::class, 'active_membership');
 	}
 
     public function subscription() {
-        return $this->belongsTo('Api\Model\MembershipType', 'subscription_id');
+        return $this->belongsTo(\Api\Model\MembershipType::class, 'subscription_id');
     }
 
     public function payment() {
 //        return $this->hasOne('Api\Model\Payment', 'membership_id', 'payment_id');
-        return $this->hasOne('Api\Model\Payment');
+        return $this->hasOne(\Api\Model\Payment::class);
     }
 
     public function contact() {
-        return $this->belongsTo('Api\Model\Contact', 'contact_id', 'id');
+        return $this->belongsTo(\Api\Model\Contact::class, 'contact_id', 'id');
     }
 
     // Query helpers

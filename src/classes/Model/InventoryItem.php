@@ -80,19 +80,19 @@ class InventoryItem extends Model
 
     public function tool()
     {
-        return $this->hasOne('Api\Model\Tool', 'tool_id');
+        return $this->hasOne(\Api\Model\Tool::class, 'tool_id');
     }
     public function deliveryItems() {
-        return $this->hasMany('Api\Model\DeliveryItem', 'inventory_item_id', 'id');
+        return $this->hasMany(\Api\Model\DeliveryItem::class, 'inventory_item_id', 'id');
     }
 
     public function tags() {
-        return $this->belongsToMany('Api\Model\ProductTag', 'inventory_item_product_tag',
+        return $this->belongsToMany(\Api\Model\ProductTag::class, 'inventory_item_product_tag',
             'inventory_item_id', 'product_tag_id');
     }
 
     public function images() {
-        return $this->hasMany('Api\Model\Image', 'inventory_item_id', 'id');
+        return $this->hasMany(\Api\Model\Image::class, 'inventory_item_id', 'id');
     }
 
     public function scopeOutOfSync($query, $lastSyncDate)

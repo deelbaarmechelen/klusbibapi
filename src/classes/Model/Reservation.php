@@ -53,19 +53,19 @@ class Reservation extends Model
 	 */
 	public function user()
 	{
-		return $this->belongsTo('Api\Model\Contact', 'user_id');
+		return $this->belongsTo(\Api\Model\Contact::class, 'user_id');
 	}
 	public function item()
 	{
-		return $this->belongsTo('Api\Model\InventoryItem', 'tool_id');
+		return $this->belongsTo(\Api\Model\InventoryItem::class, 'tool_id');
 	}
 	public function tool()
 	{
-		return $this->belongsTo('Api\Model\Tool', 'tool_id');
+		return $this->belongsTo(\Api\Model\Tool::class, 'tool_id');
 	}
     public function deliveryItem()
     {
-        return $this->hasOne('Api\Model\DeliveryItem', 'reservation_id');
+        return $this->hasOne(\Api\Model\DeliveryItem::class, 'reservation_id');
     }
     public function scopeIsRequested($query)
     {

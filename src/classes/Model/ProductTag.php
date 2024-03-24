@@ -33,7 +33,7 @@ class ProductTag extends Model
     }
 
     public function items() {
-        return $this->belongsToMany('Api\Model\InventoryItem', 'inventory_item_product_tag',
+        return $this->belongsToMany(\Api\Model\InventoryItem::class, 'inventory_item_product_tag',
             'product_tag_id', 'inventory_item_id' );
     }
 

@@ -98,7 +98,7 @@ abstract class SnipeitToolMapper
         // group
         //construction, car, garden, general, technics, wood
         // alternative syntax:
-        if ($group != null && method_exists('Api\Model\ProductTag', $group)) {
+        if ($group != null && method_exists(\Api\Model\ProductTag::class, $group)) {
             $groupTag = ProductTag::{$group}();
         } else {
             $groupTag = ProductTag::general();

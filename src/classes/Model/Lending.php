@@ -60,7 +60,7 @@ class Lending extends Model
      */
     public function user()
     {
-        return $this->belongsTo('Api\Model\Contact', 'user_id');
+        return $this->belongsTo(\Api\Model\Contact::class, 'user_id');
     }
 
     /**
@@ -68,7 +68,7 @@ class Lending extends Model
      */
     private function tool()
     {
-        return $this->belongsTo('Api\Model\Tool', 'tool_id')->where('tool_type', '=', ToolType::TOOL);
+        return $this->belongsTo(\Api\Model\Tool::class, 'tool_id')->where('tool_type', '=', ToolType::TOOL);
     }
 
     /**
@@ -76,12 +76,12 @@ class Lending extends Model
      */
     private function accessory()
     {
-        return $this->belongsTo('Api\Model\Accessory', 'tool_id')->where('tool_type', '=', ToolType::ACCESSORY);
+        return $this->belongsTo(\Api\Model\Accessory::class, 'tool_id')->where('tool_type', '=', ToolType::ACCESSORY);
     }
 
     public function deliveryItem()
     {
-        return $this->hasOne('Api\Model\DeliveryItem', 'lending_id');
+        return $this->hasOne(\Api\Model\DeliveryItem::class, 'lending_id');
     }
 
     public function scopeValid($query)

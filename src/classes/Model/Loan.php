@@ -77,7 +77,7 @@ class Loan extends Model
         return $this->hasMany(Note::class);
     }
     public function contact() {
-        return $this->belongsTo('Api\Model\Contact', 'contact_id', 'id');
+        return $this->belongsTo(\Api\Model\Contact::class, 'contact_id', 'id');
     }
 
     public function scopeIsActive($query)
