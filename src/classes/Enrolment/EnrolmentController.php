@@ -289,8 +289,8 @@ class EnrolmentController
 
             $data = array();
             $data["orderId"] = $orderId;
-            $data["paymentMode"] = $payment->mode;
-            $data["paymentState"] = $payment->state;
+            $data["paymentMode"] = $payment->kb_mode;
+            $data["paymentState"] = $payment->kb_state;
             return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -343,8 +343,8 @@ class EnrolmentController
                 }
                 $data = array();
                 $data["orderId"] = $orderId;
-                $data["paymentMode"] = $payment->mode;
-                $data["paymentState"] = $payment->state;
+                $data["paymentMode"] = $payment->kb_mode;
+                $data["paymentState"] = $payment->kb_state;
                 return $response->withStatus(HttpResponseCode::OK)
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -366,8 +366,8 @@ class EnrolmentController
                 }
                 $data = array();
                 $data["orderId"] = $orderId;
-                $data["paymentMode"] = $payment->mode;
-                $data["paymentState"] = $payment->state;
+                $data["paymentMode"] = $payment->kb_mode;
+                $data["paymentState"] = $payment->kb_state;
                 return $response->withStatus(HttpResponseCode::OK)
                     ->withHeader("Content-Type", "application/json")
                     ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));

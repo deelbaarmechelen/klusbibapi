@@ -45,6 +45,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static Builder notAdmin ()
  * @method static Builder stroom ()
  * @method static Builder overdue()
+ * @method static Builder outOfSync ()
  *
  * @method static Builder where($arr)
  */

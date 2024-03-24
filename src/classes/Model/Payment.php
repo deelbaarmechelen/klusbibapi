@@ -3,12 +3,38 @@ namespace Api\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property mixed $id
+ * @property mixed $created_by
+ * @property mixed $contact_id
+ * @property mixed $loan_id
+ * @property mixed $membership_id
+ * @property mixed $created_at
+ * @property mixed $type
+ * @property mixed $payment_date
+ * @property mixed $amount
+ * @property mixed $note
+ * @property mixed $deposit_id
+ * @property mixed $psp_code
+ * @property mixed $event_id
+ * @property mixed $kb_payment_timestamp
+ * @property mixed $kb_mode
+ * @property mixed $kb_state
+ * @property mixed $kb_order_id
+ * @property mixed $kb_expiration_date
+ * 
+ * @method static Builder any()
+ * @method static Builder forOrder()
+ * @method static Builder forMembership()
+ * @method static Builder forLoan()
+ */
+
 class Payment extends Model
 {
-    protected $table = 'kb_payments';
-    protected $primaryKey = "payment_id";
-    static protected $fieldArray = ['payment_id', 'user_id', 'state', 'mode', 'payment_date', 'order_id',
-        'amount', 'currency', 'comment', 'expiration_date', 'membership_id', 'loan_id', 'created_at', 'updated_at'
+    protected $table = 'payments';
+    protected $primaryKey = "id";
+    static protected $fieldArray = ['id', 'contact_id', 'kb_state', 'kb_mode', 'kb_payment_timestamp', 'kb_order_id', 'psp_code',
+        'amount', 'note', 'kb_expiration_date', 'membership_id', 'loan_id', 'created_at'
     ];
 //    protected $casts = [
 //        'payment_date'  => 'date:Y-m-d',
@@ -20,7 +46,7 @@ class Payment extends Model
      * @var array
      */
     protected $dates = [
-        'payment_date','expiration_date', 'created_at', 'updated_at'
+        'payment_date','payment_timestamp','kb_expiration_date', 'created_at'
     ];
 
     public static function canBeSortedOn($field) {
@@ -29,8 +55,24 @@ class Payment extends Model
         }
         return in_array($field, Payment::$fieldArray);
     }
+
+    /**
+     * Create a new Eloquent model instance.
+     *
+     * @param  array  $attributes
+     * @return void
+     */
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->type = "PAYMENT";
+        $this->created_at = new \DateTime();
+        $this->payment_date = new \DateTime();
+        $this->kb_payment_timestamp = new \DateTime();
+    }
+
     public function user() {
-        return $this->belongsTo('Api\Model\Contact', 'user_id', 'id');
+        return $this->belongsTo('Api\Model\Contact', 'contact_id', 'id');
     }
     public function membership() {
         return $this->belongsTo('Api\Model\Membership', 'membership_id', 'id');
@@ -41,7 +83,7 @@ class Payment extends Model
     }
     public function scopeForOrder($query, $orderId)
     {
-        return $query->where('order_id', $orderId);
+        return $query->where('kb_order_id', $orderId);
     }
     public function scopeForMembership($query)
     {
@@ -51,9 +93,9 @@ class Payment extends Model
     {
         return $query->whereNotNull('loan_id');
     }
-    public function scopeOutOfSync($query)
-    {
-        return $query->whereNull('last_sync_date')
-            ->orWhereColumn('last_sync_date', '<', 'updated_at');
-    }
+    // public function scopeOutOfSync($query)
+    // {
+    //     return $query->whereNull('last_sync_date')
+    //         ->orWhereColumn('last_sync_date', '<', 'updated_at');
+    // }
 }

@@ -46,7 +46,7 @@ class PaymentController implements PaymentControllerInterface
         }
         $sortfield = $queryParams['_sortField'] ?? null;
         if (!Payment::canBeSortedOn($sortfield)) {
-            $sortfield = 'payment_id';
+            $sortfield = 'id';
         }
         $page = $queryParams['_page'] ?? null;
         if (!isset($page)) {
@@ -135,30 +135,29 @@ class PaymentController implements PaymentControllerInterface
             // use first() rather than get()
             // there should be only 1 result, but first returns a Model
             $payment = \Api\Model\Payment::where([
-                ['order_id', '=', $orderId],
-                ['user_id', '=', $userId],
-                ['mode', '=', PaymentMode::TRANSFER],
+                ['kb_order_id', '=', $orderId],
+                ['contact_id', '=', $userId],
+                ['kb_mode', '=', PaymentMode::TRANSFER],
             ])->first();
             if ($payment == null) {
                 // Create new payment
                 $payment = new \Api\Model\Payment();
-                $payment->mode = PaymentMode::TRANSFER;
-                $payment->order_id = $orderId;
-                $payment->user_id = $userId;
-                $payment->payment_date = new \DateTime();
+                $payment->kb_mode = PaymentMode::TRANSFER;
+                $payment->kb_order_id = $orderId;
+                $payment->contact_id = $userId;
+                $payment->kb_payment_timestamp = new \DateTime();
                 $payment->amount = \Api\Settings::ENROLMENT_AMOUNT;
-                $payment->currency = "EUR";
-                $payment->state = PaymentState::OPEN;
+                $payment->kb_state = PaymentState::OPEN;
                 $payment->save();
             };
             $this->mailManager->sendEnrolmentConfirmation($user, $paymentMode);
 
             $data = array();
             $data["orderId"] = $orderId;
-            $data["paymentMode"] = $payment->mode;
-            $data["paymentState"] = $payment->state;
-            $data["mode"] = $payment->mode;
-            $data["state"] = $payment->state;
+            $data["paymentMode"] = $payment->kb_mode;
+            $data["paymentState"] = $payment->kb_state;
+            $data["mode"] = $payment->kb_mode;
+            $data["state"] = $payment->kb_state;
             return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -256,19 +255,18 @@ class PaymentController implements PaymentControllerInterface
             // use first() rather than get()
             // there should be only 1 result, but first returns a Model
             $payment = \Api\Model\Payment::where([
-                ['order_id', '=', $orderId],
-                ['user_id', '=', $userId],
-                ['mode', '=', 'MOLLIE'],
+                ['kb_order_id', '=', $orderId],
+                ['contact_id', '=', $userId],
+                ['kb_mode', '=', 'MOLLIE'],
             ])->first();
             if ($payment == null) {
                 // Create new payment
                 $payment = new \Api\Model\Payment();
-                $payment->mode = 'MOLLIE';
-                $payment->order_id = $orderId;
-                $payment->user_id = $userId;
-                $payment->payment_date = new \DateTime();
+                $payment->kb_mode = 'MOLLIE';
+                $payment->kb_order_id = $orderId;
+                $payment->contact_id = $userId;
+                $payment->kb_payment_timestamp = new \DateTime();
                 $payment->amount = $paymentMollie->amount->value;
-                $payment->currency = $paymentMollie->amount->currency;
             };
 
             if ($paymentMollie->isPaid() && !$paymentMollie->hasRefunds() && !$paymentMollie->hasChargebacks()) {
@@ -276,44 +274,44 @@ class PaymentController implements PaymentControllerInterface
                  * The payment is paid and isn't refunded or charged back.
                  * At this point you'd probably want to start the process of delivering the product to the customer.
                  */
-                $payment->state = "SUCCESS";
+                $payment->kb_state = "SUCCESS";
             } elseif ($paymentMollie->isOpen()) {
                 /*
                  * The payment is open.
                  */
-                $payment->state = "OPEN";
+                $payment->kb_state = "OPEN";
             } elseif ($paymentMollie->isPending()) {
                 /*
                  * The payment is pending.
                  */
-                $payment->state = "PENDING";
+                $payment->kb_state = "PENDING";
             } elseif ($paymentMollie->isFailed()) {
                 /*
                  * The payment has failed.
                  */
-                $payment->state = "FAILED";
+                $payment->kb_state = "FAILED";
             } elseif ($paymentMollie->isExpired()) {
                 /*
                  * The payment is expired.
                  */
-                $payment->state = "EXPIRED";
+                $payment->kb_state = "EXPIRED";
             } elseif ($paymentMollie->isCanceled()) {
                 /*
                  * The payment has been canceled.
                  */
-                $payment->state = "CANCELED";
+                $payment->kb_state = "CANCELED";
             } elseif ($paymentMollie->hasRefunds()) {
                 /*
                  * The payment has been (partially) refunded.
                  * The status of the payment is still "paid"
                  */
-                $payment->state = "REFUND";
+                $payment->kb_state = "REFUND";
             } elseif ($paymentMollie->hasChargebacks()) {
                 /*
                  * The payment has been (partially) charged back.
                  * The status of the payment is still "paid"
                  */
-                $payment->state = "CHARGEBACK";
+                $payment->kb_state = "CHARGEBACK";
             }
             $this->logger->info("Saving payment for orderId $orderId with state $payment->state (Mollie payment id=$paymentId / Internal payment id = $payment->payment_id)");
             $payment->save();
@@ -325,7 +323,7 @@ class PaymentController implements PaymentControllerInterface
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson("No user found with id $userId");;
             }
-            if ($payment->state == "SUCCESS") {
+            if ($payment->kb_state == "SUCCESS") {
                 if ($user->state == UserState::CHECK_PAYMENT) {
                     $user->state = UserState::ACTIVE;
                     $user->save();
@@ -334,11 +332,11 @@ class PaymentController implements PaymentControllerInterface
                     // send notification to Klusbib team
                     $this->mailManager->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user);
                 }
-            } else if ($payment->state == "FAILED"
-                || $payment->state == "EXPIRED"
-                || $payment->state == "CANCELED"
-                || $payment->state == "REFUND"
-                || $payment->state == "CHARGEBACK") {
+            } else if ($payment->kb_state == "FAILED"
+                || $payment->kb_state == "EXPIRED"
+                || $payment->kb_state == "CANCELED"
+                || $payment->kb_state == "REFUND"
+                || $payment->kb_state == "CHARGEBACK") {
                 // Permanent failure, or special case -> send notification for manual follow up
                 $this->mailManager->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL,$user, $payment, "payment failed");
             }

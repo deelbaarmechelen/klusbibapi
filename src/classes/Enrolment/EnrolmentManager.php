@@ -155,13 +155,13 @@ class EnrolmentManager
         $payment = $this->lookupPaymentByOrderId($orderId, $paymentMode);
         if ($payment != null) { // payment already exists, check its state
             if ($paymentCompleted) {
-                if ($payment->state != PaymentState::OPEN) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->state (orderId: $payment->order_id)",
+                if ($payment->kb_state != PaymentState::OPEN) {
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             } else {
-                if ($payment->state != PaymentState::OPEN) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->state (orderId: $payment->order_id)",
+                if ($payment->kb_state != PaymentState::OPEN) {
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             }
@@ -338,13 +338,13 @@ class EnrolmentManager
         $payment = $this->lookupPaymentByOrderId($orderId, $paymentMode);
         if ($payment != null) { // payment already exists -> check its state
             if ($paymentCompleted) {
-                if ($payment->state != PaymentState::SUCCESS) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->state (orderId: $payment->order_id)",
+                if ($payment->kb_state != PaymentState::SUCCESS) {
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             } else {
-                if ($payment->state != PaymentState::OPEN) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->state (orderId: $payment->order_id)",
+                if ($payment->kb_state != PaymentState::OPEN) {
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             }
@@ -429,14 +429,14 @@ class EnrolmentManager
             // Create new payment
             $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, $nextMembershipType->price,
                 Settings::CURRENCY, PaymentState::OPEN);
-
-            // Create renewal membership with status PENDING
-            $renewalMembership = $this->renewMembership($nextMembershipType, $this->user->activeMembership);
-            $renewalMembership->last_payment_mode = PaymentMode::MOLLIE;
-            $renewalMembership->payment()->save($payment);
-            $this->user->memberships()->save($renewalMembership);
-            $renewalMembership->save();
         };
+
+        // Create renewal membership with status PENDING
+        $renewalMembership = $this->renewMembership($nextMembershipType, $this->user->activeMembership);
+        $renewalMembership->last_payment_mode = PaymentMode::MOLLIE;
+        $renewalMembership->payment()->save($payment);
+        $this->user->memberships()->save($renewalMembership);
+        $renewalMembership->save();
 
         $this->userMgr->update($this->user, false, false, false, false);
         //$this->user->save();
@@ -449,8 +449,8 @@ class EnrolmentManager
     {
         $payments = Payment::forMembership()->where([
             ['membership_id', '=', $membershipId],
-            ['mode', '=', $paymentMode],
-            ['state', '=', PaymentState::OPEN]
+            ['kb_mode', '=', $paymentMode],
+            ['kb_state', '=', PaymentState::OPEN]
         ])->get();
 
         if (empty($payments) || count($payments) == 0) {
@@ -496,7 +496,7 @@ class EnrolmentManager
         if ($payment == null) {
             $payment = $this->lookupPaymentByPaymentMode($paymentMode, $renewal);
         }
-        if ($payment->state == PaymentState::SUCCESS || $payment->state == PaymentState::FAILED) {
+        if ($payment->kb_state == PaymentState::SUCCESS || $payment->kb_state == PaymentState::FAILED) {
             // payment already confirmed/declined
             $message = "Unable to process confirmation, payment already confirmed/declined (payment is ["
                 . \json_encode($payment) . ")";
@@ -515,7 +515,7 @@ class EnrolmentManager
         }
 
         // update payment
-        $payment->state = PaymentState::SUCCESS;
+        $payment->kb_state = PaymentState::SUCCESS;
         $payment->save();
 
         // update membership status
@@ -562,8 +562,8 @@ class EnrolmentManager
     {
         $payments = Payment::forMembership()->where([
             ['membership_id', '=', $membershipId],
-            ['mode', '=', $paymentMode],
-            ['state', '=', PaymentState::OPEN]
+            ['kb_mode', '=', $paymentMode],
+            ['kb_state', '=', PaymentState::OPEN]
         ])->get();
 
         if (empty($payments) || count($payments) == 0) {
@@ -598,7 +598,7 @@ class EnrolmentManager
             $payment = $this->lookupPaymentByPaymentMode($paymentMode, false);
         }
 
-        $payment->state = PaymentState::FAILED;
+        $payment->kb_state = PaymentState::FAILED;
         $payment->save();
 
         // update status
@@ -744,9 +744,9 @@ class EnrolmentManager
         // use first() rather than get()
         // there should be only 1 result, but first returns a Model
         return Payment::where([
-                ['order_id', '=', $orderId],
-                ['user_id', '=', $userId],
-                ['mode', '=', $paymentMode],
+                ['kb_order_id', '=', $orderId],
+                ['contact_id', '=', $userId],
+                ['kb_mode', '=', $paymentMode],
             ])->first();
     }
 
@@ -758,13 +758,14 @@ class EnrolmentManager
         Membership $membership = null): Payment
     {
         $payment = new Payment();
-        $payment->mode = $mode;
-        $payment->order_id = $orderId;
-        $payment->user_id = $this->user->id;
+        $payment->kb_mode = $mode;
+        $payment->kb_order_id = $orderId;
+        $payment->contact_id = $this->user->id;
+        $payment->kb_payment_timestamp = new \DateTime();
         $payment->payment_date = new \DateTime();
         $payment->amount = $amount;
-        $payment->currency = $currency;
-        $payment->state = $state;
+        $payment->kb_state = $state;
+        $payment->type = "PAYMENT";
         if (isset($membership)) {
             $membership->payment()->save($payment);
         } else {
@@ -792,7 +793,7 @@ class EnrolmentManager
      */
     function checkDuplicateRequest($orderId) {
         // check if an enrolment with same order id was already processed
-        if (Payment::where('order_id', $orderId)->exists()) {
+        if (Payment::where('kb_order_id', $orderId)->exists()) {
             throw new EnrolmentException("An enrolment with order id " . $orderId . " was already processed",
                 EnrolmentException::DUPLICATE_REQUEST);
         }
@@ -1025,61 +1026,61 @@ class EnrolmentManager
                 throw new EnrolmentException("No payment found with orderid $orderId, payment mode " . PaymentMode::MOLLIE . " and user id $userId",
                     EnrolmentException::UNKNOWN_PAYMENT);
             };
-            $currentPaymentState = $payment->state;
+            $currentPaymentState = $payment->kb_state;
             if ($paymentMollie->isPaid() && !$paymentMollie->hasRefunds() && !$paymentMollie->hasChargebacks()) {
                 /*
                  * The payment is paid and isn't refunded or charged back.
                  * At this point you'd probably want to start the process of delivering the product to the customer.
                  */
-                $payment->state = PaymentState::SUCCESS;
+                $payment->kb_state = PaymentState::SUCCESS;
             } elseif ($paymentMollie->isOpen()) {
                 /*
                  * The payment is open.
                  */
-                $payment->state = PaymentState::OPEN;
+                $payment->kb_state = PaymentState::OPEN;
             } elseif ($paymentMollie->isPending()) {
                 /*
                  * The payment is pending.
                  */
-                $payment->state = PaymentState::PENDING;
+                $payment->kb_state = PaymentState::PENDING;
             } elseif ($paymentMollie->isFailed()) {
                 /*
                  * The payment has failed.
                  */
-                $payment->state = PaymentState::FAILED;
+                $payment->kb_state = PaymentState::FAILED;
             } elseif ($paymentMollie->isExpired()) {
                 /*
                  * The payment is expired.
                  */
-                $payment->state = PaymentState::EXPIRED;
+                $payment->kb_state = PaymentState::EXPIRED;
             } elseif ($paymentMollie->isCanceled()) {
                 /*
                  * The payment has been canceled.
                  */
-                $payment->state = PaymentState::CANCELED;
+                $payment->kb_state = PaymentState::CANCELED;
             } elseif ($paymentMollie->hasRefunds()) {
                 /*
                  * The payment has been (partially) refunded.
                  * The status of the payment is still "paid"
                  */
-                $payment->state = PaymentState::REFUND;
+                $payment->kb_state = PaymentState::REFUND;
             } elseif ($paymentMollie->hasChargebacks()) {
                 /*
                  * The payment has been (partially) charged back.
                  * The status of the payment is still "paid"
                  */
-                $payment->state = PaymentState::CHARGEBACK;
+                $payment->kb_state = PaymentState::CHARGEBACK;
             }
-            $this->logger->info("Saving payment for orderId $orderId with state $payment->state (Mollie payment id=$paymentId / Internal payment id = $payment->payment_id)");
+            $this->logger->info("Saving payment for orderId $orderId with state $payment->kb_state (Mollie payment id=$paymentId / Internal payment id = $payment->id)");
 
-            if ($currentPaymentState == $payment->state) {
-                $this->logger->info("Payment with id $payment->payment_id and state $payment->state already up to date");
+            if ($currentPaymentState == $payment->kb_state) {
+                $this->logger->info("Payment with id $payment->id and state $payment->kb_state already up to date");
                 // no change in state -> no need to reprocess Mollie payment (and avoid to resend notifications)
                 // FIXME: payment is saved before membership/user. In case of problems processing request (e.g. http error 502)
                 //        inconsistencies can be introduced -> should be executed in a dabatase transaction!
-                //if ($payment->membership->status == MembershipState::STATUS_ACTIVE && $payment->state == PaymentState::SUCCESS)
+                //if ($payment->membership->status == MembershipState::STATUS_ACTIVE && $payment->kb_state == PaymentState::SUCCESS)
                 //{
-                //    $this->logger->info("Successful payment with id $payment->payment_id consistent with membership state "
+                //    $this->logger->info("Successful payment with id $payment->id consistent with membership state "
                 //        . "-> skip activation and email notifications");
                 //    return;
                 //}
@@ -1108,7 +1109,7 @@ class EnrolmentManager
             }
 
             if ($productId == \Api\Model\Product::ENROLMENT) {
-                if ($payment->state == PaymentState::SUCCESS) {
+                if ($payment->kb_state == PaymentState::SUCCESS) {
                     if ($membership->status != MembershipState::STATUS_ACTIVE) {
 
                         DB::transaction(function() use ($payment, $user, $membership) {
@@ -1135,21 +1136,21 @@ class EnrolmentManager
                             $this->mailMgr->sendEnrolmentSuccessNotification( ENROLMENT_NOTIF_EMAIL,$user, false);
                         });
                     }
-                } else if ($payment->state == PaymentState::FAILED
-                    || $payment->state == PaymentState::EXPIRED
-                    || $payment->state == PaymentState::CANCELED
-                    || $payment->state == PaymentState::REFUND
-                    || $payment->state == PaymentState::CHARGEBACK) {
+                } else if ($payment->kb_state == PaymentState::FAILED
+                    || $payment->kb_state == PaymentState::EXPIRED
+                    || $payment->kb_state == PaymentState::CANCELED
+                    || $payment->kb_state == PaymentState::REFUND
+                    || $payment->kb_state == PaymentState::CHARGEBACK) {
                     // Permanent failure, or special case -> send notification for manual follow up
                     $this->mailMgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL, $user, $payment, false, "payment failed");
                 }
             } else if ($productId == \Api\Model\Product::RENEWAL) {
-                if ($payment->state == PaymentState::SUCCESS) {
+                if ($payment->kb_state == PaymentState::SUCCESS) {
                     // FIXME: should be based on membership status instead of user state!
                     if ($user->state == UserState::ACTIVE
                         || $user->state == UserState::EXPIRED) {
 
-                        DB::transaction(function() use ($payment, $user, $membership) {
+                        DB::transaction(function() use ($payment, $user) {
 
                             $payment->save();
 
@@ -1184,13 +1185,13 @@ class EnrolmentManager
                         $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $user, true, $errorMsg);
                         throw new EnrolmentException( $errorMsg, EnrolmentException::UNEXPECTED_CONFIRMATION);
                     }
-                } else if ($payment->state == PaymentState::FAILED
-                    || $payment->state == PaymentState::EXPIRED
-                    || $payment->state == PaymentState::CANCELED
-                    || $payment->state == PaymentState::REFUND
-                    || $payment->state == PaymentState::CHARGEBACK) {
+                } else if ($payment->kb_state == PaymentState::FAILED
+                    || $payment->kb_state == PaymentState::EXPIRED
+                    || $payment->kb_state == PaymentState::CANCELED
+                    || $payment->kb_state == PaymentState::REFUND
+                    || $payment->kb_state == PaymentState::CHARGEBACK) {
                     // update renewal membership status
-                    DB::transaction(function() use ($payment, $user, $membership) {
+                    DB::transaction(function() use ($payment, $user) {
 
                         $payment->save();
 
@@ -1253,8 +1254,8 @@ class EnrolmentManager
     private function lookupPaymentByPaymentMode($paymentMode, $renewal)
     {
         $payments = Payment::forMembership()->where([
-            ['user_id', '=', $this->user->id],
-            ['mode', '=', $paymentMode]
+            ['contact_id', '=', $this->user->id],
+            ['kb_mode', '=', $paymentMode]
         ])->get();
 
         if (empty($payments) || count($payments) == 0) {
@@ -1272,7 +1273,7 @@ class EnrolmentManager
             // more than 1 payment, search OPEN payment
             $payment = null;
             foreach ($payments as $p) {
-                if ($p->state == PaymentState::OPEN) {
+                if ($p->kb_state == PaymentState::OPEN) {
                     if ($payment == null) {
                         $payment = $p;
                     } else { // more than 1 OPEN payment
