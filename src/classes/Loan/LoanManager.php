@@ -257,8 +257,8 @@ class LoanManager
                 $loan = new Loan();
                 $loan->contact_id = $reservation->user_id;
                 $now = new DateTimeImmutable();
-                $startsAt = isset($reservation->startsAt) ? $reservation->startsAt : $now;
-                $endsAt = isset($reservation->endsAt) ? $reservation->endsAt : $startsAt;
+                $startsAt = $reservation->startsAt ?? $now;
+                $endsAt = $reservation->endsAt ?? $startsAt;
                 $loan->datetime_out = $startsAt;
                 $loan->datetime_in = $endsAt; // last return date for all items in loan (loan row can have different due_in_at dates)
                 $loan->status = $this->convertReservationStateToLoanStatus($reservation->state);
@@ -305,8 +305,8 @@ class LoanManager
             Capsule::transaction(function() use ($lending, &$newLending) { // newLending is passed by reference as it will be created in anonymous function
                 // TODO: check if a loan (e.g. from a reservation) already exists and can be updated
                 $now = new DateTimeImmutable();
-                $startsAt = isset($lending->start_date) ? $lending->start_date : $now;
-                $endsAt = isset($lending->due_date) ? $lending->due_date : $startsAt;
+                $startsAt = $lending->start_date ?? $now;
+                $endsAt = $lending->due_date ?? $startsAt;
 
                 $loan = Loan::isReservation()->withContact($lending->user_id)->withInventoryItem($lending->tool_id)->first();
                 if ($loan == null) {

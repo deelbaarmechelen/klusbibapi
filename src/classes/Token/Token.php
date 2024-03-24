@@ -30,7 +30,7 @@ class Token
 		return $this->decoded->sub;
 	}
     public function getDest() {
-        return isset($this->decoded->dest) ? $this->decoded->dest : null;
+        return $this->decoded->dest ?? null;
     }
 
 	static private function generatePayload($scopes, $sub, $future = null, $dest = null) {

@@ -189,7 +189,7 @@ class EnrolmentManager
             $pending->status = MembershipState::STATUS_CANCELLED;
             $pending->save();
         }
-        $membership = $this->createMembership($membershipType, $start_date, $end_date, $this->user, $status);
+        $membership = static::createMembership($membershipType, $start_date, $end_date, $this->user, $status);
 //        $membershipId = $this->createUserMembership($membershipType, $startMembershipDate);
 //        $membership = Membership::findOrFail($membershipId);
         $membership->last_payment_mode = $paymentMode;

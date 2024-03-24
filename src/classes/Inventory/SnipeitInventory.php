@@ -119,7 +119,7 @@ class SnipeitInventory implements Inventory
     {
         $asset = $this->get('hardware/' . $id);
         if (isset($asset) && isset($asset->status) && $asset->status == "error") {
-            $errmsg = isset($asset->messages) ? $asset->messages : \json_encode($asset);
+            $errmsg = $asset->messages ?? \json_encode($asset);
             $this->logger->error("Error getting tool with id $id from inventory: $errmsg");
             return null;
         }

@@ -304,7 +304,7 @@ class ToolManager
         $existingItem->owned_by = $item->owned_by;
         $existingItem->experience_level = $item->experience_level;
         $existingItem->safety_risk = $item->safety_risk;
-        $existingItem->deliverable = isset($item->deliverable) ? $item->deliverable : false;
+        $existingItem->deliverable = $item->deliverable ?? false;
         $existingItem->size = $item->size;
     }
 

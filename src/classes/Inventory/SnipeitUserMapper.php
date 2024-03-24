@@ -28,9 +28,9 @@ abstract class SnipeitUserMapper
         $user = new Contact();
         $user->user_ext_id = $inventoryUser->id;
         $user->email = $inventoryUser->username;
-        $user->first_name = (isset($inventoryUser->first_name) ? $inventoryUser->first_name : "");
-        $user->last_name = (isset($inventoryUser->last_name) ? $inventoryUser->last_name  : "");
-        $user->id = (isset($inventoryUser->employee_num) ? $inventoryUser->employee_num : "");
+        $user->first_name = ($inventoryUser->first_name ?? "");
+        $user->last_name = ($inventoryUser->last_name ?? "");
+        $user->id = ($inventoryUser->employee_num ?? "");
         // Snipe IT has no inventory but we use avatar to reflect ok/nok state
         if ($inventoryUser->avatar == "\/uploads\/avatars\/DBM_avatar_ok.png") {
             $user->state = UserState::ACTIVE;

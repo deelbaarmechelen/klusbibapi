@@ -164,7 +164,7 @@ class DeliveryController
         }
 
         $delivery->save();
-        $items = isset($data["items"]) ? $data["items"] : [];
+        $items = $data["items"] ?? [];
         if (is_array($items)) {
             foreach ($items as $rcvdItem) {
                 $item = InventoryItem::find($rcvdItem["tool_id"]);
