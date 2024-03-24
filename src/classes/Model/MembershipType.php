@@ -27,14 +27,14 @@ class MembershipType extends Model
         'self_serve', 'credit_limit', 'max_items', 'is_active', 'next_subscription_id', 'created_at', 'updated_at'
 	];
 
-    const REGULAR = 'Regular';
-    const RENEWAL = 'Renewal';
-    const REGULARREDUCED = 'RegularReduced';
-    const RENEWALREDUCED = 'RenewalReduced';
-    const REGULARORG = 'RegularOrg';
-    const RENEWALORG = 'RenewalOrg';
-    const STROOM = 'Stroom';
-    const TEMPORARY = 'Temporary';
+    public const REGULAR = 'Regular';
+    public const RENEWAL = 'Renewal';
+    public const REGULARREDUCED = 'RegularReduced';
+    public const RENEWALREDUCED = 'RenewalReduced';
+    public const REGULARORG = 'RegularOrg';
+    public const RENEWALORG = 'RenewalOrg';
+    public const STROOM = 'Stroom';
+    public const TEMPORARY = 'Temporary';
 
     static public function regular() {
 	    return MembershipType::where('name', '=', self::REGULAR)->firstOrFail();

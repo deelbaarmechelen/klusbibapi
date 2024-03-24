@@ -29,7 +29,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
  */
 class SnipeitInventory implements Inventory
 {
-    const COMPANY_ID_KLUSBIB = 1;
+    public const COMPANY_ID_KLUSBIB = 1;
     public static function instance($logger = null) {
         // Create default HandlerStack
         $stack = HandlerStack::create();

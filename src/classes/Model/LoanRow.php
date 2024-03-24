@@ -22,10 +22,10 @@ use Api\Model\ItemMovement;
  */
 class LoanRow extends Model
 {
-    const LOCATION_UNKNOWN = 0;
-    const LOCATION_ON_LOAN = 1;
-	const LOCATION_IN_STOCK = 2;
-    const LOCATION_REPAIR = 3;
+    public const LOCATION_UNKNOWN = 0;
+    public const LOCATION_ON_LOAN = 1;
+	public const LOCATION_IN_STOCK = 2;
+    public const LOCATION_REPAIR = 3;
 
     protected $table = 'loan_row';
     protected $primaryKey = "id";

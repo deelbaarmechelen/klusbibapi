@@ -78,7 +78,7 @@ class ToolController implements ProductControllerInterface
             array_push($data, ToolMapper::mapToolToArray($tool));
         }
         return $response->withJson($data)
-            ->withHeader('X-Total-Count', count($tools));
+            ->withHeader('X-Total-Count', is_array($tools) || $tools instanceof \Countable ? count($tools) : 0);
     }
 
     function getById(RequestInterface $request, ResponseInterface $response, $args) {

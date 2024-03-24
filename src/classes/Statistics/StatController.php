@@ -371,23 +371,23 @@ class StatController
         $newTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::NEW;
         });
-        $toolStats["new-count"] = count($newTools);
+        $toolStats["new-count"] = is_array($newTools) || $newTools instanceof \Countable ? count($newTools) : 0;
         $availableTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::READY;
         });
-        $toolStats["available-count"] = count($availableTools);
+        $toolStats["available-count"] = is_array($availableTools) || $availableTools instanceof \Countable ? count($availableTools) : 0;
         $deployedTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::IN_USE;
         });
-        $toolStats["deployed-count"] = count($deployedTools);
+        $toolStats["deployed-count"] = is_array($deployedTools) || $deployedTools instanceof \Countable ? count($deployedTools) : 0;
         $maintenanceTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::MAINTENANCE;
         });
-        $toolStats["maintenance-count"] = count($maintenanceTools);
+        $toolStats["maintenance-count"] = is_array($maintenanceTools) || $maintenanceTools instanceof \Countable ? count($maintenanceTools) : 0;
         $archivedTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::DISPOSED;
         });
-        $toolStats["archived-count"] = count($archivedTools);
+        $toolStats["archived-count"] = is_array($archivedTools) || $archivedTools instanceof \Countable ? count($archivedTools) : 0;
         return $toolStats;
     }
 

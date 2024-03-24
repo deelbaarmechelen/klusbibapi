@@ -14,11 +14,11 @@ use Api\Model\ToolType;
 abstract class SnipeitToolMapper
 {
 
-    const ACCESSORY_OFFSET = 100000;
-    const LOCATION_ID_UNKNOWN = 0;
-    const LOCATION_ID_ON_LOAN = 1;
-    const LOCATION_ID_IN_STOCK = 2;
-    const LOCATION_ID_REPAIR = 3;
+    public const ACCESSORY_OFFSET = 100000;
+    public const LOCATION_ID_UNKNOWN = 0;
+    public const LOCATION_ID_ON_LOAN = 1;
+    public const LOCATION_ID_IN_STOCK = 2;
+    public const LOCATION_ID_REPAIR = 3;
 
     static public function mapAssetToItem($asset) : ?InventoryItem  {
         $toolstate = self::mapAssetStateToToolState($asset);

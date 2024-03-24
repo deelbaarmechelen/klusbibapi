@@ -7,7 +7,7 @@ class UploadHandler
 	private $logger;
 	private $uploadFileName;
 
-    const UPLOAD_DIR = 'uploads/';
+    public const UPLOAD_DIR = 'uploads/';
 
     function __construct($logger = NULL) {
 		$this->logger = $logger;

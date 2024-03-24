@@ -47,7 +47,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static Builder overdue()
  * @method static Builder outOfSync ()
  *
- * @method static Builder where($arr)
+ * @method static Builder where(...$params)
  */
 class Contact extends Model
 {

@@ -137,9 +137,9 @@ class MembershipController
             }
             array_push($data, $membershipData);
         }
-        $this->logger->info(count($memberships) . ' membership(s) found!');
+        $this->logger->info((is_array($memberships) || $memberships instanceof \Countable ? count($memberships) : 0) . ' membership(s) found!');
         return $response->withJson($data)
-            ->withHeader('X-Total-Count', count($memberships));
+            ->withHeader('X-Total-Count', is_array($memberships) || $memberships instanceof \Countable ? count($memberships) : 0);
     }
 
     function update(RequestInterface $request, ResponseInterface $response, $args)

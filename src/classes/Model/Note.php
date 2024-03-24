@@ -24,7 +24,7 @@ class Note extends Model
 	static protected $fieldArray = ['id', 'created_by', 'contact_id', 'loan_id', 'inventory_item_id',
         'created_at', 'text', 'admin_only'
 	];
-	const UPDATED_AT = null;
+	public const UPDATED_AT = null;
     public $timestamps = true;
 
 	public function loan()

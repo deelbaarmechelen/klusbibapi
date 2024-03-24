@@ -3,7 +3,7 @@ namespace Api\Model;
 
 abstract class EmailState
 {
-	const CONFIRM_EMAIL = "CONFIRM_EMAIL";
-	const CONFIRMED = "CONFIRMED";
-	const BOUNCED = "BOUNCED";
+	public const CONFIRM_EMAIL = "CONFIRM_EMAIL";
+	public const CONFIRMED = "CONFIRMED";
+	public const BOUNCED = "BOUNCED";
 }

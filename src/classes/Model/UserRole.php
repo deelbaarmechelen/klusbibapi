@@ -3,7 +3,7 @@ namespace Api\Model;
 
 abstract class UserRole
 {
-    const ADMIN = "admin";
-	const MEMBER = "member";
-	const SUPPORTER = "supporter";
+    public const ADMIN = "admin";
+	public const MEMBER = "member";
+	public const SUPPORTER = "supporter";
 }

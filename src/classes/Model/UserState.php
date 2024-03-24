@@ -3,9 +3,9 @@ namespace Api\Model;
 
 abstract class UserState
 {
-    const CHECK_PAYMENT = "CHECK_PAYMENT";
-	const ACTIVE = "ACTIVE";
-	const DISABLED = "DISABLED";
-	const DELETED = "DELETED";
-	const EXPIRED = "EXPIRED";
+    public const CHECK_PAYMENT = "CHECK_PAYMENT";
+	public const ACTIVE = "ACTIVE";
+	public const DISABLED = "DISABLED";
+	public const DELETED = "DELETED";
+	public const EXPIRED = "EXPIRED";
 }

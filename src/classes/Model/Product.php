@@ -5,6 +5,6 @@ namespace Api\Model;
 
 class Product
 {
-    const ENROLMENT = 1;
-    const RENEWAL = 2;
+    public const ENROLMENT = 1;
+    public const RENEWAL = 2;
 }

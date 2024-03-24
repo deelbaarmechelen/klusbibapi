@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed $kb_expiration_date
  * 
  * @method static Builder any()
- * @method static Builder forOrder()
+ * @method static Builder forOrder($orderId)
  * @method static Builder forMembership()
  * @method static Builder forLoan()
  */
@@ -42,7 +42,7 @@ class Payment extends Model
      *
      * @var string
      */
-    const UPDATED_AT = null;
+    public const UPDATED_AT = null;
     
 //    protected $casts = [
 //        'payment_date'  => 'date:Y-m-d',

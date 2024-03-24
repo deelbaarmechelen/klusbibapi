@@ -3,19 +3,19 @@ namespace Api\Model;
 
 abstract class PaymentMode
 {
-	const UNKNOWN = "UNKNOWN";
-    const NONE = "NONE";
-    const CASH = "CASH";
-    const KDOBON = "KDOBON";
-    const LETS = "LETS";
-    const MBON = "MBON";
-    const MOLLIE = "MOLLIE";
-    const OVAM = "OVAM";
-    const OTHER = "OTHER";
-    const PAYCONIQ = "PAYCONIQ";
-    const SPONSORING = "SPONSORING";
-    const STROOM = "STROOM";
-    const TRANSFER = "TRANSFER";
+	public const UNKNOWN = "UNKNOWN";
+    public const NONE = "NONE";
+    public const CASH = "CASH";
+    public const KDOBON = "KDOBON";
+    public const LETS = "LETS";
+    public const MBON = "MBON";
+    public const MOLLIE = "MOLLIE";
+    public const OVAM = "OVAM";
+    public const OTHER = "OTHER";
+    public const PAYCONIQ = "PAYCONIQ";
+    public const SPONSORING = "SPONSORING";
+    public const STROOM = "STROOM";
+    public const TRANSFER = "TRANSFER";
 
     static function isValidPaymentMode($paymentMode) {
         return $paymentMode == PaymentMode::UNKNOWN

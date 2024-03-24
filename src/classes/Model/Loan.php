@@ -37,12 +37,12 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class Loan extends Model
 {
-	const STATUS_PENDING = "PENDING";
-	const STATUS_ACTIVE = "ACTIVE";
-	const STATUS_OVERDUE = "OVERDUE";
-	const STATUS_RESERVED = "RESERVED";
-	const STATUS_CANCELLED = "CANCELLED";
-	const STATUS_CLOSED = "CLOSED";
+	public const STATUS_PENDING = "PENDING";
+	public const STATUS_ACTIVE = "ACTIVE";
+	public const STATUS_OVERDUE = "OVERDUE";
+	public const STATUS_RESERVED = "RESERVED";
+	public const STATUS_CANCELLED = "CANCELLED";
+	public const STATUS_CLOSED = "CLOSED";
 
     protected $table = 'loan';
     //protected $primaryKey = "id";
@@ -57,7 +57,7 @@ class Loan extends Model
 	static protected $fieldArray = ['id', 'contact_id', 'created_by', 'status', 'datetime_out', 'datetime_in', 'reference', 'total_fee',
         'created_at_site', 'collect_from', 'created_at'
 	];
-    const UPDATED_AT = null;
+    public const UPDATED_AT = null;
     public $timestamps = true;
 
     // public static function boot()

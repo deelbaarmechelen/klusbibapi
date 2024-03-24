@@ -69,7 +69,7 @@ class PaymentController implements PaymentControllerInterface
             array_push($data, PaymentMapper::mapPaymentToArray($payment));
         }
         return $response->withJson($data)
-            ->withHeader('X-Total-Count', count($payments));
+            ->withHeader('X-Total-Count', is_array($payments) || $payments instanceof \Countable ? count($payments) : 0);
     }
 
     public function getByID($request, $response, $args) {

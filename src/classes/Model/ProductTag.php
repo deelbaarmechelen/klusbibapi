@@ -10,11 +10,11 @@ class ProductTag extends Model
     protected $primaryKey = "id";
     public $incrementing = false;
 
-    const CONSTRUCTION = 'Bouw';
-    const GARDEN = 'Tuin';
-    const GENERAL = 'Algemeen';
-    const TECHNICS = 'Techniek';
-    const WOOD = 'Schrijnwerk';
+    public const CONSTRUCTION = 'Bouw';
+    public const GARDEN = 'Tuin';
+    public const GENERAL = 'Algemeen';
+    public const TECHNICS = 'Techniek';
+    public const WOOD = 'Schrijnwerk';
 
     static public function construction() {
 	    return ProductTag::where('name', '=', self::CONSTRUCTION)->firstOrFail();

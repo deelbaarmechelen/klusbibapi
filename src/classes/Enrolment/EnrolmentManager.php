@@ -453,13 +453,13 @@ class EnrolmentManager
             ['kb_state', '=', PaymentState::OPEN]
         ])->get();
 
-        if (empty($payments) || count($payments) == 0) {
+        if (empty($payments) || (is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 0) {
             $message = "Unexpected confirmation, no payment found for membership " . $membershipId .
                 " and payment mode (" . $paymentMode . ")";
             $this->logger->warning($message);
             // note: no payment, so unable to send 'enrolment failed' notification
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-        } else if (count($payments) > 1) {
+        } else if ((is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) > 1) {
             $message = "Unable to process confirmation, more than 1 open payments found (first payment is ["
                 . \json_encode($payments[0]) . "] - second payment is [" . \json_encode($payments[1]) . "])";
             $this->logger->warning($message);
@@ -566,13 +566,13 @@ class EnrolmentManager
             ['kb_state', '=', PaymentState::OPEN]
         ])->get();
 
-        if (empty($payments) || count($payments) == 0) {
+        if (empty($payments) || (is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 0) {
             $message = "Unexpected decline, no payment found for membership " . $membershipId .
                 " and payment mode (" . $paymentMode . ")";
             $this->logger->warning($message);
             // note: no payment, so unable to send 'enrolment failed' notification
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-        } else if (count($payments) > 1) {
+        } else if ((is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) > 1) {
             $message = "Unable to process decline, more than 1 open payments found (first payment is ["
                 . \json_encode($payments[0]) . "] - second payment is [" . \json_encode($payments[1]) . "])";
             $this->logger->warning($message);
@@ -1258,7 +1258,7 @@ class EnrolmentManager
             ['kb_mode', '=', $paymentMode]
         ])->get();
 
-        if (empty($payments) || count($payments) == 0) {
+        if (empty($payments) || (is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 0) {
             $message = "Unexpected confirmation, no payment found for user " . $this->user->first_name .
                 " (" . $this->user->id . ") for payment mode (" . $paymentMode . ")";
             $this->logger->warning($message);
@@ -1267,7 +1267,7 @@ class EnrolmentManager
         } else {
             $this->logger->info("payments found: " . \json_encode($payments));
         }
-        if (count($payments) == 1) {
+        if ((is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 1) {
             $payment = $payments[0];
         } else {
             // more than 1 payment, search OPEN payment

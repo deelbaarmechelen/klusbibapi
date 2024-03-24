@@ -3,10 +3,10 @@ namespace Api\Model;
 
 abstract class ToolState
 {
-    const NEW = "NEW";
-    const DISPOSED = "DISPOSED";
-    const READY = "READY";
-    const RESERVED = "RESERVED";
-    const IN_USE = "IN_USE";
-    const MAINTENANCE = "MAINTENANCE";
+    public const NEW = "NEW";
+    public const DISPOSED = "DISPOSED";
+    public const READY = "READY";
+    public const RESERVED = "RESERVED";
+    public const IN_USE = "IN_USE";
+    public const MAINTENANCE = "MAINTENANCE";
 }

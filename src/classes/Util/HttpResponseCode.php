@@ -5,15 +5,15 @@ namespace Api\Util;
 
 class HttpResponseCode
 {
-    const OK = 200;
-    const CREATED = 201;
-    const NO_CONTENT = 204;
-    const ALREADY_REPORTED = 208;
-    const BAD_REQUEST = 400;
-    const UNAUTHORIZED = 401;
-    const FORBIDDEN = 403;
-    const NOT_FOUND = 404;
-    const CONFLICT = 409;
-    const INTERNAL_ERROR = 500;
-    const NOT_IMPLEMENTED = 501;
+    public const OK = 200;
+    public const CREATED = 201;
+    public const NO_CONTENT = 204;
+    public const ALREADY_REPORTED = 208;
+    public const BAD_REQUEST = 400;
+    public const UNAUTHORIZED = 401;
+    public const FORBIDDEN = 403;
+    public const NOT_FOUND = 404;
+    public const CONFLICT = 409;
+    public const INTERNAL_ERROR = 500;
+    public const NOT_IMPLEMENTED = 501;
 }

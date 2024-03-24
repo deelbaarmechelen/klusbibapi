@@ -17,7 +17,7 @@ class ItemMovement extends Model
     protected $table = 'item_movement';
     protected $primaryKey = "id";
 
-    const UPDATED_AT = null;
+    public const UPDATED_AT = null;
     public $timestamps = true;
 
     static protected $fieldArray = ['id', 'created_by', 'inventory_item_id',
