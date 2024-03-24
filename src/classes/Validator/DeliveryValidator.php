@@ -100,14 +100,7 @@ class DeliveryValidator
 		}
 		return $date;
 	}
-	static function toolExists($toolid, $logger) {
-		$toolCount = Tool::where('tool_id', $toolid)->count();
-		if ($toolCount == 0) {
-			return false;
-		}
-	
-		return true;
-	}
+
 	static private function isValidState($state) {
 	    if ($state == DeliveryState::REQUESTED
             || $state == DeliveryState::CANCELLED

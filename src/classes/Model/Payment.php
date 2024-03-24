@@ -28,7 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder forMembership()
  * @method static Builder forLoan()
  * 
- * @method static Payment? find($id)
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|null find($id, $columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection findOrFail($id, $columns = ['*'])
  * @method static Builder where(...$params)
  */
 

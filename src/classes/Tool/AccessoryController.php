@@ -4,6 +4,7 @@ namespace Api\Tool;
 
 use Api\Model\Accessory;
 use Api\ModelMapper\ToolMapper;
+use Api\Exception\NotFoundException;
 
 /**
  * Class AccessoryController

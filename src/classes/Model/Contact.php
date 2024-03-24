@@ -48,7 +48,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static Builder outOfSync ()
  *
  * @method static Builder where(...$params)
- * @method static Contact? find($id)
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|null find($id, $columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection findOrFail($id, $columns = ['*'])
  */
 class Contact extends Model
 {

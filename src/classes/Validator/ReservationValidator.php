@@ -29,7 +29,6 @@ class ReservationValidator
             array_push($errors, $message);
 			return false;
 		}
-//		if (!self::toolExists($reservation["tool_id"], $logger)) {
 		if (!$toolManager->toolExists($reservation["tool_id"])) {
             $message = "Inexistant tool " . $reservation["tool_id"];
             $logger->info($message);
@@ -77,14 +76,7 @@ class ReservationValidator
 		}
 		return $date;
 	}
-	static function toolExists($toolid, $logger) {
-		$toolCount = Tool::where('tool_id', $toolid)->count();
-		if ($toolCount == 0) {
-			return false;
-		}
-	
-		return true;
-	}
+
 	static private function isValidState($state) {
 	    if ($state == ReservationState::REQUESTED
             || $state == ReservationState::CONFIRMED

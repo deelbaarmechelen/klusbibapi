@@ -45,6 +45,8 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @method static Builder outOfSync($lastSyncDate)
  * @method static Builder archive()
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|null find($id, $columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection findOrFail($id, $columns = ['*'])
  */
 class InventoryItem extends Model
 {

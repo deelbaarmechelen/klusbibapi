@@ -84,12 +84,5 @@ class LendingValidator
 		}
 		return $date;
 	}
-	static function toolExists($toolid) {
-		$toolCount = Tool::where('tool_id', $toolid)->count();
-		if ($toolCount == 0) {
-			return false;
-		}
-	
-		return true;
-	}
+
 }

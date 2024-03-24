@@ -20,7 +20,9 @@ use Symfony\Component\Config\Definition\Builder\MergeBuilder;
  * @method static Builder withUser($user)
  * @method static Builder createdBetweenDates($startDate, $endDate)
  * 
- * @method static Membership? find($id)
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|null find($id, $columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection findOrFail($id, $columns = ['*'])
+ * @method static Builder where(...$params)
  */
 class Membership extends Model
 {

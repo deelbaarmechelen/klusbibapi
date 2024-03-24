@@ -4,6 +4,7 @@ namespace Api\Model;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @method static Builder inYear ($year)
@@ -22,7 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * Laravel/Eloquent methods
  * @method static Builder whereDate($column, $compare, $date)
- * @method static Lending? find($id)
+ * @method static Model|Collection|null find($id, $columns = ['*'])
+ * @method static Model|Collection findOrFail($id, $columns = ['*'])
  * @method static Builder where($arr)
  */
 class Lending extends Model

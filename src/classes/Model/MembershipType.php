@@ -21,7 +21,8 @@ use Api\Model\UserRole;
  * @property mixed $updated_at
  * 
  * @method static Builder where(...$params)
- * @method static MembershipType? find($id)
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|null find($id, $columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection findOrFail($id, $columns = ['*'])
  */
 class MembershipType extends Model
 {
