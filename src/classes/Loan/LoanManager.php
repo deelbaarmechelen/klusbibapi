@@ -34,8 +34,8 @@ class LoanManager
     private Inventory $inventory;
     private LoggerInterface $logger;
     private MailManager $mailManager;
-    private $lastSyncAttempt;
-    private $lastSyncedLoans;
+    private $lastSyncAttempt = null;
+    private $lastSyncedLoans = array();
 
     /**
      * LoanManager constructor.
@@ -45,8 +45,6 @@ class LoanManager
         $this->inventory = $inventory;
         $this->logger = $logger;
         $this->mailManager = $mailManager;
-        $this->lastSyncAttempt = null;
-        $this->lastSyncedLoans = array();
     }
 
     /**

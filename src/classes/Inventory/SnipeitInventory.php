@@ -58,7 +58,7 @@ class SnipeitInventory implements Inventory
     private $client;
     private $apiKey;
     private $logger;
-    private $sslCertificateVerification;
+    private $sslCertificateVerification = SSL_CERTIFICATE_VERIFICATION;
 
     /**
      * InventoryImpl constructor.
@@ -71,7 +71,6 @@ class SnipeitInventory implements Inventory
         $this->client = $client;
         $this->apiKey = $apikey;
         $this->logger = $logger;
-        $this->sslCertificateVerification = SSL_CERTIFICATE_VERIFICATION;
     }
 
     public function getTools($offset = 0, $limit=1000)

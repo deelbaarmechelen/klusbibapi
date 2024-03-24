@@ -25,8 +25,8 @@ class UserManager
     private Inventory $inventory;
     private LoggerInterface $logger;
     private MailManager $mailManager;
-    private $lastSyncAttempt;
-    private $lastSyncedUsers;
+    private $lastSyncAttempt = null;
+    private $lastSyncedUsers = array();
 
     /**
      * UserManager constructor.
@@ -36,8 +36,6 @@ class UserManager
         $this->inventory = $inventory;
         $this->logger = $logger;
         $this->mailManager = $mailManager;
-        $this->lastSyncAttempt = null;
-        $this->lastSyncedUsers = array();
     }
 
     // FIXME: catch Inventory exceptions to make it non blocking and avoid exposing internals to caller
