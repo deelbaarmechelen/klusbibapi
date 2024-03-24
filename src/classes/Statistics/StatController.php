@@ -396,6 +396,7 @@ class StatController
      */
     private function getAccessoryStats(): array
     {
+        $accessoryStats = [];
         $accessories = $this->inventory->getAccessories();
 
         $accessoryStats["total-count"] = isset($accessories) ? count($accessories) : 0;

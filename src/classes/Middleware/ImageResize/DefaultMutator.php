@@ -21,6 +21,8 @@ class DefaultMutator extends MutatorAbstract
 
     public function execute()
     {
+        $width = null;
+        $height = null;
         /* Fit or resize. */
         extract($this->options); // converts keys from options array into variables
         if (null !== $width && null !== $height) {

@@ -156,6 +156,8 @@ class UserController implements UserControllerInterface
             $sendNotification = FALSE;
             $sendEmailVerification = FALSE;
         }
+
+        $mailmgr = null;
         if ($this->isWebEnrolment($authorised, $data)) {
             $user->state = UserState::CHECK_PAYMENT;
             if (!isset($data["payment_mode"])) {

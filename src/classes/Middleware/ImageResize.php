@@ -103,6 +103,8 @@ class ImageResize
 
     public function allowed($parameters = [])
     {
+        $extension = null;
+        $size = null;
         extract($parameters);
         return $this->allowedExtension($extension) &&
                $this->allowedSize($size) &&

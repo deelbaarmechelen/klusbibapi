@@ -22,6 +22,9 @@ class ScaleAndCropMutator extends MutatorAbstract
 
     public function execute()
     {
+        $scale = null;
+        $width = null;
+        $height = null;
         extract($this->options);
 
         /* Scale with the given percentage... */

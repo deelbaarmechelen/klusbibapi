@@ -46,6 +46,7 @@ abstract class MutatorAbstract implements MutatorInterface
 
     public function parse($target)
     {
+        $extra = [];
         $pathinfo = pathinfo($target);
         if (preg_match(self::regexp(), $pathinfo["filename"], $matches)) {
             foreach ($matches as $key => $value) {

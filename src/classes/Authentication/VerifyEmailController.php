@@ -36,6 +36,7 @@ class VerifyEmailController
      *  412 if email is already confirmed/verified
      */
     public function verifyEmail($request, $response, $args) {
+        $data = [];
         // TODO: check who is allowed to request email verification
         // lookup email in contact table
         $body = $request->getParsedBody();
