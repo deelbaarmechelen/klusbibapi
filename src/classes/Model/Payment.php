@@ -36,6 +36,14 @@ class Payment extends Model
     static protected $fieldArray = ['id', 'contact_id', 'kb_state', 'kb_mode', 'kb_payment_timestamp', 'kb_order_id', 'psp_code',
         'amount', 'note', 'kb_expiration_date', 'membership_id', 'loan_id', 'created_at'
     ];
+
+    /**
+     * The name of the "updated at" column. -> set to null to disable
+     *
+     * @var string
+     */
+    const UPDATED_AT = null;
+    
 //    protected $casts = [
 //        'payment_date'  => 'date:Y-m-d',
 //        'expiration_date' => 'date:Y-m-d',
