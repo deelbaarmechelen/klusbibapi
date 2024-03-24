@@ -118,7 +118,7 @@ class MembershipController
         }
         $memberships = $query->orderBy($sortfield, $sortdir)->get();
         $memberships_page = array_slice($memberships->all(), ($page - 1) * $perPage, $perPage);
-        $data = array();
+        $data = [];
         foreach ($memberships_page as $membership) {
             $membershipData = MembershipMapper::mapMembershipToArray($membership);
 
@@ -157,7 +157,7 @@ class MembershipController
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         $data = $request->getParsedBody();
-        $errors = array();
+        $errors = [];
         if (empty($data) || !MembershipValidator::isValidMembershipData($data, $this->logger, $errors)) {
             $this->logger->info("errors=" . json_encode($errors));
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request

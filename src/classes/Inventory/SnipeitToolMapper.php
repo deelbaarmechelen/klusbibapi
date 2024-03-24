@@ -293,11 +293,11 @@ abstract class SnipeitToolMapper
         if (isset($asset->custom_fields) && isset($asset->custom_fields->group)
             && isset($asset->custom_fields->group->value)) {
             if (in_array(strtolower($asset->custom_fields->group->value),
-                array(ToolCategory::CONSTRUCTION,
-                    ToolCategory::GARDEN,
-                    ToolCategory::GENERAL,
-                    ToolCategory::TECHNICS,
-                    ToolCategory::WOOD)))
+                [ToolCategory::CONSTRUCTION, 
+                ToolCategory::GARDEN,
+                 ToolCategory::GENERAL,
+                  ToolCategory::TECHNICS, 
+                  ToolCategory::WOOD]))
                 return strtolower($asset->custom_fields->group->value);
         }
         $assetCategory = strtolower($asset->category->name);

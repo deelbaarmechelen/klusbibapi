@@ -6,7 +6,7 @@ use DateInterval;
 class DataUtil
 {
 	function getSampleReservations() {
-		$reservations = array();
+		$reservations = [];
 		$startdate = new DateTime();
 		$enddate = clone $startdate;
 		$enddate->add(new DateInterval('P7D'));
@@ -20,8 +20,8 @@ class DataUtil
 		// 	"darkorange":"#ff8c00","darkorchid":"#9932cc","darkred":"#8b0000","darksalmon":"#e9967a","darkseagreen":"#8fbc8f","darkslateblue":"#483d8b","darkslategray":"#2f4f4f","darkturquoise":"#00ced1",
 		// 	"darkviolet":"#9400d3"
 	
-		$reservations = array(
-				array(
+		$reservations = [
+				[
 						"id" => "tool1-reservation1",
 						"title" => "My Reservation",
 						"color" => "yellow",
@@ -30,8 +30,8 @@ class DataUtil
 						"draggable" => true,
 						"resizable" => true,
 						"actions" => "actions"
-				),
-				array(
+				],
+				[
 						"id" => "tool1-reservation2",
 						"title" => "My Second Reservation",
 						"color" => "red",
@@ -40,8 +40,8 @@ class DataUtil
 						"draggable" => true,
 						"resizable" => true,
 						"actions" => "actions"
-				)
-		);
+				]
+		];
 		return $reservations;
 	}
 	

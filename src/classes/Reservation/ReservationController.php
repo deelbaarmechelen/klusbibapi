@@ -63,7 +63,7 @@ class ReservationController implements ReservationControllerInterface
         $reservations = $this->loanManager->getAllReservations($query, isset($isOpen) && $isOpen == 'true', $sortfield, $sortdir);
         $reservations_page = array_slice($reservations->all(), ($page - 1) * $perPage, $perPage);
 
-        $data = array();
+        $data = [];
         foreach ($reservations_page as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
             $reservationData["username"] = $reservation->first_name . " " . $reservation->last_name;
@@ -110,10 +110,10 @@ class ReservationController implements ReservationControllerInterface
             Authorisation::checkAccessByToken($this->token,
                 ["reservations.all", "reservations.create", "reservations.create.owner", "reservations.create.owner.donation_only"]);
         } catch (ForbiddenException $e) {
-            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "no applicable allowed scope in token"));
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(["error" => "no applicable allowed scope in token"]);
         }
         $data = $request->getParsedBody();
-        $errors = array();
+        $errors = [];
         if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
@@ -177,7 +177,7 @@ class ReservationController implements ReservationControllerInterface
         }
         // TODO: if not admin, should be max startsAt + 7 days
         if (!$this->loanManager->createReservation($reservation)) {
-            return $response->withJson(array("result" => "failed", "message" => "Unable to store reservation"))
+            return $response->withJson(["result" => "failed", "message" => "Unable to store reservation"])
                 ->withStatus(HttpResponseCode::INTERNAL_ERROR);
         }
 
@@ -208,7 +208,7 @@ class ReservationController implements ReservationControllerInterface
         }
         $data = $request->getParsedBody();
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
-        $errors = array();
+        $errors = [];
         if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }

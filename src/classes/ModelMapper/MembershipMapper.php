@@ -23,11 +23,11 @@ class MembershipMapper
     static public function mapMembershipToArray($membership)
     {
         if (!isset($membership)) {
-            return array();
+            return [];
         }
         $subscription = MembershipType::find($membership->subscription_id);
 
-        $membershipArray = array("id" => $membership->id,
+        $membershipArray = ["id" => $membership->id,
             "status" => $membership->status,
             "start_at" => $membership->starts_at->format('Y-m-d'),
             "expires_at" => $membership->expires_at->format('Y-m-d'),
@@ -39,13 +39,13 @@ class MembershipMapper
             "created_at" => $membership->created_at,
             "updated_at" => $membership->updated_at,
             "deleted_at" => $membership->deleted_at
-        );
+        ];
         return $membershipArray;
     }
 
     static public function mapSubscriptionToArray(MembershipType $membershipType) {
         $nextSubscription = MembershipType::find($membershipType->next_subscription_id);
-        $membershipTypeArray = array("id" => $membershipType->id,
+        $membershipTypeArray = ["id" => $membershipType->id,
             "name" => $membershipType->name,
             "price" => $membershipType->price,
             "duration" => $membershipType->duration,
@@ -57,7 +57,7 @@ class MembershipMapper
             "next_subscription_price" => !$nextSubscription ? 'N/A' : $nextSubscription->price,
             "created_at" => $membershipType->created_at,
             "updated_at" => $membershipType->updated_at
-        );
+        ];
         return $membershipTypeArray;
     }
 

@@ -37,13 +37,13 @@ class ImageResize
     {
 
         /* Default options. */
-        $this->options = array(
-            "extensions" => array("jpg", "jpeg", "png", "gif"),
-            "cache" => "cache",
-            "sizes" => null,
-            "secret" => null,
+        $this->options = [
+            "extensions" => ["jpg", "jpeg", "png", "gif"], 
+            "cache" => "cache", 
+            "sizes" => null, 
+            "secret" => null, 
             "mutator" => new DefaultMutator()
-        );
+        ];
 
         if ($options) {
             $this->options = array_merge($this->options, (array)$options);
@@ -78,7 +78,7 @@ class ImageResize
         };
 
         $response = new \Slim\Psr7\Response();
-        if ($matched && $this->allowed(array("extension" => $extension, "size" => $size, "signature" => $signature))) {
+        if ($matched && $this->allowed(["extension" => $extension, "size" => $size, "signature" => $signature])) {
             $this->mutator->execute();
 
             /* When requested save image to cache folder. */
@@ -101,7 +101,7 @@ class ImageResize
         return $response; // continue
     }
 
-    public function allowed($parameters = array())
+    public function allowed($parameters = [])
     {
         extract($parameters);
         return $this->allowedExtension($extension) &&
@@ -128,10 +128,7 @@ class ImageResize
     public function validSignature($parameters = null)
     {
         /* Default arguments. */
-        $arguments = array(
-            "size" => null,
-            "signature" => null
-        );
+        $arguments = ["size" => null, "signature" => null];
 
         if ($parameters) {
             $arguments = array_merge($arguments, (array)$parameters);
@@ -141,10 +138,10 @@ class ImageResize
             /* No secret is set or passed. All shall pass. */
             return true;
         } else {
-            $signature = self::signature(array(
-                "size" => $arguments["size"],
+            $signature = self::signature([
+                "size" => $arguments["size"], 
                 "secret" => $this->options["secret"]
-            ));
+            ]);
 
             return $arguments["signature"] === $signature;
         }
@@ -153,12 +150,12 @@ class ImageResize
     public static function signature($parameters = null)
     {
         /* Default arguments. */
-        $arguments = array(
-            "size" => null,
-            "secret" => null,
-            "width" => null,
+        $arguments = [
+            "size" => null, 
+            "secret" => null, 
+            "width" => null, 
             "height" => null
-        );
+        ];
 
         if ($parameters) {
             $arguments = array_merge($arguments, (array)$parameters);

@@ -35,10 +35,10 @@ class MailManager {
         $this->twig = $twig;
         if (is_null($this->twig)) {
             $loader = new \Twig\Loader\FilesystemLoader(__DIR__ . '/../../../templates');
-            $this->twig = new \Twig\Environment($loader, array(
+            $this->twig = new \Twig\Environment($loader, [
                 'cache' => __DIR__ . '/../../../public/cache/twig_compilations',
-                'auto_reload' => true
-            ));
+                 'auto_reload' => true
+                ]);
         }
         if (is_null($logger)) {
             $this->logger = FALSE;
@@ -48,9 +48,10 @@ class MailManager {
     }
 
     public function sendErrorNotif($message, $context = "") {
-        $parameters = array(
+        $parameters = [
             'message' => $message,
-            'context' => $context);
+            'context' => $context
+        ];
         return $this->sendTwigTemplate(SUPPORT_NOTIF_EMAIL, 'error_notif', $parameters);
     }
 	public function sendEmailVerification($userId, $userName, $to, $token) {
@@ -65,11 +66,12 @@ class MailManager {
 				. "<a href='$link'>$link</a><br><br></p>"
 				. "<p>Herken je deze actie niet, dan kan je dit bericht veilig negeren<br></p>"
 				. "Groetjes,<br> Klusbib Team.</div>";
-        $parameters = array(
+        $parameters = [
             'userName' => $userName,
             'link' => $link,
             'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
+            'emailLink' => Settings::EMAIL_LINK
+        ];
         return $this->sendTwigTemplate($to, 'email_verification', $parameters);
 	}
 	public function sendPwdRecoveryMail($userId, $userName, $userEmail, $token, $redirectUrl = null) {
@@ -79,11 +81,12 @@ class MailManager {
             $link = PROJECT_HOME . "auth/reset/" . $userId;
         }
         $link .= "?token=" . $token . "&name=" . $userName . "&userId=" . $userId;
-        $parameters = array(
+        $parameters = [
             'userName' => $userName,
             'link' => $link,
             'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
+            'emailLink' => Settings::EMAIL_LINK
+        ];
         return $this->sendTwigTemplate($userEmail, 'password_recovery', $parameters);
 	}
 	public function sendReservationRequest($to, $user, $tool, $reservation, $notifyTeamAddress = null) {
@@ -94,13 +97,14 @@ class MailManager {
 			$toolCode = "met code " . $tool->code;
 		}
 		$toolCode .= " (Naam/beschrijving/merk/type: " . $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
-        $parameters = array(
-            'user' => $user,
-            'toolCode' => $toolCode,
-            'reservation' => $reservation,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $user, 
+            'toolCode' => $toolCode, 
+            'reservation' => $reservation, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
         if (isset($notifyTeamAddress)) {
             $this->sendTwigTemplate($notifyTeamAddress, 'reservation_request_notif', $parameters);
         }
@@ -114,13 +118,14 @@ class MailManager {
 			$toolCode = "met code " . $tool->code;
 		}
 		$toolCode .= " (Naam/beschrijving/merk/type: " . $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
-        $parameters = array(
-            'user' => $user,
-            'toolCode' => $toolCode,
-            'reservation' => $reservation,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $user, 
+            'toolCode' => $toolCode, 
+            'reservation' => $reservation, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
 
         if (isset($notifyTeamAddress)) {
             $this->sendTwigTemplate($notifyTeamAddress, 'reservation_confirm_notif', $parameters);
@@ -146,14 +151,15 @@ class MailManager {
 			$toolCode = "met code " . $tool->code;
 		}
 		$toolCode .= " (Naam/beschrijving/merk/type: " . $tool->name . "/" . $tool->description . "/" . $tool->brand . "/" . $tool->type . ")";
-        $parameters = array(
-            'user' => $user,
-            'toolCode' => $toolCode,
-            'reservation' => $reservation,
-            'cancelledBy' => $cancelledBy,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $user, 
+            'toolCode' => $toolCode, 
+            'reservation' => $reservation, 
+            'cancelledBy' => $cancelledBy, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
 
         if (isset($notifyTeamAddress)) {
             $this->sendTwigTemplate($notifyTeamAddress, 'reservation_cancel_notif', $parameters);
@@ -168,63 +174,67 @@ class MailManager {
 	}
 
     public function sendDeliveryRequest($to, $delivery, $user) {
-        $parameters = array(
-            'user' => $user,
-            'delivery' => $delivery,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $user, 
+            'delivery' => $delivery, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
 
         return $this->sendTwigTemplate($to, 'delivery_request', $parameters);
     }
     public function sendDeliveryRequestNotification($to, $delivery, $user) {
-        $parameters = array(
-            'user' => $user,
-            'delivery' => $delivery,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $user, 
+            'delivery' => $delivery, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
 
         return $this->sendTwigTemplate($to, 'delivery_request_notif', $parameters);
     }
 
     public function sendDeliveryUpdateNotification($to, $delivery, $reason) {
-        $parameters = array(
-            'user' => $delivery->user,
-            'delivery' => $delivery,
-            'reason' => $reason,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $delivery->user, 
+            'delivery' => $delivery, 
+            'reason' => $reason, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
 
         return $this->sendTwigTemplate($to, 'delivery_update_notif', $parameters);
     }
 
     public function sendDeliveryConfirmation($to, $delivery, $user) {
-        $parameters = array(
-            'user' => $user,
-            'delivery' => $delivery,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $user, 
+            'delivery' => $delivery, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
 
         return $this->sendTwigTemplate($to, 'delivery_confirm', $parameters);
     }
 
     public function sendDeliveryCancellation($to, $delivery, $user) {
-        $parameters = array(
-            'user' => $user,
-            'delivery' => $delivery,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK,
-            'inventoryLink' => Settings::INVENTORY_LINK);
+        $parameters = [
+            'user' => $user, 
+            'delivery' => $delivery, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'inventoryLink' => Settings::INVENTORY_LINK
+        ];
 
         return $this->sendTwigTemplate($to, 'delivery_cancel', $parameters);
     }
     // Send enrolment notification to Klusbib team
     public function sendEnrolmentNotification($userEmail, $newUser) {
-        $parameters = array(
-            'newUser' => $newUser);
+        $parameters = ['newUser' => $newUser];
         return $this->sendTwigTemplate($userEmail, 'enrolment_new_notif', $parameters);
     }
 
@@ -235,26 +245,29 @@ class MailManager {
      * @return bool
      */
     public function sendEnrolmentStroomNotification($userEmail, $newUser, $isRenewal = false) {
-        $parameters = array(
-            'newUser' => $newUser,
-            'isRenewal' => $isRenewal,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'facebookLink' => Settings::FACEBOOK_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
+        $parameters = [
+            'newUser' => $newUser, 
+            'isRenewal' => $isRenewal, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'facebookLink' => Settings::FACEBOOK_LINK, 
+            'emailLink' => Settings::EMAIL_LINK
+        ];
         return $this->sendTwigTemplate($userEmail, 'enrolment_stroom_notif', $parameters);
     }
     public function sendEnrolmentSuccessNotification($userEmail, $newUser, $isRenewal = false) {
-        $parameters = array(
-            'newUser' => $newUser,
-            'isRenewal' => $isRenewal);
+        $parameters = [
+            'newUser' => $newUser, 
+            'isRenewal' => $isRenewal
+        ];
         return $this->sendTwigTemplate($userEmail, 'enrolment_success_notif', $parameters);
     }
     public function sendEnrolmentFailedNotification($userEmail, $newUser, $payment, $isRenewal = false, $errorMsg = "") {
-        $parameters = array(
-            'newUser' => $newUser,
-            'payment' => $payment,
-            'isRenewal' => $isRenewal,
-            'message' => $errorMsg);
+        $parameters = [
+            'newUser' => $newUser, 
+            'payment' => $payment, 
+            'isRenewal' => $isRenewal, 
+            'message' => $errorMsg
+        ];
         return $this->sendTwigTemplate($userEmail, 'enrolment_failed_notif', $parameters);
     }
 
@@ -263,7 +276,7 @@ class MailManager {
         $resetPwd = !$user->hasLoggedAtLeastOnce();
         $dest = $user->email; // token destination
 
-        $scopes = array();
+        $scopes = [];
         if ($confirmEmail) {
             array_push($scopes, "auth.confirm");
         }
@@ -276,13 +289,14 @@ class MailManager {
 
         $enrolmentAmount = isset($membership) && isset($membership->subscription) ? $membership->subscription->price : Settings::ENROLMENT_AMOUNT;
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
-        $parameters = array(
+        $parameters = [
             'user' => $user,
             'paymentMode' => $paymentMode,
             'account' => Settings::ACCOUNT_NBR,
             'amount' => $enrolmentAmount,
             'membership_year' => $membership_year,
-            'confirmEmail' => $confirmEmail && !$resetPwd, // omit confirmEmail link if resetPwd link is included as email can be confirmed through pwd reset
+            'confirmEmail' => $confirmEmail && !$resetPwd,
+            // omit confirmEmail link if resetPwd link is included as email can be confirmed through pwd reset
             'confirmEmailLink' => $confirmEmailLink,
             'resetPwd' => $resetPwd,
             'resetPwdLink' => $resetPwdLink,
@@ -290,7 +304,8 @@ class MailManager {
             'enqueteLink' => Settings::ENQUETE_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
+            'emailLink' => Settings::EMAIL_LINK,
+        ];
         return $this->sendTwigTemplate($user->email, 'enrolment_confirmation', $parameters);
     }
 
@@ -301,22 +316,24 @@ class MailManager {
      * @throws EnrolmentException
      */
     public function sendEnrolmentPaymentConfirmation($user, $paymentMode) {
-        $parameters = array(
-            'user' => $user,
-            'paymentMode' => $paymentMode,
-            'reservationEmail' => Settings::RESERVATION_EMAIL,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'facebookLink' => Settings::FACEBOOK_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
+        $parameters = [
+            'user' => $user, 
+            'paymentMode' => $paymentMode, 
+            'reservationEmail' => Settings::RESERVATION_EMAIL, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'facebookLink' => Settings::FACEBOOK_LINK, 
+            'emailLink' => Settings::EMAIL_LINK
+        ];
         return $this->sendTwigTemplate($user->email, 'enrolment_confirm_payment', $parameters);
     }
 
     public function sendEnrolmentPaymentDecline($user, $paymentMode) {
-        $parameters = array(
-            'user' => $user,
-            'paymentMode' => $paymentMode,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
+        $parameters = [
+            'user' => $user, 
+            'paymentMode' => $paymentMode, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'emailLink' => Settings::EMAIL_LINK
+        ];
         return $this->sendTwigTemplate($user->email, 'enrolment_decline_payment', $parameters);
     }
 
@@ -335,37 +352,41 @@ class MailManager {
         $isCompany = $user->activeMembership->subscription->isCompanySubscription();
         $termsUpdateRequired = $user->accept_terms_date < Settings::getLatestTermsDate();
 
-        $parameters = array('user' => $user,
-            'isCompany' => $isCompany,
-            'profileLink' => $link,
-            'amount' => $renewalAmount,
-            'account' => Settings::ACCOUNT_NBR,
-            'currentDate' => date('Y-m-d'),
-            'emailLink' => Settings::EMAIL_LINK,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'facebookLink' => Settings::FACEBOOK_LINK,
-            'evaluationLink' => Settings::EVALUATION_LINK,
-            'membership_year' => $membership_year,
-            'daysToExpiry' => $daysToExpiry,
-            'termsUpdate' => $termsUpdateRequired,
-            'termsLink' => Settings::GEN_CONDITIONS_URL,
-            'privacyTermsLink' => Settings::PRIVACY_STATEMENT_URL);
+        $parameters = [
+            'user' => $user, 
+            'isCompany' => $isCompany, 
+            'profileLink' => $link, 
+            'amount' => $renewalAmount, 
+            'account' => Settings::ACCOUNT_NBR, 
+            'currentDate' => date('Y-m-d'), 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'facebookLink' => Settings::FACEBOOK_LINK, 
+            'evaluationLink' => Settings::EVALUATION_LINK, 
+            'membership_year' => $membership_year, 
+            'daysToExpiry' => $daysToExpiry, 
+            'termsUpdate' => $termsUpdateRequired, 
+            'termsLink' => Settings::GEN_CONDITIONS_URL, 
+            'privacyTermsLink' => Settings::PRIVACY_STATEMENT_URL
+        ];
         return $this->sendTwigTemplate($user->email, 'renewal', $parameters);
     }
     public function sendResumeEnrolmentReminder($user, $token) {
         echo "Resume enrolment reminder called with token $token\n";
         $membership_year = $this->getMembershipYear(date('Y-m-d'));
         $link = Settings::PROFILE_LINK . $user->id . "?token=" . $token;
-        $parameters = array('user' => $user,
-            'link' => $link,
-            'enrolmentAmount' => Settings::ENROLMENT_AMOUNT,
-            'account' => Settings::ACCOUNT_NBR,
-            'currentDate' => date('Y-m-d'),
-            'emailLink' => Settings::EMAIL_LINK,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'facebookLink' => Settings::FACEBOOK_LINK,
-            'evaluationLink' => Settings::EVALUATION_LINK,
-            'membership_year' => $membership_year);
+        $parameters = [
+            'user' => $user, 
+            'link' => $link, 
+            'enrolmentAmount' => Settings::ENROLMENT_AMOUNT, 
+            'account' => Settings::ACCOUNT_NBR, 
+            'currentDate' => date('Y-m-d'), 
+            'emailLink' => Settings::EMAIL_LINK, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'facebookLink' => Settings::FACEBOOK_LINK, 
+            'evaluationLink' => Settings::EVALUATION_LINK, 
+            'membership_year' => $membership_year
+        ];
         return $this->sendTwigTemplate($user->email, 'resume_enrolment_reminder', $parameters);
     }
     public function sendRenewalConfirmation($user, $paymentMode, $paymentCompleted = false) {
@@ -373,7 +394,7 @@ class MailManager {
         $resetPwd = !$user->hasLoggedAtLeastOnce();
         $dest = $user->email; // token destination
 
-        $scopes = array();
+        $scopes = [];
         if ($confirmEmail) {
             array_push($scopes, "auth.confirm");
         }
@@ -388,10 +409,11 @@ class MailManager {
         $renewalAmount = $user->activeMembership->subscription->nextMembershipType != null
             ? $user->activeMembership->subscription->nextMembershipType->price : $user->activeMembership->subscription->price;
         $isCompany = $user->activeMembership->subscription->isCompanySubscription();
-        $parameters = array(
+        $parameters = [
             'user' => $user,
             'isCompany' => $isCompany,
-            'confirmEmail' => $confirmEmail && !$resetPwd, // omit confirmEmail link if resetPwd link is included as email can be confirmed through pwd reset
+            'confirmEmail' => $confirmEmail && !$resetPwd,
+            // omit confirmEmail link if resetPwd link is included as email can be confirmed through pwd reset
             'confirmEmailLink' => $confirmEmailLink,
             'resetPwd' => $resetPwd,
             'resetPwdLink' => $resetPwdLink,
@@ -403,18 +425,21 @@ class MailManager {
             'enqueteLink' => Settings::ENQUETE_LINK,
             'webpageLink' => Settings::WEBPAGE_LINK,
             'facebookLink' => Settings::FACEBOOK_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
+            'emailLink' => Settings::EMAIL_LINK,
+        ];
         return $this->sendTwigTemplate($user->email, 'renewal_confirmation', $parameters);
     }
 
     public function sendUsersReport($active_users, $expired_users, $pending_users) {
 	    $reportEmail = 'info@klusbib.be';
 	    $current_day = date('Y-m-d');
-        $parameters = array('users_count' => count($active_users) + count($expired_users),
-            'active_users' => $active_users,
-            'expired_users' => $expired_users,
-            'pending_users' => $pending_users,
-            'current_day' => $current_day);
+        $parameters = [
+            'users_count' => count($active_users) + count($expired_users), 
+            'active_users' => $active_users, 
+            'expired_users' => $expired_users, 
+            'pending_users' => $pending_users, 
+            'current_day' => $current_day
+        ];
         return $this->sendTwigTemplate($reportEmail, 'users_report', $parameters);
     }
 
@@ -426,24 +451,26 @@ class MailManager {
     public function sendReservationsReport($requested_reservations, $confirmed_reservations) {
 	    $reportEmail = 'info@klusbib.be';
 	    $current_day = date('Y-m-d');
-        $parameters = array('reservations_count' => count($requested_reservations) + count($confirmed_reservations),
-            'requested_reservations' => $requested_reservations,
-            'confirmed_reservations' => $confirmed_reservations,
-            'current_day' => $current_day);
+        $parameters = [
+            'reservations_count' => count($requested_reservations) + count($confirmed_reservations), 
+            'requested_reservations' => $requested_reservations, 
+            'confirmed_reservations' => $confirmed_reservations, 
+            'current_day' => $current_day
+        ];
         return $this->sendTwigTemplate($reportEmail, 'reservations_report', $parameters);
     }
 
     public function sendNewGeneralConditionsNotification($user) {
-        $parameters = array(
-            'user' => $user,
-            'webpageLink' => Settings::WEBPAGE_LINK,
-            'facebookLink' => Settings::FACEBOOK_LINK,
-            'emailLink' => Settings::EMAIL_LINK);
-        $attachments = array('KlusbibAfspraken.pdf' => Settings::GEN_CONDITIONS_URL,
-            'PrivacyVerklaring.pdf' => Settings::PRIVACY_STATEMENT_URL);
+        $parameters = [
+            'user' => $user, 
+            'webpageLink' => Settings::WEBPAGE_LINK, 
+            'facebookLink' => Settings::FACEBOOK_LINK, 
+            'emailLink' => Settings::EMAIL_LINK
+        ];
+        $attachments = ['KlusbibAfspraken.pdf' => Settings::GEN_CONDITIONS_URL, 'PrivacyVerklaring.pdf' => Settings::PRIVACY_STATEMENT_URL];
         return $this->sendTwigTemplate($user->email, 'changed_general_conditions_notification', $parameters, $attachments);
     }
-	protected function sendTwigTemplate($to, $identifier, $parameters = array(), $attachments = array()) {
+	protected function sendTwigTemplate($to, $identifier, $parameters = [], $attachments = []) {
         if ($this->logger) {
             $this->logger->debug("Sending email with twig template to " . $to . " (identifier=" . $identifier . ")");
         }

@@ -52,7 +52,7 @@ class AccessoryController
         $accesories = $this->toolManager->getAllAccessories($showAll, $category, $sortfield, $sortdir, $page, $perPage);
         $accesories_page = array_slice($accesories->all(), ($page - 1) * $perPage, $perPage);
 
-        $data = array();
+        $data = [];
         foreach ($accesories_page as $accessory) {
             array_push($data, ToolMapper::mapAccessoryToArray($accessory));
         }

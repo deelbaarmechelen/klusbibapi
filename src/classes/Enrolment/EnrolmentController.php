@@ -287,7 +287,7 @@ class EnrolmentController
                 return $this->handleEnrolmentException($response, $e, $user);
             }
 
-            $data = array();
+            $data = [];
             $data["orderId"] = $orderId;
             $data["paymentMode"] = $payment->kb_mode;
             $data["paymentState"] = $payment->kb_state;
@@ -310,7 +310,7 @@ class EnrolmentController
                 } else {
                     $molliePayment = $enrolmentManager->enrolmentByMollie($orderId, $redirectUrl, $requestedPaymentMean, $request->getUri());
                 }
-                $data = array();
+                $data = [];
                 $data["checkoutUrl"] = $molliePayment->getCheckoutUrl();
                 $data["orderId"] = $orderId;
                 return $response->withStatus(HttpResponseCode::OK)
@@ -341,7 +341,7 @@ class EnrolmentController
                     $payment = $enrolmentManager->enrolmentByVolunteer($orderId, $paymentMode, $membershipType,
                         $startMembershipDate, $acceptTermsDate);
                 }
-                $data = array();
+                $data = [];
                 $data["orderId"] = $orderId;
                 $data["paymentMode"] = $payment->kb_mode;
                 $data["paymentState"] = $payment->kb_state;
@@ -364,7 +364,7 @@ class EnrolmentController
                 } else {
                     $payment = $enrolmentManager->enrolmentByStroom($orderId, $startMembershipDate, $acceptTermsDate);
                 }
-                $data = array();
+                $data = [];
                 $data["orderId"] = $orderId;
                 $data["paymentMode"] = $payment->kb_mode;
                 $data["paymentState"] = $payment->kb_state;
@@ -419,7 +419,7 @@ class EnrolmentController
             } else {
                 $enrolmentManager->confirmPayment($paymentMode, null, $renewal);
             }
-            $data = array();
+            $data = [];
             return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -475,7 +475,7 @@ class EnrolmentController
             } else {
                 $enrolmentManager->declinePayment($paymentMode, $user, null, $renewal);
             }
-            $data = array();
+            $data = [];
             return $response->withStatus(HttpResponseCode::OK)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -547,18 +547,18 @@ class EnrolmentController
     private function handleEnrolmentException($response, $e, $user)
     {
         if ($e->getCode() == EnrolmentException::ALREADY_ENROLLED) {
-            $response_data = array("message" => $e->getMessage(),
-                "membership_end_date" => $user->membership_end_date);
+            $response_data = ["message" => $e->getMessage(),
+             "membership_end_date" => $user->membership_end_date];
             return $response->withStatus(HttpResponseCode::ALREADY_REPORTED)// 208 = Already Reported
             ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         } else if ($e->getCode() == EnrolmentException::NOT_ENROLLED) {
-            $response_data = array("message" => "User not yet enrolled (state=" . $user->state . "), please proceed to enrolment");
+            $response_data = ["message" => "User not yet enrolled (state=" . $user->state . "), please proceed to enrolment"];
             return $response->withStatus(HttpResponseCode::FORBIDDEN)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         } else if ($e->getCode() == EnrolmentException::UNSUPPORTED_STATE) {
-            $response_data = array("message" => "Enrolment not supported for user state " . $user->state);
+            $response_data = ["message" => "Enrolment not supported for user state " . $user->state];
             return $response->withStatus(HttpResponseCode::NOT_IMPLEMENTED)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -569,12 +569,12 @@ class EnrolmentController
             || $e->getCode() == EnrolmentException::UNEXPECTED_PAYMENT_MODE
             || $e->getCode() == EnrolmentException::UNEXPECTED_MEMBERSHIP_TYPE
         ) {
-            $response_data = array("message" => "Invalid request: " . $e->getMessage());
+            $response_data = ["message" => "Invalid request: " . $e->getMessage()];
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         } else {
-            $response_data = array("message" => "Unexpected enrolment exception: " . $e->getMessage());
+            $response_data = ["message" => "Unexpected enrolment exception: " . $e->getMessage()];
             return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
                 ->withHeader("Content-Type", "application/json")
                 ->write(json_encode($response_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));

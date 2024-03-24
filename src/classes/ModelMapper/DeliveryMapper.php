@@ -9,12 +9,12 @@ class DeliveryMapper
     static public function mapDeliveryToArray($delivery)
     {
 
-        $items = array();
+        $items = [];
         $deliveryItems = DeliveryItem::where('delivery_id', $delivery->id)->get();
         foreach ($deliveryItems as $item) {
             array_push($items, DeliveryMapper::mapDeliveryItemToArray($item));
         }
-        $deliveryArray = array(
+        $deliveryArray = [
             "id" => $delivery->id,
             "reservation_id" => $delivery->reservation_id,
             "user_id" => $delivery->user_id,
@@ -29,14 +29,14 @@ class DeliveryMapper
             "price" => $delivery->price,
             "payment_id" => $delivery->payment_id,
             "items" => $items
-        );
+        ];
 
         return $deliveryArray;
     }
 
     static public function mapDeliveryItemToArray($item)
     {
-        return array(
+        return [
             "delivery_id" => $item->delivery_id,
             "inventory_item_id" => $item->inventory_item_id,
             "reservation_id" => $item->reservation_id,
@@ -72,6 +72,6 @@ class DeliveryMapper
 //            "brand" => $item->brand,
 //            "is_active" => $item->is_active,
 //            "show_on_website" => $item->show_on_website,
-        );
+        ];
     }
 }

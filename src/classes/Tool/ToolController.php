@@ -73,7 +73,7 @@ class ToolController implements ProductControllerInterface
     //    $tools = $builder->orderBy($sortfield, $sortdir)->get();
         $tools_page = array_slice($tools->all(), ($page - 1) * $perPage, $perPage);
 
-        $data = array();
+        $data = [];
         foreach ($tools_page as $tool) {
             array_push($data, ToolMapper::mapToolToArray($tool));
         }

@@ -7,7 +7,7 @@ class EventMapper
 {
     static public function mapEventToArray($event) {
 
-        $eventArray = array("event_id" => $event->event_id,
+        $eventArray = ["event_id" => $event->event_id,
             "name" => $event->name,
             "version" => $event->version,
             "amount" => $event->amount,
@@ -15,7 +15,7 @@ class EventMapper
             "data" => $event->data,
             "created_at" => $event->created_at,
             "updated_at" => $event->updated_at,
-        );
+        ];
 
         return $eventArray;
     }

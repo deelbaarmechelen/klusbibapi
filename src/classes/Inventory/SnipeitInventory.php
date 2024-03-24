@@ -298,9 +298,9 @@ class SnipeitInventory implements Inventory
         }
         $response = $this->get('users/' . $userExtId . '/assets');
         if ($response->total == 0){
-            return array();
+            return [];
         }
-        $tools = array();
+        $tools = [];
         foreach ($response->rows as $row) {
             array_push($tools, SnipeitToolMapper::mapAssetToTool($row));
 
@@ -311,7 +311,7 @@ class SnipeitInventory implements Inventory
 
     public function syncUser(Contact $user) : bool {
         $this->logger->info("syncing user $user->id with inventory");
-        $data = array();
+        $data = [];
         if (isset($user->first_name)) {
             $data['first_name'] = $user->first_name;
         }
@@ -383,7 +383,7 @@ class SnipeitInventory implements Inventory
      * @deprecated Use syncUser instead
      */
     public function updateUser(Contact $user) {
-        $data = array();
+        $data = [];
         if (isset($user->first_name)) {
             $data['first_name'] = $user->first_name;
         }
@@ -410,7 +410,7 @@ class SnipeitInventory implements Inventory
     }
     private function updateUserAvatar(Contact $user) {
         $this->logger->info("Updating user avatar: $user->id / $user->user_ext_id / $user->state; " . json_encode($user));
-        $data = array();
+        $data = [];
         $data['status'] = $user->state;
         if (!isset($user->user_ext_id)) {
             $this->logger->error("Unable to update avatar: no user ext id for user with id " . $user->id);
@@ -465,7 +465,7 @@ class SnipeitInventory implements Inventory
     public function getLendings($offset = 0, $limit=1000) {
         $checkouts = $this->getActivityCheckout($offset, $limit);
         $checkins = $this->getActivityCheckin($offset, $limit);
-        $lendings = array();
+        $lendings = [];
         foreach($checkouts as $checkout) {
             $lending = SnipeitActivityMapper::mapActivityToLending($checkout, $checkins);
             array_push($lendings, $lending);

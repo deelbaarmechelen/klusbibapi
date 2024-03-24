@@ -7,20 +7,21 @@ class ConsumerMapper
 {
 	static public function mapConsumerToArray($consumer) {
 
-		$consumerArray = array("consumer_id" => $consumer->consumer_id,
-			"category" => $consumer->category,
-			"brand" => $consumer->brand,
-			"reference" => $consumer->reference,
-			"description" => $consumer->description,
-			"unit" => $consumer->unit,
-			"price" => $consumer->price,
-			"stock" => $consumer->stock,
-			"low_stock" => $consumer->low_stock,
-			"packed_per" => $consumer->packed_per,
-			"provider" => $consumer->provider,
-			"comment" => $consumer->comment,
+		$consumerArray = [
+			"consumer_id" => $consumer->consumer_id, 
+			"category" => $consumer->category, 
+			"brand" => $consumer->brand, 
+			"reference" => $consumer->reference, 
+			"description" => $consumer->description, 
+			"unit" => $consumer->unit, 
+			"price" => $consumer->price, 
+			"stock" => $consumer->stock, 
+			"low_stock" => $consumer->low_stock, 
+			"packed_per" => $consumer->packed_per, 
+			"provider" => $consumer->provider, 
+			"comment" => $consumer->comment, 
 			"public" => $consumer->public
-		);
+		];
 		return $consumerArray;
 	}
 	static public function mapArrayToConsumer($data, $consumer) {

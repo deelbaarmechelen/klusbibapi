@@ -20,15 +20,15 @@ use Intervention\Image\ImageManagerStatic as Image;
 abstract class MutatorAbstract implements MutatorInterface
 {
 
-    protected $options = array("quality" => 90); /* Set defaults here. */
+    protected $options = ["quality" => 90]; /* Set defaults here. */
     public $image;
 
-    public function __construct($options = array())
+    public function __construct($options = [])
     {
         self::options($options);
     }
 
-    public function options($options = array())
+    public function options($options = [])
     {
         if ($options) {
             $this->options = array_merge($this->options, $options);

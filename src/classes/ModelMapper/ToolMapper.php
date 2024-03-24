@@ -13,7 +13,8 @@ class ToolMapper
 		} else {
 			$visible = false;
 		}
-		$toolArray = array("tool_id" => $tool->tool_id,
+		$toolArray = [
+			"tool_id" => $tool->tool_id,
 			"name" => $tool->name,
 			"description" => $tool->description,
 			"code" => $tool->code,
@@ -36,7 +37,7 @@ class ToolMapper
             "size" => isset($tool->inventoryItem) ? $tool->inventoryItem->size : null,
             "deliverable" => isset($tool->inventoryItem) ? $tool->inventoryItem->deliverable : null,
 			"reservations" => array()
-		);
+		];
 		return $toolArray;
 	}
 	static public function mapArrayToTool($data, $tool) {
@@ -108,9 +109,10 @@ class ToolMapper
         } else {
             $visible = false;
         }
-        $accessoryArray = array("accessory_id" => $toolAccessory->accessory_id,
-            "name" => $toolAccessory->name,
-            "visible" => $visible);
+        $accessoryArray = [
+			"accessory_id" => $toolAccessory->accessory_id, 
+			"name" => $toolAccessory->name, "visible" => $visible
+		];
 		return $accessoryArray;
    }
 }

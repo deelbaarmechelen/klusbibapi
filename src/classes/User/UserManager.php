@@ -26,7 +26,7 @@ class UserManager
     private LoggerInterface $logger;
     private MailManager $mailManager;
     private $lastSyncAttempt = null;
-    private $lastSyncedUsers = array();
+    private $lastSyncedUsers = [];
 
     /**
      * UserManager constructor.
@@ -258,7 +258,7 @@ class UserManager
             $nextAllowedAttempt = clone $this->lastSyncAttempt;
             $nextAllowedAttempt->add(new \DateInterval('PT5M')); // add 5 minutes
             if ($nextAllowedAttempt < $now) {
-                $this->lastSyncedUsers = array();
+                $this->lastSyncedUsers = [];
             }
         }
         return $this->lastSyncAttempt == null || !in_array($user->id, $this->lastSyncedUsers);

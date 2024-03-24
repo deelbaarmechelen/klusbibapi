@@ -68,7 +68,7 @@ class DeliveryController
         $deliveries = $querybuilder->orderBy($sortfield, $sortdir)->get();
         $deliveries_page = array_slice($deliveries->all(), ($page - 1) * $perPage, $perPage);
 
-        $data = array();
+        $data = [];
         foreach ($deliveries_page as $delivery) {
             $this->logger->info(\json_encode($delivery));
             $deliveryData = DeliveryMapper::mapDeliveryToArray($delivery);
@@ -96,20 +96,20 @@ class DeliveryController
             Authorisation::checkAccessByToken($this->token,
                 ["deliveries.all", "deliveries.create", "deliveries.create.owner", "deliveries.create.owner.donation_only"]);
         } catch (ForbiddenException $e) {
-            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(array("error" => "no applicable allowed scope in token"));
+            return $response->withStatus(HttpResponseCode::FORBIDDEN)->withJson(["error" => "no applicable allowed scope in token"]);
         }
         parse_str($request->getUri()->getQuery(), $data);
         if (empty($data)) { // check for content in body
             $data = $request->getParsedBody();
         }
 
-        $errors = array();
+        $errors = [];
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
         $user = Contact::find($data["user_id"]);
         if (null == $user) {
-            $errors = array("message" => "No user found with id " . $data["user_id"]);
+            $errors = ["message" => "No user found with id " . $data["user_id"]];
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors);
         }
         $this->logger->info("Delivery request is valid");
@@ -164,7 +164,7 @@ class DeliveryController
         }
 
         $delivery->save();
-        $items = isset($data["items"]) ? $data["items"] : array();
+        $items = isset($data["items"]) ? $data["items"] : [];
         if (is_array($items)) {
             foreach ($items as $rcvdItem) {
                 $item = InventoryItem::find($rcvdItem["tool_id"]);
@@ -233,7 +233,7 @@ class DeliveryController
             $data = $request->getParsedBody();
         }
         $this->logger->info("Klusbib PUT body: ". json_encode($data));
-        $errors = array();
+        $errors = [];
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors, false)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
@@ -345,13 +345,13 @@ class DeliveryController
         $delivery = \Api\Model\Delivery::find($args['deliveryid']);
         if (null == $delivery) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND)
-                ->withJson(array("message" => "Delivery not found!"));
+                ->withJson(["message" => "Delivery not found!"]);
         }
         $data = $request->getParsedBody();
         $item = InventoryItem::find($data['item_id']);
         if (null == $item) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                ->withJson(array("message" => "Missing item_id"));
+                ->withJson(["message" => "Missing item_id"]);
         }
         $this->addItemToDelivery($item, $delivery);
 
@@ -400,7 +400,7 @@ class DeliveryController
         $item = InventoryItem::find($args['itemid']);
         if (null == $item) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND)
-                ->withJson(array("message" => "Item not found!"));
+                ->withJson(["message" => "Item not found!"]);
         }
         $delivery->deliveryItems()->delete($args['itemid']);
         $delivery->save();

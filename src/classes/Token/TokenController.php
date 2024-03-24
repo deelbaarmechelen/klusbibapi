@@ -65,8 +65,7 @@ class TokenController implements TokenControllerInterface
                 });
                 $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
                 $token = Token::generateToken($scopes, $sub); // Token authorizing the update of terms
-                $responseData = array("reason" => "Terms need to be approved", "code" => "ERR_TERMS_NOT_ACCEPTED",
-                    "token" => $token);
+                $responseData = ["reason" => "Terms need to be approved", "code" => "ERR_TERMS_NOT_ACCEPTED", "token" => $token];
                 return $response->withStatus(HttpResponseCode::FORBIDDEN)
                     ->withJson($responseData);
             }
@@ -88,7 +87,7 @@ class TokenController implements TokenControllerInterface
             $contact->save();
         }
 
-        $data = array();
+        $data = [];
         $data["status"] = "ok";
         $data["token"] = $token;
 

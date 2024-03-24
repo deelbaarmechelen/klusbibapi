@@ -87,7 +87,7 @@ class LendingController implements LendingControllerInterface
         $lendings = $this->loanManager->getAllLendings($userId, $toolId, $toolType, $startDate, $active, 
             $sortfield, $sortdir);
         $lendings_page = array_slice($lendings->all(), ($page - 1) * $perPage, $perPage);
-        $data = array();
+        $data = [];
         foreach ($lendings_page as $lending) {
             $lendingData = LendingMapper::mapLendingToArray($lending);
             if ($expandTool) {
@@ -182,7 +182,7 @@ class LendingController implements LendingControllerInterface
             // creating an active lending -> make sure no other active lending exists for this tool
             if ($this->loanManager->hasActiveLending($lending->tool_id)) {
                 $this->logger->info('An active lending for tool with id ' . $lending->tool_id . ' already exists');
-                return $response->withJson(array('error' => array('status' => 400, 'message' => 'An active lending for that tool already exists')))
+                return $response->withJson(['error' => ['status' => 400, 'message' => 'An active lending for that tool already exists']])
                     ->withStatus(HttpResponseCode::BAD_REQUEST);
             }
         }

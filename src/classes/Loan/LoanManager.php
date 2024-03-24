@@ -35,7 +35,7 @@ class LoanManager
     private LoggerInterface $logger;
     private MailManager $mailManager;
     private $lastSyncAttempt = null;
-    private $lastSyncedLoans = array();
+    private $lastSyncedLoans = [];
 
     /**
      * LoanManager constructor.
@@ -142,7 +142,7 @@ class LoanManager
             ->select('loan.*', 'loan_row.inventory_item_id', 'contact.first_name', 'contact.last_name')
             ->whereNull('loan_row.checked_out_at');
         if ($isOpen) {
-            $queryBuilder = $queryBuilder->whereIn('loan.status', array(Loan::STATUS_PENDING, Loan::STATUS_RESERVED));
+            $queryBuilder = $queryBuilder->whereIn('loan.status', [Loan::STATUS_PENDING, Loan::STATUS_RESERVED]);
         }
         if (isset($query)) {
             $queryBuilder = $queryBuilder->where('contact.first_name', 'LIKE', '%'.$query.'%' )

@@ -5,22 +5,22 @@ class PaymentMapper
 {
 	static public function mapPaymentToArray($payment) {
 	
-		$paymentArray = array("payment_id" => $payment->id,
-            "contact_id" => $payment->contact_id,
-            "state" => $payment->kb_state,
-            "mode" => $payment->kb_mode,
-            "payment_date" => $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null,
-            "order_id" => $payment->kb_order_id,
-            "amount" => $payment->amount,
-            //"currency" => $payment->currency,
-            "note" => $payment->note,
-            //"payment_ext_id" => $payment->payment_ext_id,
-            "expiration_date" => $payment->kb_expiration_date ? $payment->kb_expiration_date->format('Y-m-d') : null,
-            "membership_id" => $payment->membership_id,
-            "loan_id" => $payment->loan_id,
-            "created_at" => $payment->created_at,
-            //"updated_at" => $payment->updated_at,
-		);
+		$paymentArray = [
+      "payment_id" => $payment->id,
+      "contact_id" => $payment->contact_id,
+      "state" => $payment->kb_state,
+      "mode" => $payment->kb_mode,
+      "payment_date" => $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null,
+      "order_id" => $payment->kb_order_id,
+      "amount" => $payment->amount,
+      //"currency" => $payment->currency,
+      "note" => $payment->note,
+      //"payment_ext_id" => $payment->payment_ext_id,
+      "expiration_date" => $payment->kb_expiration_date ? $payment->kb_expiration_date->format('Y-m-d') : null,
+      "membership_id" => $payment->membership_id,
+      "loan_id" => $payment->loan_id,
+      "created_at" => $payment->created_at,
+  ];
 		return $paymentArray;
 	}
 	static public function mapArrayToPayment($data, $payment, $isAdmin = false, $logger = null) {

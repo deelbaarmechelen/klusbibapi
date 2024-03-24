@@ -66,14 +66,14 @@ class StatController
                 // createFromFormat failed
                 $error = "Invalid stat-month value $statMonth, expected 'YYYY-MM'";
                 $this->logger->error($error);
-                $errors = array();
+                $errors = [];
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                                 ->withJson(array_push($errors, $error));;
             }
             if ($startThisMonth > $startCurrentMonth) {
                 $error = "Invalid stat-month value $statMonth: future dates not allowed";
                 $this->logger->error($error);
-                $errors = array();
+                $errors = [];
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                                 ->withJson(array_push($errors, $error));;
             }
@@ -118,7 +118,7 @@ class StatController
     }
 
     function createVersion1Stats($startLastMonth, $startThisMonth) : array {
-        $data = array();
+        $data = [];
 
         // user stats
         $userStats = $this->getUserStats($startLastMonth, $startThisMonth);
@@ -140,9 +140,9 @@ class StatController
     }
 
     function createVersion2Stats($startDate, $endDate) : array {
-        $data = array();
+        $data = [];
         // get #memberships by membership type started or renewed in stat period
-        $membershipStats = array();
+        $membershipStats = [];
         $membershipTypes = [
             MembershipType::regular(),
             MembershipType::renewal(),
@@ -158,7 +158,7 @@ class StatController
         $membershipStats["all"] = $this->getMembershipStats($startDate, $endDate);
 
         $paymentModes = PaymentMode::getPaymentModes();
-        $paymentModeStats = array();
+        $paymentModeStats = [];
         foreach ($paymentModes as $paymentMode) {
             $paymentModeStats[$paymentMode] = $this->getMembershipPaymentStats($startDate, $endDate, $paymentMode);
         }
@@ -183,7 +183,7 @@ class StatController
 
     function yearly(RequestInterface $request, ResponseInterface $response, $args) {
         $this->logger->info("Klusbib GET '/stats/yearly' route (with params " . $request->getUri()->getQuery() . ")");
-        $data = array();
+        $data = [];
         $now = new DateTimeImmutable('now');
 
         $year = $now->format('Y');
@@ -224,7 +224,7 @@ class StatController
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
         $newUsersCount = \Api\Model\Contact::members()->createdBetweenDates($startYear, $endYear)->count();
 
-        $userStats = array();
+        $userStats = [];
         $userStats["total-count"] = $activeCount + $expiredCount + $checkPaymentCount + $disabledCount;
         $userStats["active-count"] = $activeCount;
         $userStats["expired-count"] = $expiredCount;
@@ -251,7 +251,7 @@ class StatController
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
         $newUsersCurrMonthCount = \Api\Model\Contact::members()->whereDate('created_at', '>=', $startThisMonth)->count();
         $newUsersPrevMonthCount = \Api\Model\Contact::members()->createdBetweenDates($startLastMonth, $startThisMonth)->count();
-        $userStats = array();
+        $userStats = [];
         $userStats["total-count"] = $activeCount + $expiredCount;
         $userStats["active-count"] = $activeCount;
         $userStats["expired-count"] = $expiredCount;
@@ -265,7 +265,7 @@ class StatController
         $deletedCountStroom = \Api\Model\Contact::stroom()->where('state', \Api\Model\UserState::DELETED)->count();
         $newUsersCurrMonthCountStroom = \Api\Model\Contact::stroom()->members()->whereDate('created_at', '>=', $startThisMonth)->count();
         $newUsersPrevMonthCountStroom = \Api\Model\Contact::stroom()->createdBetweenDates($startLastMonth, $startThisMonth)->count();
-        $stroomStats = array();
+        $stroomStats = [];
         $stroomStats["total-count"] = $activeCountStroom + $expiredCountStroom;
         $stroomStats["active-count"] = $activeCountStroom;
         $stroomStats["expired-count"] = $expiredCountStroom;
@@ -292,7 +292,7 @@ class StatController
         $deletedCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DELETED)->count();
         $disabledCount = \Api\Model\Contact::where('state', \Api\Model\UserState::DISABLED)->count();
         $newUsersCount = \Api\Model\Contact::members()->createdBetweenDates($startPeriod, $endPeriod)->count();
-        $userStats = array();
+        $userStats = [];
         $userStats["total-count"] = $activeCount + $expiredCount + $checkPaymentCount + $disabledCount;
         $userStats["active-count"] = $activeCount;
         $userStats["expired-count"] = $expiredCount;
@@ -329,7 +329,7 @@ class StatController
                 ->createdBetweenDates($startDate, $endDate)->count();
         }
 
-        $membershipStats = array();
+        $membershipStats = [];
         $membershipStats["total-count"] = $activeCount + $pendingCount + $expiredCount + $cancelledCount;
         $membershipStats["active-count"] = $activeCount;
         $membershipStats["pending-count"] = $pendingCount;
@@ -353,7 +353,7 @@ class StatController
             $newCount = \Api\Model\Membership::where(["last_payment_mode" => $paymentMode])
                 ->createdBetweenDates($startDate, $endDate)->count();
         }
-        $membershipPaymenStats = array();
+        $membershipPaymenStats = [];
         $membershipPaymenStats["total-count"] = $totalCount;
         $membershipPaymenStats["new-count"] = $newCount;
         return $membershipPaymenStats;
@@ -366,7 +366,7 @@ class StatController
     {
         $tools = $this->inventory->getTools();
 
-        $toolStats = array();
+        $toolStats = [];
         $toolStats["total-count"] = isset($tools) ? count($tools) : 0;
         $newTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::NEW;

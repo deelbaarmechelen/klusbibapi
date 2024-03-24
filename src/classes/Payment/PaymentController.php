@@ -64,7 +64,7 @@ class PaymentController implements PaymentControllerInterface
         }
         $payments = $builder->orderBy($sortfield, $sortdir)->get();
         $payments_page = array_slice($payments->all(), ($page - 1) * $perPage, $perPage);
-        $data = array();
+        $data = [];
         foreach ($payments_page as $payment) {
             array_push($data, PaymentMapper::mapPaymentToArray($payment));
         }
@@ -77,7 +77,7 @@ class PaymentController implements PaymentControllerInterface
         $payment = \Api\Model\Payment::find($args['paymentId']);
         if (empty($payment)) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND) // Not found
-            ->withJson(array("message" => "No payment found for provided paymentId"));
+            ->withJson(["message" => "No payment found for provided paymentId"]);
         }
 //    $data = array();
 //    if ($payment->state == 'SUCCESS') {
@@ -152,7 +152,7 @@ class PaymentController implements PaymentControllerInterface
             };
             $this->mailManager->sendEnrolmentConfirmation($user, $paymentMode);
 
-            $data = array();
+            $data = [];
             $data["orderId"] = $orderId;
             $data["paymentMode"] = $payment->kb_mode;
             $data["paymentState"] = $payment->kb_state;
@@ -206,7 +206,7 @@ class PaymentController implements PaymentControllerInterface
                 $this->logger->info("Payment created with order id {$orderId} webhook {$protocol}://{$hostname}/payments/{$orderId} and redirectUrl {$redirectUrl}");
                 // store payment id -> needed?
 
-                $data = array();
+                $data = [];
                 $data["checkoutUrl"] = $payment->getCheckoutUrl();
                 $data["orderId"] = $orderId;
                 // FIXME: can we change this to 201? Impact on Mollie?
@@ -362,7 +362,7 @@ class PaymentController implements PaymentControllerInterface
         $payment = \Api\Model\Payment::find($args['paymentId']);
         if (empty($payment)) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND)
-            ->withJson(array("message" => "No payment found for provided paymentId"));
+            ->withJson(["message" => "No payment found for provided paymentId"]);
         }
         $payment->delete();
         return $response->withStatus(HttpResponseCode::OK);

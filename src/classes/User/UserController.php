@@ -79,7 +79,7 @@ class UserController implements UserControllerInterface
         }
         $users = $userQuery->orderBy($sortfield, $sortdir)->get();
         $users_page = array_slice($users->all(), ($page - 1) * $perPage, $perPage);
-        $data = array();
+        $data = [];
         foreach ($users_page as $user) {
             array_push($data, UserMapper::mapUserToArray($user));
         }
@@ -109,7 +109,7 @@ class UserController implements UserControllerInterface
         } catch (\Exception $ex) {
             $this->logger->error('Unexpected error on GET for user ' . $args['userid'] . ': ' . $ex->getMessage());
             return $response->withStatus(HttpResponseCode::INTERNAL_ERROR)
-                ->withJson(array('error' => $ex->getMessage()));
+                ->withJson(['error' => $ex->getMessage()]);
         }
         $userArray["reservations"] = $this->addUserReservations($user);
         //$userArray["deliveries"] = $this->addUserDeliveries($user);
@@ -129,7 +129,7 @@ class UserController implements UserControllerInterface
         $this->logger->info("Klusbib POST on '/users' route");
         $data = $request->getParsedBody();
         $this->logger->info("parsedbody=" . json_encode($data));
-        $errors = array();
+        $errors = [];
         if (empty($data)
             || !UserValidator::containsMandatoryData($data, $this->logger, $errors)
             || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
@@ -167,7 +167,7 @@ class UserController implements UserControllerInterface
             if (!isset($data["accept_terms"]) || $data["accept_terms"] !== true) {
                 $this->logger->warn('user ' . $data["firstname"] . ' ' . $data["lastname"] . ' did not accept terms (accept_terms=' . $data["accept_terms"] . ')');
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                    ->withJson(array('error' => array('status' => HttpResponseCode::BAD_REQUEST, 'message' => "user should accept terms")));
+                    ->withJson(['error' => ['status' => HttpResponseCode::BAD_REQUEST, 'message' => "user should accept terms"]]);
             } else {
                 // set date on which terms were accepted
                 // FIXME: should be moved to membership entity?
@@ -204,7 +204,7 @@ class UserController implements UserControllerInterface
                     // For users that already initiated a Mollie payment, wait at least 1 hour until mollie payment is expired
                     $userByEmail->delete();
                 } else {
-                    return $response->withJson(array('error' => array('status' => HttpResponseCode::CONFLICT, 'message' => 'A user with that email already exists')))
+                    return $response->withJson(['error' => ['status' => HttpResponseCode::CONFLICT, 'message' => 'A user with that email already exists']])
                         ->withStatus(HttpResponseCode::CONFLICT);
                 }
             } else {
@@ -221,7 +221,7 @@ class UserController implements UserControllerInterface
             // check user_id is numeric
             if (!is_numeric($data["user_id"])) {
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                    ->withJson(array('error' => array('status' => HttpResponseCode::BAD_REQUEST, 'message' => "user_id is not numeric")));
+                    ->withJson(['error' => ['status' => HttpResponseCode::BAD_REQUEST, 'message' => "user_id is not numeric"]]);
             }
         }
 //        if (!empty($data["membership_start_date"])) {
@@ -290,7 +290,7 @@ class UserController implements UserControllerInterface
         }
 
         $data = $request->getParsedBody();
-        $errors = array();
+        $errors = [];
         if (empty($data) || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
             $this->logger->info("errors=" . json_encode($errors));
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
@@ -402,18 +402,19 @@ class UserController implements UserControllerInterface
             $email = $queryParams['email'] ??  null;
             if (!isset($email)) {
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
-                    ->withJson(array('message' => "Missing email parameter"));
+                    ->withJson(['message' => "Missing email parameter"]);
             }
             $contact = Capsule::table('contact')->where('email', $email)->first();
             if (!isset($contact)) {
                 return $response->withStatus(HttpResponseCode::NOT_FOUND)
-                    ->withJson(array('message' => "Unknown email"));
+                    ->withJson(['message' => "Unknown email"]);
             }
 
-            return $response->withJson(array("user_id" => $contact->id,
-                "state" => $contact->state,
+            return $response->withJson([
+                "user_id" => $contact->id, 
+                "state" => $contact->state, 
                 "membership_end_date" => $contact->membership_end_date
-            ));
+            ]);
         }
         $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
         return $response->withStatus(HttpResponseCode::FORBIDDEN);
@@ -439,7 +440,7 @@ class UserController implements UserControllerInterface
      */
     private function addUserReservations($user)
     {
-        $reservationsArray = array();
+        $reservationsArray = [];
         $userReservations = $this->loanManager->getUserReservations($user->id);
         foreach ($userReservations as $reservation) {
             $reservationData = ReservationMapper::mapReservationToArray($reservation);
@@ -469,11 +470,11 @@ class UserController implements UserControllerInterface
     // }
     private function addUserProjects($user)
     {
-        $projectsArray = array();
+        $projectsArray = [];
         $this->logger->info(\json_encode($user->projects));
         foreach ($user->projects as $project) {
             $this->logger->info(\json_encode($project));
-            $projectData = array("id" => $project->id, "name" => $project->name);
+            $projectData = ["id" => $project->id, "name" => $project->name];
 
             //$projectData = ProjectMapper::mapDeliveryToArray($project);
             array_push($projectsArray, $projectData);

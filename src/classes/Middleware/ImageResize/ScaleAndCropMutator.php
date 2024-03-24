@@ -29,8 +29,8 @@ class ScaleAndCropMutator extends MutatorAbstract
         $scaled_height = round($scale / 100 * $this->image->height());
         $this->image->resize($scaled_width, $scaled_height);
 
-        $width = $width ? $width : $scaled_width;
-        $height = $height ? $height : $scaled_height;
+        $width = $width ?: $scaled_width;
+        $height = $height ?: $scaled_height;
 
         /* ... and crop. */
         $this->image->crop($width, $height);

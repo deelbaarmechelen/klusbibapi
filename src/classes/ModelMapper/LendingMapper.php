@@ -7,7 +7,8 @@ class LendingMapper
 {
     static public function mapLendingToArray($lending) {
 
-        $lendingArray = array("lending_id" => $lending->lending_id,
+        $lendingArray = [
+            "lending_id" => $lending->lending_id,
             "start_date" => $lending->start_date ? $lending->start_date->format('Y-m-d') : null,
             "due_date" => $lending->due_date ? $lending->due_date->format('Y-m-d'): null,
             "returned_date" => $lending->returned_date ? $lending->returned_date->format('Y-m-d'): null,
@@ -19,7 +20,7 @@ class LendingMapper
             "created_by" => $lending->created_by,
             "created_at" => $lending->created_at,
             "updated_at" => $lending->updated_at,
-        );
+        ];
 
         return $lendingArray;
     }

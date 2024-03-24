@@ -7,7 +7,8 @@ use Api\Model\Contact;
 class UserMapper
 {
 	static public function mapUserToArrayMinimal(Contact $contact) {
-		$userArray = array("user_id" => $contact->id,
+		$userArray = [
+			"user_id" => $contact->id,
             "user_ext_id" => $contact->user_ext_id,
             "state" => $contact->state,
             "firstname" => $contact->first_name,
@@ -15,40 +16,41 @@ class UserMapper
             "email" => $contact->email,
             "email_state" => $contact->email_state,
             "role" => $contact->role,
-        );
+		];
 		
 		return $userArray;
 	}
 	static public function mapUserToArray(Contact $contact) {
         $membership = Membership::find($contact->active_membership);
-		$userArray = array("user_id" => $contact->id,
-            "user_ext_id" => $contact->user_ext_id,
-            "state" => $contact->state,
-            //"state" => !$membership ? $contact->state : $membership->status,
-            "firstname" => $contact->first_name,
-            "lastname" => $contact->last_name,
-            "email" => $contact->email,
-            "email_state" => $contact->email_state,
-            "role" => $contact->role,
-            "membership_start_date" => $contact->membership_start_date,
-            //"membership_start_date" => !$membership ? $contact->membership_start_date : $membership->start_at,
-            "membership_end_date" => $contact->membership_end_date,
-            //"membership_end_date" => !$membership ? $contact->membership_end_date : $membership->expires_at,
-            "address" => $contact->address_line_1,
-            "postal_code" => $contact->address_line_4,
-            "city" => $contact->address_line_2,
-            "phone" => $contact->telephone,
-            "mobile" => $contact->telephone,
-            //"registration_number" => $contact->registration_number,
-            "payment_mode" => $contact->payment_mode,
-            "accept_terms_date" => !$contact->accept_terms_date ? null : $contact->accept_terms_date->format('Y-m-d'),
-            "last_sync_date" => $contact->last_sync_date,
-            "active_membership" => !$membership ? array() : MembershipMapper::mapMembershipToArray($membership),
-            "company" => $contact->company,
-            "comment" => $contact->comment,
-            "created_at" => $contact->created_at,
-            "updated_at" => $contact->updated_at,
-        );
+		$userArray = [
+      "user_id" => $contact->id,
+      "user_ext_id" => $contact->user_ext_id,
+      "state" => $contact->state,
+      //"state" => !$membership ? $contact->state : $membership->status,
+      "firstname" => $contact->first_name,
+      "lastname" => $contact->last_name,
+      "email" => $contact->email,
+      "email_state" => $contact->email_state,
+      "role" => $contact->role,
+      "membership_start_date" => $contact->membership_start_date,
+      //"membership_start_date" => !$membership ? $contact->membership_start_date : $membership->start_at,
+      "membership_end_date" => $contact->membership_end_date,
+      //"membership_end_date" => !$membership ? $contact->membership_end_date : $membership->expires_at,
+      "address" => $contact->address_line_1,
+      "postal_code" => $contact->address_line_4,
+      "city" => $contact->address_line_2,
+      "phone" => $contact->telephone,
+      "mobile" => $contact->telephone,
+      //"registration_number" => $contact->registration_number,
+      "payment_mode" => $contact->payment_mode,
+      "accept_terms_date" => !$contact->accept_terms_date ? null : $contact->accept_terms_date->format('Y-m-d'),
+      "last_sync_date" => $contact->last_sync_date,
+      "active_membership" => !$membership ? [] : MembershipMapper::mapMembershipToArray($membership),
+      "company" => $contact->company,
+      "comment" => $contact->comment,
+      "created_at" => $contact->created_at,
+      "updated_at" => $contact->updated_at,
+  ];
 		
 		return $userArray;
 	}
