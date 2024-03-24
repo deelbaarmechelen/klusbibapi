@@ -1,14 +1,4 @@
-parameters:
-    level: 1
-    paths:
-        - src
-    excludePaths:
-        analyse:
-            - public/index.php
-            - app
-            - vendor
-        analyseAndScan:
-            - db
-    bootstrapFiles:
-        - tests/bootstrap.php
+includes:
+	- phpstan.neon.dist
+	- phpstan-baseline.neon
             

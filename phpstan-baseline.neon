@@ -1,0 +1,51 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Variable \\$token in isset\\(\\) always exists and is not nullable\\.$#"
+			count: 2
+			path: src/classes/Authorisation.php
+
+		-
+			message: "#^Call to an undefined static method Illuminate\\\\Database\\\\Capsule\\\\Manager\\:\\:transaction\\(\\)\\.$#"
+			count: 4
+			path: src/classes/Enrolment/EnrolmentManager.php
+
+		-
+			message: "#^Variable \\$description might not be defined\\.$#"
+			count: 1
+			path: src/classes/Enrolment/EnrolmentManager.php
+
+		-
+			message: "#^Call to an undefined static method Illuminate\\\\Database\\\\Capsule\\\\Manager\\:\\:transaction\\(\\)\\.$#"
+			count: 3
+			path: src/classes/Loan/LoanManager.php
+
+		-
+			message: "#^Parameter \\$twig of method Api\\\\Mail\\\\MailManager\\:\\:__construct\\(\\) has invalid type Twig_Environment\\.$#"
+			count: 1
+			path: src/classes/Mail/MailManager.php
+
+		-
+			message: "#^Undefined variable\\: \\$extension$#"
+			count: 1
+			path: src/classes/Middleware/ImageResize.php
+
+		-
+			message: "#^Undefined variable\\: \\$signature$#"
+			count: 1
+			path: src/classes/Middleware/ImageResize.php
+
+		-
+			message: "#^Undefined variable\\: \\$size$#"
+			count: 1
+			path: src/classes/Middleware/ImageResize.php
+
+		-
+			message: "#^Access to an undefined static property static\\(Api\\\\Middleware\\\\ImageResize\\\\MutatorAbstract\\)\\:\\:\\$regexp\\.$#"
+			count: 1
+			path: src/classes/Middleware/ImageResize/MutatorAbstract.php
+
+		-
+			message: "#^Access to an undefined property Api\\\\Util\\\\ImageResizer\\:\\:\\$container\\.$#"
+			count: 1
+			path: src/classes/Util/ImageResizer.php
