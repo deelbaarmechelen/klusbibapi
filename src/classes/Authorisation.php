@@ -13,7 +13,7 @@ class Authorisation {
 
     static function checkAccessByToken($token, $allowedScopes) {
 		if (false === $token->hasScope($allowedScopes)) {
-			throw new ForbiddenException("Missing authorisation for scopes " . json_encode($allowedScopes), HttpResponseCode::FORBIDDEN);
+			throw new ForbiddenException("Missing authorisation for scopes " . json_encode($allowedScopes, JSON_THROW_ON_ERROR), HttpResponseCode::FORBIDDEN);
 		}
 	}
 	/**

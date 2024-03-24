@@ -43,10 +43,10 @@ class LendingController implements LendingControllerInterface
     }
 
     public function getAll(RequestInterface $request, ResponseInterface $response, $args) : ResponseInterface {
-        $this->logger->info("Klusbib GET '/lendings' route (params=" . \json_encode($request->getQueryParams()) . ")");
+        $this->logger->info("Klusbib GET '/lendings' route (params=" . \json_encode($request->getQueryParams(), JSON_THROW_ON_ERROR) . ")");
         $authorised = Authorisation::checkLendingAccess($this->token, "list");
         if (!$authorised) {
-            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
         parse_str($request->getUri()->getQuery(), $queryParams);
@@ -121,7 +121,7 @@ class LendingController implements LendingControllerInterface
 
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_READ);
         if (!$authorised) {
-            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
 
@@ -143,12 +143,12 @@ class LendingController implements LendingControllerInterface
 
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_CREATE);
         if (!$authorised) {
-            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
         $data = $request->getParsedBody();
         if (!LendingValidator::isValidLendingData($data, $this->logger, $this->toolManager)) {
-            $this->logger->warn("Rejecting invalid lending (data: " . json_encode($data));
+            $this->logger->warn("Rejecting invalid lending (data: " . json_encode($data, JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::BAD_REQUEST); // Bad request
         }
         $this->logger->info("Lending request is valid");
@@ -207,7 +207,7 @@ class LendingController implements LendingControllerInterface
 
         $authorised = Authorisation::checkLendingAccess($this->token, Authorisation::OPERATION_UPDATE);
         if (!$authorised) {
-            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::FORBIDDEN);
         }
         $lending = $this->loanManager->getLendingById($args['lendingId']);

@@ -183,7 +183,7 @@ class ReservationController implements ReservationControllerInterface
 
         if ($reservation->state === ReservationState::REQUESTED) {
             // Send notification to confirm the reservation
-            $this->logger->info('Sending notifications for new reservation ' . json_encode($reservation));
+            $this->logger->info('Sending notifications for new reservation ' . json_encode($reservation, JSON_THROW_ON_ERROR));
             $tool = $this->toolManager->getById($reservation["tool_id"]);
             $isSendSuccessful = $this->mailManager->sendReservationRequest($reservation->user->email,
                 $reservation->user, $tool, $reservation, RESERVATION_NOTIF_EMAIL);
@@ -207,7 +207,7 @@ class ReservationController implements ReservationControllerInterface
             return $response->withStatus(HttpResponseCode::NOT_FOUND);
         }
         $data = $request->getParsedBody();
-        $this->logger->info("Klusbib PUT body: ". json_encode($data));
+        $this->logger->info("Klusbib PUT body: ". json_encode($data, JSON_THROW_ON_ERROR));
         $errors = [];
         if (!ReservationValidator::isValidReservationData($data, $this->logger, $this->toolManager, $errors)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
@@ -292,7 +292,7 @@ class ReservationController implements ReservationControllerInterface
 
         if ($confirmation) {
             // Send notification to confirm the reservation
-            $this->logger->info('Sending notification for confirmation of reservation ' . json_encode($reservation));
+            $this->logger->info('Sending notification for confirmation of reservation ' . json_encode($reservation, JSON_THROW_ON_ERROR));
             $tool = $this->toolManager->getById($reservation->tool_id);
             $isSendSuccessful = $this->mailManager->sendReservationConfirmation($reservation->user->email,
                 $reservation->user, $tool, $reservation, RESERVATION_NOTIF_EMAIL);
@@ -305,7 +305,7 @@ class ReservationController implements ReservationControllerInterface
         }
         if ($cancellation) {
             // Send notification to confirm the reservation
-            $this->logger->info('Sending notification for cancel of reservation ' . json_encode($reservation));
+            $this->logger->info('Sending notification for cancel of reservation ' . json_encode($reservation, JSON_THROW_ON_ERROR));
             $tool = $this->toolManager->getById($reservation->tool_id);
             $isSendSuccessful = $this->mailManager->sendReservationCancellation($reservation->user->email,
                 $reservation->user, $tool, $reservation, RESERVATION_NOTIF_EMAIL, $this->token->decoded->sub);
@@ -344,7 +344,7 @@ class ReservationController implements ReservationControllerInterface
     private function updateDelivery($reservation) {
         // check reservation status
         if ($reservation->isCancelled() && $reservation->deliveryItem()->exists()) {
-            $reason = "Reservation is cancelled for item " . \json_encode($reservation->deliveryItem);
+            $reason = "Reservation is cancelled for item " . \json_encode($reservation->deliveryItem, JSON_THROW_ON_ERROR);
             $this->deleteDeliveryItem($reservation->deliveryItem, $reason);
         }
 

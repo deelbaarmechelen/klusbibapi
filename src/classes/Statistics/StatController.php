@@ -109,7 +109,7 @@ class StatController
             $stat->version = $statVersion;
             $stat->start_date = $startThisMonth->format('Y-m-01');
         }
-        $stat->stats = \json_encode($data);
+        $stat->stats = \json_encode($data, JSON_THROW_ON_ERROR);
         // update end_date to current date if month end not reached yet
         $now = new DateTimeImmutable('now');
         $stat->end_date = $now > $endStat ? $startThisMonth->format('Y-m-t') : $now->format('Y-m-d');
@@ -200,7 +200,7 @@ class StatController
             'name' => $year,
             'version' => 1
         ]);
-        $stat->stats = \json_encode($data);
+        $stat->stats = \json_encode($data, JSON_THROW_ON_ERROR);
         $stat->start_date = $now->format('Y-01-01');
         $stat->end_date = $now->format('Y-12-31');
         $stat->save();
@@ -371,23 +371,23 @@ class StatController
         $newTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::NEW;
         });
-        $toolStats["new-count"] = is_array($newTools) || $newTools instanceof \Countable ? count($newTools) : 0;
+        $toolStats["new-count"] = is_countable($newTools) ? count($newTools) : 0;
         $availableTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::READY;
         });
-        $toolStats["available-count"] = is_array($availableTools) || $availableTools instanceof \Countable ? count($availableTools) : 0;
+        $toolStats["available-count"] = is_countable($availableTools) ? count($availableTools) : 0;
         $deployedTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::IN_USE;
         });
-        $toolStats["deployed-count"] = is_array($deployedTools) || $deployedTools instanceof \Countable ? count($deployedTools) : 0;
+        $toolStats["deployed-count"] = is_countable($deployedTools) ? count($deployedTools) : 0;
         $maintenanceTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::MAINTENANCE;
         });
-        $toolStats["maintenance-count"] = is_array($maintenanceTools) || $maintenanceTools instanceof \Countable ? count($maintenanceTools) : 0;
+        $toolStats["maintenance-count"] = is_countable($maintenanceTools) ? count($maintenanceTools) : 0;
         $archivedTools = $tools->filter(function ($value, $key) {
             return $value->state === ToolState::DISPOSED;
         });
-        $toolStats["archived-count"] = is_array($archivedTools) || $archivedTools instanceof \Countable ? count($archivedTools) : 0;
+        $toolStats["archived-count"] = is_countable($archivedTools) ? count($archivedTools) : 0;
         return $toolStats;
     }
 

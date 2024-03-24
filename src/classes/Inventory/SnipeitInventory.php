@@ -119,7 +119,7 @@ class SnipeitInventory implements Inventory
     {
         $asset = $this->get('hardware/' . $id);
         if (isset($asset) && isset($asset->status) && $asset->status == "error") {
-            $errmsg = $asset->messages ?? \json_encode($asset);
+            $errmsg = $asset->messages ?? \json_encode($asset, JSON_THROW_ON_ERROR);
             $this->logger->error("Error getting tool with id $id from inventory: $errmsg");
             return null;
         }
@@ -336,7 +336,7 @@ class SnipeitInventory implements Inventory
                 }
                 $message = "sync of user $user->id failed (delete)";
                 if (isset($response)) {
-                    $message .= ": response " . \json_encode($response);
+                    $message .= ": response " . \json_encode($response, JSON_THROW_ON_ERROR);
                 }
                 throw new InventoryException($message);
             }
@@ -357,7 +357,7 @@ class SnipeitInventory implements Inventory
                 }
                 $message = "sync of user $user->id failed (put)";
                 if (isset($response)) {
-                    $message .= ": response " . \json_encode($response);
+                    $message .= ": response " . \json_encode($response, JSON_THROW_ON_ERROR);
                 }
                 throw new InventoryException($message);
             } else {
@@ -370,7 +370,7 @@ class SnipeitInventory implements Inventory
                 }
                 $message = "sync of user $user->id failed (post)";
                 if (isset($inventoryUser)) {
-                    $message .= ": response " . \json_encode($inventoryUser);
+                    $message .= ": response " . \json_encode($inventoryUser, JSON_THROW_ON_ERROR);
                 }
                 throw new InventoryException($message);
             }
@@ -409,7 +409,7 @@ class SnipeitInventory implements Inventory
         return $this->updateUserAvatar($user);
     }
     private function updateUserAvatar(Contact $user) {
-        $this->logger->info("Updating user avatar: $user->id / $user->user_ext_id / $user->state; " . json_encode($user));
+        $this->logger->info("Updating user avatar: $user->id / $user->user_ext_id / $user->state; " . json_encode($user, JSON_THROW_ON_ERROR));
         $data = [];
         $data['status'] = $user->state;
         if (!isset($user->user_ext_id)) {
@@ -485,9 +485,9 @@ class SnipeitInventory implements Inventory
             return $response->payload;
         } else {
             $ex = new \RuntimeException('Inventory request to create user failed: status="' . $response->status
-                . '"; messages=' . json_encode($response->messages));
+                . '"; messages=' . json_encode($response->messages, JSON_THROW_ON_ERROR));
             $this->logger->error('HTTP response ok, but declined by inventory. Do you have a syntax error? '
-                . '(status=' . $response->status . ';messages=' . json_encode($response->messages) . ')');
+                . '(status=' . $response->status . ';messages=' . json_encode($response->messages, JSON_THROW_ON_ERROR) . ')');
             throw $ex;
         }
     }
@@ -515,7 +515,7 @@ class SnipeitInventory implements Inventory
         if (isset($data)) {
             $options[RequestOptions::JSON] = $data;
         }
-        $this->logger->info("Inventory request: $method; $target; " . json_encode($data));
+        $this->logger->info("Inventory request: $method; $target; " . json_encode($data, JSON_THROW_ON_ERROR));
         try {
             $time_start = microtime(true);
 

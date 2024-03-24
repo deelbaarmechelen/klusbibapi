@@ -40,7 +40,7 @@ class VerifyEmailController
         // TODO: check who is allowed to request email verification
         // lookup email in contact table
         $body = $request->getParsedBody();
-        $this->logger->info("parsedbody=" . json_encode($body));
+        $this->logger->info("parsedbody=" . json_encode($body, JSON_THROW_ON_ERROR));
         $email = $body["email"];
         $this->logger->debug("email=" . $email);
         $user = Capsule::table('contact')->where('email', $email)->first();
@@ -92,7 +92,7 @@ class VerifyEmailController
         $decoded = $request->getAttribute("token"); // is decoded token from jwt
 
         // Check token
-        $this->logger->debug("decoded token=" . json_encode($decoded));
+        $this->logger->debug("decoded token=" . json_encode($decoded, JSON_THROW_ON_ERROR));
         $token = new Token();
         $token->hydrate($decoded);
         if ($args["userId"] != $token->getSub()) {

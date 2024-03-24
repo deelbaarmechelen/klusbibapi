@@ -29,7 +29,7 @@ class PasswordResetController
         $this->logger->info("Klusbib POST '/auth/reset' route");
         // lookup email in users table
         $body = $request->getParsedBody();
-        $this->logger->info("parsedbody=" . json_encode($body));
+        $this->logger->info("parsedbody=" . json_encode($body, JSON_THROW_ON_ERROR));
         $email = $body["email"];
         $this->logger->debug("email=" . $email);
         $user = Capsule::table('contact')->where('email', $email)->first();
@@ -49,7 +49,7 @@ class PasswordResetController
         $scopes = array_filter($requested_scopes, function ($needle) {
             return in_array($needle, Token::resetPwdScopes());
         });
-        $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " .  json_encode($sub));
+        $this->logger->info("Generating token with scopes " . json_encode($scopes, JSON_THROW_ON_ERROR) . " and sub " .  json_encode($sub, JSON_THROW_ON_ERROR));
         $token = Token::generateToken($scopes, $sub);
 
         // generate email

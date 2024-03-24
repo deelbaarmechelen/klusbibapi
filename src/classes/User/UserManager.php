@@ -59,7 +59,7 @@ class UserManager
             //       if update_at is null && last_sync_date is null -> sync create (POST request)
             //       if status is deleted && last_sync_date < updated_at -> sync delete (DELETE request)
             if ($sync || $this->syncRequired($user)) {
-                $this->logger->debug("UserManager.getById: Found user with ID $id and sync with inventory: " . json_encode($user));
+                $this->logger->debug("UserManager.getById: Found user with ID $id and sync with inventory: " . json_encode($user, JSON_THROW_ON_ERROR));
                 // TODO: replace code below by simple syncUser call (which already contains check on existance)
                 $this->syncUser($user);
                 /*if (isset($user->user_ext_id)) {
@@ -123,7 +123,7 @@ class UserManager
      * @param $stateUpdated true if user state has been modified
      */
     function update(Contact $user, $firstnameUpdated = true, $lastnameUpdate = true, $emailUpdated = true, $stateUpdated = true) {
-        $this->logger->debug("Update user: " . json_encode($user));
+        $this->logger->debug("Update user: " . json_encode($user, JSON_THROW_ON_ERROR));
         if ($firstnameUpdated || $lastnameUpdate || $emailUpdated || $stateUpdated) {
             $this->updateInventory($user);
         }
@@ -148,7 +148,7 @@ class UserManager
      * @return bool
      */
     protected function inventoryUpToDate($user, $inventoryUser) {
-        $this->logger->debug("Comparing users (model<->inventory):" . json_encode($user) . " - " . json_encode($inventoryUser));
+        $this->logger->debug("Comparing users (model<->inventory):" . json_encode($user, JSON_THROW_ON_ERROR) . " - " . json_encode($inventoryUser, JSON_THROW_ON_ERROR));
         if ($user->first_name != $inventoryUser->first_name
         || $user->last_name != $inventoryUser->last_name
         || $user->email != $inventoryUser->email
@@ -163,7 +163,7 @@ class UserManager
         return true;
     }
     protected function addToInventory($user) {
-        $this->logger->debug("Add user to inventory: " . json_encode($user));
+        $this->logger->debug("Add user to inventory: " . json_encode($user, JSON_THROW_ON_ERROR));
         $inventoryUser = null;
         try {
             if (!$this->inventory->userExists($user)) {
@@ -184,12 +184,12 @@ class UserManager
                 $this->updateInventory($user); // update user_ext_id
             }
 
-            $this->logger->debug("User added to inventory: " . json_encode($user));
+            $this->logger->debug("User added to inventory: " . json_encode($user, JSON_THROW_ON_ERROR));
 //        $user->user_ext_id = $inventoryUser->user_ext_id;
 //        $user->save();
         } catch (\Exception $ex) {
             $this->logger->error('Error adding user ' . $user->id . ' to inventory: ' . $ex->getMessage());
-            $context = "UserManager::addToInventory; user=" . \json_encode($user);
+            $context = "UserManager::addToInventory; user=" . \json_encode($user, JSON_THROW_ON_ERROR);
             $this->mailManager->sendErrorNotif($ex->getMessage(), $context);
             return false;
         }
@@ -202,7 +202,7 @@ class UserManager
      * @return true if inventory update was successful
      */
     protected function updateInventory($user) : bool {
-        $this->logger->debug("Inventory update requested for user " . json_encode($user));
+        $this->logger->debug("Inventory update requested for user " . json_encode($user, JSON_THROW_ON_ERROR));
         try {
             $result = $this->syncUser($user);
             if ($result == true) {
@@ -212,7 +212,7 @@ class UserManager
             return $result;
         } catch (\Exception $ex) {
             $this->logger->error('Error updating user ' . $user->id . ' to inventory: ' . $ex->getMessage());
-            $context = "UserManager::updateInventory; user=" . \json_encode($user);
+            $context = "UserManager::updateInventory; user=" . \json_encode($user, JSON_THROW_ON_ERROR);
             $this->mailManager->sendErrorNotif($ex->getMessage(), $context);
             return false;
         }

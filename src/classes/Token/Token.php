@@ -11,7 +11,7 @@ class Token
 	public function hydrate($decoded)
 	{
 	    if (is_array($decoded)) {
-	        $decoded = json_decode(json_encode($decoded), FALSE);
+	        $decoded = json_decode(json_encode($decoded, JSON_THROW_ON_ERROR), FALSE, 512, JSON_THROW_ON_ERROR);
         }
 		$this->decoded = $decoded;
 	}
@@ -64,7 +64,7 @@ class Token
 		$token = new Token();
         $payload = Token::generatePayload($scopes, $sub, $future, $dest);
 		// convert $payload from array to object and add to token object
-		$token->hydrate(json_decode(json_encode($payload), false, 512, JSON_BIGINT_AS_STRING));
+		$token->hydrate(json_decode(json_encode($payload, JSON_THROW_ON_ERROR), false, 512, JSON_BIGINT_AS_STRING));
 		return $token;
 	}
 	

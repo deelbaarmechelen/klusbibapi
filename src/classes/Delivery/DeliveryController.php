@@ -70,7 +70,7 @@ class DeliveryController
 
         $data = [];
         foreach ($deliveries_page as $delivery) {
-            $this->logger->info(\json_encode($delivery));
+            $this->logger->info(\json_encode($delivery, JSON_THROW_ON_ERROR));
             $deliveryData = DeliveryMapper::mapDeliveryToArray($delivery);
             array_push($data, $deliveryData);
         }
@@ -169,37 +169,37 @@ class DeliveryController
             foreach ($items as $rcvdItem) {
                 $item = InventoryItem::find($rcvdItem["tool_id"]);
                 if (null != $item) {
-                    $this->logger->info ("Adding Item to delivery: " . \json_encode($item) . "\n\n");
+                    $this->logger->info ("Adding Item to delivery: " . \json_encode($item, JSON_THROW_ON_ERROR) . "\n\n");
                     $deliveryItem = new DeliveryItem();
                     $deliveryItem->inventory_item_id = $item->id;
                     $delivery->deliveryItems()->save($deliveryItem);
                     $item->deliveryItems()->save($deliveryItem);
 
                     if (isset($rcvdItem["reservation_id"])) {
-                        $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem) . "\n\n");
+                        $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem, JSON_THROW_ON_ERROR) . "\n\n");
                         $reservation = Reservation::find($rcvdItem["reservation_id"]);
                         if ($reservation !== null) {
-                            $this->logger->info ("Reservation found: " . \json_encode($reservation) . "\n\n");
+                            $this->logger->info ("Reservation found: " . \json_encode($reservation, JSON_THROW_ON_ERROR) . "\n\n");
                             $reservation->deliveryItem()->save($deliveryItem);
                         }
                     }
 
                     if (isset($rcvdItem["lending_id"])) {
-                        $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem) . "\n\n");
+                        $this->logger->info ("Delivery Item: " . \json_encode($deliveryItem, JSON_THROW_ON_ERROR) . "\n\n");
                         $lending = Lending::find($rcvdItem["lending_id"]);
                         if ($lending !== null) {
-                            $this->logger->info ("Lending found: " . \json_encode($lending) . "\n\n");
+                            $this->logger->info ("Lending found: " . \json_encode($lending, JSON_THROW_ON_ERROR) . "\n\n");
                             $lending->deliveryItem()->save($deliveryItem);
                         }
                     }
                 } else {
-                    $this->logger->warn("No inventory item found for item " . \json_encode($rcvdItem));
+                    $this->logger->warn("No inventory item found for item " . \json_encode($rcvdItem, JSON_THROW_ON_ERROR));
                 }
             }
         }
 
         if ($delivery->state === DeliveryState::REQUESTED) {
-            $this->logger->info("Sending delivery request notification to " . DELIVERY_NOTIF_EMAIL . " (delivery: " . \json_encode($delivery) . ")");
+            $this->logger->info("Sending delivery request notification to " . DELIVERY_NOTIF_EMAIL . " (delivery: " . \json_encode($delivery, JSON_THROW_ON_ERROR) . ")");
             $isSendSuccessful = $this->mailManager->sendDeliveryRequestNotification(DELIVERY_NOTIF_EMAIL, $delivery, $user);
             if ($isSendSuccessful) {
                 $this->logger->info('notification email sent successfully to ' . DELIVERY_NOTIF_EMAIL);
@@ -207,7 +207,7 @@ class DeliveryController
                 $message = $this->mailManager->getLastMessage();
                 $this->logger->warn('Problem sending delivery notification email: '. $message);
             }
-            $this->logger->info("Sending delivery request to " . $user->email . " (delivery: " . \json_encode($delivery) . ")");
+            $this->logger->info("Sending delivery request to " . $user->email . " (delivery: " . \json_encode($delivery, JSON_THROW_ON_ERROR) . ")");
             $isSendSuccessful = $this->mailManager->sendDeliveryRequest($user->email, $delivery, $user);
             if ($isSendSuccessful) {
                 $this->logger->info('delivery email sent successfully to ' . $user->email);
@@ -232,7 +232,7 @@ class DeliveryController
         if (empty($data)) { // check for content in body
             $data = $request->getParsedBody();
         }
-        $this->logger->info("Klusbib PUT body: ". json_encode($data));
+        $this->logger->info("Klusbib PUT body: ". json_encode($data, JSON_THROW_ON_ERROR));
         $errors = [];
         if (!DeliveryValidator::isValidDeliveryData($data, $this->logger, $errors, false)) {
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
@@ -302,7 +302,7 @@ class DeliveryController
         if ($confirmation) {
             $reason = "confirmation";
             // Send notification to confirm the delivery
-            $this->logger->info('Sending notification for confirmation of delivery ' . json_encode($delivery));
+            $this->logger->info('Sending notification for confirmation of delivery ' . json_encode($delivery, JSON_THROW_ON_ERROR));
             $isSendSuccessful = $this->mailManager->sendDeliveryConfirmation($delivery->user->email, $delivery, $delivery->user);
             if ($isSendSuccessful) {
                 $this->logger->info('confirm notification email sent successfully to ' . $delivery->user->email);
@@ -314,7 +314,7 @@ class DeliveryController
         if ($cancellation) {
             $reason = "cancellation";
             // Send notification to cancel the delivery
-            $this->logger->info('Sending notification for cancel of delivery ' . json_encode($delivery));
+            $this->logger->info('Sending notification for cancel of delivery ' . json_encode($delivery, JSON_THROW_ON_ERROR));
             $isSendSuccessful = $this->mailManager->sendDeliveryCancellation($delivery->user->email, $delivery, $delivery->user);
             if ($isSendSuccessful) {
                 $this->logger->info('cancel notification email sent successfully to ' . $delivery->user->email);

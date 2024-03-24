@@ -453,15 +453,15 @@ class EnrolmentManager
             ['kb_state', '=', PaymentState::OPEN]
         ])->get();
 
-        if (empty($payments) || (is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 0) {
+        if (empty($payments) || (is_countable($payments) ? count($payments) : 0) == 0) {
             $message = "Unexpected confirmation, no payment found for membership " . $membershipId .
                 " and payment mode (" . $paymentMode . ")";
             $this->logger->warning($message);
             // note: no payment, so unable to send 'enrolment failed' notification
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-        } else if ((is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) > 1) {
+        } else if ((is_countable($payments) ? count($payments) : 0) > 1) {
             $message = "Unable to process confirmation, more than 1 open payments found (first payment is ["
-                . \json_encode($payments[0]) . "] - second payment is [" . \json_encode($payments[1]) . "])";
+                . \json_encode($payments[0], JSON_THROW_ON_ERROR) . "] - second payment is [" . \json_encode($payments[1], JSON_THROW_ON_ERROR) . "])";
             $this->logger->warning($message);
             $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payments[0], $renewal, $message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);
@@ -499,7 +499,7 @@ class EnrolmentManager
         if ($payment->kb_state == PaymentState::SUCCESS || $payment->kb_state == PaymentState::FAILED) {
             // payment already confirmed/declined
             $message = "Unable to process confirmation, payment already confirmed/declined (payment is ["
-                . \json_encode($payment) . ")";
+                . \json_encode($payment, JSON_THROW_ON_ERROR) . ")";
             $this->logger->warning($message);
             $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payment, $renewal, $message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);
@@ -566,15 +566,15 @@ class EnrolmentManager
             ['kb_state', '=', PaymentState::OPEN]
         ])->get();
 
-        if (empty($payments) || (is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 0) {
+        if (empty($payments) || (is_countable($payments) ? count($payments) : 0) == 0) {
             $message = "Unexpected decline, no payment found for membership " . $membershipId .
                 " and payment mode (" . $paymentMode . ")";
             $this->logger->warning($message);
             // note: no payment, so unable to send 'enrolment failed' notification
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
-        } else if ((is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) > 1) {
+        } else if ((is_countable($payments) ? count($payments) : 0) > 1) {
             $message = "Unable to process decline, more than 1 open payments found (first payment is ["
-                . \json_encode($payments[0]) . "] - second payment is [" . \json_encode($payments[1]) . "])";
+                . \json_encode($payments[0], JSON_THROW_ON_ERROR) . "] - second payment is [" . \json_encode($payments[1], JSON_THROW_ON_ERROR) . "])";
             $this->logger->warning($message);
             $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payments[0], $renewal, $message);
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);
@@ -783,7 +783,7 @@ class EnrolmentManager
         if ($membership == null) {
             return false;
         }
-        $this->logger->info(\json_encode($membership));
+        $this->logger->info(\json_encode($membership, JSON_THROW_ON_ERROR));
         return MembershipType::temporary()->id == $membership->subscription_id;
     }
 
@@ -879,7 +879,7 @@ class EnrolmentManager
      */
     protected function checkMembershipStateEnrolment()
     {
-        $this->logger->info(\json_encode($this->user->activeMembership));
+        $this->logger->info(\json_encode($this->user->activeMembership, JSON_THROW_ON_ERROR));
         // normal case, no other checks needed
         if (!isset($this->user->activeMembership)) {
             return;
@@ -1014,7 +1014,7 @@ class EnrolmentManager
              * See also https://docs.mollie.com/payments/status-changes
              */
             $paymentMollie = $this->mollie->payments->get($paymentId);
-            $this->logger->info('Mollie payment:' . json_encode($paymentMollie));
+            $this->logger->info('Mollie payment:' . json_encode($paymentMollie, JSON_THROW_ON_ERROR));
             $orderId = $paymentMollie->metadata->order_id;
             $userId = $paymentMollie->metadata->user_id;
             $productId = $paymentMollie->metadata->product_id;
@@ -1163,7 +1163,7 @@ class EnrolmentManager
                                 }
                                 $this->activateMembership($currentMembership, $renewalMembership);
                             } else {
-                                $errorMsg = "Successful mollie payment received, but no linked membership (payment=" . \json_encode($payment) . ")";
+                                $errorMsg = "Successful mollie payment received, but no linked membership (payment=" . \json_encode($payment, JSON_THROW_ON_ERROR) . ")";
                                 $this->logger->warning($errorMsg);
                                 $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $user, $payment, true, $errorMsg);
                                 throw new EnrolmentException( $errorMsg, EnrolmentException::UNEXPECTED_CONFIRMATION);
@@ -1258,16 +1258,16 @@ class EnrolmentManager
             ['kb_mode', '=', $paymentMode]
         ])->get();
 
-        if (empty($payments) || (is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 0) {
+        if (empty($payments) || (is_countable($payments) ? count($payments) : 0) == 0) {
             $message = "Unexpected confirmation, no payment found for user " . $this->user->first_name .
                 " (" . $this->user->id . ") for payment mode (" . $paymentMode . ")";
             $this->logger->warning($message);
             // note: no payment, so unable to send 'enrolment failed' notification
             throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_CONFIRMATION);
         } else {
-            $this->logger->info("payments found: " . \json_encode($payments));
+            $this->logger->info("payments found: " . \json_encode($payments, JSON_THROW_ON_ERROR));
         }
-        if ((is_array($payments) || $payments instanceof \Countable ? count($payments) : 0) == 1) {
+        if ((is_countable($payments) ? count($payments) : 0) == 1) {
             $payment = $payments[0];
         } else {
             // more than 1 payment, search OPEN payment
@@ -1278,7 +1278,7 @@ class EnrolmentManager
                         $payment = $p;
                     } else { // more than 1 OPEN payment
                         $message = "Unable to process confirmation, more than 1 open payments found (first payment is ["
-                            . \json_encode($payment) . "] - second payment is [" . \json_encode($p) . "])";
+                            . \json_encode($payment, JSON_THROW_ON_ERROR) . "] - second payment is [" . \json_encode($p, JSON_THROW_ON_ERROR) . "])";
                         $this->logger->warning($message);
                         $this->mailMgr->sendEnrolmentFailedNotification(ENROLMENT_NOTIF_EMAIL, $this->user, $payment, $renewal, $message);
                         throw new EnrolmentException($message, EnrolmentException::UNEXPECTED_PAYMENT_STATE);

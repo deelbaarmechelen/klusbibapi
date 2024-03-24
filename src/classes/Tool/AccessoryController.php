@@ -57,7 +57,7 @@ class AccessoryController
             array_push($data, ToolMapper::mapAccessoryToArray($accessory));
         }
         return $response->withJson($data)
-            ->withHeader('X-Total-Count', is_array($accesories) || $accesories instanceof \Countable ? count($accesories) : 0);
+            ->withHeader('X-Total-Count', is_countable($accesories) ? count($accesories) : 0);
     }
 
     function getById($request, $response, $args) {

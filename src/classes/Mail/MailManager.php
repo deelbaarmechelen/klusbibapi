@@ -434,7 +434,7 @@ class MailManager {
 	    $reportEmail = 'info@klusbib.be';
 	    $current_day = date('Y-m-d');
         $parameters = [
-            'users_count' => (is_array($active_users) || $active_users instanceof \Countable ? count($active_users) : 0) + count($expired_users), 
+            'users_count' => (is_countable($active_users) ? count($active_users) : 0) + (is_countable($expired_users) ? count($expired_users) : 0), 
             'active_users' => $active_users, 
             'expired_users' => $expired_users, 
             'pending_users' => $pending_users, 
@@ -452,7 +452,7 @@ class MailManager {
 	    $reportEmail = 'info@klusbib.be';
 	    $current_day = date('Y-m-d');
         $parameters = [
-            'reservations_count' => (is_array($requested_reservations) || $requested_reservations instanceof \Countable ? count($requested_reservations) : 0) + count($confirmed_reservations), 
+            'reservations_count' => (is_countable($requested_reservations) ? count($requested_reservations) : 0) + (is_countable($confirmed_reservations) ? count($confirmed_reservations) : 0), 
             'requested_reservations' => $requested_reservations, 
             'confirmed_reservations' => $confirmed_reservations, 
             'current_day' => $current_day

@@ -46,7 +46,7 @@ class UserController implements UserControllerInterface
 
     public function getAll (RequestInterface $request, ResponseInterface $response, $args) {
         // TODO: remove state, membership_start_date and membership_end_date once clients have been updated
-        $this->logger->info("Klusbib GET on '/users' route (params=" . \json_encode($request->getQueryParams()) . ")");
+        $this->logger->info("Klusbib GET on '/users' route (params=" . \json_encode($request->getQueryParams(), JSON_THROW_ON_ERROR) . ")");
         // query params snipe: deleted=false&company_id=&search=&sort=state&order=desc&offset=0&limit=500
         $authorised = Authorisation::checkUserAccess($this->token, "list", null);
         parse_str($request->getUri()->getQuery(), $queryParams);
@@ -128,12 +128,12 @@ class UserController implements UserControllerInterface
     {
         $this->logger->info("Klusbib POST on '/users' route");
         $data = $request->getParsedBody();
-        $this->logger->info("parsedbody=" . json_encode($data));
+        $this->logger->info("parsedbody=" . json_encode($data, JSON_THROW_ON_ERROR));
         $errors = [];
         if (empty($data)
             || !UserValidator::containsMandatoryData($data, $this->logger, $errors)
             || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
-            $this->logger->info("errors=" . json_encode($errors));
+            $this->logger->info("errors=" . json_encode($errors, JSON_THROW_ON_ERROR));
 
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson($errors);
@@ -235,7 +235,7 @@ class UserController implements UserControllerInterface
 //            }
 //        }
         UserMapper::mapArrayToUser($data, $user, $isAdmin, $this->logger);
-        $this->logger->debug('Creating user ' . \json_encode($user));
+        $this->logger->debug('Creating user ' . \json_encode($user, JSON_THROW_ON_ERROR));
 
         $this->userManager->create($user);
         // For backward compatibility: create membership at once if start date is provided
@@ -294,7 +294,7 @@ class UserController implements UserControllerInterface
         $data = $request->getParsedBody();
         $errors = [];
         if (empty($data) || !UserValidator::isValidUserData($data, $this->logger, $errors)) {
-            $this->logger->info("errors=" . json_encode($errors));
+            $this->logger->info("errors=" . json_encode($errors, JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
 
@@ -418,7 +418,7 @@ class UserController implements UserControllerInterface
                 "membership_end_date" => $contact->membership_end_date
             ]);
         }
-        $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+        $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
         return $response->withStatus(HttpResponseCode::FORBIDDEN);
     }
 
@@ -473,9 +473,9 @@ class UserController implements UserControllerInterface
     private function addUserProjects($user)
     {
         $projectsArray = [];
-        $this->logger->info(\json_encode($user->projects));
+        $this->logger->info(\json_encode($user->projects, JSON_THROW_ON_ERROR));
         foreach ($user->projects as $project) {
-            $this->logger->info(\json_encode($project));
+            $this->logger->info(\json_encode($project, JSON_THROW_ON_ERROR));
             $projectData = ["id" => $project->id, "name" => $project->name];
 
             //$projectData = ProjectMapper::mapDeliveryToArray($project);

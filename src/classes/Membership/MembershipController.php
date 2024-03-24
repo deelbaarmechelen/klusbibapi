@@ -53,7 +53,7 @@ class MembershipController
 
         $authorised = Authorisation::checkMembershipAccess($this->token, Authorisation::OPERATION_READ);
         if (!$authorised) {
-            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
             return $response->withStatus(403);
         }
         $membership = \Api\Model\Membership::find($args['membershipId']);
@@ -66,11 +66,11 @@ class MembershipController
     }
 
     public function getAll($request, $response, $args) {
-        $this->logger->info("Klusbib GET '/membership' route (params=" . \json_encode($request->getQueryParams()) . ")");
+        $this->logger->info("Klusbib GET '/membership' route (params=" . \json_encode($request->getQueryParams(), JSON_THROW_ON_ERROR) . ")");
 
         $authorised = Authorisation::checkMembershipAccess($this->token, Authorisation::OPERATION_LIST);
         if (!$authorised) {
-            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()));
+            $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
             return $response->withStatus(403);
         }
         $sortdir = $request->getQueryParam('_sortDir');
@@ -131,15 +131,15 @@ class MembershipController
             // lookup user and add it to data
             $user = $this->userManager->getById($membership->contact_id, false);
             if (isset($user)) {
-                $this->logger->info('user found: ' . \json_encode($user));
+                $this->logger->info('user found: ' . \json_encode($user, JSON_THROW_ON_ERROR));
                 $membershipData['user'] = UserMapper::mapUserToArray($user);
-                $this->logger->info(\json_encode($membershipData));
+                $this->logger->info(\json_encode($membershipData, JSON_THROW_ON_ERROR));
             }
             array_push($data, $membershipData);
         }
-        $this->logger->info((is_array($memberships) || $memberships instanceof \Countable ? count($memberships) : 0) . ' membership(s) found!');
+        $this->logger->info((is_countable($memberships) ? count($memberships) : 0) . ' membership(s) found!');
         return $response->withJson($data)
-            ->withHeader('X-Total-Count', is_array($memberships) || $memberships instanceof \Countable ? count($memberships) : 0);
+            ->withHeader('X-Total-Count', is_countable($memberships) ? count($memberships) : 0);
     }
 
     function update(RequestInterface $request, ResponseInterface $response, $args)
@@ -159,7 +159,7 @@ class MembershipController
         $data = $request->getParsedBody();
         $errors = [];
         if (empty($data) || !MembershipValidator::isValidMembershipData($data, $this->logger, $errors)) {
-            $this->logger->info("errors=" . json_encode($errors));
+            $this->logger->info("errors=" . json_encode($errors, JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)->withJson($errors); // Bad request
         }
         $updateMembershipUsers = false;
@@ -201,7 +201,7 @@ class MembershipController
             // lookup users for this membership
             $this->logger->info("Klusbib PUT updating membership users... ");
             $users = Contact::notDeleted()->hasMembership($membership->id)->get();
-            $this->logger->info("Klusbib PUT updating users " . \json_encode($users));
+            $this->logger->info("Klusbib PUT updating users " . \json_encode($users, JSON_THROW_ON_ERROR));
             if ($users) {
                 foreach ($users as $user) {
                     // FIXME: update active_membership if status becomes inactive (expired or cancelled?) ?
@@ -213,7 +213,7 @@ class MembershipController
             }
             $this->logger->info("Klusbib PUT membership users updated ! ");
         }
-        $this->logger->info("Klusbib PUT saving updated membership: " . \json_encode($membership));
+        $this->logger->info("Klusbib PUT saving updated membership: " . \json_encode($membership, JSON_THROW_ON_ERROR));
         $membership->save();
 
         return $response->withJson(MembershipMapper::mapMembershipToArray($membership));

@@ -69,7 +69,7 @@ class PaymentController implements PaymentControllerInterface
             array_push($data, PaymentMapper::mapPaymentToArray($payment));
         }
         return $response->withJson($data)
-            ->withHeader('X-Total-Count', is_array($payments) || $payments instanceof \Countable ? count($payments) : 0);
+            ->withHeader('X-Total-Count', is_countable($payments) ? count($payments) : 0);
     }
 
     public function getByID($request, $response, $args) {
@@ -238,7 +238,7 @@ class PaymentController implements PaymentControllerInterface
         $data = $request->getParsedBody();
         $paymentId = $_POST["id"];
         if (empty($paymentId)) {
-            $this->logger->error("POST /payments/{orderId} failed due to missing id param (orderId=" . $args['orderId'] . "; parsed body=" . json_encode($data));
+            $this->logger->error("POST /payments/{orderId} failed due to missing id param (orderId=" . $args['orderId'] . "; parsed body=" . json_encode($data, JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::BAD_REQUEST)
             ->withJson("Missing or empty paymentId");
         }
@@ -248,7 +248,7 @@ class PaymentController implements PaymentControllerInterface
              * See also https://docs.mollie.com/payments/status-changes
              */
             $paymentMollie = $this->mollieClient->payments->get($paymentId);
-            $this->logger->info('Mollie payment:' . json_encode($paymentMollie));
+            $this->logger->info('Mollie payment:' . json_encode($paymentMollie, JSON_THROW_ON_ERROR));
             $orderId = $paymentMollie->metadata->order_id;
             $userId = $paymentMollie->metadata->user_id;
 
@@ -353,7 +353,7 @@ class PaymentController implements PaymentControllerInterface
     public function delete($request, $response, $args) {
         $this->logger->info("Klusbib DELETE '/payments' route (" . $args['paymentId'] . ")");
         // FIXME: no token scopes due to passthrough settings?
-        $this->logger->info("token: " . \json_encode($this->token));
+        $this->logger->info("token: " . \json_encode($this->token, JSON_THROW_ON_ERROR));
 //            $authorised = Authorisation::checkPaymentAccess($this->token, "delete", $args['paymentId']);
 //            if (!$authorised) {
 //                $this->logger->warn("Access denied on payment delete with id " . $args['paymentId']);

@@ -63,7 +63,7 @@ class TokenController implements TokenControllerInterface
                 $scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
                     return in_array($needle, $valid_scopes);
                 });
-                $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
+                $this->logger->info("Generating token with scopes " . json_encode($scopes, JSON_THROW_ON_ERROR) . " and sub " . json_encode($sub, JSON_THROW_ON_ERROR));
                 $token = Token::generateToken($scopes, $sub); // Token authorizing the update of terms
                 $responseData = ["reason" => "Terms need to be approved", "code" => "ERR_TERMS_NOT_ACCEPTED", "token" => $token];
                 return $response->withStatus(HttpResponseCode::FORBIDDEN)
@@ -76,7 +76,7 @@ class TokenController implements TokenControllerInterface
         $scopes = array_filter($requested_scopes, function ($needle) use ($valid_scopes) {
             return in_array($needle, $valid_scopes);
         });
-        $this->logger->info("Generating token with scopes " . json_encode($scopes) . " and sub " . json_encode($sub));
+        $this->logger->info("Generating token with scopes " . json_encode($scopes, JSON_THROW_ON_ERROR) . " and sub " . json_encode($sub, JSON_THROW_ON_ERROR));
         $future = new \DateTime("now +24 hours");
         $token = Token::generateToken($scopes, $sub, $future);
 

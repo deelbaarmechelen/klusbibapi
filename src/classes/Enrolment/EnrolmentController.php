@@ -51,7 +51,7 @@ class EnrolmentController
 
         // Get data
         $data = $request->getParsedBody();
-        $this->logger->info("parsedbody=" . json_encode($data));
+        $this->logger->info("parsedbody=" . json_encode($data, JSON_THROW_ON_ERROR));
 
         try {
             if (empty($data["paymentMode"]) || !isset($data["userId"])) {
@@ -357,7 +357,7 @@ class EnrolmentController
 
         // enrolment in STROOM project
         if ($paymentMode == PaymentMode::STROOM) {
-            $this->logger->info("enrolment for STROOM project; user=" . \json_encode($user) . ";orderId=" . $orderId);
+            $this->logger->info("enrolment for STROOM project; user=" . \json_encode($user, JSON_THROW_ON_ERROR) . ";orderId=" . $orderId);
             try {
                 if ($renewal) {
                     $payment = $enrolmentManager->renewalByStroom($orderId, $acceptTermsDate);
@@ -510,7 +510,7 @@ class EnrolmentController
         $paymentId = $_POST["id"];
         $orderId = $args['orderId'];
         if (empty($paymentId)) {
-            $this->logger->error("POST /enrolment/{orderId} failed due to missing id param (orderId=" . $orderId . "; parsed body=" . json_encode($data));
+            $this->logger->error("POST /enrolment/{orderId} failed due to missing id param (orderId=" . $orderId . "; parsed body=" . json_encode($data, JSON_THROW_ON_ERROR));
             return $response->withStatus(HttpResponseCode::BAD_REQUEST) // Bad request
             ->withJson("Missing or empty paymentId");
         }
