@@ -43,7 +43,7 @@ foreach($users as $user) {
 $userManager->validateInventoryUsers();
 
 echo "Syncing tools inventory -> Lend Engine\n";
-$toolManager = new \Api\Tool\ToolManager(SnipeitInventory::instance($logger), $logger, $mailManager);
+$toolManager = \Api\Tool\ToolManager::instance($logger);
 $tools = $toolManager->sync();
 
 // For remaining models: just update last_sync_date to activate update trigger, which will take care of sync with Lend Engine

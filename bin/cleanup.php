@@ -162,4 +162,5 @@ function markAsDeleted($users)
         }
         $user->save();
     }
+    return;
 }
