@@ -65,7 +65,11 @@ if (!defined('LAST_TERMS_DATE')) {
 if (!defined('SSL_CERTIFICATE_VERIFICATION')) {
     $sslCertificateVerification = true; // default value
 
-    $sslCertVerifEnvVar = $_ENV['SSL_CERTIFICATE_VERIFICATION'];
+    if (isset($_ENV['SSL_CERTIFICATE_VERIFICATION'])) {
+        $sslCertVerifEnvVar = $_ENV['SSL_CERTIFICATE_VERIFICATION'];
+    } else {
+        $sslCertVerifEnvVar = false;
+    }
     if ($sslCertVerifEnvVar != false) {
         if (strtolower($sslCertVerifEnvVar) === "true") {
             $sslCertificateVerification = true;

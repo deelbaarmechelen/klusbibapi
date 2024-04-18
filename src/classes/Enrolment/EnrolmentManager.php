@@ -1118,7 +1118,7 @@ class EnrolmentManager
 
                             $currentMembership = null;
                             // new enrolment can also be initiated for users already having a membership (causes membership to start on current day instead of expiry day)
-                            if (isset($user) && isset($user->active_membership)) {
+                            if (isset($user->active_membership)) {
                                 $currentMembership = Membership::find($user->active_membership);
                             }
                             $this->activateMembership($currentMembership, $membership);
@@ -1158,7 +1158,7 @@ class EnrolmentManager
 
                             if (isset($renewalMembership)) {
                                 $currentMembership = null;
-                                if (isset($user) && isset($user->active_membership)) {
+                                if (isset($user->active_membership)) {
                                     $currentMembership = Membership::find($user->active_membership);
                                 }
                                 $this->activateMembership($currentMembership, $renewalMembership);
