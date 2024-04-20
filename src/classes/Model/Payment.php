@@ -67,6 +67,19 @@ class Payment extends Model
         return in_array($field, Payment::$fieldArray);
     }
 
+    public static function createMembershipFee(Membership $membership): Payment
+    {
+        $payment = new Payment();
+        $payment->contact_id = $membership->contact_id;
+        $payment->kb_payment_timestamp = new \DateTime();
+        $payment->payment_date = new \DateTime();
+        $payment->amount = $membership->subscription->price;
+        $payment->type = "FEE";
+        $payment->note = "Membership fee.";
+        $membership->payment()->save($payment);
+        return $payment;
+    }
+
     /**
      * Create a new Eloquent model instance.
      *

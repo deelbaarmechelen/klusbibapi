@@ -661,17 +661,20 @@ class EnrolmentManager
         return $renewalMembership;
     }
 
-    function activateMembership(?Membership $currentMembership, Membership $renewedMembership) {
+    function activateMembership(?Membership $currentMembership, Membership $newMembership) {
         if ($currentMembership != null) {
             $currentMembership->status = MembershipState::STATUS_EXPIRED;
             $currentMembership->save();
         }
 
-        $renewedMembership->status = MembershipState::STATUS_ACTIVE;
-        $renewedMembership->save();
+        $newMembership->status = MembershipState::STATUS_ACTIVE;
+        // add membership fee
+        $paymentFee = Payment::createMembershipFee($newMembership);
+        $paymentFee->save();
+        $newMembership->save();
         if (isset($this->user)) {
             $this->logger->info("associating new membership");
-            $this->user->activeMembership()->associate($renewedMembership);
+            $this->user->activeMembership()->associate($newMembership);
             // update user through user manager to also sync inventory!
             $this->userMgr->update($this->user,
                 false, false, false, false);

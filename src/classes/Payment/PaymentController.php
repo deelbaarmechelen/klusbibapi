@@ -33,11 +33,11 @@ class PaymentController implements PaymentControllerInterface
         $this->logger->info("Klusbib GET '/payments' route");
 
         // FIXME: no token scopes due to passthrough settings?
-//    $authorised = Authorisation::checkPaymentAccess($this->token, "list", null);
-//    if (!$authorised) {
-//        $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()) );
-//        return $response->withStatus(403);
-//    }
+        //$authorised = Authorisation::checkPaymentAccess($this->token, "list", null);
+        //if (!$authorised) {
+        //    $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes()) );
+        //    return $response->withStatus(403);
+        //}
 
         parse_str($request->getUri()->getQuery(), $queryParams);
         $sortdir = $queryParams['_sortDir'] ?? null;
@@ -79,17 +79,17 @@ class PaymentController implements PaymentControllerInterface
             return $response->withStatus(HttpResponseCode::NOT_FOUND) // Not found
             ->withJson(["message" => "No payment found for provided paymentId"]);
         }
-//    $data = array();
-//    if ($payment->state == 'SUCCESS') {
-//        $data["message"] = "Betaling geslaagd!";
-//    } elseif ($payment->state == 'FAILED' || $payment->state == 'CANCELED' || $payment->state == 'EXPIRED') {
-//        $data["message"] = "Betaling mislukt";
-//    } else {
-//        $data["message"] = "Betaling nog niet afgerond";
-//    }
-//
-//    $data["paymentStatus"] = $payment->state; // NEW, SUCCESS, FAILED, OPEN
-//    $data["paymentMode"] = $payment->mode;
+        //    $data = array();
+        //    if ($payment->state == 'SUCCESS') {
+        //        $data["message"] = "Betaling geslaagd!";
+        //    } elseif ($payment->state == 'FAILED' || $payment->state == 'CANCELED' || $payment->state == 'EXPIRED') {
+        //        $data["message"] = "Betaling mislukt";
+        //    } else {
+        //        $data["message"] = "Betaling nog niet afgerond";
+        //    }
+        //
+        //    $data["paymentStatus"] = $payment->state; // NEW, SUCCESS, FAILED, OPEN
+        //    $data["paymentMode"] = $payment->mode;
         return $response->withStatus(HttpResponseCode::OK)
             ->withHeader("Content-Type", "application/json")
             ->write(json_encode(PaymentMapper::mapPaymentToArray($payment), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
@@ -168,7 +168,7 @@ class PaymentController implements PaymentControllerInterface
             $user->payment_mode = PaymentMode::MOLLIE;
             $user->save();
             $orderId = $data["orderId"];
-//        $orderId = $userId . "-" . date('YmdHis'); //YYYYMMDDhhmmss
+            //$orderId = $userId . "-" . date('YmdHis'); //YYYYMMDDhhmmss
             $redirectUrl = $data["redirectUrl"];
             $requestedPaymentMean = $data["paymentMean"];
 
@@ -191,7 +191,7 @@ class PaymentController implements PaymentControllerInterface
                     ],
                     "description" => "Klusbib inschrijving {$user->first_name} {$user->last_name}",
                     "redirectUrl" => "{$redirectUrl}?orderId={$orderId}",
-//                "webhookUrl" => "{$protocol}://{$hostname}/payments/{$orderId}",
+                //"webhookUrl" => "{$protocol}://{$hostname}/payments/{$orderId}",
                     "webhookUrl" => "https://{$hostname}/payments/{$orderId}",
                     "metadata" => [
                         "order_id" => $orderId,
@@ -202,7 +202,7 @@ class PaymentController implements PaymentControllerInterface
                 if (isset($requestedPaymentMean) && !empty($requestedPaymentMean)) {
                     $paymentData["method"] = $requestedPaymentMean;
                 }
-//            $this->logger->info("payment data = " . print_r($paymentData, TRUE));
+                //$this->logger->info("payment data = " . print_r($paymentData, TRUE));
                 $payment = $this->mollieClient->payments->create($paymentData);
                 $this->logger->info("Payment created with order id {$orderId} webhook {$protocol}://{$hostname}/payments/{$orderId} and redirectUrl {$redirectUrl}");
                 // store payment id -> needed?
@@ -360,11 +360,11 @@ class PaymentController implements PaymentControllerInterface
         $this->logger->info("Klusbib DELETE '/payments' route (" . $args['paymentId'] . ")");
         // FIXME: no token scopes due to passthrough settings?
         $this->logger->info("token: " . \json_encode($this->token, JSON_THROW_ON_ERROR));
-//            $authorised = Authorisation::checkPaymentAccess($this->token, "delete", $args['paymentId']);
-//            if (!$authorised) {
-//                $this->logger->warn("Access denied on payment delete with id " . $args['paymentId']);
-//                return $response->withStatus(403);
-//            }
+        //$authorised = Authorisation::checkPaymentAccess($this->token, "delete", $args['paymentId']);
+        //if (!$authorised) {
+        //    $this->logger->warn("Access denied on payment delete with id " . $args['paymentId']);
+        //    return $response->withStatus(403);
+        //}
         $payment = \Api\Model\Payment::find($args['paymentId']);
         if (empty($payment)) {
             return $response->withStatus(HttpResponseCode::NOT_FOUND)
