@@ -65,6 +65,7 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
         Capsule::update('UPDATE payment SET payment_method_id = NULL WHERE payment_method_id > 3');
         Capsule::update('DELETE FROM payment_method WHERE id > 3');
         Capsule::schema()->table('payment', function(Illuminate\Database\Schema\Blueprint $table) {
+            $table->dropColumn('kb_payment_timestamp');
             $table->dropColumn('kb_mode');
             $table->dropColumn('kb_state');
             $table->dropColumn('kb_order_id');
