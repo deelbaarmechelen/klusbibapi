@@ -32,14 +32,17 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
             $table->string('kb_order_id',50)->nullable()->default(null); // to be replaced by psp_code?
             $table->timestamp('kb_expiration_date')->nullable()->default(null); // for gift vouchers with validity limited in time (a few values filled in)
             // to check: payment date can drop timestamp?
-            // to check: payment_ext_id in use? (never filled in), but might replace kb_order_id? Or to be replaced by psp_code?
             // note: currency, updated_at, last_sync_date to be dropped
         });
         Capsule::update('DELETE FROM payment_method WHERE id > 3');
         Capsule::update('UPDATE payment_method SET name = \'Credit/debit card (Mollie)\' WHERE id = 2 AND name LIKE \'%debit card%\'');
         Capsule::update('INSERT INTO payment_method (id, name, is_active) VALUES (4, "Payconiq", 1),(5, "LETS", 1),(6, "Mechelen Bon (MBON)", 1),(7, "Kdo Bon (KDOBON)", 1),(8, "Other", 1)');
         Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, psp_code, note, contact_id, membership_id, loan_id, kb_payment_timestamp, kb_mode, kb_state, kb_order_id, kb_expiration_date) '
-            . 'SELECT (payment_id *2) -1, created_at, \'PAYMENT\', DATE(payment_date), amount, order_id, comment, user_id, membership_id, loan_id, payment_date, mode, state, order_id, expiration_date FROM kb_payments');
+            . 'SELECT (payment_id *2) -1, created_at, \'PAYMENT\', DATE(payment_date), amount, order_id, IFNULL(comment,\'Payment received.\'), user_id, membership_id, loan_id, payment_date, mode, state, order_id, expiration_date FROM kb_payments WHERE kb_state = \'SUCCESS\'');
+        Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, psp_code, note, contact_id, membership_id, loan_id, kb_payment_timestamp, kb_mode, kb_state, kb_order_id, kb_expiration_date) '
+            . 'SELECT (payment_id *2) -1, created_at, \'PAYMENT\', DATE(payment_date), 0, order_id, comment, user_id, membership_id, loan_id, payment_date, mode, state, order_id, expiration_date FROM kb_payments WHERE kb_state IN (\'CANCELED\', \'FAILED\', \'EXPIRED\', \'REFUND\', \'CHARGEBACK\')');
+        Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, psp_code, note, contact_id, membership_id, loan_id, kb_payment_timestamp, kb_mode, kb_state, kb_order_id, kb_expiration_date) '
+            . 'SELECT (payment_id *2) -1, created_at, \'PAYMENT\', DATE(payment_date), amount, order_id, comment, user_id, membership_id, loan_id, payment_date, mode, state, order_id, expiration_date FROM kb_payments WHERE kb_state IN (\'OPEN\', \'PENDING\')');
         Capsule::update('UPDATE payment SET payment_method_id = 1 WHERE UPPER(kb_mode) = \'CASH\'');
         Capsule::update('UPDATE payment SET payment_method_id = 2 WHERE UPPER(kb_mode) = \'MOLLIE\'');
         Capsule::update('UPDATE payment SET payment_method_id = 3 WHERE UPPER(kb_mode) = \'TRANSFER\'');
@@ -48,9 +51,11 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
         Capsule::update('UPDATE payment SET payment_method_id = 6 WHERE UPPER(kb_mode) = \'MBON\'');
         Capsule::update('UPDATE payment SET payment_method_id = 7 WHERE UPPER(kb_mode) = \'KDOBON\'');
         Capsule::update('UPDATE payment SET payment_method_id = 8 WHERE UPPER(kb_mode) IN (\'STROOM\', \'SPONSORING\', \'UNKNOWN\', \'OVAM\', \'OTHER\')');
+        //Capsule::update('ALTER TABLE payment AUTO_INCREMENT = your_desired_value');
         // insert membership fees
         Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, note, contact_id, membership_id, kb_payment_timestamp) '
-            . 'SELECT payment_id * 2, created_at, \'FEE\', DATE(payment_date), amount, \'Membership fee.\', user_id, membership_id, payment_date FROM kb_payments WHERE NOT membership_id IS NULL');
+            . 'SELECT payment_id * 2, created_at, \'FEE\', DATE(payment_date), amount, \'Membership fee.\', user_id, membership_id, payment_date' 
+            . ' FROM kb_payments WHERE NOT membership_id IS NULL AND state = \'SUCCESS\'');
     }
     /**
      * Down Method.
