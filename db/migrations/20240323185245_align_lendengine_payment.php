@@ -38,7 +38,6 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
         Capsule::update('DELETE FROM payment_method WHERE id > 3');
         Capsule::update('UPDATE payment_method SET name = \'Credit/debit card (Mollie)\' WHERE id = 2 AND name LIKE \'%debit card%\'');
         Capsule::update('INSERT INTO payment_method (id, name, is_active) VALUES (4, "Payconiq", 1),(5, "LETS", 1),(6, "Mechelen Bon (MBON)", 1),(7, "Kdo Bon (KDOBON)", 1),(8, "Other", 1)');
-        Capsule::update('DELETE FROM payment WHERE id IN (SELECT payment_id FROM kb_payments)');
         Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, psp_code, note, contact_id, membership_id, loan_id, kb_payment_timestamp, kb_mode, kb_state, kb_order_id, kb_expiration_date) '
             . 'SELECT (payment_id *2) -1, created_at, \'PAYMENT\', DATE(payment_date), amount, order_id, comment, user_id, membership_id, loan_id, payment_date, mode, state, order_id, expiration_date FROM kb_payments');
         Capsule::update('UPDATE payment SET payment_method_id = 1 WHERE UPPER(kb_mode) = \'CASH\'');
