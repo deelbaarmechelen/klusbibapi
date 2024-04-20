@@ -67,6 +67,31 @@ class Payment extends Model
         return in_array($field, Payment::$fieldArray);
     }
 
+    /**
+     * @param $orderId
+     * @return Payment
+     */
+    public static function createNewPayment($orderId, $mode, $amount, $contactId,
+        Membership $membership = null): Payment
+    {
+        $payment = new Payment();
+        $payment->kb_mode = $mode;
+        $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+        $payment->psp_code = $orderId;
+        $payment->contact_id = $contactId;
+        $payment->kb_payment_timestamp = new \DateTime();
+        $payment->payment_date = new \DateTime();
+        $payment->amount = $amount;
+        $payment->kb_state = PaymentState::OPEN;
+        $payment->type = "PAYMENT";
+        if (isset($membership)) {
+            $membership->payment()->save($payment);
+        } else {
+            $payment->save();
+        }
+        return $payment;
+    }
+    
     public static function createMembershipFee(Membership $membership): Payment
     {
         $payment = new Payment();

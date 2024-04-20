@@ -205,8 +205,7 @@ class EnrolmentManager
 
         // Create payment
         if ($payment == null) {
-            $payment = $this->createNewPayment($orderId, $paymentMode, $membership->subscription->price, Settings::CURRENCY,
-                PaymentState::OPEN, $membership);
+            $payment = Payment::createNewPayment($orderId, $paymentMode, $membership->subscription->price, $this->user->id, $membership);
         }
 
         if ($paymentCompleted) {
@@ -240,8 +239,7 @@ class EnrolmentManager
         $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
         if ($payment == null) {
             // Create new payment
-            $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, $membershipType->price,
-                Settings::CURRENCY, PaymentState::OPEN);
+            $payment = Payment::createNewPayment($orderId,PaymentMode::MOLLIE, $membershipType->price, $this->user->id);
 
             // Always create new membership, and only make it the active membership when payment completes
             // Note: active membership could be a temporary membership
@@ -363,8 +361,7 @@ class EnrolmentManager
         }
         // create payment and new membership
         if ($payment == null) {
-            $payment = $this->createNewPayment($orderId, $paymentMode,$nextMembershipType->price,
-                Settings::CURRENCY, PaymentState::OPEN);
+            $payment = Payment::createNewPayment($orderId, $paymentMode,$nextMembershipType->price, $this->user->id);
 
             // Making sure "renew membership" is executed only once
             // -> only when a new payment is created and linked to the new membership
@@ -427,8 +424,7 @@ class EnrolmentManager
         $payment = $this->lookupPaymentByOrderId($orderId, PaymentMode::MOLLIE);
         if ($payment == null) {
             // Create new payment
-            $payment = $this->createNewPayment($orderId,PaymentMode::MOLLIE, $nextMembershipType->price,
-                Settings::CURRENCY, PaymentState::OPEN);
+            $payment = Payment::createNewPayment($orderId,PaymentMode::MOLLIE, $nextMembershipType->price, $this->user->id);
         };
 
         // Create renewal membership with status PENDING
@@ -516,6 +512,7 @@ class EnrolmentManager
 
         // update payment
         $payment->kb_state = PaymentState::SUCCESS;
+        $payment->note = "Payment received.";
         if ($payment->payment_method_id != null) {
             $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
         }
@@ -605,6 +602,8 @@ class EnrolmentManager
         if ($payment->payment_method_id != null) {
             $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
         }
+        $payment->note = "Payment failed (original amount $payment->amount)";
+        $payment->amount = 0;
         $payment->save();
 
         // update status
@@ -757,31 +756,6 @@ class EnrolmentManager
                 ['contact_id', '=', $userId],
                 ['kb_mode', '=', $paymentMode],
             ])->first();
-    }
-
-    /**
-     * @param $orderId
-     * @return Payment
-     */
-    protected function createNewPayment($orderId, $mode, $amount, $currency, $state = PaymentState::OPEN,
-        Membership $membership = null): Payment
-    {
-        $payment = new Payment();
-        $payment->kb_mode = $mode;
-        $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
-        $payment->psp_code = $orderId;
-        $payment->contact_id = $this->user->id;
-        $payment->kb_payment_timestamp = new \DateTime();
-        $payment->payment_date = new \DateTime();
-        $payment->amount = $amount;
-        $payment->kb_state = $state;
-        $payment->type = "PAYMENT";
-        if (isset($membership)) {
-            $membership->payment()->save($payment);
-        } else {
-            $payment->save();
-        }
-        return $payment;
     }
 
     /**
@@ -1126,6 +1100,7 @@ class EnrolmentManager
                             if ($payment->payment_method_id != null) {
                                 $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
                             }                    
+                            $payment->note = "Payment received.";
                             $payment->save();
 
                             $currentMembership = null;
@@ -1166,6 +1141,7 @@ class EnrolmentManager
                             if ($payment->payment_method_id != null) {
                                 $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
                             }
+                            $payment->note = "Payment received.";
                             $payment->save();
 
                             $renewalMembership = $payment->membership()->first();
@@ -1210,6 +1186,8 @@ class EnrolmentManager
                         if ($payment->payment_method_id != null) {
                             $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
                         }
+                        $payment->note = "Payment failed ($payment->kb_state - original amount $payment->amount).";
+                        $payment->amount = 0;
                         $payment->save();
 
                         // TODO: check if previous membership needs to be reactivated? (is automatically expired when renewal starts)
