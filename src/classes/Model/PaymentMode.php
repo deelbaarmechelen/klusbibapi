@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method static Builder where(...$params)
+ * @method static Builder whereRaw(...$params)
  */
 class PaymentMode extends Model
 {
@@ -70,43 +71,43 @@ class PaymentMode extends Model
         return $paymentModes;
     }
     static public function none() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::NONE.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::NONE.'%'])->firstOrFail();
     }
     static public function cash() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::CASH.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::CASH.'%'])->firstOrFail();
     }
     static public function kdobon() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::KDOBON.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::KDOBON.'%'])->firstOrFail();
     }
     static public function lets() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::LETS.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::LETS.'%'])->firstOrFail();
     }
     static public function mbon() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::MBON.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::MBON.'%'])->firstOrFail();
     }
     static public function mollie() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::MOLLIE.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::MOLLIE.'%'])->firstOrFail();
     }
     static public function ovam() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::OVAM.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::OVAM.'%'])->firstOrFail();
     }
     static public function payconiq() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::PAYCONIQ.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::PAYCONIQ.'%'])->firstOrFail();
     }
     static public function sponsoring() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::SPONSORING.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::SPONSORING.'%'])->firstOrFail();
     }
     static public function stroom() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::STROOM.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::STROOM.'%'])->firstOrFail();
     }
     static public function transfer() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::TRANSFER.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::TRANSFER.'%'])->firstOrFail();
     }
     static public function unknown() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::UNKNOWN.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::UNKNOWN.'%'])->firstOrFail();
     }
     static public function other() {
-	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::OTHER.'%')->firstOrFail();
+	    return PaymentMode::whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.self::OTHER.'%'])->firstOrFail();
     }
     public static function getPaymentMethodId($mode) : int {
         return PaymentMode::getPaymentMethod($mode)->id;
