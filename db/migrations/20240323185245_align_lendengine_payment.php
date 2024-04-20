@@ -36,7 +36,8 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
             // note: currency, updated_at, last_sync_date to be dropped
         });
         Capsule::update('DELETE FROM payment_method WHERE id > 3');
-        Capsule::update('INSERT INTO payment_method (id, name, is_active) VALUES (4, "Payconiq", 1),(5, "LETS", 1),(6, "Mechelen Bon", 1),(7, "Kdo Bon", 1),(8, "Other", 1)');
+        Capsule::update('UPDATE payment_method SET name = \'Credit/debit card (Mollie)\' WHERE id = 2 AND name LIKE \'%debit card%\'');
+        Capsule::update('INSERT INTO payment_method (id, name, is_active) VALUES (4, "Payconiq", 1),(5, "LETS", 1),(6, "Mechelen Bon (MBON)", 1),(7, "Kdo Bon (KDOBON)", 1),(8, "Other", 1)');
         Capsule::update('DELETE FROM payment WHERE id IN (SELECT payment_id FROM kb_payments)');
         Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, psp_code, note, contact_id, membership_id, loan_id, kb_payment_timestamp, kb_mode, kb_state, kb_order_id, kb_expiration_date) '
             . 'SELECT payment_id, created_at, \'PAYMENT\', DATE(payment_date), amount, order_id, comment, user_id, membership_id, loan_id, payment_date, mode, state, order_id, expiration_date FROM kb_payments');
@@ -48,6 +49,9 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
         Capsule::update('UPDATE payment SET payment_method_id = 6 WHERE UPPER(kb_mode) = \'MBON\'');
         Capsule::update('UPDATE payment SET payment_method_id = 7 WHERE UPPER(kb_mode) = \'KDOBON\'');
         Capsule::update('UPDATE payment SET payment_method_id = 8 WHERE UPPER(kb_mode) IN (\'STROOM\', \'SPONSORING\', \'UNKNOWN\', \'OVAM\', \'OTHER\')');
+        // insert membership fees
+        Capsule::update('INSERT INTO payment (id, created_at, type, payment_date, amount, note, contact_id, membership_id, kb_payment_timestamp) '
+            . 'SELECT payment_id, created_at, \'FEE\', DATE(payment_date), amount, \'Membership fee.\', user_id, membership_id, payment_date FROM kb_payments WHERE NOT membership_id IS NULL');
     }
     /**
      * Down Method.
@@ -58,6 +62,7 @@ class AlignLendenginePayment extends AbstractCapsuleMigration
 	{
         $this->initCapsule();
         Capsule::update('DELETE FROM payment WHERE NOT kb_state IS NULL');
+        Capsule::update('UPDATE payment SET payment_method_id = NULL WHERE payment_method_id > 3');
         Capsule::update('DELETE FROM payment_method WHERE id > 3');
         Capsule::schema()->table('payment', function(Illuminate\Database\Schema\Blueprint $table) {
             $table->dropColumn('kb_mode');
