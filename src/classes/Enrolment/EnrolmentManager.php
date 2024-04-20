@@ -156,12 +156,12 @@ class EnrolmentManager
         if ($payment != null) { // payment already exists, check its state
             if ($paymentCompleted) {
                 if ($payment->kb_state != PaymentState::OPEN) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->kb_state (orderId: $payment->psp_code)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             } else {
                 if ($payment->kb_state != PaymentState::OPEN) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->kb_state (orderId: $payment->psp_code)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             }
@@ -339,12 +339,12 @@ class EnrolmentManager
         if ($payment != null) { // payment already exists -> check its state
             if ($paymentCompleted) {
                 if ($payment->kb_state != PaymentState::SUCCESS) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::SUCCESS . " but was $payment->kb_state (orderId: $payment->psp_code)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             } else {
                 if ($payment->kb_state != PaymentState::OPEN) {
-                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->kb_state (orderId: $payment->kb_order_id)",
+                    throw new EnrolmentException("Unexpected payment state: should be " . PaymentState::OPEN . " but was $payment->kb_state (orderId: $payment->psp_code)",
                         EnrolmentException::UNEXPECTED_PAYMENT_STATE);
                 }
             }
@@ -750,7 +750,7 @@ class EnrolmentManager
         // use first() rather than get()
         // there should be only 1 result, but first returns a Model
         return Payment::where([
-                ['kb_order_id', '=', $orderId],
+                ['psp_code', '=', $orderId],
                 ['contact_id', '=', $userId],
                 ['kb_mode', '=', $paymentMode],
             ])->first();
@@ -766,7 +766,7 @@ class EnrolmentManager
         $payment = new Payment();
         $payment->kb_mode = $mode;
         $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
-        $payment->kb_order_id = $orderId;
+        $payment->psp_code = $orderId;
         $payment->contact_id = $this->user->id;
         $payment->kb_payment_timestamp = new \DateTime();
         $payment->payment_date = new \DateTime();
@@ -800,7 +800,7 @@ class EnrolmentManager
      */
     function checkDuplicateRequest($orderId) {
         // check if an enrolment with same order id was already processed
-        if (Payment::where('kb_order_id', $orderId)->exists()) {
+        if (Payment::where('psp_code', $orderId)->exists()) {
             throw new EnrolmentException("An enrolment with order id " . $orderId . " was already processed",
                 EnrolmentException::DUPLICATE_REQUEST);
         }

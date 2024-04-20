@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed $kb_payment_timestamp
  * @property mixed $kb_mode
  * @property mixed $kb_state
- * @property mixed $kb_order_id
  * @property mixed $kb_expiration_date
  * 
  * @method static Builder any()
@@ -37,7 +36,7 @@ class Payment extends Model
 {
     protected $table = 'payment';
     protected $primaryKey = "id";
-    static protected $fieldArray = ['id', 'contact_id', 'kb_state', 'kb_mode', 'kb_payment_timestamp', 'kb_order_id', 'psp_code',
+    static protected $fieldArray = ['id', 'contact_id', 'kb_state', 'kb_mode', 'kb_payment_timestamp', 'psp_code',
         'amount', 'note', 'kb_expiration_date', 'membership_id', 'loan_id', 'created_at'
     ];
 
@@ -95,7 +94,7 @@ class Payment extends Model
     }
     public function scopeForOrder($query, $orderId)
     {
-        return $query->where('kb_order_id', $orderId);
+        return $query->where('psp_code', $orderId);
     }
     public function scopeForMembership($query)
     {

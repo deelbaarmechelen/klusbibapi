@@ -135,7 +135,7 @@ class PaymentController implements PaymentControllerInterface
             // use first() rather than get()
             // there should be only 1 result, but first returns a Model
             $payment = \Api\Model\Payment::where([
-                ['kb_order_id', '=', $orderId],
+                ['psp_code', '=', $orderId],
                 ['contact_id', '=', $userId],
                 ['kb_mode', '=', PaymentMode::TRANSFER],
             ])->first();
@@ -144,7 +144,7 @@ class PaymentController implements PaymentControllerInterface
                 $payment = new \Api\Model\Payment();
                 $payment->kb_mode = PaymentMode::TRANSFER;
                 $payment->payment_method_id = PaymentMode::transfer()->id;
-                $payment->kb_order_id = $orderId;
+                $payment->psp_code = $orderId;
                 $payment->contact_id = $userId;
                 $payment->kb_payment_timestamp = new \DateTime();
                 $payment->amount = \Api\Settings::ENROLMENT_AMOUNT;
@@ -256,7 +256,7 @@ class PaymentController implements PaymentControllerInterface
             // use first() rather than get()
             // there should be only 1 result, but first returns a Model
             $payment = \Api\Model\Payment::where([
-                ['kb_order_id', '=', $orderId],
+                ['psp_code', '=', $orderId],
                 ['contact_id', '=', $userId],
                 ['kb_mode', '=', 'MOLLIE'],
             ])->first();
@@ -265,7 +265,7 @@ class PaymentController implements PaymentControllerInterface
                 $payment = new \Api\Model\Payment();
                 $payment->kb_mode = 'MOLLIE';
                 $payment->payment_method_id = PaymentMode::mollie()->id;
-                $payment->kb_order_id = $orderId;
+                $payment->psp_code = $orderId;
                 $payment->contact_id = $userId;
                 $payment->kb_payment_timestamp = new \DateTime();
                 $payment->amount = $paymentMollie->amount->value;

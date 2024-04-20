@@ -11,7 +11,7 @@ class PaymentMapper
       "state" => $payment->kb_state,
       "mode" => $payment->kb_mode,
       "payment_date" => $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null,
-      "order_id" => $payment->kb_order_id,
+      "order_id" => $payment->psp_code,
       "amount" => $payment->amount,
       //"currency" => $payment->currency,
       "note" => $payment->note,
@@ -40,7 +40,7 @@ class PaymentMapper
             $payment->payment_date = $data["payment_date"];
         }
         if (isset($data["order_id"]) && $isAdmin) {
-            $payment->kb_order_id = $data["order_id"];
+            $payment->psp_code = $data["order_id"];
         }
         if (isset($data["amount"]) && $isAdmin) {
             $payment->amount = $data["amount"];
