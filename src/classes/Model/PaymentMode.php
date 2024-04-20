@@ -1,20 +1,39 @@
 <?php
 namespace Api\Model;
 
-abstract class PaymentMode
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @method static Builder where(...$params)
+ */
+class PaymentMode extends Model
 {
-	public const UNKNOWN = "UNKNOWN";
+    protected $table = 'payment_method';
+    protected $primaryKey = "id";
+    static protected $fieldArray = ['id', 'name', 'is_active'
+    ];
+    public $timestamps = false;
+    
+    public static function canBeSortedOn($field) {
+        if (!isset($field)) {
+            return false;
+        }
+        return in_array($field, PaymentMode::$fieldArray);
+    }
+
+    // Klusbib legacy payment mode values
+    public const UNKNOWN = "UNKNOWN";
     public const NONE = "NONE";
     public const CASH = "CASH";
     public const KDOBON = "KDOBON";
     public const LETS = "LETS";
     public const MBON = "MBON";
     public const MOLLIE = "MOLLIE";
-    public const OVAM = "OVAM";
+    public const OVAM = "OVAM"; // deprecated
     public const OTHER = "OTHER";
     public const PAYCONIQ = "PAYCONIQ";
     public const SPONSORING = "SPONSORING";
-    public const STROOM = "STROOM";
+    public const STROOM = "STROOM"; // deprecated
     public const TRANSFER = "TRANSFER";
 
     static function isValidPaymentMode($paymentMode) {
@@ -50,4 +69,79 @@ abstract class PaymentMode
         ];
         return $paymentModes;
     }
+    static public function none() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::NONE.'%')->firstOrFail();
+    }
+    static public function cash() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::CASH.'%')->firstOrFail();
+    }
+    static public function kdobon() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::KDOBON.'%')->firstOrFail();
+    }
+    static public function lets() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::LETS.'%')->firstOrFail();
+    }
+    static public function mbon() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::MBON.'%')->firstOrFail();
+    }
+    static public function mollie() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::MOLLIE.'%')->firstOrFail();
+    }
+    static public function ovam() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::OVAM.'%')->firstOrFail();
+    }
+    static public function payconiq() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::PAYCONIQ.'%')->firstOrFail();
+    }
+    static public function sponsoring() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::SPONSORING.'%')->firstOrFail();
+    }
+    static public function stroom() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::STROOM.'%')->firstOrFail();
+    }
+    static public function transfer() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::TRANSFER.'%')->firstOrFail();
+    }
+    static public function unknown() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::UNKNOWN.'%')->firstOrFail();
+    }
+    static public function other() {
+	    return PaymentMode::where('LOWER(name)', 'LIKE', '%'.self::OTHER.'%')->firstOrFail();
+    }
+    public static function getPaymentMethodId($mode) : int {
+        return PaymentMode::getPaymentMethod($mode)->id;
+    }
+    public static function getPaymentMethod($mode) : PaymentMode {
+        if (!PaymentMode::isValidPaymentMode($mode)) {
+            return PaymentMode::unknown();
+        }
+        switch ($mode) {
+            case self::MOLLIE:
+                return PaymentMode::mollie();
+            case self::PAYCONIQ:
+                return PaymentMode::payconiq();
+            case self::TRANSFER:
+                return PaymentMode::transfer();
+            case self::CASH:
+                return PaymentMode::cash();
+            case self::NONE:
+                return PaymentMode::none();
+            case self::KDOBON:
+                return PaymentMode::kdobon();
+            case self::LETS:
+                return PaymentMode::lets();
+            case self::MBON:
+                return PaymentMode::mbon();
+            case self::OVAM:
+                return PaymentMode::ovam();
+            case self::OTHER:
+                return PaymentMode::other();
+            case self::SPONSORING:
+                return PaymentMode::sponsoring();
+            case self::STROOM:
+                return PaymentMode::stroom();
+            default:
+                return PaymentMode::unknown();                     
+        }
+    }    
 }

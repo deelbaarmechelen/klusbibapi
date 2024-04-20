@@ -143,6 +143,7 @@ class PaymentController implements PaymentControllerInterface
                 // Create new payment
                 $payment = new \Api\Model\Payment();
                 $payment->kb_mode = PaymentMode::TRANSFER;
+                $payment->payment_method_id = PaymentMode::transfer()->id;
                 $payment->kb_order_id = $orderId;
                 $payment->contact_id = $userId;
                 $payment->kb_payment_timestamp = new \DateTime();
@@ -263,11 +264,16 @@ class PaymentController implements PaymentControllerInterface
                 // Create new payment
                 $payment = new \Api\Model\Payment();
                 $payment->kb_mode = 'MOLLIE';
+                $payment->payment_method_id = PaymentMode::mollie()->id;
                 $payment->kb_order_id = $orderId;
                 $payment->contact_id = $userId;
                 $payment->kb_payment_timestamp = new \DateTime();
                 $payment->amount = $paymentMollie->amount->value;
-            };
+            } else {
+                if ($payment->payment_method_id != null) {
+                    $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+                }                    
+            }
 
             if ($paymentMollie->isPaid() && !$paymentMollie->hasRefunds() && !$paymentMollie->hasChargebacks()) {
                 /*

@@ -516,6 +516,9 @@ class EnrolmentManager
 
         // update payment
         $payment->kb_state = PaymentState::SUCCESS;
+        if ($payment->payment_method_id != null) {
+            $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+        }
         $payment->save();
 
         // update membership status
@@ -599,6 +602,9 @@ class EnrolmentManager
         }
 
         $payment->kb_state = PaymentState::FAILED;
+        if ($payment->payment_method_id != null) {
+            $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+        }
         $payment->save();
 
         // update status
@@ -759,6 +765,7 @@ class EnrolmentManager
     {
         $payment = new Payment();
         $payment->kb_mode = $mode;
+        $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
         $payment->kb_order_id = $orderId;
         $payment->contact_id = $this->user->id;
         $payment->kb_payment_timestamp = new \DateTime();
@@ -1113,7 +1120,9 @@ class EnrolmentManager
                     if ($membership->status != MembershipState::STATUS_ACTIVE) {
 
                         DB::transaction(function() use ($payment, $user, $membership) {
-
+                            if ($payment->payment_method_id != null) {
+                                $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+                            }                    
                             $payment->save();
 
                             $currentMembership = null;
@@ -1151,7 +1160,9 @@ class EnrolmentManager
                         || $user->state == UserState::EXPIRED) {
 
                         DB::transaction(function() use ($payment, $user) {
-
+                            if ($payment->payment_method_id != null) {
+                                $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+                            }
                             $payment->save();
 
                             $renewalMembership = $payment->membership()->first();
@@ -1193,6 +1204,9 @@ class EnrolmentManager
                     // update renewal membership status
                     DB::transaction(function() use ($payment, $user) {
 
+                        if ($payment->payment_method_id != null) {
+                            $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+                        }
                         $payment->save();
 
                         // TODO: check if previous membership needs to be reactivated? (is automatically expired when renewal starts)
