@@ -2,22 +2,23 @@
 
 namespace Api\User;
 
-use Api\Model\Membership;
-use Api\Model\MembershipState;
-use Api\Model\MembershipType;
-use Api\Model\PaymentMode;
-use Api\ModelMapper\DeliveryMapper;
-use Api\ModelMapper\MembershipMapper;
 use Api\Tool\ToolManager;
 use Api\Loan\LoanManager;
 use Api\Util\HttpResponseCode;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Api\User\UserManager;
 use Api\Model\Contact;
+use Api\Model\Membership;
+use Api\Model\MembershipState;
+use Api\Model\MembershipType;
+use Api\Model\PaymentMode;
+use Api\Model\PaymentState;
 use Api\Model\UserState;
 use Api\Model\EmailState;
 use Api\ModelMapper\UserMapper;
 use Api\ModelMapper\ReservationMapper;
+use Api\ModelMapper\DeliveryMapper;
+use Api\ModelMapper\MembershipMapper;
 use Api\Validator\UserValidator;
 use Api\Exception\ForbiddenException;
 use Api\Mail\MailManager;
@@ -397,7 +398,7 @@ class UserController implements UserControllerInterface
     {
         // TODO: create method to return membership state instead
         $this->logger->warn("User state is deprecated and replaced by membership status");
-        if (Authorisation::checkUserAccess($this->token, "read.state", null)) {
+        if (Authorisation::checkUserAccess($this->token, Authorisation::OPERATION_READ_STATE, null)) {
             // Allow read of state to resume enrolment
             parse_str($request->getUri()->getQuery(), $queryParams);
 //            $email = $request->getQueryParam('email');
@@ -411,10 +412,29 @@ class UserController implements UserControllerInterface
                 return $response->withStatus(HttpResponseCode::NOT_FOUND)
                     ->withJson(['message' => "Unknown email"]);
             }
-
+            // possible state responses: 
+            // ACTIVE, CHECK_PAYMENT, EXPIRED, DISABLED, DELETED
+            $state = UserState::DISABLED;
+            if ($contact->active_membership) {
+                if ($contact->active_membership->status == MembershipState::STATUS_ACTIVE) {
+                    $state = MembershipState::STATUS_ACTIVE;
+                } else if ($contact->active_membership->status == MembershipState::STATUS_EXPIRED) {
+                    $state = MembershipState::STATUS_EXPIRED;
+                } else if ($contact->active_membership->status == MembershipState::STATUS_PENDING) {
+                    $state = UserState::CHECK_PAYMENT;
+                } else if ($contact->active_membership->status == MembershipState::STATUS_EXPIRED) {
+                    $state = $contact->active_membership->status;
+                }
+            } else {
+                $payment = $contact->payments()->where('kb_state', '=', PaymentState::OPEN)->first;
+                if ($payment) {
+                    $state = UserState::CHECK_PAYMENT;
+                }    
+            }
+            //$membership = Membership::withUser($contact->id)->first();
             return $response->withJson([
                 "user_id" => $contact->id, 
-                "state" => $contact->state, 
+                "state" => $state, 
                 "membership_end_date" => $contact->membership_end_date
             ]);
         }
