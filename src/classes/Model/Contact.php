@@ -134,7 +134,7 @@ class Contact extends Model
 
     public function payments()
     {
-        return $this->hasMany(\Api\Model\Payment::class, 'user_id', 'id');
+        return $this->hasMany(\Api\Model\Payment::class, 'contact_id', 'id');
     }
 
     public function isAdmin() {
