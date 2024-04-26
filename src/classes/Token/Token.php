@@ -169,6 +169,7 @@ class Token
                 "events.all",
                 "payments.all",
                 "lendings.all",
+				"users.read.state",
                 "users.read.owner", // need to be added for check against emailLinkScopes
                 "users.update.password", // need to be added for check against resetPwdScopes, emailLinkScopes
                 "users.update.owner", // need to be added for check against emailLinkScopes
@@ -191,6 +192,7 @@ class Token
 					"consumers.read",
 					"consumers.list",
 					"users.read.owner", // not allowed to consult other users info
+					"users.read.state",
 					"users.update.password",
 					"users.update.owner",// not allowed to update other users info
                     "lendings.list",
@@ -213,6 +215,7 @@ class Token
 					"reservations.list",
 					"consumers.read",
 					"consumers.list",
+					"users.read.state",
 					"users.read.owner", // not allowed to consult other users info
 					"users.update.password",
 					"users.update.owner", // not allowed to update other users info

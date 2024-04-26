@@ -8,6 +8,7 @@ class Authorisation {
 
     public const OPERATION_READ = "read";
     public const OPERATION_LIST = "list";
+    public const OPERATION_READ_STATE = "read.state";
     public const OPERATION_CREATE = "create";
     public const OPERATION_UPDATE = "update";
 
@@ -31,7 +32,7 @@ class Authorisation {
 		switch ($operation) {
 			case self::OPERATION_LIST:
 				return $token->hasScope(["users.all", "users.list"]);
-            case "read.state":
+            case self::OPERATION_READ_STATE:
                 return $token->hasScope(["users.all", "users.list", "users.read.state"]);
             case self::OPERATION_READ:
 				if ($token->hasScope(["users.all", "users.read"])) {
