@@ -145,8 +145,10 @@ class LoanManager
             $queryBuilder = $queryBuilder->whereIn('loan.status', [Loan::STATUS_PENDING, Loan::STATUS_RESERVED]);
         }
         if (isset($query)) {
-            $queryBuilder = $queryBuilder->where('contact.first_name', 'LIKE', '%'.$query.'%' )
-                ->orWhere('contact.last_name', 'LIKE', '%'.$query.'%' );
+            $queryBuilder = $queryBuilder->where(function ($subquery) use ($query) {
+                    $subquery->where('contact.first_name', 'LIKE', '%'.$query.'%' )
+                          ->orWhere('contact.last_name', 'LIKE', '%'.$query.'%' );
+            });
         }
         if (isset($contactId)) {
             $queryBuilder = $queryBuilder->where('loan.contact_id', $contactId);
