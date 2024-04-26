@@ -174,7 +174,7 @@ class EnrolmentManager
         //        OR never reuse active membership, but only make it active when payment is completed? + only allow 1 future pending membership?
 
         // FIXME: status should no longer be based on user state...
-//        $status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->id);
+        //$status = MembershipMapper::getMembershipStatus($this->user->state, $this->user->id);
         $status = MembershipState::STATUS_PENDING;
         if (empty($startMembershipDate) ) {
             $start_date = strftime('%Y-%m-%d', time());
@@ -190,8 +190,8 @@ class EnrolmentManager
             $pending->save();
         }
         $membership = static::createMembership($membershipType, $start_date, $end_date, $this->user, $status);
-//        $membershipId = $this->createUserMembership($membershipType, $startMembershipDate);
-//        $membership = Membership::findOrFail($membershipId);
+        //$membershipId = $this->createUserMembership($membershipType, $startMembershipDate);
+        //$membership = Membership::findOrFail($membershipId);
         $membership->last_payment_mode = $paymentMode;
         $membership->save();
         $this->user->membership_start_date = $membership->starts_at;
@@ -253,8 +253,8 @@ class EnrolmentManager
             $end_date = self::getMembershipEndDate($start_date, $membershipType);
             $membership = self::createMembership($membershipType, $start_date, $end_date, $this->user, MembershipState::STATUS_PENDING);
 
-//            $membershipId = $this->createUserMembership($membershipType);
-//            $membership = Membership::findOrFail($membershipId);
+            // $membershipId = $this->createUserMembership($membershipType);
+            // $membership = Membership::findOrFail($membershipId);
             DB::transaction(function() use ($payment, $membership) {
                 $membership->last_payment_mode = PaymentMode::MOLLIE;
                 $membership->payment()->save($payment);
@@ -371,10 +371,10 @@ class EnrolmentManager
             $this->user->memberships()->save($renewalMembership);
 
             // Direct activation if payment is already completed
-//            if ($paymentCompleted) {
-//                // FIXME: already done in confirmPayment, so could be removed?
-//                $this->activateRenewalMembership($membership, $renewalMembership);
-//            }
+            //if ($paymentCompleted) {
+            //    // FIXME: already done in confirmPayment, so could be removed?
+            //    $this->activateRenewalMembership($membership, $renewalMembership);
+            //}
             $renewalMembership->save();
         }
 
@@ -1129,7 +1129,20 @@ class EnrolmentManager
                     || $payment->kb_state == PaymentState::REFUND
                     || $payment->kb_state == PaymentState::CHARGEBACK) {
                     // Permanent failure, or special case -> send notification for manual follow up
-                    $this->mailMgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL, $user, $payment, false, "payment failed");
+                    // update renewal membership status
+                    DB::transaction(function() use ($payment, $user) {
+
+                        if ($payment->payment_method_id != null) {
+                            $payment->payment_method_id = PaymentMode::getPaymentMethodId($payment->kb_mode);
+                        }
+                        $payment->note = "Payment failed ($payment->kb_state - original amount $payment->amount).";
+                        $payment->amount = 0;
+                        $payment->save();
+
+                        // Permanent failure, or special case -> send notification for manual follow up
+                        $this->mailMgr->sendEnrolmentFailedNotification( ENROLMENT_NOTIF_EMAIL, $user, $payment, false, "payment failed");
+                        // FIXME: to check: no exception thrown, failed confirmation should be accepted??
+                    });
                 }
             } else if ($productId == \Api\Model\Product::RENEWAL) {
                 if ($payment->kb_state == PaymentState::SUCCESS) {

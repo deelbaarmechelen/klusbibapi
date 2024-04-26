@@ -256,7 +256,7 @@ class EnrolmentController
             // FIXME: should use separate route for authenticated and unauthenticated users
 
             // Note token is also available from request (added by jwt middleware)
-//            $decoded = $request->getAttribute("token"); // is decoded token from jwt
+            //$decoded = $request->getAttribute("token"); // is decoded token from jwt
 
             $currentUser = Contact::find($this->token->getSub());
             if (!isset($currentUser)) {
@@ -298,7 +298,7 @@ class EnrolmentController
 
         if ($paymentMode == PaymentMode::MOLLIE) {
             $orderId = $data["orderId"];
-//        $orderId = $userId . "-" . date('YmdHis'); //YYYYMMDDhhmmss
+            //$orderId = $userId . "-" . date('YmdHis'); //YYYYMMDDhhmmss
             $redirectUrl = $data["redirectUrl"];
             $requestedPaymentMean = null;
             if (isset($data["paymentMean"])) {
