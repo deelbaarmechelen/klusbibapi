@@ -147,7 +147,7 @@ class LoanManager
         if (isset($query)) {
             $queryBuilder = $queryBuilder->where(function ($subquery) use ($query) {
                     $subquery->where('contact.first_name', 'LIKE', '%'.$query.'%' )
-                          ->orWwhere('contact.last_name', 'LIKE', '%'.$query.'%' );
+                          ->orWhere('contact.last_name', 'LIKE', '%'.$query.'%' );
             });
         }
         if (isset($contactId)) {
