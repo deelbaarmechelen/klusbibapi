@@ -40,7 +40,7 @@ class AddPaymentServiceProvider extends AbstractCapsuleMigration
 			$table->string('api_key', 255)->nullable()->default(null);
 			$table->string('webhook_url', 255)->nullable()->default(null);
 		});
-		Capsule::schema()->update('payment_method', function(Illuminate\Database\Schema\Blueprint $table){
+		Capsule::schema()->table('payment_method', function(Illuminate\Database\Schema\Blueprint $table){
 			$table->unsignedInteger('kb_psp_id')->nullable()->default(null);
 			$table->decimal('kb_minimum_payment',10,2)->nullable()->default(null);
 			$table->decimal('kb_payment_fee',10,2)->nullable()->default(null);
