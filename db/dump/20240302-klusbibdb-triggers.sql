@@ -7,7 +7,9 @@ CREATE TRIGGER klusbibdb.`contact_bi` BEFORE INSERT ON klusbibdb.`contact` FOR E
 IF NEW.role = 'admin' THEN
   SET NEW.roles = 'a:2:{i:0;s:10:"ROLE_ADMIN";i:1;s:15:"ROLE_SUPER_USER";}';
 ELSE
-  SET NEW.roles = 'a:0:{}';
+  IF NEW.roles IS NULL THEN
+    SET NEW.roles = 'a:0:{}';
+  END IF;
 END IF;
 IF NEW.password IS NULL THEN
   SET NEW.password = '$2y$13$JJRAiAUQgjIg1bkskpf6fuyFaGvW4DrVKXnqZ/iPjqZTHxzGbZ3Xe';
@@ -43,10 +45,22 @@ END
 $$
 DROP TRIGGER IF EXISTS klusbibdb.`contact_bu`$$
 CREATE TRIGGER klusbibdb.`contact_bu` BEFORE UPDATE ON klusbibdb.`contact` FOR EACH ROW BEGIN 
-IF NEW.role = 'admin' THEN
-  SET NEW.roles = 'a:2:{i:0;s:10:"ROLE_ADMIN";i:1;s:15:"ROLE_SUPER_USER";}';
+IF (OLD.role <> NEW.role) THEN 
+  IF NEW.role = 'admin' THEN
+    SET NEW.roles = 'a:2:{i:0;s:10:"ROLE_ADMIN";i:1;s:15:"ROLE_SUPER_USER";}';
+  END IF;
+  IF NEW.role = 'member' THEN
+    SET NEW.roles = 'a:0:{}';
+  END IF;
 ELSE
-  SET NEW.roles = 'a:0:{}';
+  IF (OLD.roles <> NEW.roles) THEN 
+      IF NEW.roles = 'a:2:{i:0;s:15:"ROLE_SUPER_USER";i:1;s:10:"ROLE_ADMIN";}' OR NEW.roles = 'a:2:{i:0;s:10:"ROLE_ADMIN";i:1;s:15:"ROLE_SUPER_USER";}' THEN
+          SET NEW.role = 'admin';
+      END IF;      
+      IF NEW.roles = 'a:0:{}' THEN
+          SET NEW.role = 'member';
+      END IF;      
+  END IF;
 END IF;
 IF OLD.country_iso_code IS NULL AND NEW.country_iso_code IS NULL THEN
   SET NEW.country_iso_code = 'BE';
