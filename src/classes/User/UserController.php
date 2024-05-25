@@ -416,9 +416,12 @@ class UserController implements UserControllerInterface
             // ACTIVE, CHECK_PAYMENT, EXPIRED, DISABLED, DELETED
             $state = UserState::DISABLED;
             $membershipEndDate = $contact->membership_end_date;
-            if ($contact->activeMembership) {
-                // TODO: should be converted to 'YYYY-MM-DD'
-                //$membershipEndDate = $contact->activeMembership->expires_at;
+            $this->logger->info("contact: " . \json_encode($contact, JSON_THROW_ON_ERROR));
+            $this->logger->info("active membership: " . \json_encode($contact->activeMembership, JSON_THROW_ON_ERROR));
+
+            if (isset($contact->activeMembership)) {
+                // convert to 'YYYY-MM-DD'
+                $membershipEndDate = $contact->activeMembership->expires_at->format('Y-m-d');
                 if ($contact->activeMembership->status == MembershipState::STATUS_ACTIVE) {
                     $state = MembershipState::STATUS_ACTIVE;
                 } else if ($contact->activeMembership->status == MembershipState::STATUS_EXPIRED) {
