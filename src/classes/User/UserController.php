@@ -407,7 +407,8 @@ class UserController implements UserControllerInterface
                 return $response->withStatus(HttpResponseCode::BAD_REQUEST)
                     ->withJson(['message' => "Missing email parameter"]);
             }
-            $contact = Capsule::table('contact')->where('email', $email)->first();
+            // $contact = Capsule::table('contact')->where('email', $email)->first();
+            $contact = Contact::notDeleted()->where('email', $email)->first();
             if (!isset($contact)) {
                 return $response->withStatus(HttpResponseCode::NOT_FOUND)
                     ->withJson(['message' => "Unknown email"]);
