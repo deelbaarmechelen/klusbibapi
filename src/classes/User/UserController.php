@@ -415,15 +415,18 @@ class UserController implements UserControllerInterface
             // possible state responses: 
             // ACTIVE, CHECK_PAYMENT, EXPIRED, DISABLED, DELETED
             $state = UserState::DISABLED;
-            if ($contact->active_membership) {
-                if ($contact->active_membership->status == MembershipState::STATUS_ACTIVE) {
+            $membershipEndDate = $contact->membership_end_date;
+            if ($contact->activeMembership) {
+                // TODO: should be converted to 'YYYY-MM-DD'
+                //$membershipEndDate = $contact->activeMembership->expires_at;
+                if ($contact->activeMembership->status == MembershipState::STATUS_ACTIVE) {
                     $state = MembershipState::STATUS_ACTIVE;
-                } else if ($contact->active_membership->status == MembershipState::STATUS_EXPIRED) {
+                } else if ($contact->activeMembership->status == MembershipState::STATUS_EXPIRED) {
                     $state = MembershipState::STATUS_EXPIRED;
-                } else if ($contact->active_membership->status == MembershipState::STATUS_PENDING) {
+                } else if ($contact->activeMembership->status == MembershipState::STATUS_PENDING) {
                     $state = UserState::CHECK_PAYMENT;
-                } else if ($contact->active_membership->status == MembershipState::STATUS_EXPIRED) {
-                    $state = $contact->active_membership->status;
+                } else if ($contact->activeMembership->status == MembershipState::STATUS_CANCELLED) {
+                    $state = $contact->activeMembership->status;
                 }
             } else {
                 $payment = $contact->payments()->where('kb_state', '=', PaymentState::OPEN)->first;
@@ -435,7 +438,7 @@ class UserController implements UserControllerInterface
             return $response->withJson([
                 "user_id" => $contact->id, 
                 "state" => $state, 
-                "membership_end_date" => $contact->membership_end_date
+                "membership_end_date" => $membershipEndDate
             ]);
         }
         $this->logger->warn("Access denied (available scopes: " . json_encode($this->token->getScopes(), JSON_THROW_ON_ERROR));
